@@ -216,8 +216,21 @@ body{
 :focus-visible{outline:2.5px solid var(--sage);outline-offset:3px;border-radius:6px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
+/* ---------- THE FIXED BACKGROUND ---------- */
+/* Affirmations and foliage used to render inside the scrolling screen,
+   which meant they slid away the moment a parent scrolled. They now
+   live in their own fixed layer pinned to the viewport, so they stay
+   exactly where they are while the content moves. */
+.bglayer{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  overflow:hidden;contain:paint;
+}
+.bglayer *{pointer-events:none}
+
 /* The app fills the window the way it fills a phone. */
-.appshell{display:flex;flex-direction:column;height:100%}
+.appshell{display:flex;flex-direction:column;height:100%;position:relative;z-index:1}
+.appshell,.scroll,.tabs{background:transparent}
+body.locked .bglayer{display:block}
 .scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;position:relative;padding-bottom:8px}
 .scroll::-webkit-scrollbar{width:9px}
 .scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px}
@@ -342,6 +355,12 @@ body.locked .tryBtn,body.locked .tabs,body.locked .corner-right{display:none!imp
 </style>
 
 <div id="wideLayout" hidden></div>
+
+<!-- The background lives here, outside the scroll container, so the
+     affirmations hold still while the app scrolls behind them. It is
+     fixed to the viewport, ignores pointer events entirely, and sits
+     underneath every piece of chrome. -->
+<div class="bglayer" id="bglayer" aria-hidden="true"></div>
 
 <div class="appshell">
   <div class="scroll" id="screen"></div>
@@ -12771,7 +12790,7 @@ const INCREASING_OUTPUT = {
         'feeding and signals demand. Do it at the same time daily, ideally in the morning, and give it 3 to ' +
         '7 days before you judge it. It is widely recommended by lactation consultants and is low risk, ' +
         'though it has not been formally studied the way medication has.',
-      evidence: 'established-practice',
+      evidence: 'established',
     },
     {
       name: 'Protect the overnight hours',
@@ -13844,6 +13863,55 @@ const CHOKING_BY_AGE = [
 ];
 
 /* ------------------------------------------------------------------
+ * ANTI CHOKING DEVICES
+ *
+ * Richelle asked whether the app should recommend keeping a LifeVac in
+ * the house. The honest answer is more complicated than yes, and the
+ * app already has a vocabulary for exactly this situation, which is the
+ * evidence label. So this is filed as mixed, with what the official
+ * bodies actually say and what the studies actually show, and with one
+ * rule stated loudly enough that nobody misses it: the device never
+ * goes first. A parent who reaches for a box instead of hitting their
+ * baby's back has lost the seconds that mattered.
+ * ------------------------------------------------------------------ */
+
+const ANTI_CHOKING_DEVICES = {
+  evidence: 'mixed',
+  headline: 'Worth owning, never worth reaching for first.',
+  whatTheyAre:
+    'Handheld suction devices such as LifeVac and Dechoker. You put a mask over the mouth and nose and ' +
+    'pull, and the suction is meant to lift the object out the way a hard cough would. They cost around ' +
+    'fifty to seventy dollars and they do not expire quickly.',
+  theOneRule:
+    'Back blows and thrusts first, every time. The device is what you try when those have failed and ' +
+    'someone is already calling 911, not instead of them. Every second spent opening a box is a second ' +
+    'the airway is still blocked.',
+  whatTheBodiesSay: [
+    'The FDA issued a safety communication in April 2024 saying the safety and effectiveness of over the counter anti choking devices have not been established, and that they are not FDA approved or cleared.',
+    'The American Heart Association does not endorse or recommend devices for removing an airway obstruction.',
+    'The American Red Cross says it is waiting for further studies and systematic reviews.',
+    'The American Academy of Pediatrics has no position on them either way.',
+  ],
+  whatTheResearchShows: [
+    'A 2025 systematic review and meta analysis of six studies covering 789 cases found high success rates, with LifeVac around 98 percent and abdominal thrusts around 71 percent.',
+    'The same review flagged high heterogeneity and probable publication bias, and concluded plainly that comparative effectiveness remains unproven and traditional techniques should remain the priority.',
+    'A lot of the underlying case data comes from registries run by the manufacturers, which is not the same thing as independent evidence.',
+    'A 2023 cadaver study found the device failed to remove cashews or whole grapes, which are two of the most common things a small child actually chokes on, and caused some tissue swelling.',
+  ],
+  soShouldYouBuyOne: [
+    'It is a reasonable thing to own. Plenty of thoughtful parents keep one, and there are documented cases of them working after back blows and thrusts did not.',
+    'It is not a substitute for knowing what to do, and buying one instead of taking a class is the wrong trade.',
+    'If you get one, open the box now. Practice assembling it in the dark, and put it somewhere you can reach in five seconds, not in a cupboard behind the pots.',
+    'Tell every adult who watches your child that it exists, where it is, and that it comes second.',
+    'If money is tight, spend it on the class before the device. The class is the part with the evidence behind it.',
+  ],
+  whyWeLabelItThisWay:
+    'This app tells you what the evidence actually is rather than only what is popular, and it does that in ' +
+    'both directions. Some things parents swear by turn out to be unstudied, and some things the guidelines ' +
+    'were slow to adopt turn out to work. This one is genuinely unsettled, so it says so.',
+};
+
+/* ------------------------------------------------------------------
  * HOME ALONE
  * ------------------------------------------------------------------ */
 
@@ -13898,6 +13966,8 @@ const EMERGENCY_SOURCES = [
   { org: 'American Heart Association', label: 'Updated CPR guidelines released for pediatric and neonatal emergency care', url: 'https://newsroom.heart.org/news/updated-cpr-guidelines-released-for-pediatric-and-neonatal-emergency-care-and-resuscitation' },
   { org: 'American Red Cross', label: 'First aid, CPR and AED classes', url: 'https://www.redcross.org/take-a-class/cpr' },
   { org: 'HealthyChildren.org (AAP)', label: 'Choking prevention and first aid for children', url: 'https://www.healthychildren.org/English/health-issues/injuries-emergencies/Pages/Choking-Prevention.aspx' },
+  { org: 'FDA', label: 'Safety communication on over the counter anti choking devices, April 2024', url: 'https://www.fda.gov/medical-devices/safety-communications/use-caution-anti-choking-devices-fda-safety-communication' },
+  { org: 'Journal of Emergency Nursing', label: 'Efficacy of antichoking suction devices versus traditional techniques, 2025 systematic review', url: 'https://pubmed.ncbi.nlm.nih.gov/41231173/' },
 ];
 
 /* ------------------------------------------------------------------
@@ -15381,7 +15451,10 @@ function sprigs() {
    at the left, the promise line top right, sprigs framing both edges. */
 function pageHeader(large) {
   const a = pickAffirmations(state.birthday);
-  if (IS_DESKTOP) return desktopHeader(a);
+  /* On desktop the whole header is painted into the fixed background
+     layer by render(), so screens must not also emit a copy of it into
+     the scroll container. Two copies is what made it move. */
+  if (IS_DESKTOP) return '';
   return `
   ${affirmation(a.topLeft, {
     box: 'top:-34px;left:-46px;width:172px;height:138px',
@@ -15453,10 +15526,26 @@ const AFFIRM_SPOTS = [
   { tier: 'wide', side: 'right', x: 'calc(50% - 560px)', y: '650px', w: 152, h: 122, fill: '#EDEADF', tx: 'top:36px;right:22px;max-width:92px;font-size:12.5px;text-align:right;transform:rotate(-6deg)', hp: 'top:94px;right:28px' },
 ];
 
+/* The y values in AFFIRM_SPOTS were tuned against a roughly 880px tall
+   window while the background still scrolled with the content. Pinned to
+   the viewport they have to stretch or squash with the window instead,
+   or every spot below the fold would simply never be seen on a laptop.
+   So the px is converted to a share of viewport height against that same
+   reference, which keeps the spacing she approved and makes it fit any
+   window. */
+const AFFIRM_REF_HEIGHT = 880;
+
+function affirmTop(y) {
+  const px = parseFloat(String(y));
+  if (!isFinite(px)) return `top:${y}`;
+  const vh = (px / AFFIRM_REF_HEIGHT) * 100;
+  return `top:${vh.toFixed(2)}vh`;
+}
+
 function desktopHeader(a) {
   const lines = a.all || [];
   const shapes = AFFIRM_SPOTS.map((sp, i) => affirmation(lines[i % lines.length], {
-    box: `${sp.side}:${sp.x};top:${sp.y};width:${sp.w}px;height:${sp.h}px`,
+    box: `${sp.side}:${sp.x};${affirmTop(sp.y)};width:${sp.w}px;height:${sp.h}px`,
     fill: sp.fill,
     noShape: sp.noShape,
     cls: 'affirm-' + sp.tier,
@@ -16260,6 +16349,21 @@ function restoreFocus(id, start, end) {
   try { if (s != null) back.setSelectionRange(s, e); } catch (err) {}
 }
 
+/* Paint the fixed background layer. Desktop only, since the phone
+   build keeps its decoration inside the screen where it belongs. The
+   affirmation lines are seeded on the birthday, so this only actually
+   changes when the active child does. */
+let lastBgSeed = null;
+function paintBackground() {
+  if (!IS_DESKTOP) return;
+  const layer = document.getElementById('bglayer');
+  if (!layer) return;
+  const seed = String(state.birthday || '') + '|' + String(store.activeChildId || '');
+  if (seed === lastBgSeed && layer.innerHTML) return;
+  lastBgSeed = seed;
+  layer.innerHTML = desktopHeader(pickAffirmations(state.birthday));
+}
+
 function render() {
   const live = document.activeElement;
   if (live && live.id && live.tagName === 'INPUT') {
@@ -16278,6 +16382,7 @@ function render() {
      signed in or has chosen to look around without an account. */
   if (!hasAccess()) {
     document.body.classList.add('locked');
+    paintBackground();
     document.getElementById('screen').innerHTML = screenAuth();
     const tabsEl = document.getElementById('tabs');
     if (tabsEl) tabsEl.innerHTML = '';
@@ -16286,6 +16391,7 @@ function render() {
     return;
   }
   document.body.classList.remove('locked');
+  paintBackground();
   /* Screens that only make sense inside one child. Reaching one with no
      child open sends you to the picker rather than to an empty screen. */
   const CHILD_SCOPED = ['milestones', 'activities', 'topics', 'understand', 'feeding', 'safety'];
@@ -17431,7 +17537,41 @@ function screenSafety(c) {
           <div class="callout" style="margin-top:10px">
             <p style="margin:0"><strong style="color:var(--deep)">Never:</strong> ${esc(card.neverDo)}</p>
           </div>
-        </div>`).join('')}` : ''}
+        </div>`).join('')}
+
+      ${(() => {
+        const d = ANTI_CHOKING_DEVICES;
+        return `
+        <div class="dsec">
+          <div style="display:flex;align-items:flex-start;gap:9px;margin-bottom:8px">
+            <h4 style="flex:1;margin:0">Anti choking devices, such as LifeVac</h4>
+            ${evidenceTag(d.evidence)}
+          </div>
+
+          <div class="card leafy">
+            <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(d.headline)}</p>
+            <p class="bodytext" style="margin:10px 0 0">${esc(d.whatTheyAre)}</p>
+          </div>
+
+          <div class="callout" style="margin-top:10px;border-left:3px solid var(--attention, #B5793F)">
+            <p style="margin:0"><strong style="color:var(--deep)">The one rule:</strong> ${esc(d.theOneRule)}</p>
+          </div>
+
+          <p class="sect">What the official bodies say</p>
+          ${list(d.whatTheBodiesSay)}
+
+          <p class="sect">What the research actually shows</p>
+          ${list(d.whatTheResearchShows)}
+
+          <p class="sect">So should you get one</p>
+          ${list(d.soShouldYouBuyOne)}
+
+          <div class="card flat" style="margin-top:10px">
+            <p class="eyebrow">${icon('info', 11, 'var(--taupe)')} Why this is labelled the way it is</p>
+            <p class="bodytext" style="margin-top:5px">${esc(d.whyWeLabelItThisWay)}</p>
+          </div>
+        </div>`;
+      })()}` : ''}
 
     ${tab === 'alone' ? `
       <div class="card leafy">
@@ -17585,11 +17725,11 @@ const PUMP_TABS = [
 ];
 
 /* Community tips carry a visible tag so they never read as clinical. */
-function evidenceTag(ev) {
-  if (ev === 'community') return '<span class="tag warm">Parent tip, not studied</span>';
-  if (ev === 'established-practice') return '<span class="tag">Standard practice</span>';
-  return '';
-}
+/* One evidence tag for the whole app. An earlier duplicate of this
+   function lived here and was silently shadowed by the later one, which
+   meant the pumping screen was labelling standard practice as an
+   unstudied parent tip. Removed, and the odd evidence id it depended on
+   was normalized in the data. */
 
 function pumpFlange() {
   const f = FLANGE_FITTING;
