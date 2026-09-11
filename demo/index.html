@@ -10070,7 +10070,8 @@ function desktopHeader(a) {
     heartPos: 'top:84px;right:12px',
   })}
   ${sprigs()}
-  <div class="corner-right">Brighter<br>Tomorrows<br>Together<span class="corner-rule"></span></div>`;
+  <div class="corner-right">Brighter<br>Tomorrows<br>Together<span class="corner-rule"></span></div>
+  <div class="mark-holder">${wordmark(false)}</div>`;
 }
 
 /* Decorative corner leaves, matching the mockups */
@@ -10098,10 +10099,10 @@ function cornerLeaves() {
 /* -----------------------------------------------------------------
    STATE
    ----------------------------------------------------------------- */
-/* The desktop shell provides a sidebar. Everything else about the app
-   is identical, so this is the only place the two builds diverge. */
-const IS_DESKTOP = !!document.getElementById('sideMark');
-let markDrawn = false;
+/* The full screen shell provides this marker. It is the same app either
+   way; WIDE only decides where the decorative layer sits and how many
+   tabs the bottom bar carries. */
+const IS_DESKTOP = !!document.getElementById('wideLayout');
 
 const state = {
   name: 'Stetson',
@@ -10169,9 +10170,9 @@ function screenHome(c) {
   const prog = cp ? summarizeProgress(cp, state.statuses) : null;
 
   const quick = [
-    { i: 'chat', t: 'Ask', s: 'Any hour', go: 'data-tab="ask"' },
-    { i: 'heart', t: 'Right Now', s: 'Something is happening', go: 'data-tab="now"' },
-    { i: 'people', t: 'Community', s: "You're not alone", go: 'data-tab="community"' },
+    { i: 'moon', t: "Today's Rhythm", s: 'Naps and bedtime', go: 'data-tab="sleep"' },
+    { i: 'calendar', t: "Today's Plan", s: 'What to do together', go: 'data-tab="plan"' },
+    { i: 'chart', t: 'Milestones', s: 'Ranges, not deadlines', go: 'data-go="screen" data-id="milestones"' },
     { i: 'leaf', t: 'Activities', s: 'Play and learn', go: 'data-go="screen" data-id="activities"' },
   ];
 
@@ -10598,9 +10599,13 @@ const ALL_TABS = [
 /* On a phone the order matches the tab bar in the mockups. On desktop
    Home leads, and Welcome is dropped because the sidebar already shows
    the wordmark and the profile that screen exists to introduce. */
-const TABS = IS_DESKTOP
-  ? ALL_TABS.filter((t) => t.id !== 'welcome')
-  : ALL_TABS.filter((t) => t.id !== 'plan');
+const BOTTOM_BAR = ['home', 'now', 'ask', 'community', 'hub'];
+
+/* Five across the bottom, which is as many as a bottom bar holds
+   before the labels stop being readable. Welcome is a sign up screen,
+   and Sleep and Plan are reached from Home. */
+const TABS = ALL_TABS.filter((t) => BOTTOM_BAR.indexOf(t.id) !== -1)
+  .sort((a, b) => BOTTOM_BAR.indexOf(a.id) - BOTTOM_BAR.indexOf(b.id));
 
 function render() {
   const c = ctx();
@@ -10653,23 +10658,6 @@ function render() {
       // Number inputs throw on setSelectionRange in some browsers.
       try { if (keepStart != null) back.setSelectionRange(keepStart, keepEnd); } catch (err) {}
     }
-  }
-
-  // The sidebar is desktop only, so every write is guarded. The
-  // wordmark is static, so it is drawn once rather than on every render.
-  const sideMark = document.getElementById('sideMark');
-  if (sideMark && !markDrawn) {
-    sideMark.innerHTML = wordmark(false);
-    markDrawn = true;
-  }
-  const sideKid = document.getElementById('sideKid');
-  if (sideKid) {
-    sideKid.innerHTML = `
-      <span class="avatar">${growthSVG(c.growth ? c.growth.order : 2, 38)}</span>
-      <span class="grow">
-        <p class="nm">${esc(c.child.name || 'Your child')}</p>
-        <p class="ag">${esc(c.summary.label || 'Add a birthday')}</p>
-      </span>`;
   }
 
   document.getElementById('tabs').innerHTML = TABS.map((t) => `
