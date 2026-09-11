@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ready Set Grow</title>
+<meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
+<meta property="og:title" content="Ready Set Grow">
+<meta property="og:description" content="Parenting today for a brighter tomorrow. One child profile, eighteen years, and real help at the moment you need it.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://readysetgrow-app.com/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23F7F5EF'/%3E%3Cpath d='M50 78 V38' stroke='%234A6741' stroke-width='7' stroke-linecap='round' fill='none'/%3E%3Cellipse cx='68' cy='34' rx='20' ry='11' fill='%237C9068' transform='rotate(-30 68 34)'/%3E%3Cellipse cx='32' cy='44' rx='18' ry='10' fill='%238CA179' transform='rotate(28 32 44)'/%3E%3Cellipse cx='50' cy='22' rx='11' ry='8' fill='%236E8C5B'/%3E%3C/svg%3E">
+
+<style>
+/* ------------------------------------------------------------------
+   Tokens come from src/theme/theme.js, which is the app's real design
+   system. The website does not get its own palette, because the point
+   of the website is that it looks like the product.
+
+   The light values ARE the brand. The dark values exist only so the
+   page holds together for a visitor whose device is set to dark, and
+   they lift the sage rather than inverting it, because a dark ground
+   eats a mid green.
+   ------------------------------------------------------------------ */
+:root{
+  color-scheme: light;
+  --cream:#F7F5EF;
+  --cream-deep:#EFEBE1;
+  --surface:#FFFFFF;
+  --surface-alt:#FBFAF6;
+  --sage:#7C9068;
+  --sage-press:#6B7E58;
+  --deep:#4A6741;
+  --deep2:#3C5435;
+  --leaf:#DCE4D2;
+  --leaf2:#EAEFE2;
+  --leaf3:#F1F4EB;
+  --taupe:#A08E7B;
+  --taupe-deep:#82705E;
+  --taupe-wash:#EDE7DE;
+  --ink:#2C3126;
+  --body:#4E5447;
+  --muted:#8A9080;
+  --faint:#AEB3A5;
+  --line:#E5E1D4;
+  --line2:#EFEBE0;
+  --concern:#B5705C;
+  --on-accent:#FFFFFF;
+  --shadow:rgba(107,101,80,.09);
+  --shadow-deep:rgba(60,58,44,.16);
+
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --serif:'Playfair Display',Georgia,'Times New Roman',serif;
+  --script:'Caveat','Segoe Script',cursive;
+
+  --gutter:clamp(20px,5vw,40px);
+  --measure:64ch;
+}
+
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --cream:#16180F;
+    --cream-deep:#101208;
+    --surface:#20241A;
+    --surface-alt:#1B1F14;
+    --sage:#A9C48C;
+    --sage-press:#B8D09C;
+    --deep:#BCD3A2;
+    --deep2:#CFE0BC;
+    --leaf:#2E3626;
+    --leaf2:#262D1F;
+    --leaf3:#222819;
+    --taupe:#BCA992;
+    --taupe-deep:#CBBBA6;
+    --taupe-wash:#2A2620;
+    --ink:#EAEDE0;
+    --body:#C3C9B7;
+    --muted:#9AA18C;
+    --faint:#7C8372;
+    --line:#31362A;
+    --line2:#282D21;
+    --concern:#D9917C;
+    --on-accent:#16180F;
+    --shadow:rgba(0,0,0,.4);
+    --shadow-deep:rgba(0,0,0,.55);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --cream:#16180F;
+  --cream-deep:#101208;
+  --surface:#20241A;
+  --surface-alt:#1B1F14;
+  --sage:#A9C48C;
+  --sage-press:#B8D09C;
+  --deep:#BCD3A2;
+  --deep2:#CFE0BC;
+  --leaf:#2E3626;
+  --leaf2:#262D1F;
+  --leaf3:#222819;
+  --taupe:#BCA992;
+  --taupe-deep:#CBBBA6;
+  --taupe-wash:#2A2620;
+  --ink:#EAEDE0;
+  --body:#C3C9B7;
+  --muted:#9AA18C;
+  --faint:#7C8372;
+  --line:#31362A;
+  --line2:#282D21;
+  --concern:#D9917C;
+  --on-accent:#16180F;
+  --shadow:rgba(0,0,0,.4);
+  --shadow-deep:rgba(0,0,0,.55);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--cream);
+  color:var(--body);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+img,svg{max-width:100%}
+a{color:var(--deep);text-decoration-color:color-mix(in srgb,var(--deep) 35%,transparent);text-underline-offset:3px}
+a:hover{text-decoration-color:var(--deep)}
+:focus-visible{outline:2.5px solid var(--sage);outline-offset:3px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.wrap{max-width:1120px;margin:0 auto;padding-inline:var(--gutter)}
+
+/* ---------- TYPE SCALE ---------- */
+h1,h2,h3{margin:0;color:var(--ink);font-family:var(--serif);font-weight:600;letter-spacing:-.015em;text-wrap:balance}
+h1{font-size:clamp(38px,6.4vw,66px);line-height:1.06}
+h2{font-size:clamp(26px,3.6vw,38px);line-height:1.15}
+h3{font-size:clamp(18px,2vw,21px);line-height:1.25;letter-spacing:-.005em}
+p{margin:0}
+.lede{font-size:clamp(17px,1.7vw,19.5px);line-height:1.62;max-width:var(--measure)}
+.eyebrow{
+  font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);margin:0;
+}
+.script{font-family:var(--script);color:var(--taupe);line-height:1.3}
+.small{font-size:14px;line-height:1.55;color:var(--muted)}
+
+/* ---------- MASTHEAD ---------- */
+.masthead{
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  padding-block:22px 0;
+}
+.nav{display:flex;gap:22px;align-items:center}
+.nav a{font-size:14px;font-weight:500;color:var(--body);text-decoration:none}
+.nav a:hover{color:var(--deep)}
+@media (max-width:620px){.nav a.hide-sm{display:none}}
+
+/* the wordmark, drawn so the sprout grows out of the O */
+.mark{
+  display:flex;flex-direction:column;align-items:center;line-height:1;
+  padding-top:30px;  /* the stem and leaves rise above the O */
+}
+.mark-top{
+  display:flex;gap:26px;font-size:8.5px;letter-spacing:.34em;
+  color:var(--ink);font-family:var(--serif);font-weight:500;text-indent:.34em;
+}
+.mark-big{display:flex;align-items:flex-end;font-family:var(--serif);font-weight:600;color:var(--deep);font-size:25px;letter-spacing:.01em;margin-top:2px}
+.mark-o{position:relative;display:inline-block;width:23px;height:23px;margin:0 1px}
+.mark-o svg{position:absolute;left:0;bottom:0;overflow:visible}
+
+/* ---------- HERO ---------- */
+.hero{
+  display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:clamp(32px,5vw,64px);
+  align-items:center;padding-block:clamp(40px,6vw,72px) clamp(48px,7vw,88px);
+}
+@media (max-width:940px){
+  .hero{grid-template-columns:1fr;gap:40px}
+  .hero-art{order:-1;justify-self:center}
+}
+.hero h1 em{font-style:normal;color:var(--deep)}
+.hero .lede{margin-top:20px}
+.hero-q{
+  font-family:var(--serif);font-style:italic;font-size:clamp(19px,2.2vw,23px);
+  line-height:1.4;color:var(--ink);margin-top:26px;padding-left:20px;
+  border-left:2.5px solid var(--sage);max-width:34ch;
+}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px;align-items:center}
+.btn{
+  display:inline-flex;align-items:center;gap:9px;
+  background:var(--sage);color:var(--on-accent);border-radius:999px;
+  padding:13px 26px;font-size:15.5px;font-weight:600;text-decoration:none;
+  box-shadow:0 4px 14px color-mix(in srgb,var(--sage) 30%,transparent);
+  transition:background .15s,transform .15s;
+}
+.btn:hover{background:var(--sage-press);transform:translateY(-1px)}
+.btn.ghost{
+  background:transparent;color:var(--deep);border:1.5px solid var(--line);
+  box-shadow:none;
+}
+.btn.ghost:hover{border-color:var(--sage);background:var(--leaf3);transform:none}
+
+/* the growth metaphor, which is the product's own device */
+.hero-art{
+  display:flex;flex-direction:column;align-items:center;gap:18px;
+  background:var(--leaf3);border-radius:28px;padding:32px 24px 26px;width:100%;max-width:420px;
+}
+.growth-row{
+  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:end;
+  gap:6px;width:100%;
+}
+.growth-row figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:7px}
+.growth-row svg{width:100%;height:auto;max-width:66px}
+.growth-row figcaption{
+  font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);font-weight:700;text-align:center;line-height:1.3;
+  min-height:2.6em;  /* two lines reserved, so a wrap keeps the row level */
+}
+.growth-scale{
+  display:flex;justify-content:space-between;width:100%;padding-top:14px;
+  border-top:1px solid color-mix(in srgb,var(--sage) 22%,transparent);
+  font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;
+}
+.hero-art p{text-align:center;font-size:13.5px;color:var(--body);max-width:30ch}
+
+/* ---------- SECTIONS ---------- */
+section{padding-block:clamp(44px,6vw,76px)}
+.rule{height:1px;background:var(--line);border:0;margin:0}
+.sec-head{max-width:var(--measure)}
+.sec-head .eyebrow{margin-bottom:10px}
+.sec-head h2 + p{margin-top:14px}
+
+/* ---------- THE THREE PILLARS ---------- */
+.pillars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:36px}
+.pillar,.gap,.growth-row figure{min-width:0}
+@media (max-width:860px){.pillars{grid-template-columns:1fr;gap:16px}}
+.pillar{
+  background:var(--surface);border-radius:22px;padding:26px 24px 28px;
+  box-shadow:0 3px 14px var(--shadow);
+  display:flex;flex-direction:column;gap:11px;
+}
+.pillar .n{
+  font-family:var(--serif);font-size:13px;font-weight:600;color:var(--sage);
+  letter-spacing:.04em;
+}
+.pillar p{font-size:14.5px;line-height:1.6}
+.pillar .ex{
+  margin-top:4px;padding-top:14px;border-top:1px solid var(--line2);
+  font-size:13px;line-height:1.55;color:var(--muted);
+}
+.pillar .ex b{color:var(--ink);font-weight:600}
+
+/* ---------- DEMO ---------- */
+.demo-sec{background:var(--cream-deep)}
+.demo-frame{
+  margin-top:30px;border-radius:24px;overflow:hidden;
+  border:1px solid var(--line);background:var(--cream);
+  box-shadow:0 18px 50px -22px var(--shadow-deep);
+}
+.demo-frame iframe{display:block;width:100%;height:1180px;border:0}
+@media (max-width:940px){.demo-frame iframe{height:1420px}}
+.demo-note{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
+
+/* ---------- WHAT NOBODY TELLS YOU ---------- */
+.gaps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:34px}
+@media (max-width:760px){.gaps{grid-template-columns:1fr}}
+.gap{
+  display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;
+  padding:20px 22px;border-radius:18px;background:var(--surface-alt);
+  border:1px solid var(--line2);
+}
+.gap .dot{
+  width:9px;height:9px;border-radius:50%;background:var(--sage);margin-top:8px;
+}
+.gap h3{font-size:16.5px;font-family:var(--sans);font-weight:600;letter-spacing:0}
+.gap p{margin-top:6px;font-size:14px;line-height:1.58;color:var(--body)}
+
+/* ---------- SOURCES ---------- */
+.sources{
+  display:flex;flex-wrap:wrap;gap:9px;margin-top:26px;
+}
+.src{
+  font-size:12.5px;font-weight:600;letter-spacing:.02em;
+  padding:7px 14px;border-radius:999px;
+  background:var(--leaf2);color:var(--deep2);
+}
+
+/* ---------- STANCE ---------- */
+.stance{
+  margin-top:32px;display:grid;gap:2px;border-radius:20px;overflow:hidden;
+  border:1px solid var(--line);
+}
+.stance div{background:var(--surface);padding:20px 24px;display:grid;grid-template-columns:170px minmax(0,1fr);gap:18px}
+@media (max-width:640px){.stance div{grid-template-columns:1fr;gap:6px}}
+.stance dt{font-weight:600;color:var(--ink);font-size:14.5px;margin:0}
+.stance dd{margin:0;font-size:14.5px;line-height:1.6}
+
+/* ---------- CLOSE ---------- */
+.close{
+  background:var(--leaf3);border-radius:28px;padding:clamp(32px,5vw,52px);
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:32px;align-items:center;
+}
+/* Long words in headings must never be the thing that widens the page. */
+h1,h2,h3,p,dd{overflow-wrap:break-word}
+@media (max-width:780px){.close{grid-template-columns:1fr;gap:24px}}
+.close .script{font-size:23px}
+
+footer{padding-block:40px 56px;border-top:1px solid var(--line);margin-top:clamp(44px,6vw,72px)}
+.foot-grid{display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:flex-start}
+.disclaimer{font-size:12.5px;line-height:1.65;color:var(--muted);max-width:62ch}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="masthead">
+    <a href="/" aria-label="Ready Set Grow, home" style="text-decoration:none">
+      <span class="mark">
+        <span class="mark-top"><span>READY</span><span>SET</span></span>
+        <span class="mark-big">GR<span class="mark-o">
+          <svg width="23" height="52" viewBox="0 0 34 78" aria-hidden="true">
+            <clipPath id="oclip"><circle cx="17" cy="59" r="12.9"/></clipPath>
+            <g clip-path="url(#oclip)">
+              <path d="M2 64 q7 -4.5 15 -1.5 q8 3 15 -1.5 v20 H2 Z" fill="#D9C9AE"/>
+            </g>
+            <circle cx="17" cy="59" r="15.3" stroke="#7C9068" stroke-width="4.6" fill="none"/>
+            <path d="M17 62 C17 46 17 28 17 13" stroke="#5E7A4C" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <ellipse cx="25.5" cy="12" rx="8.2" ry="4.4" fill="#7C9068" transform="rotate(-30 25.5 12)"/>
+            <ellipse cx="8.5" cy="17" rx="7.4" ry="4" fill="#8CA179" transform="rotate(28 8.5 17)"/>
+            <ellipse cx="17" cy="4.5" rx="4.6" ry="3.4" fill="#6E8C5B" transform="rotate(-8 17 4.5)"/>
+          </svg>
+        </span>W</span>
+      </span>
+    </a>
+    <nav class="nav">
+      <a href="#different" class="hide-sm">What makes it different</a>
+      <a href="#gaps" class="hide-sm">The gaps</a>
+      <a href="#demo">Try it</a>
+    </nav>
+  </header>
+</div>
+
+<div class="wrap">
+  <div class="hero">
+    <div>
+      <h1>Parenting today,<br>for a <em>brighter tomorrow</em>.</h1>
+      <p class="lede">
+        One child profile. Eighteen years. Ready Set Grow starts at pregnancy and
+        matures as your child does, so you are never starting over and never
+        reading advice written for a different age.
+      </p>
+      <p class="hero-q">
+        What is happening with my child, and what do I actually do about it?
+      </p>
+      <div class="cta-row">
+        <a class="btn" href="#demo">Try the live app</a>
+        <a class="btn ghost" href="#different">See what makes it different</a>
+      </div>
+    </div>
+
+    <div class="hero-art">
+      <div class="growth-row" id="growthRow"></div>
+      <div class="growth-scale"><span>Seed</span><span>Eighteen years</span></div>
+      <p>
+        One character, growing with your child. A seed before they arrive, a
+        tree the year they leave.
+      </p>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<section id="different">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">What makes it different</p>
+      <h2>Most apps hand you a library. This one answers the question you have at 6:40 PM.</h2>
+      <p class="lede">
+        A parent holding a screaming baby is not browsing a table of contents. Three
+        things follow from taking that seriously.
+      </p>
+    </div>
+
+    <div class="pillars">
+      <article class="pillar">
+        <span class="n">Right Now</span>
+        <h3>Help in the moment, not a PDF to read later</h3>
+        <p>
+          Tap what is happening. It is the witching hour. They will not stop crying.
+          Their breathing looks wrong. You get triage first, then something to try in
+          the next sixty seconds, then the explanation.
+        </p>
+        <p class="ex">
+          <b>The rule:</b> the first thing you are asked to do is doable one handed
+          while holding a crying baby.
+        </p>
+      </article>
+
+      <article class="pillar">
+        <span class="n">The schedule builder</span>
+        <h3>One wake time in, the whole day out</h3>
+        <p>
+          Tell it when they woke up. It lays out naps, wake windows, bedtime, and
+          when to start the bath. Baby woke at nine instead of six, the whole day
+          shifts. A nap ran short, the rest recalculates from it.
+        </p>
+        <p class="ex">
+          <b>Said out loud:</b> wake windows are widely used practice guides, not an
+          official standard. Every schedule says so, because nobody should feel they
+          are failing to hit a number that does not exist.
+        </p>
+      </article>
+
+      <article class="pillar">
+        <span class="n">Support lenses</span>
+        <h3>Reordered for your child, never hidden from you</h3>
+        <p>
+          Turn on the support that helps, such as sensory, ADHD, or communication.
+          They stack, and they reorder what surfaces first. A lens can soften how
+          gently a milestone window is described.
+        </p>
+        <p class="ex">
+          <b>The line that never moves:</b> no lens ever hides the guidance to talk
+          with a pediatrician. Reassurance never blocks action.
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="demo-sec" id="demo">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Try it</p>
+      <h2>This is the real app, not a picture of one.</h2>
+      <p class="lede">
+        Change the birthday and every screen recalculates. Flip a support lens and the
+        Hub reorders. Tap around inside the phone. Nothing is saved and nothing leaves
+        your browser.
+      </p>
+    </div>
+
+    <div class="demo-frame">
+      <iframe src="/demo/" title="Ready Set Grow, live interactive demo" loading="lazy"></iframe>
+    </div>
+    <div class="demo-note">
+      <p class="small">Best on a wider screen.</p>
+      <a class="small" href="/demo/" target="_blank" rel="noopener">Open the demo in its own tab</a>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<section id="gaps">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">The gaps</p>
+      <h2>The things nobody brings awareness to.</h2>
+      <p class="lede">
+        Every one of these is something parents find out too late, or never. Each is
+        in the app with its sources attached.
+      </p>
+    </div>
+
+    <div class="gaps">
+      <article class="gap">
+        <span class="dot"></span>
+        <div>
+          <h3>Your flange probably does not fit</h3>
+          <p>
+            Pumps ship with 24mm and 27mm because those are middle of the road, not
+            because they fit most people. Measure the nipple only, add 2 to 4mm. It is
+            the fastest fix available to someone struggling, and almost nobody is told.
+          </p>
+        </div>
+      </article>
+
+      <article class="gap">
+        <span class="dot"></span>
+        <div>
+          <h3>Frozen milk that smells like soap</h3>
+          <p>
+            High lipase is not spoiled milk, and it is fixable by scalding before
+            freezing. People usually discover it after building a stash of three
+            hundred ounces. Test one bag at five days first.
+          </p>
+        </div>
+      </article>
+
+      <article class="gap">
+        <span class="dot"></span>
+        <div>
+          <h3>Retractions, the sign parents are never taught</h3>
+          <p>
+            Take the shirt off and look at the bare chest. Skin sucking in below the
+            neck, under the breastbone, between the ribs. A child can be working
+            extremely hard to breathe while still looking alert.
+          </p>
+        </div>
+      </article>
+
+      <article class="gap">
+        <span class="dot"></span>
+        <div>
+          <h3>CMV, and a testing window that closes</h3>
+          <p>
+            The most common infectious cause of birth defects, and most pregnant
+            people have never heard of it. Prevention is largely not sharing food with
+            a toddler. A newborn has to be tested within two to three weeks or it can
+            no longer be confirmed.
+          </p>
+        </div>
+      </article>
+
+      <article class="gap">
+        <span class="dot"></span>
+        <div>
+          <h3>Recovery is longer than one appointment</h3>
+          <p>
+            Bleeding for weeks. Night sweats. Hair falling out at month three. Rage
+            rather than sadness. The fourth trimester week by week, with the maternal
+            mental health lines pinned where someone who needs them will actually see
+            them.
+          </p>
+        </div>
+      </article>
+
+      <article class="gap">
+        <span class="dot"></span>
+        <div>
+          <h3>And the parent gets looked after too</h3>
+          <p>
+            An app that talks all day to someone exhausted and half convinced they are
+            doing it wrong should say otherwise sometimes. Not empty praise. Specific,
+            about something they actually did.
+          </p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Where it comes from</p>
+      <h2>Every claim carries its source, and a link straight to it.</h2>
+      <p class="lede">
+        We are a parenting app, not a medical authority. The honest way to hold that
+        position is to say where something came from and let you check us in one tap.
+        Each topic also records which version of the guidance it was written against,
+        so it is obvious later what needs rechecking.
+      </p>
+    </div>
+
+    <div class="sources">
+      <span class="src">AAP</span>
+      <span class="src">CDC</span>
+      <span class="src">FDA</span>
+      <span class="src">ACOG</span>
+      <span class="src">AASM</span>
+      <span class="src">NHTSA</span>
+      <span class="src">Academy of Breastfeeding Medicine</span>
+      <span class="src">La Leche League</span>
+      <span class="src">HRSA</span>
+      <span class="src">IDEA Part C</span>
+    </div>
+
+    <dl class="stance">
+      <div>
+        <dt>Ranges, not deadlines</dt>
+        <dd>
+          Milestones use the CDC's 2022 revision, which describes what most children
+          can do by an age rather than the average. Every milestone renders with a
+          window, never a pass or a fail.
+        </dd>
+      </div>
+      <div>
+        <dt>Never diagnose</dt>
+        <dd>
+          Content says "some children" and "one possibility is". It never says "your
+          child has". Lenses describe support a family wants, not a label on a child.
+        </dd>
+      </div>
+      <div>
+        <dt>Safety before explanation</dt>
+        <dd>
+          Anything with an emergency version shows the emergency check first. Nobody
+          should scroll past reassurance to learn their baby needs to be seen.
+        </dd>
+      </div>
+      <div>
+        <dt>Community wisdom, labeled</dt>
+        <dd>
+          Some of what parents pass to each other works and has never been studied.
+          Those entries carry a visible tag saying exactly that, so they are never
+          mistaken for clinical guidance.
+        </dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="close">
+      <div>
+        <h2>Built to be the one place a parent goes.</h2>
+        <p class="lede" style="margin-top:14px">
+          Sleep, feeding, milestones, big feelings, pumping, recovery, and the years
+          after that: reading, math, connecting with a teenager who has stopped
+          talking. One profile that grows the whole way.
+        </p>
+        <div class="cta-row">
+          <a class="btn" href="#demo">Try the live app</a>
+        </div>
+      </div>
+      <p class="script">A kinder,<br>brighter,<br>braver<br>tomorrow</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-grid">
+    <p class="small" style="font-weight:600;color:var(--ink)">
+      Ready Set Grow<br>
+      <span style="font-weight:400;color:var(--muted)">Parenting today for a brighter tomorrow.</span>
+    </p>
+    <p class="disclaimer">
+      Ready Set Grow provides educational information, not medical advice. It is not a
+      pediatrician, therapist, psychologist or speech pathologist, and it is not a
+      diagnostic tool. It cannot examine your child. Your pediatrician can, and they
+      want you to call. If something feels wrong, trust that and keep asking until
+      someone looks.
+    </p>
+  </div>
+</footer>
+
+<script>
+/* ------------------------------------------------------------------
+   The growth metaphor, drawn with the same code the app uses, so the
+   website shows the real character rather than a stand in. Ten states,
+   seed to blooming landscape.
+   ------------------------------------------------------------------ */
+(function () {
+  function growthSVG(order, size) {
+    var G = '#7C9068', D = '#4A6741', S = '#C9B79E', E = '#EAEFE2';
+    var base = 78, art = '';
+
+    if (order <= 1) {
+      art += '<ellipse cx="50" cy="' + (base - 9) + '" rx="15" ry="17" fill="' + S + '"/>';
+      art += '<path d="M43 ' + (base - 14) + ' Q50 ' + (base - 20) + ' 57 ' + (base - 14) +
+             '" stroke="#B5A288" stroke-width="2" fill="none" stroke-linecap="round"/>';
+      if (order === 1) {
+        art += '<path d="M50 ' + (base - 25) + ' v9" stroke="' + D + '" stroke-width="3" stroke-linecap="round"/>';
+        art += '<ellipse cx="57" cy="' + (base - 28) + '" rx="9" ry="5.5" fill="' + G +
+               '" transform="rotate(-22 57 ' + (base - 28) + ')"/>';
+      }
+    } else if (order <= 5) {
+      var h = [0, 0, 20, 29, 38, 46][order];
+      var pairs = [0, 0, 1, 2, 3, 3][order];
+      art += '<ellipse cx="50" cy="' + (base - 4) + '" rx="13" ry="8" fill="' + S + '" opacity=".55"/>';
+      art += '<path d="M50 ' + (base - 4) + ' v-' + h + '" stroke="' + D + '" stroke-width="3.4" stroke-linecap="round"/>';
+      for (var i = 0; i < pairs; i++) {
+        var y = base - 10 - (h - 10) * (i / Math.max(pairs - 1, 1));
+        var r = 10 - i * 1.1, ry = 6 - i * 0.5;
+        art += '<ellipse cx="' + (50 + r + 3) + '" cy="' + y + '" rx="' + r + '" ry="' + ry +
+               '" fill="' + G + '" transform="rotate(-20 ' + (50 + r + 3) + ' ' + y + ')"/>';
+        art += '<ellipse cx="' + (50 - r - 3) + '" cy="' + (y - 4) + '" rx="' + r + '" ry="' + ry +
+               '" fill="' + G + '" opacity=".85" transform="rotate(20 ' + (50 - r - 3) + ' ' + (y - 4) + ')"/>';
+      }
+      if (order === 5) art += '<circle cx="50" cy="' + (base - h - 4) + '" r="4.5" fill="' + G + '"/>';
+    } else {
+      var th = [0, 0, 0, 0, 0, 0, 40, 46, 50, 50][order];
+      var cr = [0, 0, 0, 0, 0, 0, 15, 19, 23, 23][order];
+      if (order === 9) {
+        art += '<path d="M2 ' + (base - 2) + ' q18 -13 34 -2 q16 -12 30 -1 q14 -9 32 1 v14 H2 Z" fill="' + E + '"/>';
+      }
+      art += '<ellipse cx="50" cy="' + (base - 3) + '" rx="15" ry="8" fill="' + S + '" opacity=".5"/>';
+      art += '<path d="M50 ' + (base - 3) + ' v-' + th + '" stroke="' + D + '" stroke-width="4.6" stroke-linecap="round"/>';
+      if (order >= 8) {
+        art += '<path d="M50 ' + (base - th + 16) + ' l-11 -10M50 ' + (base - th + 24) +
+               ' l12 -10" stroke="' + D + '" stroke-width="3" stroke-linecap="round"/>';
+      }
+      art += '<circle cx="50" cy="' + (base - th - cr + 6) + '" r="' + cr + '" fill="' + G + '"/>';
+      art += '<circle cx="' + (50 - cr * 0.72) + '" cy="' + (base - th - cr + 13) + '" r="' + (cr * 0.62) +
+             '" fill="' + G + '" opacity=".9"/>';
+      art += '<circle cx="' + (50 + cr * 0.72) + '" cy="' + (base - th - cr + 12) + '" r="' + (cr * 0.66) +
+             '" fill="' + G + '" opacity=".82"/>';
+    }
+    return '<svg viewBox="0 0 100 90" aria-hidden="true">' + art + '</svg>';
+  }
+
+  // Five stops rather than all ten, so each one is big enough to read.
+  // The labels are the app's own stage names, not invented captions.
+  var STOPS = [
+    [0, 'Pregnancy'],
+    [2, 'Baby'],
+    [4, 'Preschool'],
+    [6, 'School age'],
+    [8, 'Teen'],
+  ];
+  var row = document.getElementById('growthRow');
+  if (!row) return;
+  row.innerHTML = STOPS.map(function (s) {
+    return '<figure>' + growthSVG(s[0]) + '<figcaption>' + s[1] + '</figcaption></figure>';
+  }).join('');
+})();
+</script>
+
+</body>
+</html>
