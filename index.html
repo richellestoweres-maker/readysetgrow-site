@@ -171,31 +171,29 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 <!--
-  READY SET GROW, DESKTOP
+  READY SET GROW, FULL SCREEN
   ------------------------------------------------------------------
-  This is the same app, not a website about the app. Every screen is
-  rendered by the same proto/app.js from the same data files. What
-  changes is the chrome around them.
+  This is the phone app fitted to a browser window, not a desktop
+  redesign of it. Same screens, same components, same decorative layer,
+  and the tab bar stays where it belongs on a phone: across the bottom.
 
-  On a phone the navigation is a tab bar across the bottom and the
-  content is one 392px column. On a desktop that layout wastes most of
-  the screen and puts navigation in the hardest place to reach with a
-  mouse. So the tab bar becomes a sidebar, the child and the support
-  lenses move into that sidebar where they are always visible instead
-  of buried in settings, and the content gets a readable column with
-  room to breathe.
+  What changes is only what has to. The reading column is capped so a
+  paragraph does not run the full width of a monitor, and the affirmation
+  shapes and leaf sprigs move out to the window edges instead of the
+  edges of a 392px frame. Everything else is lifted verbatim from
+  proto/shell.html at build time, which is what keeps the two identical.
 
-  The component CSS is not rewritten here. It is lifted verbatim from
-  proto/shell.html at build time, which is what guarantees a card, a
-  list row and a milestone look identical in both builds. Only the
-  chrome below is desktop specific.
+  The profile controls live in a panel rather than a sidebar, because a
+  phone app does not have a sidebar. It is there so the page is worth
+  touching: change the birthday and every screen recalculates.
 -->
 <style>
 /* ------------------------------------------------------------------
-   DESKTOP CHROME
+   FULL SCREEN APP CHROME
    ------------------------------------------------------------------ */
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
+html,body{height:100%}
 body{
   margin:0;
   background:var(--cream);
@@ -204,195 +202,169 @@ body{
   font-size:15px;
   line-height:1.6;
   -webkit-font-smoothing:antialiased;
+  overflow:hidden;               /* the scroll lives in the screen, as on a phone */
 }
 :focus-visible{outline:2.5px solid var(--sage);outline-offset:3px;border-radius:6px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
-.app{display:grid;grid-template-columns:286px minmax(0,1fr);min-height:100vh}
-/* A narrower rail on a smaller laptop buys back the margin the
-   decorative layer needs to sit in. */
-@media (max-width:1399px){.app{grid-template-columns:258px minmax(0,1fr)}}
-@media (max-width:900px){.app{grid-template-columns:1fr}}
+/* The app fills the window the way it fills a phone. */
+.appshell{display:flex;flex-direction:column;height:100%}
+.scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;position:relative;padding-bottom:8px}
+.scroll::-webkit-scrollbar{width:9px}
+.scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px}
 
-/* ---------- SIDEBAR ---------- */
-.side{
-  background:var(--surface);
-  border-right:1px solid var(--line);
-  padding:26px 22px 32px;
-  display:flex;flex-direction:column;gap:26px;
-  position:sticky;top:0;height:100vh;overflow-y:auto;
+/* ---------- THE TAB BAR, STILL AT THE BOTTOM ---------- */
+/* The phone rules already make this a full width bottom bar. All that
+   changes is the type size, which is sized for a thumb on a phone and
+   too small to read on a monitor, and a capped inner width so five
+   tabs are not flung across a wide screen. */
+.tabs{padding:9px 0 11px;box-shadow:0 -3px 18px rgba(107,101,80,.07)}
+.tabs::before{content:'';position:absolute;inset:0;pointer-events:none}
+.tab{
+  font-size:11.5px;gap:5px;padding:7px 4px;min-height:52px;
+  cursor:pointer;font-family:inherit;border:0;background:transparent;
+  transition:color .13s;
 }
-.side::-webkit-scrollbar{width:7px}
-.side::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px}
-@media (max-width:900px){
-  .side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+.tab:hover{color:var(--deep)}
+.tab .dot{width:22px;height:3px}
+@media (min-width:760px){
+  .tabs{justify-content:center}
+  .tab{flex:0 0 128px}
 }
 
-.side-mark{display:flex;justify-content:center;padding-top:30px}
+/* ---------- THE READING COLUMN ---------- */
+/* Capped so body copy keeps a comfortable measure, with margin either
+   side for the decorative layer to sit in. */
+.sc,.sc-head{max-width:700px;margin-inline:auto;width:100%;position:relative;z-index:1}
+.sc{padding:0 26px 40px}
+.sc-head{padding:6px 26px 4px}
+.mark-holder{max-width:700px;margin-inline:auto;padding:30px 26px 2px;position:relative;z-index:1}
+@media (max-width:560px){
+  .sc{padding:0 18px 32px}
+  .sc-head{padding:4px 18px 4px}
+}
 
-.side h2{
+/* ---------- THE DECORATIVE LAYER ---------- */
+/* Kept, because it is the app's personality rather than background
+   noise. Desktop coordinates come from app.js; these rules only decide
+   when there is room for each piece. The affirmation shapes are widest,
+   so they drop first. */
+.deco{display:none!important}
+.affirm,.leafart,.corner-right{z-index:0}
+/* The promise line stays in its corner, dropped below the profile
+   button so the two do not sit on top of each other. */
+.corner-right{top:74px;right:24px;font-size:13px}
+@media (max-width:1180px){
+  .affirm{display:none!important}
+}
+@media (max-width:920px){
+  .leafart,.corner-right{display:none!important}
+}
+
+/* ---------- THE PROFILE PANEL ---------- */
+/* A phone app has no sidebar, so the controls that make this page worth
+   touching live behind one button instead. */
+.tryBtn{
+  position:fixed;top:18px;right:20px;z-index:40;
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--surface);border:1px solid var(--line);border-radius:999px;
+  padding:9px 16px;font:inherit;font-size:13px;font-weight:600;color:var(--deep);
+  cursor:pointer;box-shadow:0 3px 14px rgba(107,101,80,.12);
+}
+.tryBtn:hover{border-color:var(--sage)}
+@media (max-width:620px){.tryBtn{top:12px;right:12px;padding:8px 13px;font-size:12px}}
+
+.tryPanel{
+  position:fixed;top:62px;right:20px;z-index:41;width:312px;max-width:calc(100vw - 40px);
+  max-height:calc(100vh - 96px);overflow-y:auto;
+  background:var(--surface);border:1px solid var(--line);border-radius:20px;
+  padding:20px;box-shadow:0 20px 50px -16px rgba(60,58,44,.3);
+}
+.tryPanel h2{
   font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;
-  color:var(--muted);margin:0 0 11px;
+  color:var(--muted);margin:0 0 10px;
 }
-
-/* the child, always visible rather than buried in settings */
-.side-kid{
-  display:flex;align-items:center;gap:12px;
-  background:var(--leaf3);border-radius:16px;padding:13px 14px;
-}
-.side-kid .avatar{
-  width:46px;height:46px;border-radius:50%;background:var(--surface);
-  display:grid;place-items:center;flex:none;
-}
-.side-kid .nm{font-family:var(--serif);font-size:17px;font-weight:600;color:var(--ink);margin:0;line-height:1.2}
-.side-kid .ag{font-size:12px;color:var(--muted);margin:2px 0 0}
-
-.field{display:flex;flex-direction:column;gap:5px;margin-bottom:11px}
-.field:last-child{margin-bottom:0}
+.tryPanel h2:not(:first-child){margin-top:20px}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
 .field label{font-size:12px;font-weight:600;color:var(--muted)}
 .field input{
   font:inherit;font-size:14px;padding:9px 11px;border-radius:10px;
   border:1px solid var(--line);background:var(--surface2);color:var(--ink);width:100%;
 }
 .field input:focus{border-color:var(--sage);outline:none}
-
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{
   padding:6px 11px;border-radius:999px;background:var(--surface2);
-  border:1px solid var(--line);font-size:12px;font-weight:500;color:var(--body);
-  cursor:pointer;transition:background .13s,color .13s,border-color .13s;min-height:32px;
+  border:1px solid var(--line);font:inherit;font-size:12px;font-weight:500;color:var(--body);
+  cursor:pointer;min-height:32px;transition:background .13s,color .13s,border-color .13s;
 }
 .chip:hover{border-color:var(--sage)}
 .chip[aria-pressed="true"]{background:var(--sage);color:#fff;border-color:var(--sage)}
-
-.side-note{font-size:12px;color:var(--muted);line-height:1.5;margin:9px 0 0}
-
-.side-foot{margin-top:auto;padding-top:22px;border-top:1px solid var(--line2)}
-.side-foot p{margin:0;font-size:11.5px;color:var(--faint);line-height:1.55}
-.side-script{font-family:var(--script);font-size:19px;color:var(--taupe);line-height:1.25;margin:0 0 12px}
-
-/* ---------- THE TAB BAR, TURNED INTO A SIDEBAR NAV ---------- */
-.tabs{display:flex;flex-direction:column;gap:2px;background:transparent;border:0;padding:0}
-.tab{
-  display:flex;flex-direction:row;align-items:center;gap:11px;
-  width:100%;text-align:left;padding:10px 12px;border-radius:11px;
-  color:var(--body);font-size:14.5px;font-weight:500;min-height:44px;
-  background:transparent;border:0;cursor:pointer;font-family:inherit;
-  transition:background .13s,color .13s;
-}
-.tab:hover{background:var(--leaf3)}
-.tab[aria-selected="true"]{background:var(--leaf2);color:var(--deep);font-weight:600}
-.tab .dot{display:none}
-.tab span:not(.dot){flex:1}
-
-/* ---------- MAIN ---------- */
-.main{min-width:0;display:flex;flex-direction:column}
-.scroll{flex:1;min-width:0}
-
-/* The phone build frames every screen. On desktop the page itself is
-   the frame, so the inner column just needs a readable width, with
-   margin either side for the decorative layer to live in. */
-#screen{position:relative}
-.sc,.sc-head{max-width:748px;margin-inline:auto;width:100%;position:relative;z-index:1}
-@media (max-width:1399px){.sc,.sc-head{max-width:668px}}
-.sc{padding:0 32px 80px}
-.sc-head{padding:44px 32px 6px;text-align:left}
-@media (max-width:560px){
-  .sc{padding:0 20px 56px}
-  .sc-head{padding:28px 20px 4px}
-}
-
-/* THE DECORATIVE LAYER
-   This is the app's personality, not background noise: every soft shape
-   holds an affirmation and the sprigs frame the page. It is kept, with
-   desktop coordinates supplied by app.js, and hidden only below the
-   width where there is genuinely no margin left for it to sit in.
-   The wordmark is the exception, because on desktop it lives in the
-   sidebar rather than repeating at the top of every screen. */
-.mark-holder,.deco{display:none!important}
-.affirm,.leafart,.corner-right{z-index:0}
-.corner-right{top:38px;right:22px;font-size:13px}
-
-/* The layer degrades in two steps rather than one. The affirmation
-   shapes are the widest piece, so they are the first to go once the
-   margin stops fitting them; the sprigs and the promise line need
-   almost no room and stay much further down. */
-@media (max-width:1399px){
-  .affirm{display:none!important}
-}
-@media (max-width:1000px){
-  .leafart,.corner-right{display:none!important}
-}
-
-/* Desktop gets a little more air and slightly larger type than a
-   phone screen, without changing any component's identity. */
-.title{font-size:40px}
-.title.sm{font-size:30px}
-.sub{margin-left:0;margin-right:0;max-width:56ch}
-.sect{font-size:19px;margin:30px 0 12px}
-.card{padding:18px 20px;margin-bottom:13px;border-radius:20px}
-.lrow{padding:15px 17px;margin-bottom:10px;transition:background .13s,box-shadow .13s}
-.lrow:hover{background:var(--surface2);box-shadow:0 5px 18px rgba(107,101,80,.1)}
-.bodytext{font-size:14.5px}
-.dlist li{font-size:14.5px}
-.tiny{font-size:12.5px}
-.btn{cursor:pointer;transition:background .13s}
-.mb,.back{cursor:pointer}
-.back{font-size:14px}
-.qgrid{grid-template-columns:repeat(4,minmax(0,1fr))}
-@media (max-width:760px){.qgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.disclaimer{max-width:70ch}
-
-/* Tables and the odd wide block scroll inside themselves rather than
-   pushing the page sideways. */
-.card table{min-width:0}
+.tryNote{font-size:11.5px;color:var(--muted);line-height:1.5;margin:10px 0 0}
 </style>
 
-<div class="app">
-  <aside class="side">
-    <div class="side-mark" id="sideMark"></div>
+<div id="wideLayout" hidden></div>
 
-    <div>
-      <h2>Your child</h2>
-      <div class="side-kid" id="sideKid"></div>
-    </div>
-
-    <nav class="tabs" id="tabs" role="tablist" aria-label="Sections"></nav>
-
-    <div>
-      <h2>Profile</h2>
-      <div class="field">
-        <label for="nameIn">Name</label>
-        <input id="nameIn" type="text" value="Stetson" autocomplete="off">
-      </div>
-      <div class="field">
-        <label for="bdayIn">Birthday</label>
-        <input id="bdayIn" type="date" value="2022-06-09">
-      </div>
-      <div class="field">
-        <label id="jumpLbl">Jump to an age</label>
-        <div class="chips" id="ageJump" role="group" aria-labelledby="jumpLbl"></div>
-      </div>
-    </div>
-
-    <div>
-      <h2>Support lenses</h2>
-      <div class="chips" id="lensChips" role="group" aria-label="Support lenses"></div>
-      <p class="side-note">Lenses stack. They reorder what surfaces first, and they never hide the guidance to talk with a pediatrician.</p>
-    </div>
-
-    <div class="side-foot">
-      <p class="side-script">A kinder,<br>brighter,<br>braver tomorrow</p>
-      <p>Educational information, not medical advice. It cannot examine your child. Your pediatrician can, and they want you to call.</p>
-    </div>
-
-    <dl class="readout" id="readout" style="display:none"></dl>
-  </aside>
-
-  <main class="main">
-    <div class="scroll" id="screen"></div>
-  </main>
+<div class="appshell">
+  <div class="scroll" id="screen"></div>
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Sections"></nav>
 </div>
+
+<button class="tryBtn" id="tryBtn" aria-expanded="false" aria-controls="tryPanel">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/>
+    <path d="M16 6.2a3.2 3.2 0 0 1 0 5.9M17.5 20a5.6 5.6 0 0 0-2.2-4.3"/>
+  </svg>
+  Try a different child
+</button>
+
+<div class="tryPanel" id="tryPanel" hidden>
+  <h2>The child</h2>
+  <div class="field">
+    <label for="nameIn">Name</label>
+    <input id="nameIn" type="text" value="Stetson" autocomplete="off">
+  </div>
+  <div class="field">
+    <label for="bdayIn">Birthday</label>
+    <input id="bdayIn" type="date" value="2022-06-09">
+  </div>
+  <div class="field">
+    <label id="jumpLbl">Jump to an age</label>
+    <div class="chips" id="ageJump" role="group" aria-labelledby="jumpLbl"></div>
+  </div>
+
+  <h2>Support lenses</h2>
+  <div class="chips" id="lensChips" role="group" aria-label="Support lenses"></div>
+  <p class="tryNote">Lenses stack. They reorder what surfaces first, and they never hide the guidance to talk with a pediatrician.</p>
+
+  <dl class="readout" id="readout" hidden></dl>
+</div>
+
+<script>
+/* The panel toggle is self contained so it works no matter what else
+   the app does with document level clicks. */
+(function () {
+  var btn = document.getElementById('tryBtn');
+  var panel = document.getElementById('tryPanel');
+  if (!btn || !panel) return;
+
+  var setOpen = function (open) {
+    panel.hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+
+  btn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    setOpen(panel.hidden);
+  });
+  panel.addEventListener('click', function (e) { e.stopPropagation(); });
+  document.addEventListener('click', function () { setOpen(false); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') setOpen(false);
+  });
+})();
+</script>
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
@@ -10152,7 +10124,8 @@ function desktopHeader(a) {
     heartPos: 'top:84px;right:12px',
   })}
   ${sprigs()}
-  <div class="corner-right">Brighter<br>Tomorrows<br>Together<span class="corner-rule"></span></div>`;
+  <div class="corner-right">Brighter<br>Tomorrows<br>Together<span class="corner-rule"></span></div>
+  <div class="mark-holder">${wordmark(false)}</div>`;
 }
 
 /* Decorative corner leaves, matching the mockups */
@@ -10180,10 +10153,10 @@ function cornerLeaves() {
 /* -----------------------------------------------------------------
    STATE
    ----------------------------------------------------------------- */
-/* The desktop shell provides a sidebar. Everything else about the app
-   is identical, so this is the only place the two builds diverge. */
-const IS_DESKTOP = !!document.getElementById('sideMark');
-let markDrawn = false;
+/* The full screen shell provides this marker. It is the same app either
+   way; WIDE only decides where the decorative layer sits and how many
+   tabs the bottom bar carries. */
+const IS_DESKTOP = !!document.getElementById('wideLayout');
 
 const state = {
   name: 'Stetson',
@@ -10251,9 +10224,9 @@ function screenHome(c) {
   const prog = cp ? summarizeProgress(cp, state.statuses) : null;
 
   const quick = [
-    { i: 'chat', t: 'Ask', s: 'Any hour', go: 'data-tab="ask"' },
-    { i: 'heart', t: 'Right Now', s: 'Something is happening', go: 'data-tab="now"' },
-    { i: 'people', t: 'Community', s: "You're not alone", go: 'data-tab="community"' },
+    { i: 'moon', t: "Today's Rhythm", s: 'Naps and bedtime', go: 'data-tab="sleep"' },
+    { i: 'calendar', t: "Today's Plan", s: 'What to do together', go: 'data-tab="plan"' },
+    { i: 'chart', t: 'Milestones', s: 'Ranges, not deadlines', go: 'data-go="screen" data-id="milestones"' },
     { i: 'leaf', t: 'Activities', s: 'Play and learn', go: 'data-go="screen" data-id="activities"' },
   ];
 
@@ -10680,9 +10653,13 @@ const ALL_TABS = [
 /* On a phone the order matches the tab bar in the mockups. On desktop
    Home leads, and Welcome is dropped because the sidebar already shows
    the wordmark and the profile that screen exists to introduce. */
-const TABS = IS_DESKTOP
-  ? ALL_TABS.filter((t) => t.id !== 'welcome')
-  : ALL_TABS.filter((t) => t.id !== 'plan');
+const BOTTOM_BAR = ['home', 'now', 'ask', 'community', 'hub'];
+
+/* Five across the bottom, which is as many as a bottom bar holds
+   before the labels stop being readable. Welcome is a sign up screen,
+   and Sleep and Plan are reached from Home. */
+const TABS = ALL_TABS.filter((t) => BOTTOM_BAR.indexOf(t.id) !== -1)
+  .sort((a, b) => BOTTOM_BAR.indexOf(a.id) - BOTTOM_BAR.indexOf(b.id));
 
 function render() {
   const c = ctx();
@@ -10735,23 +10712,6 @@ function render() {
       // Number inputs throw on setSelectionRange in some browsers.
       try { if (keepStart != null) back.setSelectionRange(keepStart, keepEnd); } catch (err) {}
     }
-  }
-
-  // The sidebar is desktop only, so every write is guarded. The
-  // wordmark is static, so it is drawn once rather than on every render.
-  const sideMark = document.getElementById('sideMark');
-  if (sideMark && !markDrawn) {
-    sideMark.innerHTML = wordmark(false);
-    markDrawn = true;
-  }
-  const sideKid = document.getElementById('sideKid');
-  if (sideKid) {
-    sideKid.innerHTML = `
-      <span class="avatar">${growthSVG(c.growth ? c.growth.order : 2, 38)}</span>
-      <span class="grow">
-        <p class="nm">${esc(c.child.name || 'Your child')}</p>
-        <p class="ag">${esc(c.summary.label || 'Add a birthday')}</p>
-      </span>`;
   }
 
   document.getElementById('tabs').innerHTML = TABS.map((t) => `
