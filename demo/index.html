@@ -9992,7 +9992,18 @@ function affirmation(lines, o) {
   </div>`;
 }
 
-/* Leaf sprigs down both edges, as in every mockup. */
+/* Leaf sprigs down both edges, as in every mockup. On desktop they move
+   out to the edges of the reading column instead of the phone frame. */
+function sprigsDesktop(sprig) {
+  return `
+  <svg class="leafart" style="top:104px;right:6px;width:96px;height:300px" viewBox="0 0 96 300" aria-hidden="true">
+    ${sprig(62, 96, 12, 1.15, .85)}${sprig(80, 212, -8, .95, .7)}${sprig(48, 294, 18, .88, .6)}
+  </svg>
+  <svg class="leafart" style="top:640px;left:10px;width:96px;height:320px" viewBox="0 0 96 320" aria-hidden="true">
+    ${sprig(36, 100, -20, 1.1, .8)}${sprig(18, 218, 12, .92, .65)}${sprig(42, 310, -10, .88, .6)}
+  </svg>`;
+}
+
 function sprigs() {
   const sprig = (x, y, rot, scale, op) => `
     <g transform="translate(${x} ${y}) rotate(${rot}) scale(${scale})" opacity="${op}">
@@ -10001,6 +10012,7 @@ function sprigs() {
       <ellipse cx="-2" cy="-24" rx="8.6" ry="4.8" fill="#D7E2CA" transform="rotate(28 -2 -24)"/>
       <ellipse cx="14" cy="-32" rx="8" ry="4.4" fill="#CFDCC1" transform="rotate(-46 14 -32)"/>
     </g>`;
+  if (IS_DESKTOP) return sprigsDesktop(sprig);
   return `
   <svg class="leafart" style="top:70px;right:-12px;width:88px;height:220px" viewBox="0 0 88 220" aria-hidden="true">
     ${sprig(56, 70, 12, 1.05, .95)}${sprig(74, 152, -8, .9, .8)}${sprig(44, 212, 18, .8, .7)}
@@ -10014,6 +10026,7 @@ function sprigs() {
    at the left, the promise line top right, sprigs framing both edges. */
 function pageHeader(large) {
   const a = pickAffirmations(state.birthday);
+  if (IS_DESKTOP) return desktopHeader(a);
   return `
   ${affirmation(a.topLeft, {
     box: 'top:-34px;left:-46px;width:172px;height:138px',
@@ -10035,8 +10048,34 @@ function pageHeader(large) {
   <div class="mark-holder"${large ? ' style="padding-top:26px"' : ''}>${wordmark(!!large)}</div>`;
 }
 
+/* The same decorative layer as the phone, moved into the margins either
+   side of the reading column. Anchored with calc against the centre line
+   so the blobs sit beside the content at any window width, and hidden by
+   CSS below the width where that margin actually exists. */
+function desktopHeader(a) {
+  return `
+  ${affirmation(a.topLeft, {
+    box: 'left:14px;top:34px;width:164px;height:134px',
+    text: 'top:48px;left:44px;max-width:94px;font-size:14px;transform:rotate(-6deg)',
+    heartPos: 'top:104px;left:50px',
+  })}
+  ${affirmation(a.midLeft, {
+    box: 'left:22px;top:470px;width:142px;height:118px', fill: '#EDEADF',
+    text: 'top:32px;left:58px;max-width:76px;font-size:12.5px;transform:rotate(-7deg)',
+    heartPos: 'top:94px;left:62px',
+  })}
+  ${affirmation(a.right, {
+    box: 'right:18px;top:318px;width:138px;height:112px', noShape: true,
+    text: 'top:10px;right:6px;max-width:108px;font-size:13px;text-align:right;transform:rotate(-5deg)',
+    heartPos: 'top:84px;right:12px',
+  })}
+  ${sprigs()}
+  <div class="corner-right">Brighter<br>Tomorrows<br>Together<span class="corner-rule"></span></div>`;
+}
+
 /* Decorative corner leaves, matching the mockups */
 function cornerLeaves() {
+  if (IS_DESKTOP) return pageHeader();
   return pageHeader() + `
   <svg class="leafart" style="top:-18px;right:-14px;width:130px;height:150px" viewBox="0 0 130 150" aria-hidden="true">
     <g fill="#DCE4D2">
@@ -10130,10 +10169,10 @@ function screenHome(c) {
   const prog = cp ? summarizeProgress(cp, state.statuses) : null;
 
   const quick = [
-    { i: 'note', t: 'Log a Moment', s: 'Capture today' },
-    { i: 'bulb', t: 'Get Guidance', s: 'Expert advice' },
-    { i: 'people', t: 'Join a Discussion', s: "You're not alone" },
-    { i: 'leaf', t: 'Activity Ideas', s: 'Play and learn' },
+    { i: 'chat', t: 'Ask', s: 'Any hour', go: 'data-tab="ask"' },
+    { i: 'heart', t: 'Right Now', s: 'Something is happening', go: 'data-tab="now"' },
+    { i: 'people', t: 'Community', s: "You're not alone", go: 'data-tab="community"' },
+    { i: 'leaf', t: 'Activities', s: 'Play and learn', go: 'data-go="screen" data-id="activities"' },
   ];
 
   return `
@@ -10173,7 +10212,7 @@ function screenHome(c) {
     <p class="sect">Quick Actions</p>
     <div class="qgrid">
       ${quick.map((q) => `
-        <button class="q">
+        <button class="q" ${q.go}>
           <span class="qi">${icon(q.i, 17)}</span>
           <span class="qt">${q.t}</span>
           <span class="qs">${q.s}</span>
@@ -10552,6 +10591,7 @@ const ALL_TABS = [
   { id: 'ask', label: 'Ask', icon: 'chat' },
   { id: 'plan', label: 'Plan', icon: 'calendar' },
   { id: 'sleep', label: 'Sleep', icon: 'moon' },
+  { id: 'community', label: 'Community', icon: 'people' },
   { id: 'hub', label: 'Hub', icon: 'leaf' },
 ];
 
@@ -10583,6 +10623,7 @@ function render() {
   else if (state.tab === 'welcome') html = screenWelcome(c);
   else if (state.tab === 'now') html = screenNow(c);
   else if (state.tab === 'ask') html = screenAsk(c);
+  else if (state.tab === 'community') html = screenCommunity(c);
   else if (state.tab === 'sleep') html = screenSleep(c);
   else if (state.tab === 'home') html = screenHome(c);
   else if (state.tab === 'plan') html = screenPlan(c);
@@ -12141,7 +12182,7 @@ function screenAsk(c) {
   };
 
   return `
-  ${IS_DESKTOP ? '' : cornerLeaves()}
+  ${cornerLeaves()}
   <div class="sc-head">
     <p class="eyebrow">Ask</p>
     <h1 class="title">What is going on?</h1>
@@ -12209,6 +12250,154 @@ function screenAsk(c) {
     `) : ''}
 
     <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>
+  </div>`;
+}
+
+
+/* =================================================================
+   COMMUNITY
+
+   The one place in the app where parents can reach each other, which
+   makes it the one place where safety design matters most.
+
+   NOTHING HERE IS LIVE YET. The posts below are written examples,
+   labelled as examples on the screen, because a prototype that shows
+   invented people as though they were real users is a lie that gets
+   harder to walk back the longer it sits there.
+
+   THE PRESENCE STRIP IS THE POINT
+   At 3am a parent pumping alone is not looking for advice, they are
+   looking for evidence that they are not the only person awake. A
+   count of how many people are doing the same thing right now does
+   more for that than any thread.
+   ================================================================= */
+
+const COMMUNITY_ROOMS = [
+  { id: 'nights', label: 'The Night Shift', blurb: 'For whoever is awake right now', icon: 'moon' },
+  { id: 'pumping', label: 'Pumping', blurb: 'Flanges, output, freezer stashes', icon: 'drop' },
+  { id: 'fourth', label: 'Fourth Trimester', blurb: 'The first twelve weeks', icon: 'heart' },
+  { id: 'feeding', label: 'Feeding', blurb: 'However you are doing it', icon: 'utensils' },
+  { id: 'toddlers', label: 'Big Feelings', blurb: 'Toddlers and preschoolers', icon: 'people' },
+  { id: 'teens', label: 'Teen Years', blurb: 'The ones who stopped talking', icon: 'chat' },
+];
+
+/* Written examples, shown as examples. Not attributed to real people,
+   and the screen says so above them. */
+const COMMUNITY_SAMPLE = [
+  {
+    room: 'The Night Shift', who: 'A parent, 3 weeks in', when: '2:14 AM',
+    body: 'Third night in a row of hourly wakes. I know it passes. Right now it does not feel like it passes.',
+    replies: 12, hearts: 41,
+  },
+  {
+    room: 'Pumping', who: 'A parent, 4 months in', when: '11:02 PM',
+    body: 'Measured my nipple like the app said and I have been using a flange 7mm too big this whole time. Four months. No wonder it hurt.',
+    replies: 23, hearts: 88,
+  },
+  {
+    room: 'Fourth Trimester', who: 'A parent, 5 weeks in', when: '6:47 AM',
+    body: 'Nobody told me about the night sweats. I woke up soaked and thought something was wrong with me.',
+    replies: 17, hearts: 52,
+  },
+];
+
+const COMMUNITY_RULES = [
+  'No medical advice, ever. Share what happened to you, not what someone else should do.',
+  'Anyone can say "I do not know". Nobody has to have an answer.',
+  'No photos of other people’s children, and no screenshots of other rooms.',
+  'Disagree with the idea, not the person.',
+  'Report anything that worries you. A person reads every report.',
+];
+
+function screenCommunity(c) {
+  /* Deterministic from the date so the number holds still while someone
+     is reading, rather than jumping on every render. */
+  const awake = 180 + (hashSeed(todayKey()) % 90);
+  const pumping = 20 + (hashSeed(todayKey() + 'p') % 40);
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <p class="eyebrow">Community</p>
+    <h1 class="title">You are not the only one awake.</h1>
+    <p class="sub">Rooms for what you are actually in the middle of, and people who are in it too.</p>
+  </div>
+  <div class="sc">
+
+    <div class="card leafy">
+      <p class="eyebrow">${icon('moon', 11, 'var(--sage)')} Right now</p>
+      <div style="display:flex;flex-wrap:wrap;gap:22px;margin-top:10px">
+        <div>
+          <p style="margin:0;font-family:var(--serif);font-size:32px;font-weight:600;color:var(--deep);line-height:1">${awake}</p>
+          <p class="tiny" style="margin-top:2px">parents awake</p>
+        </div>
+        <div>
+          <p style="margin:0;font-family:var(--serif);font-size:32px;font-weight:600;color:var(--deep);line-height:1">${pumping}</p>
+          <p class="tiny" style="margin-top:2px">pumping this hour</p>
+        </div>
+      </div>
+      <p class="bodytext" style="margin-top:12px">
+        At 3am the thing that helps is not advice. It is knowing the number is not one.
+      </p>
+    </div>
+
+    <div class="card flat" style="border-left:3px solid var(--attention)">
+      <p class="eyebrow">${icon('note', 11, 'var(--sage)')} Not live yet</p>
+      <p class="bodytext" style="margin-top:5px">
+        This is the design for the community, not a running one. The posts below are written
+        examples so the layout can be judged. No real accounts, no real people, and the counts
+        above are placeholders.
+      </p>
+    </div>
+
+    <p class="sect">Rooms</p>
+    ${COMMUNITY_ROOMS.map((r) => `
+      <button class="lrow" data-room="${esc(r.id)}" style="align-items:flex-start">
+        <span class="licon">${icon(r.icon, 18)}</span>
+        <span class="grow">
+          <span style="display:block;font-size:14.5px;font-weight:600;color:var(--ink)">${esc(r.label)}</span>
+          <span class="tiny" style="display:block;margin-top:2px">${esc(r.blurb)}</span>
+        </span>
+        <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+      </button>`).join('')}
+
+    <p class="sect">What it looks like</p>
+    ${COMMUNITY_SAMPLE.map((p) => `
+      <div class="card">
+        <div style="display:flex;gap:11px;align-items:center">
+          <span class="licon" style="width:34px;height:34px;border-radius:50%">${growthSVG(2, 24)}</span>
+          <span class="grow">
+            <span style="display:block;font-size:13.5px;font-weight:600;color:var(--ink)">${esc(p.who)}</span>
+            <span class="tiny">${esc(p.room)} &middot; ${esc(p.when)}</span>
+          </span>
+          <span class="tag">Example</span>
+        </div>
+        <p class="bodytext" style="margin-top:11px">${esc(p.body)}</p>
+        <div style="display:flex;gap:16px;margin-top:12px;padding-top:11px;border-top:1px solid var(--line2)">
+          <span class="tiny">${icon('heart', 13, 'var(--taupe)')} ${p.hearts} held this</span>
+          <span class="tiny">${icon('chat', 13, 'var(--muted)')} ${p.replies} replies</span>
+        </div>
+      </div>`).join('')}
+
+    <p class="sect">How this room works</p>
+    <div class="card">
+      <ul class="dlist">${COMMUNITY_RULES.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>
+    </div>
+
+    <div class="card flat">
+      <p class="eyebrow">${icon('people', 11, 'var(--sage)')} Safety, before any of this ships</p>
+      <p class="bodytext" style="margin-top:5px">
+        Profiles will not carry a child’s full name, birthday or photo by default. A child’s
+        logs and milestones are private and never become community content. Reports go to a person,
+        not a queue nobody reads.
+      </p>
+    </div>
+
+    <p class="disclaimer">
+      Other parents are not a substitute for your pediatrician. Anything in a community room is one
+      person’s experience, not medical advice, and what worked for their child may not be right
+      for yours.
+    </p>
   </div>`;
 }
 
