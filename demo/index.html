@@ -10059,11 +10059,18 @@ function cornerLeaves() {
 /* -----------------------------------------------------------------
    STATE
    ----------------------------------------------------------------- */
+/* The desktop shell provides a sidebar. Everything else about the app
+   is identical, so this is the only place the two builds diverge. */
+const IS_DESKTOP = !!document.getElementById('sideMark');
+let markDrawn = false;
+
 const state = {
   name: 'Stetson',
   birthday: '2022-06-09',
   lenses: [],
-  tab: 'welcome',
+  /* Welcome is a sign up screen. On desktop the app opens on Home,
+     the way a web app you are already signed into would. */
+  tab: IS_DESKTOP ? 'home' : 'welcome',
   view: null,        // { type:'content'|'activity', id }
   statuses: {},      // milestoneId -> statusId
   wakeTime: '06:30',
@@ -10079,6 +10086,11 @@ const state = {
   flangeMm: '',
   ppTab: 'timeline',
   ppStage: 'days-1-3',
+
+  // Ask. askQuery is what is being typed, askAsked is what was
+  // submitted, so the results do not churn on every keystroke.
+  askQuery: '',
+  askAsked: '',
 };
 
 const esc = (s) => String(s == null ? '' : s)
@@ -10533,14 +10545,22 @@ function emptyScreen(msg) {
 /* -----------------------------------------------------------------
    RENDER
    ----------------------------------------------------------------- */
-const TABS = [
+const ALL_TABS = [
   { id: 'welcome', label: 'Welcome', icon: 'leaf' },
-  { id: 'now', label: 'Right Now', icon: 'heart' },
-  { id: 'sleep', label: 'Sleep', icon: 'moon' },
   { id: 'home', label: 'Home', icon: 'home' },
+  { id: 'now', label: 'Right Now', icon: 'heart' },
+  { id: 'ask', label: 'Ask', icon: 'chat' },
   { id: 'plan', label: 'Plan', icon: 'calendar' },
+  { id: 'sleep', label: 'Sleep', icon: 'moon' },
   { id: 'hub', label: 'Hub', icon: 'leaf' },
 ];
+
+/* On a phone the order matches the tab bar in the mockups. On desktop
+   Home leads, and Welcome is dropped because the sidebar already shows
+   the wordmark and the profile that screen exists to introduce. */
+const TABS = IS_DESKTOP
+  ? ALL_TABS.filter((t) => t.id !== 'welcome')
+  : ALL_TABS.filter((t) => t.id !== 'plan');
 
 function render() {
   const c = ctx();
@@ -10562,6 +10582,7 @@ function render() {
   else if (v && v.type === 'infection') html = viewInfection(v.id);
   else if (state.tab === 'welcome') html = screenWelcome(c);
   else if (state.tab === 'now') html = screenNow(c);
+  else if (state.tab === 'ask') html = screenAsk(c);
   else if (state.tab === 'sleep') html = screenSleep(c);
   else if (state.tab === 'home') html = screenHome(c);
   else if (state.tab === 'plan') html = screenPlan(c);
@@ -10591,6 +10612,23 @@ function render() {
       // Number inputs throw on setSelectionRange in some browsers.
       try { if (keepStart != null) back.setSelectionRange(keepStart, keepEnd); } catch (err) {}
     }
+  }
+
+  // The sidebar is desktop only, so every write is guarded. The
+  // wordmark is static, so it is drawn once rather than on every render.
+  const sideMark = document.getElementById('sideMark');
+  if (sideMark && !markDrawn) {
+    sideMark.innerHTML = wordmark(false);
+    markDrawn = true;
+  }
+  const sideKid = document.getElementById('sideKid');
+  if (sideKid) {
+    sideKid.innerHTML = `
+      <span class="avatar">${growthSVG(c.growth ? c.growth.order : 2, 38)}</span>
+      <span class="grow">
+        <p class="nm">${esc(c.child.name || 'Your child')}</p>
+        <p class="ag">${esc(c.summary.label || 'Add a birthday')}</p>
+      </span>`;
   }
 
   document.getElementById('tabs').innerHTML = TABS.map((t) => `
@@ -10647,6 +10685,7 @@ function initControls() {
   });
   document.addEventListener('input', (e) => {
     if (e.target.matches('[data-wake]')) { state.wakeTime = e.target.value || '06:30'; render(); }
+    else if (e.target.id === 'askIn') { state.askQuery = e.target.value; }
     else if (e.target.id === 'flangeIn') {
       const digits = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
       e.target.value = digits;
@@ -10658,11 +10697,24 @@ function initControls() {
     state.birthday = e.target.value; state.view = null; state.napOverride = null; render();
   });
 
+  document.addEventListener('keydown', (e) => {
+    if (e.target.id === 'askIn' && e.key === 'Enter') {
+      e.preventDefault();
+      state.askAsked = state.askQuery.trim();
+      render();
+    }
+  });
+
   document.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-months],[data-lens],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag]');
+    const t = e.target.closest('[data-months],[data-lens],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask]');
     if (!t) return;
 
-    if (t.dataset.sub) {
+    if (t.dataset.ask === 'go') {
+      state.askAsked = state.askQuery.trim();
+    } else if (t.dataset.ask === 'try') {
+      state.askQuery = t.dataset.q;
+      state.askAsked = t.dataset.q;
+    } else if (t.dataset.sub) {
       // One handler for every sub tab strip. The key names the state
       // field, so adding a tabbed screen needs no new branch here.
       const key = t.dataset.sub;
@@ -10691,8 +10743,13 @@ function initControls() {
       t.setAttribute('aria-pressed', i === -1);
     } else if (t.dataset.tab) {
       state.tab = t.dataset.tab; state.view = null;
+    } else if (t.dataset.go === 'tab') {
+      state.tab = t.dataset.id; state.view = null;
     } else if (t.dataset.go) {
       if (t.tagName === 'A') return; // source links open normally
+      // An Ask result can name the sub tab to open on, so a pumping
+      // answer lands on the pumping tab that actually holds it.
+      if (t.dataset.asksub) state[t.dataset.asksub] = t.dataset.asksubval;
       state.view = { type: t.dataset.go, id: t.dataset.id };
     } else if (t.dataset.back) {
       const to = t.dataset.back;
@@ -11837,6 +11894,321 @@ function viewInfection(id) {
       i.askYourProvider.map((q) => `<div class="quote"><p class="q">${esc('“' + q + '”')}</p></div>`).join(''))}
     ${dsec('Sources', sourceRows(i.sources))}
     <p class="disclaimer">Educational information, not medical advice. Testing and treatment decisions belong to an obstetric provider who knows your pregnancy and your history.</p>
+  </div>`;
+}
+
+
+/* =================================================================
+   ASK
+   A question box that answers out of this app's own library.
+
+   WHY IT SEARCHES INSTEAD OF GENERATING
+   Every answer here is content that was written against a named
+   source and reviewed. A general language model answering "my baby
+   has a fever, what do I do" on a public parenting site would be
+   confidently wrong some of the time, and the cost of being wrong in
+   this subject is a child who does not get seen. So this returns the
+   real entry, with its sources attached, rather than a paraphrase of
+   it.
+
+   SAFETY RUNS BEFORE MATCHING
+   Emergency and crisis wording is checked first and rendered above
+   any result, because a parent typing "baby not breathing" must not
+   have to read a list of search results to find 911.
+   ================================================================= */
+
+/* Words that mean stop searching and show the emergency card. */
+const ASK_EMERGENCY = [
+  'not breathing', 'cant breathe', "can't breathe", 'stopped breathing', 'blue lips',
+  'turning blue', 'unresponsive', 'wont wake', "won't wake", 'unconscious', 'limp',
+  'seizure', 'seizing', 'choking', 'choke', 'swallowed a battery', 'button battery',
+  'overdose', 'poison', 'drowned', 'drowning', 'head injury', 'gasping',
+];
+
+/* Words that mean show the crisis lines, for the parent rather than the child. */
+const ASK_CRISIS = [
+  'kill myself', 'end my life', 'want to die', 'suicidal', 'suicide', 'hurt myself',
+  'harm myself', 'self harm', 'hurt my baby', 'harm my baby', 'shake the baby',
+  'shaking my baby', 'better off without me',
+];
+
+/* Stop words carry no signal and would otherwise match everything. */
+const ASK_STOP = new Set(('a an the and or but if is are was were be been being do does did ' +
+  'my me i we our you your he she it they them his her its their this that these those ' +
+  'to of in on at for with about from by as so than then there here what when where why ' +
+  'how who which can could should would will just very really get got have has had not ' +
+  'no yes any some all more most much many lot help please need want').split(' '));
+
+function askTokens(q) {
+  return String(q || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(function (w) { return w.length > 2 && !ASK_STOP.has(w); });
+}
+
+/* Everything the app can answer from, flattened into one searchable
+   list. Each entry says how to open the real thing. */
+function askCorpus(c) {
+  var out = [];
+  var add = function (o) { out.push(o); };
+
+  RIGHT_NOW.forEach(function (s) {
+    add({
+      kind: 'Right Now', title: s.label, blurb: s.subtitle,
+      go: 'situation', id: s.id, weight: 1.35,
+      text: [s.label, s.subtitle, s.category,
+             s.whatIsHappening && s.whatIsHappening.headline,
+             s.whatIsHappening && s.whatIsHappening.body,
+             (s.tryRightNow || []).join(' '),
+             (s.callDoctorIf || []).join(' ')].filter(Boolean).join(' '),
+    });
+  });
+
+  CARE_TOPICS.forEach(function (t) {
+    add({
+      kind: 'Care topic', title: t.label, blurb: t.summary,
+      go: 'topic', id: t.id, weight: 1.15,
+      text: [t.label, t.shortLabel, t.summary, (t.keyPoints || []).join(' '),
+             (t.myths || []).map(function (m) { return m.myth + ' ' + m.truth; }).join(' '),
+             (t.redFlags || []).join(' ')].join(' '),
+    });
+  });
+
+  DEVELOPMENT_CONTENT.forEach(function (e) {
+    add({
+      kind: 'What is happening', title: e.title, blurb: e.summary,
+      go: 'content', id: e.id, weight: 1.1,
+      text: [e.title, e.summary, e.category, (e.whatYouMayNotice || []).join(' '),
+             (e.whyItHappens || []).join(' '), (e.parentStrategies || []).join(' ')].join(' '),
+    });
+  });
+
+  PUMPING_TROUBLESHOOTING.forEach(function (t) {
+    add({
+      kind: 'Pumping', title: t.problem, blurb: (t.firstChecks || [])[0] || '',
+      go: 'screen', id: 'pumping', sub: ['pumpTab', 'trouble'], weight: 1.3,
+      text: [t.problem, (t.firstChecks || []).join(' '), t.thenWhat, t.seeSomeone].filter(Boolean).join(' '),
+    });
+  });
+
+  PUMPING_GOALS.forEach(function (g) {
+    add({
+      kind: 'Pumping', title: g.label, blurb: g.who,
+      go: 'screen', id: 'pumping', sub: ['pumpGoal', g.id], weight: 1.1,
+      text: [g.label, g.who, g.principle, (g.guidance || []).join(' '), g.yourRights].filter(Boolean).join(' '),
+    });
+  });
+
+  [[FLANGE_FITTING, 'flange'], [PUMP_SETTINGS, 'flange'], [INCREASING_OUTPUT, 'output'],
+   [OUTPUT_EXPECTATIONS, 'output'], [MILK_STORAGE, 'storage'], [HIGH_LIPASE, 'lipase'],
+   [LACTATION_SUPPORT, 'help']].forEach(function (pair) {
+    var o = pair[0];
+    add({
+      kind: 'Pumping', title: o.label || o.headline, blurb: o.headline,
+      go: 'screen', id: 'pumping', sub: ['pumpTab', pair[1]], weight: 1.2,
+      text: JSON.stringify(o).toLowerCase(),
+    });
+  });
+
+  RECOVERY_TIMELINE.forEach(function (s) {
+    add({
+      kind: 'Fourth trimester', title: s.label, blurb: s.window,
+      go: 'screen', id: 'postpartum', sub: ['ppStage', s.id], weight: 1.1,
+      text: [s.label, s.window, s.body, (s.expect || []).join(' '), (s.doThis || []).join(' '), s.flag].filter(Boolean).join(' '),
+    });
+  });
+
+  NOBODY_WARNED_ME.forEach(function (e) {
+    add({
+      kind: 'Fourth trimester', title: e.thing, blurb: e.detail.slice(0, 110) + '...',
+      go: 'screen', id: 'postpartum', sub: ['ppTab', 'nobody'], weight: 1.2,
+      text: e.thing + ' ' + e.detail,
+    });
+  });
+
+  add({
+    kind: 'Fourth trimester', title: PERINATAL_MENTAL_HEALTH.headline,
+    blurb: 'Baby blues, postpartum depression and anxiety, and what helps',
+    go: 'screen', id: 'postpartum', sub: ['ppTab', 'mind'], weight: 1.25,
+    text: JSON.stringify(PERINATAL_MENTAL_HEALTH).toLowerCase(),
+  });
+
+  INFECTIONS.forEach(function (i) {
+    add({
+      kind: 'In pregnancy', title: i.label, blurb: i.headline,
+      go: 'infection', id: i.id, weight: 1.15,
+      text: [i.label, i.headline, i.whyItMatters, (i.howYouGetIt || []).join(' '),
+             (i.prevention || []).join(' '), i.testing, i.timeCritical].filter(Boolean).join(' '),
+    });
+  });
+
+  add({
+    kind: 'Hospital bag', title: 'Hospital bag checklist',
+    blurb: 'What to pack, what the hospital already gives you, and what people forget',
+    go: 'screen', id: 'bag', weight: 1.4,
+    text: 'hospital bag pack packing what to bring birth labor delivery checklist ' +
+          'suitcase overnight going home cesarean induction nicu ' +
+          getCategories().map(function (c2) { return c2.label + ' ' + c2.intro; }).join(' '),
+  });
+
+  getAllItems().forEach(function (it) {
+    add({
+      kind: 'Hospital bag', title: it.label, blurb: it.note || it.categoryLabel,
+      go: 'screen', id: 'bag', weight: 0.85,
+      text: [it.label, it.note, it.categoryLabel].filter(Boolean).join(' '),
+    });
+  });
+
+  SLEEP_DISRUPTIONS.forEach(function (d) {
+    add({
+      kind: 'Sleep', title: d.label, blurb: d.what,
+      go: 'tab', id: 'sleep', weight: 1.15,
+      text: [d.label, (d.aliases || []).join(' '), d.what, d.why, (d.tryThis || []).join(' ')].join(' '),
+    });
+  });
+
+  return out;
+}
+
+/* Scores a query against the corpus. Title hits count for far more
+   than body hits, and an exact phrase in the title wins outright. */
+function askSearch(query, c) {
+  var toks = askTokens(query);
+  if (!toks.length) return [];
+  var phrase = String(query).toLowerCase().trim();
+
+  return askCorpus(c)
+    .map(function (item) {
+      var title = item.title.toLowerCase();
+      var body = item.text.toLowerCase();
+      var score = 0;
+      toks.forEach(function (t) {
+        if (title.indexOf(t) !== -1) score += 9;
+        var m = body.split(t).length - 1;
+        if (m) score += Math.min(m, 4) * 1.6;
+      });
+      if (phrase.length > 6 && title.indexOf(phrase) !== -1) score += 24;
+      // Reward covering more of what was asked, not just repeating one word.
+      var covered = toks.filter(function (t) {
+        return title.indexOf(t) !== -1 || body.indexOf(t) !== -1;
+      }).length;
+      score *= 0.55 + 0.45 * (covered / toks.length);
+      return { item: item, score: score * (item.weight || 1) };
+    })
+    .filter(function (r) { return r.score > 6; })
+    .sort(function (a, b) { return b.score - a.score; })
+    .slice(0, 7);
+}
+
+function askHit(q, list) {
+  var s = String(q).toLowerCase();
+  return list.some(function (w) { return s.indexOf(w) !== -1; });
+}
+
+const ASK_SUGGESTIONS = [
+  'Why does my baby cry every evening',
+  'How do I know my flange fits',
+  'My frozen milk smells like soap',
+  'How much sleep does she need',
+  'What are retractions',
+  'I feel angry all the time',
+  'When do I start solids',
+  'What should I pack for the hospital',
+];
+
+function screenAsk(c) {
+  var q = state.askQuery || '';
+  var asked = state.askAsked || '';
+  var results = asked ? askSearch(asked, c) : [];
+  var emergency = asked && askHit(asked, ASK_EMERGENCY);
+  var crisis = asked && askHit(asked, ASK_CRISIS);
+
+  var card = function (r) {
+    var it = r.item;
+    var attrs = 'data-go="' + esc(it.go) + '" data-id="' + esc(it.id) + '"';
+    if (it.sub) attrs += ' data-asksub="' + esc(it.sub[0]) + '" data-asksubval="' + esc(it.sub[1]) + '"';
+    return `
+    <button class="lrow" ${attrs} style="align-items:flex-start">
+      <span class="licon">${icon('bulb', 17)}</span>
+      <span class="grow">
+        <span class="tag" style="margin-bottom:5px;display:inline-block">${esc(it.kind)}</span>
+        <span style="display:block;font-size:14.5px;font-weight:600;color:var(--ink);line-height:1.35">${esc(it.title)}</span>
+        ${it.blurb ? `<span class="tiny" style="display:block;margin-top:4px;line-height:1.5">${esc(it.blurb)}</span>` : ''}
+      </span>
+      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+    </button>`;
+  };
+
+  return `
+  ${IS_DESKTOP ? '' : cornerLeaves()}
+  <div class="sc-head">
+    <p class="eyebrow">Ask</p>
+    <h1 class="title">What is going on?</h1>
+    <p class="sub">Type it the way you would say it out loud. This searches everything in the app and takes you to the real answer, with its sources.</p>
+  </div>
+  <div class="sc">
+    <div class="card">
+      <div class="field" style="margin:0">
+        <label class="fieldlabel sronly" for="askIn">Your question</label>
+        <input id="askIn" class="fieldinput" type="text" autocomplete="off"
+          placeholder="Why won't she sleep through the night?"
+          value="${esc(q)}"
+          style="font-size:16px;padding:13px 14px">
+      </div>
+      <button class="btn" style="margin-top:11px" data-ask="go">
+        ${icon('search', 15, '#fff')} Find the answer
+      </button>
+    </div>
+
+    ${!asked ? `
+      <p class="sect">Things people ask</p>
+      <div class="chips" style="gap:7px">
+        ${ASK_SUGGESTIONS.map(function (s) {
+          return '<button class="chip" data-ask="try" data-q="' + esc(s) + '">' + esc(s) + '</button>';
+        }).join('')}
+      </div>
+    ` : ''}
+
+    ${crisis ? `
+    <div class="card" style="background:#FCF2EE;border:1.5px solid #DDA192;box-shadow:none;margin-top:16px">
+      <p class="eyebrow" style="color:#A85A44">Please talk to someone right now</p>
+      <p class="bodytext" style="margin-top:5px">You do not have to be in crisis to call, and telling someone is the way through rather than a risk to your family.</p>
+      <div style="margin-top:12px">
+        ${MATERNAL_SUPPORT_LINES.map(function (l) {
+          return '<div style="padding:9px 0;border-top:1px solid var(--line2)">' +
+            '<p style="margin:0;font-size:13.5px;font-weight:600;color:var(--ink)">' + esc(l.name) + '</p>' +
+            '<a href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer" style="font-size:18px;color:var(--deep);text-decoration:none">' + esc(l.contact) + '</a>' +
+            '<p class="tiny" style="margin-top:3px">' + esc(l.detail) + '</p></div>';
+        }).join('')}
+      </div>
+      <div class="callout" style="margin-top:12px">If you are thinking about harming yourself or your baby, call or text 988, or go to an emergency room. Postpartum psychosis is rare, it is a medical emergency, and it is treatable.</div>
+    </div>` : ''}
+
+    ${emergency ? `
+    <div class="card" style="background:#FCF2EE;border:1.5px solid #DDA192;box-shadow:none;margin-top:16px">
+      <p class="eyebrow" style="color:#A85A44">${esc(ALWAYS_EMERGENCY.title)}</p>
+      <ul class="dlist warn" style="margin-top:8px">
+        ${ALWAYS_EMERGENCY.items.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('')}
+      </ul>
+      <p class="tiny" style="margin-top:10px;color:#8A5A4A">${esc(ALWAYS_EMERGENCY.poison)}</p>
+    </div>` : ''}
+
+    ${asked ? (results.length ? `
+      <p class="sect">${results.length} ${results.length === 1 ? 'answer' : 'answers'} for "${esc(asked)}"</p>
+      ${results.map(card).join('')}
+      <div class="card flat">
+        <p class="tiny">These are entries from this app, not generated text. Each one opens the full version with what to try, when to call, and where it came from.</p>
+      </div>
+    ` : `
+      <div class="empty">
+        ${growthSVG(2, 70)}
+        <p><strong style="color:var(--ink)">Nothing in the app matches that yet.</strong></p>
+        <p>Try fewer words, or the way you would say it to a friend. You can also browse the Hub, or tap Right Now if something is happening this minute.</p>
+      </div>
+    `) : ''}
+
+    <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>
   </div>`;
 }
 
