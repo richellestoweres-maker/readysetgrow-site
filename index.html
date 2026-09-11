@@ -209,6 +209,9 @@ body{
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 .app{display:grid;grid-template-columns:286px minmax(0,1fr);min-height:100vh}
+/* A narrower rail on a smaller laptop buys back the margin the
+   decorative layer needs to sit in. */
+@media (max-width:1399px){.app{grid-template-columns:258px minmax(0,1fr)}}
 @media (max-width:900px){.app{grid-template-columns:1fr}}
 
 /* ---------- SIDEBAR ---------- */
@@ -291,6 +294,7 @@ body{
    margin either side for the decorative layer to live in. */
 #screen{position:relative}
 .sc,.sc-head{max-width:748px;margin-inline:auto;width:100%;position:relative;z-index:1}
+@media (max-width:1399px){.sc,.sc-head{max-width:668px}}
 .sc{padding:0 32px 80px}
 .sc-head{padding:44px 32px 6px;text-align:left}
 @media (max-width:560px){
@@ -307,9 +311,17 @@ body{
    sidebar rather than repeating at the top of every screen. */
 .mark-holder,.deco{display:none!important}
 .affirm,.leafart,.corner-right{z-index:0}
-.corner-right{top:38px;right:26px;font-size:13px}
-@media (max-width:1279px){
-  .affirm,.leafart,.corner-right{display:none!important}
+.corner-right{top:38px;right:22px;font-size:13px}
+
+/* The layer degrades in two steps rather than one. The affirmation
+   shapes are the widest piece, so they are the first to go once the
+   margin stops fitting them; the sprigs and the promise line need
+   almost no room and stay much further down. */
+@media (max-width:1399px){
+  .affirm{display:none!important}
+}
+@media (max-width:1000px){
+  .leafart,.corner-right{display:none!important}
 }
 
 /* Desktop gets a little more air and slightly larger type than a
