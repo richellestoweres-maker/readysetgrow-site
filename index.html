@@ -176,6 +176,18 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .tab .dot{width:18px;height:2.5px;border-radius:2px;background:transparent;margin-top:1px}
 .tab[aria-selected="true"] .dot{background:var(--deep)}
 
+/* The source badge holds a short code, not a logo, and some of those
+   codes are words rather than three letters. It sizes to what is in it
+   instead of clipping, keeps a square minimum so a row of them lines
+   up, and wraps to a second line before it will ever spill sideways
+   over the text next to it. */
+.srcbadge{
+  width:auto;min-width:38px;max-width:66px;height:38px;padding:3px 6px;
+  font-size:9px;font-weight:700;letter-spacing:.02em;line-height:1.12;
+  color:var(--deep2);text-align:center;overflow:hidden;
+  overflow-wrap:anywhere;
+}
+
 /* ---------- THE PERMANENT HEADER ----------
    Children on the left, the parent on the right, on every screen.
    Switching child or getting back to yourself is always one tap and
@@ -257,31 +269,52 @@ body.locked .bglayer{display:block}
 /* The wordmark is painted into the fixed background layer at the top of
    the window, so the scrolling content has to start below it or the
    first heading on every screen lands on top of the O in GROW. */
-.scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;position:relative;padding:62px 0 8px}
+/* The wordmark is part of the pinned header now rather than part of the
+   fixed background, so the scroll simply starts underneath it. Content
+   cannot slide up and sit on top of the logo, because it never reaches
+   it. */
+.scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;position:relative;padding:8px 0}
 
 /* THE PERMANENT HEADER, pinned above the scroll.
    Children on the left, you on the right, the wordmark centred between
    them. It is outside the scroll container on purpose: a header that
    slides up over the wordmark is worse than no header at all. */
-.topbar-holder{flex:none;position:relative;z-index:4}
+/* One row, three parts: children on the left, the wordmark centred, you
+   on the right. Both side groups take an equal share of what is left so
+   the wordmark sits on the true centre line whether there are no
+   children or six. */
+.topbar-holder{flex:none;position:relative;z-index:4;background:var(--cream)}
 .topbar-holder:empty{display:none}
-.topbar-holder .topbar{padding:16px 22px 0}
+.topbar-holder .topbar{display:flex;align-items:flex-start;gap:10px;padding:16px 22px 0}
+.topbar-holder .mark-holder{flex:0 0 auto;max-width:none;margin:0;padding:0 4px 2px}
+/* The front door has no chips and no Me button, so nothing balances the
+   wordmark and it has to centre itself. */
+.topbar-holder .topbar.mark-only{justify-content:center}
 .topbar-holder .kidchip,.topbar-holder .mebtn{cursor:pointer;font-family:inherit;
   box-shadow:0 3px 14px rgba(107,101,80,.10)}
 .topbar-holder .kidchip:hover,.topbar-holder .mebtn:hover{border-color:var(--sage)}
 /* The wordmark is centred in the same strip, so the chips are capped
    short of it and the Me button is pushed to the far edge rather than
    following the chips into the middle. */
-.topbar-holder .topbar-kids{max-width:calc(50% - 150px);flex:0 1 auto}
-.topbar-holder .mebtn{margin-left:auto}
-body.locked .topbar-holder{display:none}
+.topbar-holder .topbar-kids,.topbar-holder .me-slot{flex:1 1 0;min-width:0}
+.topbar-holder .me-slot{display:flex;justify-content:flex-end}
+.topbar-holder .topbar-kids{
+  /* With enough children this strip scrolls sideways. The fade at the
+     end is the only thing telling anybody that. */
+  -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent 100%);
+  mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent 100%);
+}
+/* The front door keeps the wordmark and loses everything else. */
+body.locked .topbar-holder{background:transparent}
 /* Below roughly 700px there is no room either side of the centred
    wordmark for chips, so the header drops underneath it instead of
    sitting on top of it. */
+/* Below roughly 700px there is no room either side of the wordmark, so
+   it takes a row of its own and the chips drop underneath it. */
 @media (max-width:700px){
-  .topbar-holder .topbar{padding:106px 14px 0}
-  .topbar-holder .topbar-kids{max-width:none;flex:1 1 auto}
-  .scroll{padding-top:6px}
+  .topbar-holder .topbar{flex-wrap:wrap;padding:12px 14px 0}
+  .topbar-holder .mark-holder{order:-1;flex:1 0 100%;text-align:center}
+  .topbar-holder .topbar-kids{flex:1 1 auto}
 }
 .scroll::-webkit-scrollbar{width:9px}
 .scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px}
@@ -3501,7 +3534,7 @@ const LENS_BY_AGE = {
   sensory: {
     baby: {
       looksLike: [
-        'Screaming through nappy changes, baths, or having clothes pulled over the head.',
+        'Screaming through diaper changes, baths, or having clothes pulled over the head.',
         'Hating car seats, or only settling when moving.',
         'Refusing textures at weaning that other babies take, and gagging on lumps.',
         'Startling hard at ordinary household noise.',
@@ -4463,7 +4496,7 @@ const LENS_BY_AGE = {
     primary: {
       looksLike: [
         'Most differences gone by now for most children born early.',
-        'For some, attention, working memory, or maths being harder than everything else.',
+        'For some, attention, working memory, or math being harder than everything else.',
         'Being small for their year, which can carry a social cost.',
       ],
       whatHelps: [
@@ -7626,7 +7659,7 @@ const ACTIVITIES = [
       'Let them do the hands on part, including the parts they will do wrong.',
       'If it stays broken, say so plainly. That is a normal result.',
     ],
-    makeItEasier: ['Something with four parts or fewer, such as a torch or a pen.'],
+    makeItEasier: ['Something with four parts or fewer, such as a flashlight or a pen.'],
     makeItHarder: ['They pick the object and find the instructions themselves.'],
     whyItHelps:
       'Taking things apart builds the belief that objects have insides and problems have causes, which is most of engineering.',
@@ -7857,7 +7890,7 @@ const ALWAYS_EMERGENCY = {
   items: [
     'Their breathing looks like hard work: the skin sucks in below the neck, under the breastbone, or between the ribs with each breath (retractions), the nostrils flare wide, or they grunt on the way out',
     'They are gasping, or you can hear a harsh noise when they breathe in (stridor)',
-    'Their lips, gums, tongue, or the skin around their mouth look blue, grey, or dusky',
+    'Their lips, gums, tongue, or the skin around their mouth look blue, gray, or dusky',
     'They are too breathless to talk, cry, feed, or finish a sentence',
     'They are unresponsive, limp, or you cannot wake them',
     'They are having a seizure for the first time, or one lasting more than five minutes',
@@ -7930,7 +7963,7 @@ const RIGHT_NOW = [
     urgencyCheck: {
       title: 'Call 911 now if you see any of these',
       body:
-        'Blue, grey, or dusky lips, gums, or tongue. Gasping, or long pauses in breathing. Too ' +
+        'Blue, gray, or dusky lips, gums, or tongue. Gasping, or long pauses in breathing. Too ' +
         'breathless to cry, feed, talk, or finish a sentence. Very deep pulling in of the chest with ' +
         'every breath. Limp, or very difficult to wake. A harsh noise breathing in while at rest. ' +
         'Do not drive yourself if your child is struggling this hard, call 911 so care starts on the way.',
@@ -7942,8 +7975,8 @@ const RIGHT_NOW = [
       'Look at their nostrils. Widening with each breath is nasal flaring.',
       'Listen at the end of the breath. A small grunt on the way out is the body trying to hold the lungs open, and in a baby that is a serious sign.',
       'Count breaths for a full sixty seconds while they are calm or asleep. One rise and fall is one breath. Crying makes the number meaningless.',
-      'Look at the colour of their lips, gums and tongue, not their hands or feet. Cool hands and feet are common and not the same thing.',
-      'If you see retractions, flaring, grunting, or colour change, this is a call now, not a wait and see. Take a short video on your phone, it is genuinely useful to whoever sees them.',
+      'Look at the color of their lips, gums and tongue, not their hands or feet. Cool hands and feet are common and not the same thing.',
+      'If you see retractions, flaring, grunting, or color change, this is a call now, not a wait and see. Take a short video on your phone, it is genuinely useful to whoever sees them.',
     ],
     timers: [],
     whatIsHappening: {
@@ -7955,7 +7988,7 @@ const RIGHT_NOW = [
       points: [
         'Retractions mean the chest wall is being pulled inward because the effort of breathing is high. The lower down and the deeper they go, the harder the work.',
         'Grunting in a baby is a red flag rather than a cute noise. It is an attempt to keep the lungs from collapsing at the end of each breath.',
-        'A worrying colour change shows centrally, on lips, gums and tongue. Blue hands and feet alone in a newborn are usually just circulation.',
+        'A worrying color change shows centrally, on lips, gums and tongue. Blue hands and feet alone in a newborn are usually just circulation.',
         'A child who suddenly goes quiet and stops fighting after working hard to breathe may be tiring rather than improving. That is an emergency.',
         'Nasal congestion alone can cause noisy breathing in babies, who breathe mainly through their nose. Suction and saline first, then look again at whether the effort is normal.',
       ],
@@ -8251,7 +8284,7 @@ const RIGHT_NOW = [
       'Buy more burp cloths and stop changing your shirt. This one really is a phase you outlast.',
     ],
     callDoctorIf: [
-      'There is blood or green colour in the spit up',
+      'There is blood or green color in the spit up',
       'Vomiting is forceful, or it is becoming more frequent and more forceful',
       'They are refusing feeds, crying, or arching during feeds',
       'They are not gaining weight, or there are fewer wet or dirty diapers',
@@ -9445,7 +9478,7 @@ const CARE_TOPICS = [
       'Wet diapers are the simplest measure of intake. A rough guide for the first week is one wet diaper on day one, two on day two, and so on, reaching about six or more a day by around day five and staying there.',
       'Stool changes on a schedule: black tarry meconium for the first day or two, then greenish transitional, then yellow and seedy by around day four or five if breastfeeding. Formula fed stools are usually tan and firmer.',
       'Most newborns lose weight in the first days. Losing up to about 7 to 10 percent of birth weight is common, and most babies are back to birth weight by about two weeks.',
-      'Newborn breathing is irregular by nature. Fast stretches followed by brief pauses of a few seconds, called periodic breathing, are normal. Pauses longer than about 20 seconds, or with colour change, are not.',
+      'Newborn breathing is irregular by nature. Fast stretches followed by brief pauses of a few seconds, called periodic breathing, are normal. Pauses longer than about 20 seconds, or with color change, are not.',
       'Keep the cord stump dry and let it fall off on its own, usually in one to three weeks. Sponge baths until then.',
       'Newborns sneeze, hiccup, grunt, and make constant noise in their sleep. Nearly all of it is normal.',
       'Newborn skin does a lot: peeling, milia, baby acne, and a blotchy rash called erythema toxicum are all common and all resolve.',
@@ -9460,10 +9493,10 @@ const CARE_TOPICS = [
       'Any fever, meaning a rectal temperature of 100.4 F (38 C) or higher, is an emergency at this age',
       'Fewer wet diapers than expected, or no stool for an unusually long stretch in a newborn',
       'Very difficult to wake, or not waking for feeds',
-      'Yellow colour in the skin or the whites of the eyes',
+      'Yellow color in the skin or the whites of the eyes',
       'The cord area is red, swollen, smells bad, or has pus',
       'Forceful vomiting, or green vomit',
-      'Breathing pauses longer than about 20 seconds, or with colour change',
+      'Breathing pauses longer than about 20 seconds, or with color change',
     ],
     sources: [
       { org: 'AAP', label: 'HealthyChildren: baby care basics', url: 'https://www.healthychildren.org/English/ages-stages/baby/Pages/default.aspx' },
@@ -9486,7 +9519,7 @@ const CARE_TOPICS = [
       'Jaundice is a yellow tint to the skin and the whites of the eyes, caused by bilirubin. More than half of newborns get some.',
       'It usually appears after the first day, peaks around days three to five, and fades over the following week or two.',
       'It typically shows up on the face first and moves downward. Yellowing that reaches the belly, arms or legs suggests higher levels and needs checking.',
-      'Check in natural daylight rather than indoor lighting. Press gently on the skin and look at the colour as you release.',
+      'Check in natural daylight rather than indoor lighting. Press gently on the skin and look at the color as you release.',
       'Every newborn should have bilirubin measured before leaving the hospital, and a follow up visit timed to their risk. Do not skip or delay that visit.',
       'Treatment when needed is usually phototherapy, which is light treatment and is straightforward.',
       'Feeding well matters, because bilirubin leaves the body in stool. A baby who is not feeding well can become more jaundiced.',
@@ -9498,7 +9531,7 @@ const CARE_TOPICS = [
       { myth: 'Yellow skin at two weeks is just leftover jaundice.', truth: 'Jaundice that persists past about two weeks needs evaluation, because a small number of causes are serious and treatable.' },
     ],
     redFlags: [
-      'Yellow colour that reaches the belly, arms, or legs',
+      'Yellow color that reaches the belly, arms, or legs',
       'Jaundice appearing in the first 24 hours of life: call immediately',
       'Your baby is very sleepy, hard to wake, or feeding poorly',
       'High pitched crying, arching, or stiffness',
@@ -9650,7 +9683,7 @@ const CARE_TOPICS = [
       'something to learn in a hands on class, not from a screen while it is happening.',
     keyPoints: [
       'Gagging is loud and protective. The child is red faced, coughing, making noise, and it is part of learning to eat. Let them work through it.',
-      'Choking is silent or nearly silent. They cannot cough, cry, or breathe, may clutch at their throat, and their colour changes. That is an emergency.',
+      'Choking is silent or nearly silent. They cannot cough, cry, or breathe, may clutch at their throat, and their color changes. That is an emergency.',
       'A forceful cough is doing more than you can. If they are coughing hard, let them cough and stay with them.',
       'High risk foods for under fours: whole grapes, hot dog rounds, whole nuts, popcorn, hard raw vegetables, chunks of meat or cheese, sticky nut butter by the spoonful, hard candy, marshmallows.',
       'Modify rather than avoid: quarter grapes and cherry tomatoes lengthwise, cut hot dogs lengthwise then into small pieces, cook hard vegetables soft, spread nut butter thinly.',
@@ -9784,7 +9817,7 @@ const CARE_TOPICS = [
       'Grunting is a short sound at the end of a breath out. In a baby it is a serious sign, not a cute noise. It is an attempt to keep the lungs from collapsing.',
       'Stridor is a harsh noise breathing IN, and points to the upper airway. Wheezing is a whistling noise usually breathing OUT, and points lower down.',
       'Head bobbing, or using neck muscles to breathe, is the same story as retractions: extra effort.',
-      'Colour matters centrally. Look at lips, gums and tongue. Blue or dusky there is an emergency. Blue hands and feet alone in a newborn is usually just circulation.',
+      'Color matters centrally. Look at lips, gums and tongue. Blue or dusky there is an emergency. Blue hands and feet alone in a newborn is usually just circulation.',
       'Count breaths for a full sixty seconds while they are calm or asleep. Crying makes the number meaningless.',
       'A child who has been working hard and then suddenly goes quiet and still may be tiring, not improving. Treat that as an emergency.',
       'Babies breathe mainly through their nose, so congestion alone can sound alarming. Saline and suction first, then look again at the effort.',
@@ -9801,7 +9834,7 @@ const CARE_TOPICS = [
       { myth: 'They stopped struggling, so they are better.', truth: 'Sometimes. But a child who was working hard and has gone quiet and floppy may be exhausted. If in doubt, call 911.' },
     ],
     redFlags: [
-      'Blue, grey, or dusky lips, gums, or tongue: call 911',
+      'Blue, gray, or dusky lips, gums, or tongue: call 911',
       'Gasping, or pauses in breathing: call 911',
       'Too breathless to cry, feed, talk, or finish a sentence: call 911',
       'Deep retractions with every breath, or a harsh noise breathing in at rest: call 911',
@@ -9849,7 +9882,7 @@ const CARE_TOPICS = [
       { myth: 'Bumpers protect the baby from bumping their head.', truth: 'Crib bumpers pose a suffocation risk and are not recommended. A bumped head is not a danger, suffocation is.' },
     ],
     redFlags: [
-      'Any pause in breathing, colour change, or limpness needs emergency care',
+      'Any pause in breathing, color change, or limpness needs emergency care',
       'A baby who is very difficult to wake, or who is breathing noisily or with effort',
     ],
     sources: [
@@ -9885,7 +9918,7 @@ const CARE_TOPICS = [
       { myth: 'Lots of spit up means they are not getting enough.', truth: 'Weight gain and wet diapers tell you whether they are getting enough. The amount on your shirt does not.' },
     ],
     redFlags: [
-      'Blood, or green colour, in the spit up',
+      'Blood, or green color, in the spit up',
       'Forceful vomiting, or vomiting that is becoming more frequent and more forceful',
       'Refusing feeds, crying or arching during feeds',
       'Poor weight gain, or fewer wet and dirty diapers',
@@ -10037,7 +10070,7 @@ const CARE_TOPICS = [
       'Label every container with the date it was pumped.',
       'Store in the back of the fridge or freezer, never in the door, where the temperature swings.',
       'Thaw in the fridge overnight, or under warm running water. Never in a microwave, which creates hot spots and damages some of the milk.',
-      'It is normal for stored milk to separate and to vary in colour. Swirl rather than shake.',
+      'It is normal for stored milk to separate and to vary in color. Swirl rather than shake.',
       'These figures are for healthy full term babies. Ask your care team for different guidance if your baby was premature or is unwell.',
     ],
     myths: [
@@ -10152,7 +10185,7 @@ const CARE_TOPICS = [
     ],
     myths: [
       { myth: 'A high fever means a serious illness.', truth: 'The height of a fever does not track with how serious the illness is. How your child looks and acts tells you far more.' },
-      { myth: 'Green mucus means antibiotics are needed.', truth: 'Colour changes are a normal part of a viral cold and are not a sign of bacterial infection.' },
+      { myth: 'Green mucus means antibiotics are needed.', truth: 'Color changes are a normal part of a viral cold and are not a sign of bacterial infection.' },
       { myth: 'You should alternate fever medicines routinely.', truth: 'Only do this if your pediatrician tells you to, because alternating raises the chance of a dosing error.' },
     ],
     redFlags: [
@@ -10878,7 +10911,7 @@ const LOG_TYPES = [
     summaryTemplate: '{kind}',
     fields: [
       { id: 'kind', label: 'What was in it', type: 'choice', options: ['Wet', 'Dirty', 'Both', 'Dry'], required: true },
-      { id: 'colour', label: 'Colour', type: 'choice', options: ['Yellow', 'Brown', 'Green', 'Black', 'Red or bloody', 'Pale or chalky'],
+      { id: 'color', label: 'Color', type: 'choice', options: ['Yellow', 'Brown', 'Green', 'Black', 'Red or bloody', 'Pale or chalky'],
         hint: 'Red, black past the newborn days, or pale and chalky are all worth a call.' },
       { id: 'notes', label: 'Notes', type: 'text' },
     ],
@@ -11309,7 +11342,7 @@ const PREP_TOPICS = [
       'The first bowel movement is a thing everyone dreads and nobody mentions. Ask for a stool softener before you leave the hospital.',
       'Night sweats for a couple of weeks are normal as fluid leaves your body.',
       'Your belly will still look pregnant when you go home. That is anatomy, not failure.',
-      'A caesarean is major abdominal surgery. Recovery takes longer than people act like it does, and lifting limits are real.',
+      'A cesarean is major abdominal surgery. Recovery takes longer than people act like it does, and lifting limits are real.',
       'Pelvic floor problems such as leaking are common and are treatable. Common does not mean you have to live with it. Ask about pelvic floor physical therapy.',
       'The six week check is not the finish line. Ask for a real conversation about how you are doing, not just clearance for exercise.',
     ],
@@ -13434,12 +13467,12 @@ const BREASTMILK_BENEFITS = {
 const FORMULA_FACTS = {
   intro: 'Formula is regulated food, not a fallback, and it is worth knowing how it actually works.',
   points: [
-    'All infant formula sold in the US has to meet the same FDA nutrient requirements. The expensive tin and the store brand are both complete nutrition.',
+    'All infant formula sold in the US has to meet the same FDA nutrient requirements. The name brand and the store brand are both complete nutrition.',
     'Standard cow milk based formula is the right starting point for most babies. Specialty formulas exist for specific medical reasons and are worth using when a doctor says so, not on a hunch.',
     'Gassiness, spitting up, and fussiness are normal newborn behavior far more often than they are a formula problem. Switching formulas repeatedly usually changes nothing and costs a lot.',
     'Combination feeding is a real, valid, common way to feed a baby. Breastmilk when you can, formula when you cannot, and nobody has to pick a side.',
-    'Never water down formula to stretch a tin. If cost is the problem, WIC and formula banks exist and this is exactly what they are for.',
-    'Follow the mixing instructions exactly. The scoop that came with the tin is the right scoop for that tin.',
+    'Never water down formula to stretch a can. If cost is the problem, WIC and formula banks exist and this is exactly what they are for.',
+    'Follow the mixing instructions exactly. The scoop that came with the can is the right scoop for that can.',
   ],
   ifYouNeedHelpAffordingIt:
     'WIC covers formula and serves families well above the poverty line in most states. Hospital social workers, ' +
@@ -13664,12 +13697,199 @@ const MILK_TRANSITION = {
   ],
 };
 
+/* ------------------------------------------------------------------
+ * THE NEWBORN RHYTHM
+ *
+ * The first six weeks are the part nobody can picture in advance, and
+ * the part where a parent is most likely to be awake at 3am wondering
+ * whether any of this is normal. So this section answers the three
+ * questions that actually get asked, in the order they get asked:
+ * how often, how do I know it is working, and how much goes in a
+ * bottle.
+ *
+ * DIAPERS ARE THE MEASURE, NOT OUNCES.
+ * A breastfeeding parent cannot see how much went in. What she can see
+ * is what comes out, and the diaper count is the sign clinicians
+ * actually use. So the diaper table leads, and the ounces come after.
+ *
+ * WHAT THIS FILE MUST NEVER DO.
+ * It must never tell a parent to limit a feed, stretch a schedule, or
+ * hold a hungry baby to the clock. Every number here is a description
+ * of what is usual, offered so she can recognize her own baby in it,
+ * never a target to hit. A baby who wants more gets more.
+ * ------------------------------------------------------------------ */
+
+const NEWBORN_RHYTHM = {
+  headline: 'Every two to three hours, around the clock, and that is the job for a while.',
+  body: [
+    'A newborn feeds 8 to 12 times in 24 hours. Breastfed babies often nurse every two hours ' +
+    'counted from the start of one feed to the start of the next, which is not the same as two ' +
+    'hours off between them. If a feed takes forty minutes, the next one can be eighty minutes ' +
+    'after you finished. That is normal and it is not a sign anything is wrong.',
+
+    'It does not space out on a schedule you set. It spaces out when their stomach grows, which ' +
+    'happens somewhere around six to eight weeks for most babies and later for plenty of others. ' +
+    'Until then, feeding on demand is not spoiling them and it is not a habit you will have to ' +
+    'break later. It is how supply gets built.',
+
+    'Nights are part of the count. A newborn who sleeps through the night in the first weeks is ' +
+    'usually a newborn who needs waking, not a lucky break.',
+  ],
+  clusterFeeding: {
+    title: 'Cluster feeding is not a problem to solve',
+    text: 'Some evenings they will feed almost hourly for hours. It usually lands in the late ' +
+      'afternoon and evening, it often shows up in the first few days and again around three ' +
+      'weeks and six weeks, and it is how a baby drives supply up. It feels like your milk has ' +
+      'run out. It is the opposite. Eat something, get comfortable, and let them.',
+  },
+  wakingThem: {
+    title: 'When to wake a sleepy newborn',
+    text: 'Until they are back to birth weight and clearly gaining, do not let a newborn go more ' +
+      'than four hours without a feed, day or night. Unwrap them, change the diaper, skin to skin, ' +
+      'a cool cloth on the feet. After they are gaining well, a longer stretch is theirs to take.',
+    sleepyWarning: 'A newborn who is too sleepy to wake for a feed, or who will not stay latched ' +
+      'long enough to feed, is worth a phone call rather than another hour of trying.',
+  },
+};
+
+/* The diaper count, day by day. The first week is the week people panic
+   in, so it gets a row per day rather than a range. */
+const DIAPER_EXPECTATIONS = [
+  { day: 1, label: 'Day 1', wet: 1, wetLabel: '1 or more', dirty: '1 or 2',
+    stool: 'Meconium, black and tarry and hard to wipe off', note: 'Colostrum comes in teaspoons. That is enough.' },
+  { day: 2, label: 'Day 2', wet: 2, wetLabel: '2 or more', dirty: '1 or 2',
+    stool: 'Still meconium, black to very dark green' },
+  { day: 3, label: 'Day 3', wet: 3, wetLabel: '3 or more', dirty: '2 or more',
+    stool: 'Turning, greenish brown and looser', note: 'Milk usually comes in somewhere around now, day two to day five.' },
+  { day: 4, label: 'Day 4', wet: 4, wetLabel: '4 or more', dirty: '2 or more',
+    stool: 'Greenish to yellow' },
+  { day: 5, label: 'Day 5', wet: 6, wetLabel: '6 or more', dirty: '3 or more',
+    stool: 'Yellow, loose, with small seedy curds', note: 'From here on, six or more wet diapers a day is the number to hold onto.' },
+  { day: 6, label: 'Day 6 onward', wet: 6, wetLabel: '6 or more', dirty: '3 or more',
+    stool: 'Yellow and seedy for breastfed babies, tan to brown and firmer on formula' },
+];
+
+const DIAPER_NOTES = {
+  wetHowToTell: 'A disposable diaper hides how wet it is. A wet one weighs about like three ' +
+    'tablespoons of water poured onto a dry one, and if you are unsure, that is genuinely the ' +
+    'test people are taught to use. Urine should be pale, close to colourless.',
+  bricks: 'Brick red or orange dust in the diaper in the first few days is urate crystals. Common ' +
+    'before the milk is fully in, and expected to stop once it is. After day four or five it is ' +
+    'worth mentioning.',
+  afterSixWeeks: 'Somewhere after three to six weeks a breastfed baby may stop pooing daily and ' +
+    'go several days between them. If they are comfortable, feeding well, and the diaper when it ' +
+    'arrives is soft, that is normal and not constipation. A formula fed baby usually keeps to a ' +
+    'more regular pattern.',
+  formulaStool: 'Formula stool is tan to brown, firmer, and there is less of it. Different is not worse.',
+};
+
+/* Volumes. These sit below the diaper table on purpose. */
+const BOTTLE_AMOUNTS = {
+  intro: 'These are the amounts most babies land on, not amounts to get into them. A baby who is ' +
+    'still rooting and smacking after the bottle is still hungry. A baby who turns away with milk ' +
+    'left is finished, and the bottle is not a plate to be cleared.',
+
+  breastmilk: {
+    title: 'Bottles of expressed breastmilk',
+    lead: 'Here is the part that surprises almost everybody: it barely goes up.',
+    rows: [
+      { when: 'Day 1', amount: 'A teaspoon or two', per: 'per feed',
+        note: 'Their stomach is about the size of a cherry. Colostrum is measured in milliliters and that is by design.' },
+      { when: 'Days 2 to 3', amount: 'About half an ounce to an ounce', per: 'per feed' },
+      { when: 'Days 4 to 7', amount: '1 to 2 ounces', per: 'per feed' },
+      { when: '2 weeks to 1 month', amount: '2 to 3 ounces', per: 'per feed' },
+      { when: '1 to 6 months', amount: 'About 2.5 to 4 ounces', per: 'per feed',
+        note: 'Around 25 to 30 ounces across the whole day, and it stays about there.' },
+    ],
+    theFlatLine: 'A breastfed baby takes roughly the same amount of milk a day at five months as ' +
+      'at one month. In the study most of these numbers come from, the average was just under 27 ' +
+      'ounces a day across babies aged one to six months, spread over about 11 feeds, and the ' +
+      'volume per feed had no relationship to the baby\u2019s age at all. Breastmilk changes ' +
+      'composition as they grow, so the same volume keeps doing the job. This is why a bottle fed ' +
+      'baby on expressed milk does not need bigger and bigger bottles, and why being handed a ' +
+      'formula chart can make a pumping parent think she is falling behind when she is not.',
+    range: 'The honest spread in that same study was 16 to 46 ounces a day. If your baby sits at ' +
+      'one end of that, they are still inside normal.',
+    daycare: 'A rough starting point for a bottle while you are apart: about an ounce for every ' +
+      'hour you are away, split across the feeds that fall in that window. Send a little extra ' +
+      'and ask them to send back what is left rather than to finish it.',
+  },
+
+  formula: {
+    title: 'Bottles of formula',
+    lead: 'Formula does climb with weight, which is the difference.',
+    rule: 'About 2.5 ounces a day for every pound they weigh, spread across the day.',
+    ruleExample: 'A 9 pound baby comes out around 22 ounces a day. A 12 pound baby around 30.',
+    cap: 'Most babies should not average more than about 32 ounces in 24 hours. If they seem ' +
+      'hungry past that, that is a conversation with the pediatrician rather than another bottle.',
+    rows: [
+      { when: 'First week', amount: '1 to 2 ounces', per: 'per feed, every 2 to 3 hours' },
+      { when: 'By the end of the first month', amount: '3 to 4 ounces', per: 'per feed, every 3 to 4 hours' },
+      { when: '6 months', amount: '6 to 8 ounces', per: 'per feed, 4 or 5 times a day' },
+    ],
+    neverDilute: 'Never add extra water to stretch a can. Over diluted formula causes water ' +
+      'intoxication: it throws off sodium and can cause seizures, and it has genuinely hurt ' +
+      'babies. Mix it exactly as the label says, every time. If formula is hard to afford or hard ' +
+      'to find, WIC and your pediatrician have real options and this is exactly what to ask them ' +
+      'about.',
+    noWater: 'A baby under six months needs no water at all, and no juice, unless a doctor has ' +
+      'specifically told you otherwise. Milk or formula is the whole diet.',
+    noCereal: 'Do not put cereal in a bottle. It does not help them sleep, it is a choking risk, ' +
+      'and it replaces nutrition with filler. If someone has told you to do it for reflux, ask ' +
+      'your pediatrician first.',
+  },
+
+  paced: {
+    title: 'Pace the bottle, whatever is in it',
+    steps: [
+      'Sit them upright rather than lying flat, and keep the bottle close to level so they have to work for it.',
+      'Slow flow teat, and leave it there. Moving up a size because a feed takes twenty minutes usually just means they swallow more air.',
+      'Let them take breaks. Tip the bottle down, let them breathe, offer it again.',
+      'Stop when they stop. Turning away, letting milk pool, hands relaxing open, all of it means done.',
+      'Never prop a bottle and walk away, and never put a baby to bed with one. Choking, ear infections and tooth decay all live there.',
+    ],
+  },
+};
+
+const NEWBORN_WARNING_SIGNS = {
+  title: 'Call about feeding if',
+  items: [
+    'Fewer than six wet diapers a day after day five, or urine that is dark or has brick colored dust in it past the first few days',
+    'No stool at all in 24 hours in the first week, or stools that are still black past day four',
+    'They are still below birth weight at two weeks old',
+    'Too sleepy to wake for feeds, or feeding for a few minutes and falling straight back to sleep every time',
+    'Yellowing of the skin or the whites of the eyes that is spreading or getting deeper',
+    'A dry mouth, no tears when they cry, or a soft spot on the head that looks sunken',
+    'Feeding is so painful that you are dreading it, or a nipple is cracked or bleeding',
+  ],
+  urgent: 'Sunken eyes, cool or mottled hands and feet, very hard to rouse, or passing urine only ' +
+    'once or twice in a day are signs of real dehydration. That is today, not the next available ' +
+    'appointment.',
+  reassurance: 'Weight loss in the first days is expected. Up to 8 to 10 percent of birth weight ' +
+    'is normal, and most babies are back to birth weight by about two weeks. Asking to be weighed ' +
+    'is free, and no good pediatric office has ever minded.',
+};
+
 const FEEDING_SOURCES = [
   { org: 'American Academy of Pediatrics', label: 'Breastfeeding and the Use of Human Milk, 2022 policy statement', url: 'https://publications.aap.org/pediatrics/article/150/1/e2022057988/188347/Policy-Statement-Breastfeeding-and-the-Use-of' },
   { org: 'HealthyChildren.org (AAP)', label: 'Starting Solid Foods', url: 'https://www.healthychildren.org/English/ages-stages/baby/feeding-nutrition/Pages/Starting-Solid-Foods.aspx' },
   { org: 'HealthyChildren.org (AAP)', label: 'Why Formula Instead of Cow’s Milk', url: 'https://www.healthychildren.org/English/ages-stages/baby/formula-feeding/Pages/Why-Formula-Instead-of-Cows-Milk.aspx' },
   { org: 'HealthyChildren.org (AAP)', label: 'Most Toddlers Don’t Need Toddler Formula', url: 'https://www.healthychildren.org/English/news/Pages/why-most-toddlers-dont-need-toddler-formula.aspx' },
   { org: 'CDC', label: 'Cow’s Milk and Milk Alternatives', url: 'https://www.cdc.gov/infant-toddler-nutrition/foods-and-drinks/cows-milk-and-milk-alternatives.html' },
+];
+
+/* The newborn section is the part most likely to be read at 3am and
+   repeated to somebody else, so it carries its own sources rather than
+   sharing the general feeding list. */
+const NEWBORN_SOURCES = [
+  { org: 'HealthyChildren.org (AAP)', label: 'How Often and How Much Should Your Baby Eat?', url: 'https://www.healthychildren.org/English/ages-stages/baby/feeding-nutrition/Pages/how-often-and-how-much-should-your-baby-eat.aspx' },
+  { org: 'HealthyChildren.org (AAP)', label: 'How to Tell if Your Breastfed Baby is Getting Enough Milk', url: 'https://www.healthychildren.org/English/ages-stages/baby/breastfeeding/Pages/How-to-Tell-if-Baby-is-Getting-Enough-Milk.aspx' },
+  { org: 'HealthyChildren.org (AAP)', label: 'Amount and Schedule of Baby Formula Feedings', url: 'https://www.healthychildren.org/English/ages-stages/baby/formula-feeding/Pages/amount-and-schedule-of-formula-feedings.aspx' },
+  { org: 'CDC', label: 'How Much and How Often to Breastfeed', url: 'https://www.cdc.gov/infant-toddler-nutrition/breastfeeding/how-much-and-how-often.html' },
+  { org: 'CDC', label: 'How Much and How Often to Feed Infant Formula', url: 'https://www.cdc.gov/infant-toddler-nutrition/formula-feeding/how-much-and-how-often.html' },
+  { org: 'American Academy of Pediatrics', label: 'Kent et al, Volume and Frequency of Breastfeedings, Pediatrics 2006', url: 'https://publications.aap.org/pediatrics/article-abstract/117/3/e387/68590/Volume-and-Frequency-of-Breastfeedings-and-Fat' },
+  { org: 'HealthyChildren.org (AAP)', label: 'How to Safely Prepare Baby Formula With Water', url: 'https://www.healthychildren.org/English/ages-stages/baby/formula-feeding/Pages/how-to-safely-prepare-formula-with-water.aspx' },
+  { org: 'HealthyChildren.org (AAP)', label: 'Signs of Dehydration in Infants and Children', url: 'https://www.healthychildren.org/English/health-issues/injuries-emergencies/Pages/dehydration.aspx' },
 ];
 
 /* ------------------------------------------------------------------
@@ -13690,6 +13910,11 @@ function getFeedingStage(months) {
 /** A short line for the feeding card on the home screen. */
 function getFeedingHeadline(months) {
   const stage = getFeedingStage(months);
+  /* A parent of a two week old and a parent of a three month old are
+     both in milkOnly and are not asking the same question. */
+  if (typeof months === 'number' && months < 2) {
+    return 'Every two to three hours, and six wet diapers a day once the milk is in.';
+  }
   const lines = {
     milkOnly: 'Milk only for now. Solids can wait, and waiting is the safer side to be on.',
     approaching: 'Getting close. Watch for the readiness signs rather than the date on the calendar.',
@@ -13699,6 +13924,34 @@ function getFeedingHeadline(months) {
     table: 'Eating with the family. The job now is variety and a calm table, not clean plates.',
   };
   return stage ? lines[stage] : null;
+}
+
+/* Which diaper row applies today. Only meaningful in the first week,
+   which is exactly when it matters. */
+function getDiaperDay(ageInDays) {
+  if (typeof ageInDays !== 'number' || Number.isNaN(ageInDays) || ageInDays < 0) return null;
+  const d = Math.floor(ageInDays) + 1;
+  if (d >= 6) return DIAPER_EXPECTATIONS[DIAPER_EXPECTATIONS.length - 1];
+  return DIAPER_EXPECTATIONS.find((r) => r.day === d) || null;
+}
+
+/** How many wet diapers a day to expect at this age, as a number. */
+function expectedWetDiapers(ageInDays) {
+  const row = getDiaperDay(ageInDays);
+  return row ? row.wet : 6;
+}
+
+/** The newborn section is worth showing while it is still the question. */
+function newbornRhythmIsRelevant(months) {
+  return typeof months === 'number' && !Number.isNaN(months) && months < 4;
+}
+
+/** Roughly how much formula a day, from a weight in pounds. */
+function formulaOuncesForWeight(pounds) {
+  const w = Number(pounds);
+  if (!isFinite(w) || w <= 0) return null;
+  const oz = Math.round(w * 2.5);
+  return { ounces: Math.min(oz, 32), capped: oz > 32 };
 }
 
 
@@ -13775,7 +14028,7 @@ const CPR_BY_AGE = [
       'because a baby in arrest almost always needs air before anything else.',
     steps: [
       'Put them on their back on a firm flat surface. The floor is better than a bed.',
-      'Place both thumbs side by side in the centre of the chest just below the nipple line, with your hands wrapping around their back. If your hands are too big, use the heel of one hand instead.',
+      'Place both thumbs side by side in the center of the chest just below the nipple line, with your hands wrapping around their back. If your hands are too big, use the heel of one hand instead.',
       'Push down about one and a half inches, which is roughly one third of the depth of their chest.',
       'Let the chest come all the way back up between pushes. Half a release is half a compression.',
       'Do 30 compressions at 100 to 120 a minute, which is about two a second.',
@@ -13803,7 +14056,7 @@ const CPR_BY_AGE = [
       'Shout for someone to call 911 and get an AED. If you are alone with no phone, do two minutes of CPR first, then go and call.',
     steps: [
       'Put them on their back on a firm flat surface.',
-      'Use the heel of one hand in the centre of the chest, on the lower half of the breastbone. Use both hands if they are a bigger child or if one hand is not enough.',
+      'Use the heel of one hand in the center of the chest, on the lower half of the breastbone. Use both hands if they are a bigger child or if one hand is not enough.',
       'Push down about two inches, which is roughly one third of the depth of their chest.',
       'Let the chest fully recoil between pushes.',
       'Do 30 compressions at 100 to 120 a minute.',
@@ -13827,7 +14080,7 @@ const CPR_BY_AGE = [
     ],
     callForHelp: 'Call 911 first, put it on speaker, and get an AED. Then start compressions.',
     steps: [
-      'Heel of one hand in the centre of the chest, the other hand on top, fingers interlocked.',
+      'Heel of one hand in the center of the chest, the other hand on top, fingers interlocked.',
       'Arms straight, shoulders directly over your hands, push with your body weight rather than your arms.',
       'Push down at least two inches, and no more than about two and a half.',
       'Let the chest come fully back up each time.',
@@ -13869,7 +14122,7 @@ const CHOKING_BY_AGE = [
       'Sit down and lay them face down along your forearm, head lower than their body, supporting the jaw and head with your hand. Rest your arm on your thigh.',
       'Give 5 firm back blows with the heel of your other hand, between the shoulder blades.',
       'Turn them face up along your other forearm, still head down.',
-      'Give 5 chest thrusts. Two fingers in the centre of the chest just below the nipple line, pushing about one and a half inches, sharper and slower than compressions.',
+      'Give 5 chest thrusts. Two fingers in the center of the chest just below the nipple line, pushing about one and a half inches, sharper and slower than compressions.',
       'Look in the mouth. Remove the object only if you can see it clearly.',
       'Repeat 5 back blows and 5 chest thrusts until it clears or they go unresponsive.',
       'If they go unresponsive, start CPR. Look in the mouth each time before you give breaths.',
@@ -15005,7 +15258,7 @@ const COMMON_QUESTIONS = [
       '650,000, have looked for a link and not found one.',
     more:
       'The 1998 paper that started this was retracted by the journal that published it, and its lead ' +
-      'author lost his medical licence after an investigation found he had falsified data. That is worth ' +
+      'author lost his medical license after an investigation found he had falsified data. That is worth ' +
       'knowing, and it is also worth saying that parents who worried about this were not being foolish. ' +
       'They were told something alarming by someone with credentials, and they responded the way a ' +
       'loving parent responds.',
@@ -15247,7 +15500,7 @@ const FIREBASE_CONFIG = {
 };
 
 /* The SDK is loaded from Google's CDN as ES modules. Pinning the version
-   means a future SDK release cannot change behaviour under the app
+   means a future SDK release cannot change behavior under the app
    without somebody deciding to move it. */
 const FIREBASE_SDK_VERSION = '11.0.2';
 
@@ -15481,7 +15734,7 @@ function sprigs() {
   </svg>`;
 }
 
-/* The header every screen shares: logo centred, affirmations on soft shapes
+/* The header every screen shares: logo centered, affirmations on soft shapes
    at the left, the promise line top right, sprigs framing both edges. */
 function pageHeader(large) {
   const a = pickAffirmations(state.birthday);
@@ -15511,7 +15764,7 @@ function pageHeader(large) {
 }
 
 /* The same decorative layer as the phone, moved into the margins either
-   side of the reading column. Anchored with calc against the centre line
+   side of the reading column. Anchored with calc against the center line
    so the blobs sit beside the content at any window width, and hidden by
    CSS below the width where that margin actually exists. */
 /* The decorative layer, as a table rather than as a wall of markup.
@@ -15591,8 +15844,7 @@ function desktopHeader(a) {
   ${cornerFoliage()}
   ${shapes}
   ${sprigs()}
-  <div class="corner-right">Brighter<br>Tomorrows<br>Together<span class="corner-rule"></span></div>
-  <div class="mark-holder">${wordmark(false)}</div>`;
+  <div class="corner-right">Brighter<br>Tomorrows<br>Together<span class="corner-rule"></span></div>`;
 }
 
 /* Soft foliage in the two far corners, well behind everything else.
@@ -15726,8 +15978,10 @@ const store = {
   guest: false,
 
   /* A log part way through being filled in, so a re render does not
-     wipe what somebody has already typed. */
+     wipe what somebody has already typed, plus where it was opened from
+     so saving returns there. */
   logDraft: { typeId: null, values: {} },
+  logFrom: null,
 
   /* Navigation. */
   tab: IS_DESKTOP ? 'today' : 'welcome',
@@ -15897,6 +16151,7 @@ function ctx() {
   const tags = getMergedStrategyTags(state.lenses);
   return {
     child, summary, months, stage, tags,
+    days: summary.age ? summary.age.totalDays : null,
     flex: getMilestoneFlexMonths(state.lenses),
     corrected: getCorrectedAgeMonths(months, state.lenses, state.lensNumbers.prematurity),
     growth: summary.stageId ? getGrowthDetail(summary.stageId) : null,
@@ -16339,7 +16594,7 @@ function render() {
     const tabsEl = document.getElementById('tabs');
     if (tabsEl) tabsEl.innerHTML = '';
     const barEl = document.getElementById('topbar');
-    if (barEl) barEl.innerHTML = '';
+    if (barEl) barEl.innerHTML = topBar(true);
     restoreFocus();
     saveStore();
     return;
@@ -16712,6 +16967,9 @@ function initControls() {
       state.tab = t.dataset.id; state.view = null;
     } else if (t.dataset.go) {
       if (t.tagName === 'A') return; // source links open normally
+      /* A diaper logged from the newborn screen should land back on the
+         newborn screen with the count one higher, not on a list. */
+      if (t.dataset.go === 'log') store.logFrom = { tab: state.tab, view: state.view };
       // An Ask result can name the sub tab to open on, so a pumping
       // answer lands on the pumping tab that actually holds it.
       if (t.dataset.asksub) state[t.dataset.asksub] = t.dataset.asksubval;
@@ -17153,15 +17411,7 @@ function viewTopic(c, id) {
 
     <div class="dsec">
       <h4>Sources</h4>
-      ${t.sources.map((sc) => `
-        <a href="${esc(sc.url)}" target="_blank" rel="noopener noreferrer" class="lrow" style="text-decoration:none">
-          <span class="licon" style="font-size:9.5px;font-weight:700;color:var(--deep2)">${esc(sc.org)}</span>
-          <span class="grow">
-            <span style="display:block;font-size:13.5px;font-weight:600;color:var(--deep);line-height:1.35">${esc(sc.label)}</span>
-            <span class="tiny" style="display:block;margin-top:2px">${esc(sc.url.replace(/^https:\/\//, '').split('/')[0])}</span>
-          </span>
-          <span class="chev">${icon('chev', 15, 'var(--faint)')}</span>
-        </a>`).join('')}
+      ${sourceRows(t.sources)}
       <p class="tiny" style="margin-top:8px">Written against: ${esc(t.reviewedAgainst)}.</p>
     </div>
     <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>
@@ -17307,17 +17557,76 @@ function steps(items) {
   return `<ol class="dlist" style="counter-reset:none">${items.map((i) => `<li>${esc(i)}</li>`).join('')}</ol>`;
 }
 
-function sourceRows(sources) {
-  if (!sources || !sources.length) return '';
-  return sources.map((sc) => `
+/* THE SOURCE BADGE.
+
+   The little green tile is 38px square and the organisation names are
+   not. "AAP, HealthyChildren" and "Office on Women's Health" were
+   spilling out of it and running over the text beside them.
+
+   So the tile gets a short code and the full name moves into the line
+   underneath, where it can be as long as it likes. The codes are a
+   written list rather than something clever with initials, because
+   initials turn the Academy of Breastfeeding Medicine into ABM and the
+   Cleveland Clinic into CC, and only one of those is a real thing
+   anybody would recognize. Anything not on the list falls back to a
+   rule that is at least never wrong: short names as they are, longer
+   ones cut to their first word. */
+const SOURCE_CODES = {
+  '988 lifeline': '988',
+  'aap, healthychildren': 'AAP',
+  'healthychildren.org (aap)': 'AAP',
+  'american academy of pediatrics': 'AAP',
+  'academy of breastfeeding medicine': 'ABM',
+  'american heart association': 'AHA',
+  'american red cross': 'Red Cross',
+  'center for parent information and resources': 'CPIR',
+  'cleveland clinic': 'Cleveland',
+  'ecta center': 'ECTA',
+  'healthcare.gov': 'HealthCare',
+  'journal of emergency nursing': 'JEN',
+  'la leche league usa': 'LLL',
+  'mothertobaby': 'MTB',
+  'office on women\u2019s health': 'OWH',
+  "office on women's health": 'OWH',
+  'poison control': 'Poison',
+  'postpartum support international': 'PSI',
+  'star legacy foundation': 'SLF',
+  'u.s. department of labor': 'DOL',
+  'us dol': 'DOL',
+  'who imci': 'WHO',
+};
+
+function sourceCode(org) {
+  const raw = String(org == null ? '' : org).trim();
+  if (!raw) return '?';
+  const mapped = SOURCE_CODES[raw.toLowerCase()];
+  if (mapped) return mapped;
+  if (raw.length <= 7) return raw;
+  return raw.split(/[\s,]+/)[0].slice(0, 10);
+}
+
+/* One row, used everywhere sources are listed, so fixing the badge once
+   fixes it on every screen rather than on the one somebody noticed. */
+function sourceRow(sc) {
+  const domain = String(sc.url || '').replace(/^https?:\/\//, '').split('/')[0];
+  const org = String(sc.org || '').trim();
+  /* Only worth printing the organisation when the badge had to shorten
+     it. "CDC" under a badge that says CDC is noise. */
+  const showOrg = org && org !== sourceCode(org);
+  return `
     <a href="${esc(sc.url)}" target="_blank" rel="noopener noreferrer" class="lrow" style="text-decoration:none">
-      <span class="licon" style="font-size:9.5px;font-weight:700;color:var(--deep2)">${esc(sc.org)}</span>
+      <span class="licon srcbadge">${esc(sourceCode(org))}</span>
       <span class="grow">
         <span style="display:block;font-size:13.5px;font-weight:600;color:var(--deep);line-height:1.35">${esc(sc.label)}</span>
-        <span class="tiny" style="display:block;margin-top:2px">${esc(sc.url.replace(/^https:\/\//, '').split('/')[0])}</span>
+        <span class="tiny" style="display:block;margin-top:2px">${showOrg ? esc(org) + ' &middot; ' : ''}${esc(domain)}</span>
       </span>
       <span class="chev">${icon('chev', 15, 'var(--faint)')}</span>
-    </a>`).join('');
+    </a>`;
+}
+
+function sourceRows(sources) {
+  if (!sources || !sources.length) return '';
+  return sources.map(sourceRow).join('');
 }
 
 
@@ -17349,15 +17658,22 @@ function screenFeeding(c) {
   const months = c.months;
   const stage = getFeedingStage(months);
   const headline = getFeedingHeadline(months);
-  const tab = state.feedTab || 'stance';
+  /* Default to whichever tab answers the question they are most likely
+     here for, rather than always to the same one. */
+  let tab = state.feedTab || (c.months != null && c.months < 2 ? 'newborn' : 'stance');
+  if (tab === 'newborn' && !newbornRhythmIsRelevant(c.months)) tab = 'stance';
 
-  const tabs = [
+  /* The newborn tab only exists while it is the live question, and while
+     it exists it goes first, because a parent of a nine day old is not
+     on this screen to read about avocado. */
+  const newbornHere = newbornRhythmIsRelevant(months);
+  const tabs = (newbornHere ? [{ id: 'newborn', label: 'The newborn rhythm' }] : []).concat([
     { id: 'stance', label: 'Fed is best' },
     { id: 'milk', label: 'Milk' },
     { id: 'solids', label: 'Starting solids' },
     { id: 'how', label: 'Purees or baby led' },
     { id: 'foods', label: 'First foods' },
-  ];
+  ]);
 
   return `
   ${cornerLeaves()}
@@ -17372,6 +17688,8 @@ function screenFeeding(c) {
         <button class="chip" data-sub="feedTab" data-val="${esc(t.id)}"
                 aria-pressed="${t.id === tab}">${esc(t.label)}</button>`).join('')}
     </div>
+
+    ${tab === 'newborn' ? newbornBlock(c) : ''}
 
     ${tab === 'stance' ? `
       ${feedingStanceCard()}
@@ -19806,8 +20124,14 @@ function saveLog(typeId) {
   });
   if (k.logs.length > 500) k.logs.length = 500;
   store.logDraft = { typeId: null, values: {} };
-  state.view = null;
-  state.tab = 'logs';
+  if (store.logFrom) {
+    state.tab = store.logFrom.tab;
+    state.view = store.logFrom.view;
+    store.logFrom = null;
+  } else {
+    state.view = null;
+    state.tab = 'logs';
+  }
   flushStore();
 }
 
@@ -19835,10 +20159,14 @@ function chipGrowthOrder(k) {
    one tap and it is always in the same place. This is the single
    most important piece of chrome in a multi child app, which is why
    it sits above every screen rather than inside some of them. */
-function topBar() {
+/* markOnly is the front door, where there is nobody to switch to and
+   nowhere to navigate, but the wordmark still belongs at the top. */
+function topBar(markOnly) {
   const kids = store.children;
   const act = store.activeChildId;
   const meOn = state.tab === 'me' && !state.view;
+  const mark = IS_DESKTOP ? `<div class="mark-holder">${wordmark(false)}</div>` : '';
+  if (markOnly) return `<div class="topbar mark-only">${mark}</div>`;
   return `
   <div class="topbar">
     <div class="topbar-kids">
@@ -19851,10 +20179,13 @@ function topBar() {
         ${icon('plus', 15, 'var(--sage)')}
       </button>
     </div>
+    ${mark}
     ${IS_DESKTOP ? `
-    <button class="mebtn${meOn ? ' on' : ''}" data-tab="me" aria-label="You">
-      ${icon('user', 15, meOn ? '#fff' : 'var(--deep)')}<span>Me</span>
-    </button>` : ''}
+    <div class="me-slot">
+      <button class="mebtn${meOn ? ' on' : ''}" data-tab="me" aria-label="You">
+        ${icon('user', 15, meOn ? '#fff' : 'var(--deep)')}<span>Me</span>
+      </button>
+    </div>` : ''}
   </div>`;
 }
 
@@ -19904,6 +20235,14 @@ function screenToday(c) {
         <div class="script" style="text-align:right;flex:none;width:74px">A kinder<br>brighter<br>tomorrow</div>
       </div>
     </div>
+
+    ${c.days != null && c.days < 56 && getDiaperDay(c.days) ? `
+    <p class="sect">The newborn count</p>
+    ${newbornCounter(c)}
+    <button class="btn ghost sm" style="width:100%;margin-top:-3px"
+      data-go="screen" data-id="feeding" data-asksub="feedTab" data-asksubval="newborn">
+      Feeds, diapers and how many ounces
+    </button>` : ''}
 
     ${quickLogs.length ? `
     <p class="sect">Log it as it happens</p>
@@ -19993,6 +20332,12 @@ function childRow(ic, title, sub, attrs) {
   </button>`;
 }
 
+/* The ten people look for by name, rather than the first ten in the
+   data file. File order put speech and auditory processing above
+   anxiety and OCD, which is not how anybody searches. */
+const COMMON_LENSES = ['adhd', 'autism', 'sensory', 'anxiety', 'ocd', 'speech',
+  'emotionalRegulation', 'executiveFunction', 'learningDifferences', 'downSyndrome'];
+
 function screenChild(c) {
   const name = state.name || 'this child';
   const doneMs = Object.keys(state.statuses || {}).filter(
@@ -20017,9 +20362,18 @@ function screenChild(c) {
     <p class="sect">How their mind works</p>
     ${childRow('bulb', 'Understanding ' + esc(name),
       state.lenses.length
-        ? esc(getLenses(state.lenses).map((l) => l.label).join(', '))
-        : 'ADHD, autism, sensory, anxiety, OCD and more, explained in plain English, and scoped to their age',
+        ? esc(getLenses(state.lenses).map((l) => l.label).join(', ')) + ' &middot; tap to change'
+        : 'Twenty one ways a mind can work, explained in plain English and scoped to their age',
       'data-go="screen" data-id="understand"')}
+    <p class="tiny" style="margin:-3px 0 8px">
+      Straight to one of them, whether or not it is turned on for ${esc(name)}:
+    </p>
+    <div class="chips" style="margin-bottom:6px">
+      ${COMMON_LENSES.map((id) => getLens(id)).filter(Boolean).map((l) => `
+        <button class="chip" data-go="lens" data-id="${esc(l.id)}">${esc(l.label)}</button>`).join('')}
+      <button class="chip" data-go="screen" data-id="understand"
+        style="background:var(--leaf2);border-color:var(--leaf)">All ${SUPPORT_LENSES.length}</button>
+    </div>
 
     <p class="sect">Things to do together</p>
     ${childRow('calendar', "Today's plan", 'Three things chosen for today, new again tomorrow',
@@ -20420,6 +20774,193 @@ function exportLogs() {
   }
 }
 
+
+
+/* =================================================================
+   THE NEWBORN RHYTHM
+
+   Written for somebody reading it one handed at 3am with a baby on
+   them. Short lines, the diaper count first because that is the thing
+   she can actually see, and the ounces after.
+
+   The diaper table is not just a table. It counts what has already been
+   logged today against what the age expects, which turns a reference
+   chart into an answer. That is the whole reason the diaper log and
+   this screen belong to each other.
+   ================================================================= */
+
+/* Today's diapers, read back out of the log for the open child. */
+function diapersToday() {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const t = start.getTime();
+  let wet = 0, dirty = 0;
+  childLogs().forEach((l) => {
+    if (l.typeId !== 'diapers') return;
+    if (new Date(l.at).getTime() < t) return;
+    const kind = l.values && l.values.kind;
+    if (kind === 'Wet' || kind === 'Both') wet++;
+    if (kind === 'Dirty' || kind === 'Both') dirty++;
+  });
+  return { wet, dirty, logged: wet + dirty };
+}
+
+function newbornCounter(c) {
+  const row = getDiaperDay(c.days);
+  if (!row) return '';
+  const t = diapersToday();
+  const want = row.wet;
+  const pct = Math.min(100, Math.round((t.wet / want) * 100));
+  const met = t.wet >= want;
+
+  return `
+  <div class="card">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Today &middot; ${esc(row.label)}</p>
+    <h3 class="h3" style="margin-top:3px">${t.wet} wet, ${t.dirty} dirty so far</h3>
+    <p class="tiny" style="margin-top:3px">
+      ${esc(row.wetLabel)} wet and ${esc(row.dirty)} dirty is what this day usually looks like.
+    </p>
+    <div class="bar" style="margin-top:9px"><i style="width:${pct}%"></i></div>
+    <p class="tiny" style="margin-top:7px">
+      ${t.logged === 0
+        ? 'Nothing logged today yet. Log a diaper and this counts itself.'
+        : met
+          ? 'That is the number for today. Nothing else to do with it.'
+          : 'Still early in the day if it is early in the day. This is a count, not a verdict.'}
+    </p>
+    <button class="btn ghost sm" style="width:100%;margin-top:10px" data-go="log" data-id="diapers">
+      Log a diaper
+    </button>
+  </div>`;
+}
+
+function newbornBlock(c) {
+  const r = NEWBORN_RHYTHM;
+  const bm = BOTTLE_AMOUNTS.breastmilk;
+  const fm = BOTTLE_AMOUNTS.formula;
+  const today = getDiaperDay(c.days);
+
+  const amountRow = (x, last) => `
+    <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;
+      ${last ? '' : 'border-bottom:1px solid var(--line2)'}">
+      <span class="tiny" style="flex:none;width:104px;font-weight:600;color:var(--ink)">${esc(x.when)}</span>
+      <span class="grow">
+        <span style="display:block;font-size:13.5px;color:var(--body);line-height:1.45">
+          <strong style="color:var(--ink)">${esc(x.amount)}</strong> ${esc(x.per)}
+        </span>
+        ${x.note ? `<span class="tiny" style="display:block;margin-top:3px">${esc(x.note)}</span>` : ''}
+      </span>
+    </div>`;
+
+  return `
+    <div class="card leafy">
+      <p class="eyebrow">${icon('clock', 11, 'var(--sage)')} How often</p>
+      <h3 class="h3" style="font-size:19px">${esc(r.headline)}</h3>
+      ${r.body.map((t) => `<p class="bodytext" style="margin-top:9px">${esc(t)}</p>`).join('')}
+    </div>
+
+    ${today ? newbornCounter(c) : ''}
+
+    <p class="sect">What should be in the diaper</p>
+    <p class="tiny" style="margin:-4px 0 10px">
+      You cannot see how much went in. You can see what comes out, and that is the measure your
+      pediatrician uses too.
+    </p>
+    <div class="card" style="padding:6px 14px 12px">
+      ${DIAPER_EXPECTATIONS.map((d, i) => {
+        const isToday = today && today.day === d.day;
+        return `
+        <div style="display:flex;gap:11px;align-items:flex-start;padding:11px 0;
+          ${i < DIAPER_EXPECTATIONS.length - 1 ? 'border-bottom:1px solid var(--line2)' : ''}">
+          <span style="flex:none;width:34px;height:34px;border-radius:50%;margin-top:1px;
+            background:${isToday ? 'var(--leaf)' : 'var(--leaf2)'};display:grid;place-items:center;
+            font-size:11px;font-weight:700;color:var(--deep2)">${d.day >= 6 ? '6+' : d.day}</span>
+          <span class="grow">
+            <span style="display:block;font-size:13.5px;font-weight:600;color:var(--ink)">
+              ${esc(d.label)}${isToday ? ' <span class="tag">Today</span>' : ''}
+            </span>
+            <span class="tiny" style="display:block;margin-top:2px">
+              ${esc(d.wetLabel)} wet &middot; ${esc(d.dirty)} dirty
+            </span>
+            <span class="tiny" style="display:block;margin-top:2px">${esc(d.stool)}</span>
+            ${d.note ? `<span class="tiny" style="display:block;margin-top:3px;color:var(--sage)">${esc(d.note)}</span>` : ''}
+          </span>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="card flat">
+      <p class="bodytext">${esc(DIAPER_NOTES.wetHowToTell)}</p>
+      <p class="bodytext" style="margin-top:9px">${esc(DIAPER_NOTES.bricks)}</p>
+      <p class="bodytext" style="margin-top:9px">${esc(DIAPER_NOTES.afterSixWeeks)}</p>
+      <p class="bodytext" style="margin-top:9px">${esc(DIAPER_NOTES.formulaStool)}</p>
+    </div>
+
+    <p class="sect">How much goes in a bottle</p>
+    <div class="card flat">
+      <p class="bodytext">${esc(BOTTLE_AMOUNTS.intro)}</p>
+    </div>
+
+    <div class="card">
+      <p class="eyebrow">${icon('drop', 11, 'var(--sage)')} ${esc(bm.title)}</p>
+      <h3 class="h3" style="margin-top:3px">${esc(bm.lead)}</h3>
+      <div style="margin-top:8px">
+        ${bm.rows.map((x, i) => amountRow(x, i === bm.rows.length - 1)).join('')}
+      </div>
+      <div class="callout" style="margin-top:12px">${esc(bm.theFlatLine)}</div>
+      <p class="tiny" style="margin-top:9px">${esc(bm.range)}</p>
+      <p class="bodytext" style="margin-top:9px">${esc(bm.daycare)}</p>
+    </div>
+
+    <div class="card">
+      <p class="eyebrow">${icon('utensils', 11, 'var(--sage)')} ${esc(fm.title)}</p>
+      <h3 class="h3" style="margin-top:3px">${esc(fm.lead)}</h3>
+      <p class="bodytext" style="margin-top:6px"><strong style="color:var(--ink)">${esc(fm.rule)}</strong></p>
+      <p class="tiny" style="margin-top:4px">${esc(fm.ruleExample)}</p>
+      <div style="margin-top:8px">
+        ${fm.rows.map((x, i) => amountRow(x, i === fm.rows.length - 1)).join('')}
+      </div>
+      <p class="tiny" style="margin-top:9px">${esc(fm.cap)}</p>
+    </div>
+
+    <div class="card" style="border-left:3px solid var(--concern)">
+      <p class="eyebrow" style="color:var(--concern)">Never water it down</p>
+      <p class="bodytext" style="margin-top:5px">${esc(fm.neverDilute)}</p>
+      <p class="bodytext" style="margin-top:9px">${esc(fm.noWater)}</p>
+      <p class="bodytext" style="margin-top:9px">${esc(fm.noCereal)}</p>
+    </div>
+
+    <p class="sect">${esc(BOTTLE_AMOUNTS.paced.title)}</p>
+    ${steps(BOTTLE_AMOUNTS.paced.steps)}
+
+    <p class="sect">${esc(r.clusterFeeding.title)}</p>
+    <div class="card flat">
+      <p class="bodytext">${esc(r.clusterFeeding.text)}</p>
+    </div>
+
+    <p class="sect">${esc(r.wakingThem.title)}</p>
+    <div class="card">
+      <p class="bodytext">${esc(r.wakingThem.text)}</p>
+      <div class="callout" style="margin-top:11px">${esc(r.wakingThem.sleepyWarning)}</div>
+    </div>
+
+    <p class="sect">${esc(NEWBORN_WARNING_SIGNS.title)}</p>
+    <ul class="dlist warn">
+      ${NEWBORN_WARNING_SIGNS.items.map((t) => `<li>${esc(t)}</li>`).join('')}
+    </ul>
+    <div class="card" style="border:1.5px solid #E4C9BF;background:#FCF4F1;margin-top:10px">
+      <p class="eyebrow" style="color:#A85A44">Today, not next week</p>
+      <p class="bodytext" style="margin-top:5px;color:#7A4E40">${esc(NEWBORN_WARNING_SIGNS.urgent)}</p>
+    </div>
+    <div class="card leafy">
+      <p class="bodytext">${esc(NEWBORN_WARNING_SIGNS.reassurance)}</p>
+    </div>
+
+    <div class="dsec">
+      <h4>Sources</h4>
+      ${sourceRows(NEWBORN_SOURCES)}
+    </div>
+  `;
+}
 
 /* -----------------------------------------------------------------
    BOOT
