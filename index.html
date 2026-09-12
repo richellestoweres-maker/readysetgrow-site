@@ -15977,6 +15977,13 @@ const store = {
   hadSession: false,
   guest: false,
 
+  /* Sync bookkeeping. deletedChildIds is a list of tombstones, because
+     a child missing from the list is not the same as a child that was
+     deleted, and without this every sign in would resurrect everything
+     ever removed. */
+  deletedChildIds: [],
+  parentUpdatedAt: 0,
+
   /* A log part way through being filled in, so a re render does not
      wipe what somebody has already typed, plus where it was opened from
      so saving returns there. */
@@ -16075,7 +16082,12 @@ function flushStore() {
       bagChecked: store.bagChecked,
       hadSession: store.hadSession,
       guest: store.guest,
+      deletedChildIds: store.deletedChildIds,
+      parentUpdatedAt: store.parentUpdatedAt,
     }));
+    /* Everything that saves locally also queues the cloud copy, so no
+       future screen has to remember to sync. */
+    cloudQueue();
   } catch (err) { /* private window, blocked storage, quota. Carry on. */ }
 }
 
@@ -16103,6 +16115,8 @@ function loadStore() {
   if (saved) {
     store.hadSession = !!saved.hadSession;
     store.guest = !!saved.guest;
+    store.deletedChildIds = Array.isArray(saved.deletedChildIds) ? saved.deletedChildIds : [];
+    store.parentUpdatedAt = Number(saved.parentUpdatedAt) || 0;
   }
 
   if (saved && Array.isArray(saved.children) && saved.children.length) {
@@ -16116,12 +16130,14 @@ function loadStore() {
       statuses: k.statuses && typeof k.statuses === 'object' ? k.statuses : {},
       routineInclude: Array.isArray(k.routineInclude) ? k.routineInclude : [],
       logs: Array.isArray(k.logs) ? k.logs : [],
+      updatedAt: Number(k.updatedAt) || 0,
     }));
     store.bagChecked = Array.isArray(saved.bagChecked) ? saved.bagChecked : [];
     /* Reopen whoever was open last. Three of the five tabs are about one
        child, so dropping back to the picker on every refresh would make
        the app feel like it forgot. With one child there is nothing to
        choose, so that one opens itself. */
+    store.parentUpdatedAt = Number(saved.parentUpdatedAt) || 0;
     const was = saved.activeChildId;
     const stillThere = was && store.children.some((k) => k.id === was);
     store.activeChildId = stillThere ? was
@@ -16132,6 +16148,9 @@ function loadStore() {
   // Nothing saved. Seed the example child so the demo and the workbench
   // open on something rather than on an empty state.
   const seed = newChildRecord('Stetson', '2022-06-09');
+  /* Marked as the app's own invention, so signing in can tell it apart
+     from a child a parent actually added. */
+  seed.seeded = true;
   store.children = [seed];
   /* Open on the example rather than on the picker. A first visit that
      starts with the question "which child?" and exactly one answer is a
@@ -16855,6 +16874,16 @@ function initControls() {
     if (t.dataset.auth) {
       const a = t.dataset.auth;
       if (a === 'mode') { auth.mode = t.dataset.val; auth.error = ''; }
+      else if (a === 'account') {
+        /* Back to the front door without touching anything she has
+           entered, so creating the account carries it all up rather
+           than trading it for one. */
+        auth.guest = false;
+        store.guest = false;
+        auth.mode = 'signup';
+        auth.error = '';
+        flushStore();
+      }
       else if (a === 'guest') {
         auth.guest = true;
         store.guest = true;
@@ -16894,6 +16923,9 @@ function initControls() {
     } else if (t.dataset.removechild) {
       const id = t.dataset.removechild;
       store.children = store.children.filter((k) => k.id !== id);
+      if (!store.deletedChildIds) store.deletedChildIds = [];
+      if (store.deletedChildIds.indexOf(id) === -1) store.deletedChildIds.push(id);
+      cloudDeleteChild(id);
       if (store.activeChildId === id) selectChild(null);
       flushStore();
     } else if (t.dataset.logset) {
@@ -19905,6 +19937,11 @@ function loadFirebase() {
         // Carry the account details into the profile the app already uses.
         if (!store.parent.email) store.parent.email = u.email || '';
         if (!store.parent.name && u.displayName) store.parent.name = u.displayName;
+        /* This is the moment the account becomes real, so it is the
+           moment her work stops living in one browser. */
+        cloudStart(app, u.uid);
+      } else {
+        cloudStop();
       }
       flushStore();
       render();
@@ -19970,11 +20007,28 @@ async function doSignOut() {
     const { fbAuth, authMod } = await loadFirebase();
     await authMod.signOut(fbAuth);
   } catch (err) { /* already signed out, or offline. Fall through. */ }
+  /* Only a real account has a copy in the cloud to come back to. A
+     guest signing out would simply be handing over her own work. */
+  const hadAccount = !!auth.user;
+  cloudStop();
   auth.user = null;
   auth.guest = false;
   auth.checking = false;
   store.hadSession = false;
   store.guest = false;
+  if (hadAccount) {
+    /* Signing out on a shared computer must not leave one parent's
+       children sitting in the next person's browser. The account keeps
+       them, so this is a clear rather than a loss. */
+    store.children = [];
+    store.activeChildId = null;
+    store.parent = { name: '', username: '', email: '' };
+    store.bagChecked = [];
+    store.deletedChildIds = [];
+    store.parentUpdatedAt = 0;
+    store.logDraft = { typeId: null, values: {} };
+  }
+  flushStore();
   auth.form = { name: '', email: '', password: '' };
   auth.mode = 'login';
   state.tab = IS_DESKTOP ? 'today' : 'welcome';
@@ -20722,6 +20776,16 @@ function screenMe() {
       'data-go="screen" data-id="profile"')}
 
     <p class="sect">Your account</p>
+    ${(() => {
+      const st = cloudStatusLine();
+      const border = st.tone === 'good' ? 'var(--sage)' : st.tone === 'warn' ? 'var(--attention)' : 'var(--line)';
+      return `
+      <div class="card" style="border-left:3px solid ${border}">
+        <p class="eyebrow">${icon(st.tone === 'good' ? 'check' : 'info', 11, 'var(--sage)')} ${esc(st.title)}</p>
+        <p class="bodytext" style="margin-top:5px">${esc(st.text)}</p>
+        ${st.action ? `<button class="btn" style="margin-top:12px" data-auth="account">${esc(st.action)}</button>` : ''}
+      </div>`;
+    })()}
     ${childRow('star', 'Profile and settings',
       store.parent.name
         ? esc(store.parent.name) + (store.parent.email ? ', ' + esc(store.parent.email) : '')
@@ -20960,6 +21024,415 @@ function newbornBlock(c) {
       ${sourceRows(NEWBORN_SOURCES)}
     </div>
   `;
+}
+
+
+/* =================================================================
+   CLOUD SYNC
+
+   Until now everything a parent typed lived in localStorage on one
+   device. That is fine right up until the moment it is not: she logs
+   feeds all night on her phone, opens the laptop, and it is empty. Or
+   she clears her browsing data and her baby's first month is gone.
+
+   HOW IT IS SHAPED
+   One document for the parent at users/{uid}, and one document per
+   child underneath it at users/{uid}/children/{childId}, logs and all.
+   A child doc is small, a few tens of kilobytes even with five hundred
+   logs, and keeping each child separate means editing one child does
+   not rewrite the others.
+
+   HOW IT DECIDES WHO WINS
+   Every child carries an updatedAt. Rather than instrumenting every
+   single place in the app that can change a child, which would mean
+   remembering to do it forever, the sync serialises each child on the
+   way past and compares it to the last copy it knows is in the cloud.
+   Different means changed, changed means stamp the time and upload.
+   Between two devices the later stamp wins, per child, so an edit made
+   on a phone cannot be quietly undone by a laptop that had the screen
+   open but changed nothing.
+
+   DELETION IS NOT AN ABSENCE
+   A child missing from the local list is not the same as a child that
+   was deleted, or every sign in would resurrect everything ever
+   removed. So removals are recorded by id and those ids are never
+   adopted back.
+
+   IT WORKS OFFLINE
+   Firestore keeps its own cache, so writes made in a basement waiting
+   room are queued and sent when the signal comes back. The status line
+   on the Me screen says which of those is happening, because a mother
+   should never have to guess whether her logs are safe.
+   ================================================================= */
+
+const cloud = {
+  mod: null,        // the Firestore module namespace
+  db: null,
+  uid: null,
+  unsub: null,      // the live listener, so signing out can stop it
+  status: 'local',  // local | loading | saving | saved | offline | error
+  error: '',
+  lastSaved: null,
+  timer: null,
+  known: {},        // childId -> the serialised copy last known to be in the cloud
+  knownParent: null,
+  started: false,
+};
+
+/* Everything that belongs to the cloud copy of one child. JSON round
+   trip on purpose: it drops undefined, which Firestore rejects outright,
+   and it gives a stable string to compare against. */
+function childPayload(k) {
+  return JSON.parse(JSON.stringify({
+    id: k.id,
+    name: k.name || '',
+    birthday: k.birthday || null,
+    lenses: k.lenses || [],
+    lensOptions: k.lensOptions || {},
+    lensNumbers: k.lensNumbers || {},
+    statuses: k.statuses || {},
+    wakeTime: k.wakeTime || '06:30',
+    napOverride: k.napOverride == null ? null : k.napOverride,
+    routineInclude: k.routineInclude || [],
+    logs: Array.isArray(k.logs) ? k.logs : [],
+    createdAt: k.createdAt || null,
+    updatedAt: k.updatedAt || 0,
+  }));
+}
+/* The flag is deliberately not in the payload above. It describes where
+   a record came from in this browser, and once it reaches an account it
+   is simply one of her children. */
+
+function parentPayload() {
+  return JSON.parse(JSON.stringify({
+    parent: store.parent,
+    bagChecked: store.bagChecked || [],
+    deletedChildIds: store.deletedChildIds || [],
+    updatedAt: store.parentUpdatedAt || 0,
+  }));
+}
+
+/* The comparison ignores updatedAt, or every stamp would look like a
+   change and the two devices would push each other back and forth
+   forever. */
+function contentKey(payload) {
+  const copy = Object.assign({}, payload);
+  delete copy.updatedAt;
+  return JSON.stringify(copy);
+}
+
+/* The example child the app seeds so a first visit opens on something
+   rather than on an empty state. Putting a fictional Stetson
+   permanently on somebody's real account would be worse than useless,
+   so an untouched one is dropped rather than synced.
+
+   The seeded flag is what makes this safe. Matching on the name and
+   birthday alone would mean a real child who happened to share both
+   with the example could be thrown away, and only a record the app
+   invented itself carries the flag. The moment a parent puts anything
+   of her own into it, it stops being the example and is hers. */
+function isUntouchedSeed(k) {
+  if (!k || k.seeded !== true) return false;
+  const empty = (o) => !o || Object.keys(o).length === 0;
+  return empty(k.statuses) && empty(k.lensOptions) && empty(k.lensNumbers)
+    && (!k.lenses || !k.lenses.length)
+    && (!k.logs || !k.logs.length)
+    && (!k.routineInclude || !k.routineInclude.length);
+}
+
+/* THE MERGE, kept pure so it can be tested without a network.
+   local and remote are both arrays of child payloads. */
+function mergeChildren(local, remote, deletedIds) {
+  const dead = new Set(deletedIds || []);
+  const byId = {};
+  const upload = [];
+  const adopted = [];
+
+  (local || []).forEach((k) => { if (!dead.has(k.id)) byId[k.id] = { local: k }; });
+  (remote || []).forEach((k) => {
+    if (dead.has(k.id)) return;
+    byId[k.id] = Object.assign(byId[k.id] || {}, { remote: k });
+  });
+
+  const out = [];
+  Object.keys(byId).forEach((id) => {
+    const pair = byId[id];
+    if (pair.local && !pair.remote) { out.push(pair.local); upload.push(id); return; }
+    if (pair.remote && !pair.local) { out.push(pair.remote); adopted.push(id); return; }
+    const lt = Number(pair.local.updatedAt) || 0;
+    const rt = Number(pair.remote.updatedAt) || 0;
+    if (rt > lt) { out.push(pair.remote); adopted.push(id); }
+    else {
+      out.push(pair.local);
+      /* Equal timestamps with different content means two devices
+         edited inside the same millisecond, which is vanishingly rare
+         and still has to resolve somehow. Local wins and is pushed, so
+         both ends end up agreeing rather than silently differing. */
+      if (contentKey(pair.local) !== contentKey(pair.remote)) upload.push(id);
+    }
+  });
+
+  /* Stable order so the child strip does not reshuffle on every sync. */
+  out.sort((a, b) => String(a.createdAt || '').localeCompare(String(b.createdAt || '')));
+  return { children: out, upload, adopted };
+}
+
+/* The module is normally fetched from Google's CDN. The hook lets a
+   test drive the whole sync with a fake, which is the only way to
+   exercise two devices and a dropped connection without one. */
+function loadFirestoreModule() {
+  if (typeof window !== 'undefined' && window.__RSG_FIRESTORE__) {
+    return Promise.resolve(window.__RSG_FIRESTORE__);
+  }
+  return import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-firestore.js`);
+}
+
+function cloudSetStatus(s, err) {
+  cloud.status = s;
+  cloud.error = err || '';
+  if (s === 'saved') cloud.lastSaved = Date.now();
+  render();
+}
+
+async function cloudStart(app, uid) {
+  if (cloud.started && cloud.uid === uid) return;
+  cloudStop();
+  cloud.uid = uid;
+  cloud.started = true;
+  cloudSetStatus('loading');
+  try {
+    const fs = await loadFirestoreModule();
+    cloud.mod = fs;
+    /* A cache on disk is what makes this work with no signal. Private
+       windows and locked down browsers refuse it, and refusing is not a
+       reason to have no sync at all, so fall back to memory. */
+    try {
+      cloud.db = fs.initializeFirestore(app, {
+        localCache: fs.persistentLocalCache({ tabManager: fs.persistentMultipleTabManager() }),
+      });
+    } catch (err) {
+      cloud.db = fs.getFirestore(app);
+    }
+    await cloudFirstSync();
+    cloudListen();
+  } catch (err) {
+    cloud.started = false;
+    cloudSetStatus('error', String((err && err.message) || err));
+  }
+}
+
+function cloudStop() {
+  if (cloud.unsub) { try { cloud.unsub(); } catch (err) {} }
+  cloud.unsub = null;
+  cloud.db = null;
+  cloud.uid = null;
+  cloud.started = false;
+  cloud.known = {};
+  cloud.knownParent = null;
+  if (cloud.timer) { clearTimeout(cloud.timer); cloud.timer = null; }
+  cloud.status = 'local';
+}
+
+function cloudOn() {
+  return !!(cloud.db && cloud.uid && cloud.mod);
+}
+
+async function cloudFirstSync() {
+  const fs = cloud.mod;
+  const uid = cloud.uid;
+
+  const userRef = fs.doc(cloud.db, 'users', uid);
+  const userSnap = await fs.getDoc(userRef);
+  const remoteUser = userSnap.exists() ? userSnap.data() : null;
+
+  /* Deletions from either side count, so a child removed on the phone
+     does not come back the first time the laptop signs in. */
+  const deleted = Array.from(new Set(
+    (store.deletedChildIds || []).concat((remoteUser && remoteUser.deletedChildIds) || [])));
+  store.deletedChildIds = deleted;
+
+  const kidsRef = fs.collection(cloud.db, 'users', uid, 'children');
+  const kidsSnap = await fs.getDocs(kidsRef);
+  const remoteKids = [];
+  kidsSnap.forEach((d) => remoteKids.push(d.data()));
+
+  /* The example never goes up, empty account or not. This is the line
+     that stops every new signup starting life with somebody else's
+     child on it. */
+  const localKids = store.children.filter((k) => !isUntouchedSeed(k)).map(childPayload);
+
+  const merged = mergeChildren(localKids, remoteKids, deleted);
+  store.children = merged.children;
+  if (store.activeChildId && !store.children.some((k) => k.id === store.activeChildId)) {
+    store.activeChildId = store.children.length === 1 ? store.children[0].id : null;
+  }
+
+  /* The parent record follows the same later stamp wins rule. */
+  const localPt = Number(store.parentUpdatedAt) || 0;
+  const remotePt = Number(remoteUser && remoteUser.updatedAt) || 0;
+  if (remoteUser && remotePt > localPt) {
+    store.parent = Object.assign({ name: '', username: '', email: '' }, remoteUser.parent || {});
+    store.bagChecked = Array.isArray(remoteUser.bagChecked) ? remoteUser.bagChecked : [];
+    store.parentUpdatedAt = remotePt;
+  }
+
+  remoteKids.forEach((k) => { cloud.known[k.id] = contentKey(k); });
+  if (remoteUser) cloud.knownParent = contentKey(remoteUser);
+
+  flushStore();
+  cloudSetStatus('saved');
+  /* Anything the merge says exists only locally goes up now. */
+  cloudPush();
+}
+
+/* Live updates from the other device. This is the part that makes a
+   laptop show what was typed on a phone without anybody refreshing. */
+function cloudListen() {
+  const fs = cloud.mod;
+  if (!fs.onSnapshot) return;
+  const kidsRef = fs.collection(cloud.db, 'users', cloud.uid, 'children');
+  cloud.unsub = fs.onSnapshot(kidsRef, (snap) => {
+    let changed = false;
+    snap.forEach((d) => {
+      const remote = d.data();
+      if (!remote || !remote.id) return;
+      if ((store.deletedChildIds || []).indexOf(remote.id) !== -1) return;
+      const key = contentKey(remote);
+      cloud.known[remote.id] = key;
+      const i = store.children.findIndex((k) => k.id === remote.id);
+      if (i === -1) { store.children.push(remote); changed = true; return; }
+      const lt = Number(store.children[i].updatedAt) || 0;
+      const rt = Number(remote.updatedAt) || 0;
+      if (rt > lt) { store.children[i] = remote; changed = true; }
+    });
+    if (changed) {
+      if (store.activeChildId && !store.children.some((k) => k.id === store.activeChildId)) {
+        store.activeChildId = null;
+      }
+      flushStore();
+      render();
+    }
+  }, () => { /* a dropped listener is not worth a visible error */ });
+}
+
+/* Called from flushStore, so every path that already saves locally also
+   queues the cloud copy without anybody having to remember to. */
+function cloudQueue() {
+  if (!cloudOn()) return;
+  if (cloud.timer) clearTimeout(cloud.timer);
+  cloud.timer = setTimeout(() => { cloud.timer = null; cloudPush(false); }, 1400);
+}
+
+async function cloudPush() {
+  if (!cloudOn()) return;
+  const fs = cloud.mod;
+  const uid = cloud.uid;
+  const now = Date.now();
+  const writes = [];
+  const pending = [];   // what to mark as known, but only once it lands
+
+  store.children.forEach((k) => {
+    const payload = childPayload(k);
+    const key = contentKey(payload);
+    if (cloud.known[k.id] === key) return;
+    /* Stamp the record itself, not only the copy going up, so both
+       devices are comparing the same number. */
+    k.updatedAt = now;
+    payload.updatedAt = now;
+    pending.push(['child', k.id, key]);
+    writes.push(fs.setDoc(fs.doc(cloud.db, 'users', uid, 'children', k.id), payload));
+  });
+
+  const pt = parentPayload();
+  const ptKey = contentKey(pt);
+  if (cloud.knownParent !== ptKey) {
+    store.parentUpdatedAt = now;
+    pt.updatedAt = now;
+    pending.push(['parent', null, ptKey]);
+    writes.push(fs.setDoc(fs.doc(cloud.db, 'users', uid), pt, { merge: true }));
+  }
+
+  /* Nothing changed. Say nothing and change nothing, because setting a
+     status here would re render, which would re save, which would queue
+     another push, which would find nothing changed, forever. */
+  if (!writes.length) return;
+
+  cloudSetStatus('saving');
+  try {
+    await Promise.all(writes);
+    /* Only now is it true that the cloud holds this. Recording it any
+       earlier means a failed write is never retried. */
+    pending.forEach(([kind, id, key]) => {
+      if (kind === 'child') cloud.known[id] = key; else cloud.knownParent = key;
+    });
+    cloudSetStatus('saved');
+  } catch (err) {
+    /* Offline is not an error. Firestore has the write in its own
+       queue and will send it, so say that rather than alarming
+       anybody. The known map is deliberately not updated, so a real
+       failure is retried on the next change. */
+    const msg = String((err && err.code) || (err && err.message) || err);
+    if (/unavailable|offline|network|failed-precondition/i.test(msg)) cloudSetStatus('offline');
+    else cloudSetStatus('error', msg);
+  }
+}
+
+function cloudDeleteChild(id) {
+  if (!cloudOn()) return;
+  delete cloud.known[id];
+  try {
+    cloud.mod.deleteDoc(cloud.mod.doc(cloud.db, 'users', cloud.uid, 'children', id));
+  } catch (err) { /* the tombstone in deletedChildIds is what matters */ }
+  /* The tombstone rides in the parent document, and normally that waits
+     out the debounce with everything else. Not here. If another device
+     syncs in the second and a half before it goes up, it still has the
+     child and puts her straight back. Deletion is the one change where
+     waiting can undo itself, so it goes now. */
+  if (cloud.timer) { clearTimeout(cloud.timer); cloud.timer = null; }
+  cloudPush();
+}
+
+/* The line on the Me screen. Deliberately plain. */
+function cloudStatusLine() {
+  if (auth.guest && !auth.user) {
+    return {
+      tone: 'warn',
+      title: 'Saved on this device only',
+      text: 'You are looking around without an account. Everything you enter stays in this browser, '
+        + 'and clearing your browsing data would take it with it. Making an account keeps it.',
+      action: 'Create an account',
+    };
+  }
+  if (cloud.status === 'loading') {
+    return { tone: 'plain', title: 'Catching up', text: 'Fetching what is saved to your account.' };
+  }
+  if (cloud.status === 'saving') {
+    return { tone: 'plain', title: 'Saving', text: 'Sending your latest changes to your account.' };
+  }
+  if (cloud.status === 'offline') {
+    return {
+      tone: 'plain',
+      title: 'Offline, and nothing is lost',
+      text: 'You have no connection right now. Everything you enter is being kept and will go up '
+        + 'on its own the moment you are back.',
+    };
+  }
+  if (cloud.status === 'error') {
+    return {
+      tone: 'warn',
+      title: 'Not saving to your account right now',
+      text: 'Your work is still safe in this browser. ' + (cloud.error ? '(' + cloud.error + ')' : ''),
+    };
+  }
+  if (cloud.status === 'saved') {
+    return {
+      tone: 'good',
+      title: 'Saved to your account',
+      text: 'Everything here is on your account as well as this device, so it survives a cleared '
+        + 'browser and follows you to your phone.',
+    };
+  }
+  return { tone: 'plain', title: 'Saved on this device', text: 'Sign in to keep it on your account too.' };
 }
 
 /* -----------------------------------------------------------------
