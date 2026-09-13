@@ -2,6 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
+<meta name="rsg-build" content="2026-09-13 17:11">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -175,6 +176,22 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .tab[aria-selected="true"]{color:var(--deep)}
 .tab .dot{width:18px;height:2.5px;border-radius:2px;background:transparent;margin-top:1px}
 .tab[aria-selected="true"] .dot{background:var(--deep)}
+
+/* THE UPDATE BAR.
+   Sits above everything, including the header, because the whole point
+   is that it is seen. Deliberately not a modal: somebody at 3am with a
+   screaming baby should not have to dismiss a dialog about software. */
+.updatebar{
+  display:flex;align-items:center;gap:9px;padding:9px 14px;
+  background:var(--leaf);color:var(--deep2);font-size:12.5px;font-weight:500;
+  position:relative;z-index:6;
+}
+.updatebtn{
+  flex:none;padding:5px 12px;border-radius:999px;border:1px solid var(--deep2);
+  background:var(--deep);color:#fff;font:inherit;font-size:12px;font-weight:600;
+  min-height:30px;cursor:pointer;
+}
+.updatebtn.ghost{background:transparent;color:var(--deep2);border-color:transparent}
 
 /* The source badge holds a short code, not a logo, and some of those
    codes are words rather than three letters. It sizes to what is in it
@@ -447,6 +464,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
+const BUILD_STAMP = '2026-09-13 17:11';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -16102,6 +16120,9 @@ function saveStore() {
 if (typeof document !== 'undefined' && document.addEventListener) {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') flushStore();
+    /* Coming back to the app is the natural moment to find out whether
+       it has been replaced underneath you. */
+    else if (typeof checkForUpdate === 'function') checkForUpdate(false);
   });
   window.addEventListener('pagehide', flushStore);
 }
@@ -16868,7 +16889,7 @@ function initControls() {
   });
 
   document.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-keepchild],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export]');
     if (!t) return;
 
     if (t.dataset.auth) {
@@ -16928,6 +16949,16 @@ function initControls() {
       cloudDeleteChild(id);
       if (store.activeChildId === id) selectChild(null);
       flushStore();
+    } else if (t.dataset.update === 'go') {
+      applyUpdate();
+      return;
+    } else if (t.dataset.update === 'later') {
+      update.dismissed = true;
+    } else if (t.dataset.keepchild) {
+      keepChildAndRemoveDuplicates(t.dataset.keepchild);
+    } else if (t.dataset.update === 'check') {
+      update.dismissed = false;
+      checkForUpdate(true);
     } else if (t.dataset.logset) {
       // Tapping the value a field already holds clears it, so a wrong
       // tap can be backed out of without a reset button.
@@ -19666,6 +19697,20 @@ function childLensLine(k) {
   return getLenses(k.lenses).map((l) => l.label).join(', ');
 }
 
+/* THE EXAMPLE CHILD HAS TO LOOK LIKE ONE.
+
+   The app seeds a demo child so a first visit opens on something rather
+   than on an empty state, and that child is called Stetson. If the
+   parent's own son is also called Stetson, a phone that quietly failed
+   to sign in looks exactly like a phone that synced perfectly, and she
+   has no way to tell. That is not a hypothetical, it happened.
+
+   So anything the app invented says so, in the chip, on the card and on
+   the Today screen, until the moment it belongs to a real account. */
+function isExampleChild(k) {
+  return !!(k && k.seeded === true);
+}
+
 /* One child, as a tappable card. Used on parent home and on profile. */
 function childCard(k, active) {
   const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
@@ -19678,7 +19723,7 @@ function childCard(k, active) {
     </span>
     <span class="grow">
       <span style="display:block;font-size:15px;font-weight:600;color:var(--ink)">
-        ${esc(k.name || 'Unnamed')}${active ? ' <span class="tag">Open</span>' : ''}
+        ${esc(k.name || 'Unnamed')}${isExampleChild(k) ? ' <span class="tag warm">Example</span>' : ''}${active ? ' <span class="tag">Open</span>' : ''}
       </span>
       <span class="tiny" style="display:block;margin-top:2px">${esc(childAgeLabel(k))}</span>
       <span class="tiny" style="display:block;margin-top:1px;color:var(--sage)">${esc(childLensLine(k))}</span>
@@ -19786,6 +19831,26 @@ function screenProfile() {
         another parent, never part of the community, and never carried into a post.
       </p>
     </div>
+
+    ${(() => {
+      /* Which copy of the app is this device running. Put here because
+         "it works on my laptop but not my phone" is almost always two
+         different copies, and until this line existed there was no way
+         to tell them apart from the screen. */
+      const st = cloudStatusLine();
+      return `
+      <div class="card flat">
+        <p class="eyebrow">${icon('info', 11, 'var(--sage)')} This device</p>
+        <p class="tiny" style="margin-top:5px">App version ${esc(buildStamp() || 'unknown')}</p>
+        <p class="tiny" style="margin-top:3px">${esc(st.title)}</p>
+        ${update.available ? `
+          <p class="tiny" style="margin-top:6px;color:var(--attention)">
+            Version ${esc(update.stamp)} is available.
+          </p>
+          <button class="btn sm" style="margin-top:9px;width:100%" data-update="go">Update now</button>
+        ` : `<button class="chip" style="margin-top:9px" data-update="check">Check for an update</button>`}
+      </div>`;
+    })()}
   </div>`;
 }
 
@@ -20220,14 +20285,14 @@ function topBar(markOnly) {
   const act = store.activeChildId;
   const meOn = state.tab === 'me' && !state.view;
   const mark = IS_DESKTOP ? `<div class="mark-holder">${wordmark(false)}</div>` : '';
-  if (markOnly) return `<div class="topbar mark-only">${mark}</div>`;
-  return `
+  if (markOnly) return updateBar() + `<div class="topbar mark-only">${mark}</div>`;
+  return updateBar() + `
   <div class="topbar">
     <div class="topbar-kids">
       ${kids.map((k) => `
         <button class="kidchip${k.id === act ? ' on' : ''}" data-child="${esc(k.id)}">
           <span class="kidchip-av">${growthSVG(chipGrowthOrder(k), 19)}</span>
-          <span class="kidchip-name">${esc(k.name || 'Unnamed')}</span>
+          <span class="kidchip-name">${esc(k.name || 'Unnamed')}${isExampleChild(k) ? ' (example)' : ''}</span>
         </button>`).join('')}
       <button class="kidchip add" data-go="screen" data-id="profile" aria-label="Add a child">
         ${icon('plus', 15, 'var(--sage)')}
@@ -20277,6 +20342,16 @@ function screenToday(c) {
     <p class="sub">What you are doing together, and somewhere to put it down as it happens.</p>
   </div>
   <div class="sc">
+
+    ${isExampleChild(activeChild()) ? `
+    <div class="card" style="border-left:3px solid var(--attention)">
+      <p class="eyebrow">${icon('info', 11, 'var(--sage)')} This is the example child</p>
+      <p class="bodytext" style="margin-top:5px">
+        ${esc(state.name || 'This one')} is not yours, the app made them up so there was something
+        to look at. Add your own child and this disappears.
+      </p>
+      <button class="btn" style="margin-top:12px" data-go="screen" data-id="profile">Add your child</button>
+    </div>` : ''}
 
     <div class="card">
       <div class="kid">
@@ -20763,6 +20838,7 @@ function screenMe() {
       'data-go="screen" data-id="community"')}
 
     <p class="sect">Your children</p>
+    ${duplicateCard()}
     ${kids.length
       ? kids.map((k) => childCard(k, k.id === store.activeChildId)).join('')
       : `<div class="card flat">
@@ -21262,6 +21338,9 @@ async function cloudFirstSync() {
   const localKids = store.children.filter((k) => !isUntouchedSeed(k)).map(childPayload);
 
   const merged = mergeChildren(localKids, remoteKids, deleted);
+  /* Anything that came through the merge is on the account now, so
+     nothing left is the app's invention. */
+  merged.children.forEach((k) => { delete k.seeded; });
   store.children = merged.children;
   if (store.activeChildId && !store.children.some((k) => k.id === store.activeChildId)) {
     store.activeChildId = store.children.length === 1 ? store.children[0].id : null;
@@ -21435,6 +21514,197 @@ function cloudStatusLine() {
   return { tone: 'plain', title: 'Saved on this device', text: 'Sign in to keep it on your account too.' };
 }
 
+
+/* =================================================================
+   IS THIS COPY OF THE APP STILL CURRENT?
+
+   A phone running last week's copy looks exactly like a phone that is
+   up to date, right until somebody notices a child is missing. That is
+   not hypothetical, it is how an afternoon went: the site had sync on
+   it, the phone did not, the phone showed the example child, and there
+   was nothing on screen to say so.
+
+   GitHub Pages asks browsers to cache the page for ten minutes, and a
+   phone with the tab already open holds it far longer. So rather than
+   hoping, the app asks.
+
+   IT ASKS CHEAPLY. The build stamp is a meta tag inside the first few
+   hundred bytes of the file, so the check is a range request for two
+   kilobytes rather than a megabyte down somebody's cellular data. If
+   the server will not do ranges the check gives up rather than paying
+   for the whole file.
+   ================================================================= */
+
+const update = {
+  available: false,
+  stamp: null,        // the stamp the server is serving
+  checkedAt: 0,
+  dismissed: false,
+};
+
+function buildStamp() {
+  return typeof BUILD_STAMP === 'string' ? BUILD_STAMP : '';
+}
+
+async function checkForUpdate(force) {
+  if (update.available) return;
+  const now = Date.now();
+  /* Once on open, then at most every five minutes when the app comes
+     back to the front. Nobody needs this answered more often. */
+  if (!force && now - update.checkedAt < 300000) return;
+  update.checkedAt = now;
+  if (typeof fetch !== 'function' || !buildStamp()) return;
+  try {
+    const res = await fetch(location.pathname + '?stamp=' + now, {
+      cache: 'no-store',
+      headers: { Range: 'bytes=0-2047' },
+    });
+    if (res.status !== 206) {
+      /* No range support means the only way to answer is to download
+         the whole app again, which is worse than not knowing. */
+      if (res.body && res.body.cancel) { try { res.body.cancel(); } catch (err) {} }
+      return;
+    }
+    const head = await res.text();
+    const m = head.match(/name="rsg-build"\s+content="([^"]+)"/);
+    if (!m) return;
+    if (m[1] && m[1] !== buildStamp()) {
+      update.available = true;
+      update.stamp = m[1];
+      render();
+    }
+  } catch (err) {
+    /* Offline, or a server that does not want to answer. Either way
+       this is the least important thing on the screen. */
+  }
+}
+
+/* Reloading through a new address is what actually defeats a stubborn
+   cache. Asking for the same URL again is exactly what the browser
+   thinks it has already answered. */
+function applyUpdate() {
+  const v = encodeURIComponent(update.stamp || String(Date.now()));
+  location.replace(location.pathname + '?v=' + v);
+}
+
+function updateBar() {
+  if (!update.available || update.dismissed) return '';
+  return `
+  <div class="updatebar">
+    <span class="grow">A newer version of the app is ready.</span>
+    <button class="updatebtn" data-update="go">Reload</button>
+    <button class="updatebtn ghost" data-update="later" aria-label="Not now">Later</button>
+  </div>`;
+}
+
+
+/* =================================================================
+   DUPLICATE CHILDREN
+
+   The first time sync is turned on, two devices that were each used on
+   their own can be holding their own separate record for the same
+   child. Nothing can know that the Stetson on the phone and the Stetson
+   on the laptop are the same boy, so the merge does the only honest
+   thing and keeps both, and the parent opens the app to two of
+   everybody.
+
+   It is not a bug so much as the unavoidable cost of starting to sync
+   late, but leaving somebody to work it out on their own is. So the app
+   spots it, says which copy has what in it, and removes the other only
+   when asked.
+   ================================================================= */
+
+/* How much a parent has actually put into a record. Used to say which
+   copy is the one worth keeping, never to decide it for her. */
+function childWeight(k) {
+  if (!k) return 0;
+  const n = (o) => (o && typeof o === 'object' ? Object.keys(o).length : 0);
+  return (Array.isArray(k.logs) ? k.logs.length : 0)
+    + n(k.statuses)
+    + (Array.isArray(k.lenses) ? k.lenses.length : 0) * 2
+    + n(k.lensOptions) + n(k.lensNumbers)
+    + (Array.isArray(k.routineInclude) ? k.routineInclude.length : 0);
+}
+
+function childContents(k) {
+  const bits = [];
+  const logs = Array.isArray(k.logs) ? k.logs.length : 0;
+  const ms = k.statuses ? Object.keys(k.statuses).length : 0;
+  const lenses = Array.isArray(k.lenses) ? k.lenses.length : 0;
+  if (logs) bits.push(logs === 1 ? '1 log' : logs + ' logs');
+  if (ms) bits.push(ms === 1 ? '1 milestone marked' : ms + ' milestones marked');
+  if (lenses) bits.push(lenses === 1 ? '1 support lens' : lenses + ' support lenses');
+  if (k.routineInclude && k.routineInclude.length) bits.push('routine choices');
+  return bits.length ? bits.join(', ') : 'Nothing in it yet';
+}
+
+/* Same name and same birthday is the only pair worth calling a
+   duplicate. Two children who genuinely share both is a coincidence
+   that does not happen, and anything looser would start suggesting a
+   parent delete one of her twins. */
+function findDuplicateChildren() {
+  const groups = {};
+  store.children.forEach((k) => {
+    const name = String(k.name || '').trim().toLowerCase();
+    if (!name || !k.birthday) return;
+    const key = name + '|' + k.birthday;
+    (groups[key] = groups[key] || []).push(k);
+  });
+  return Object.keys(groups)
+    .map((key) => groups[key])
+    .filter((g) => g.length > 1)
+    .map((g) => g.slice().sort((a, b) => childWeight(b) - childWeight(a)));
+}
+
+function duplicateCard() {
+  const dupes = findDuplicateChildren();
+  if (!dupes.length) return '';
+  return dupes.map((group) => {
+    const best = group[0];
+    return `
+    <div class="card" style="border-left:3px solid var(--attention)">
+      <p class="eyebrow" style="color:var(--attention)">${icon('info', 11, 'var(--attention)')} ${group.length} profiles for ${esc(best.name)}</p>
+      <p class="bodytext" style="margin-top:5px">
+        This happens the first time two devices start sharing an account, because each of them had
+        its own copy. Keep the one with your work in it and the other goes, on every device.
+      </p>
+      <div style="margin-top:11px">
+        ${group.map((k, i) => `
+          <div style="display:flex;gap:11px;align-items:center;padding:10px 0;
+            ${i < group.length - 1 ? 'border-bottom:1px solid var(--line2)' : ''}">
+            <span class="grow">
+              <span style="display:block;font-size:13.5px;font-weight:600;color:var(--ink)">
+                ${esc(childContents(k))}${i === 0 && childWeight(k) > 0 ? ' <span class="tag">Fuller</span>' : ''}
+              </span>
+              <span class="tiny" style="display:block;margin-top:2px">Added ${esc(String(k.createdAt || '').slice(0, 10) || 'at some point')}</span>
+            </span>
+            <button class="chip" data-keepchild="${esc(k.id)}" style="flex:none">Keep this one</button>
+          </div>`).join('')}
+      </div>
+      <p class="tiny" style="margin-top:9px">
+        Nothing is removed until you pick one, and whichever you pick is the one that stays everywhere.
+      </p>
+    </div>`;
+  }).join('');
+}
+
+/* Keeping one means removing the others in that group, tombstones and
+   all, so the copy on the other device goes too rather than syncing
+   itself straight back. */
+function keepChildAndRemoveDuplicates(keepId) {
+  const group = findDuplicateChildren().filter((g) => g.some((k) => k.id === keepId))[0];
+  if (!group) return;
+  group.forEach((k) => {
+    if (k.id === keepId) return;
+    store.children = store.children.filter((x) => x.id !== k.id);
+    if (!store.deletedChildIds) store.deletedChildIds = [];
+    if (store.deletedChildIds.indexOf(k.id) === -1) store.deletedChildIds.push(k.id);
+    cloudDeleteChild(k.id);
+  });
+  if (!store.children.some((k) => k.id === store.activeChildId)) selectChild(keepId);
+  flushStore();
+}
+
 /* -----------------------------------------------------------------
    BOOT
 
@@ -21451,5 +21721,9 @@ loadStore();
 initControls();
 restoreSession();
 render();
+
+/* Ask once, a few seconds in, so it never competes with the first
+   paint or with signing in. */
+setTimeout(() => { try { checkForUpdate(true); } catch (err) {} }, 4000);
 
 </script>
