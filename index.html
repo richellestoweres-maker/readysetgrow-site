@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-13 18:19">
+<meta name="rsg-build" content="2026-09-13 18:24">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -546,7 +546,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-13 18:19';
+const BUILD_STAMP = '2026-09-13 18:24';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -22224,7 +22224,14 @@ async function willowAsk(question) {
     willow.usedToday = willowCountToday() + 1;
     willowSay('willow', split.body || WILLOW.failed, used);
   } catch (err) {
-    willowSay('willow', willow.failed && !willow.ready ? WILLOW.notReady : WILLOW.failed, [], 'failed');
+    /* The two failures mean different things to the person reading.
+       "Not switched on" is a setup step somebody has to take once.
+       "Something went wrong" is a signal that dropped. Telling a parent
+       to try again in a moment when the answer is that a button was
+       never pressed would waste her evening. */
+    const code = String((err && err.code) || (err && err.message) || '');
+    const notSetUp = /api-not-enabled|not been used|SERVICE_DISABLED|403/i.test(code) || !willow.ready;
+    willowSay('willow', notSetUp ? WILLOW.notReady : WILLOW.failed, [], 'failed');
   }
   willow.busy = false;
   render();
