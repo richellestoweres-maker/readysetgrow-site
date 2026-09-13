@@ -263,6 +263,34 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .tab .dot{width:18px;height:2.5px;border-radius:2px;background:transparent;margin-top:1px}
 .tab[aria-selected="true"] .dot{background:var(--deep)}
 
+/* HOME.
+   The greeting is the largest thing on the screen, because the first
+   thing the app does in the morning should be say hello to her. */
+.hello{
+  font-family:var(--serif,Georgia,serif);
+  font-size:26px;line-height:1.2;color:var(--deep);
+  margin-top:-2px;letter-spacing:-.01em;
+}
+.kidrow.home{gap:14px;padding-top:4px}
+
+.liftcard{background:var(--leaf3);border:1px solid var(--leaf)}
+.liftline{
+  font-size:15.5px;line-height:1.55;color:var(--ink);margin-top:6px;
+  text-wrap:balance;
+}
+
+/* WHAT WILLOW SAYS BACK AFTER A CHECK IN. */
+.cireply{
+  display:flex;gap:10px;align-items:flex-start;
+  margin-top:11px;padding:12px;border-radius:13px;
+  background:var(--leaf3);border:1px solid var(--leaf);
+}
+.cireply-av{
+  width:26px;height:26px;border-radius:50%;background:var(--deep);
+  display:grid;place-items:center;flex:none;
+}
+.cireply .grow{flex:1;min-width:0}
+
 /* THE DAILY CHECK IN. */
 .cicard{border:1px solid var(--line)}
 .cirow{padding:11px 0;border-top:1px solid rgba(0,0,0,.055)}

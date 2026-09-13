@@ -60,6 +60,7 @@ order = [
     ('communityWisdom',     SRC/'data/communityWisdom.js'),
     ('vaccines',            SRC/'data/vaccines.js'),
     ('checkins',            SRC/'data/checkins.js'),
+    ('dailyLift',           SRC/'data/dailyLift.js'),
     ('cycle',               SRC/'data/cycle.js'),
     ('firebaseConfig',      SRC/'data/firebaseConfig.js'),
 ]

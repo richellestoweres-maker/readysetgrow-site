@@ -703,6 +703,12 @@ const store = {
   photoBusy: false,
   photoError: '',
 
+  /* How many pieces of background writing have been generated today,
+     so a feature nobody asked to open cannot quietly eat the budget
+     that the chat she actually opened is meant to have. */
+  liftUsed: 0,
+  liftDate: '',
+
   /* Parent scoped. These follow the mother, not any child. */
   bagChecked: [],
   pumpTab: 'flange',
@@ -805,7 +811,8 @@ const state = {};
 });
 
 ['parent', 'children', 'activeChildId', 'bagChecked', 'birthdaySeen', 'profileWho',
- 'profileEdit', 'msEdit', 'ciEdit', 'ciOpen', 'photoBusy', 'photoError', 'pumpTab', 'pumpGoal',
+ 'profileEdit', 'msEdit', 'ciEdit', 'ciOpen', 'photoBusy', 'photoError',
+ 'liftUsed', 'liftDate', 'pumpTab', 'pumpGoal',
  'pumpProblem', 'flangeMm', 'ppTab', 'ppStage', 'askQuery', 'askAsked',
  'tab', 'view', 'undGroup', 'lensBand', 'feedTab', 'safetyTab',
  'logDraft', 'draftChildName', 'draftChildBday'].forEach((key) => {
@@ -5601,6 +5608,193 @@ function topBar(markOnly) {
 
 
 /* -----------------------------------------------------------------
+   THE LIFT
+
+   Three small pieces of writing that Willow does in the background:
+   the affirmation on Home, the morning suggestion under it, and the
+   answer she gets after recording how a day went.
+
+   THE RULE THAT MATTERS
+   Every one of these has a written version in src/data/dailyLift.js
+   and that version is what ships. Willow rewrites it when she is
+   available, and when she is not, nothing is missing and nothing looks
+   broken. A parent must never open this app to a blank space where the
+   kind thing was.
+
+   Everything is cached by the day, so opening the app eleven times
+   before lunch is one piece of writing, not eleven.
+   ----------------------------------------------------------------- */
+
+const lift = {
+  model: null,
+  loading: null,
+  tried: {},   // what has already been asked for today, so a failure is not retried forever
+};
+
+function liftStore() {
+  if (!store.parent.lift || typeof store.parent.lift !== 'object') store.parent.lift = {};
+  const day = ciToday();
+  if (store.parent.lift.day !== day) {
+    /* Yesterday's writing is kept for one more day only so the prompt
+       can ask for something different, then it goes. */
+    store.parent.lift = { day: day, prev: store.parent.lift.affirmation || '', prevMorning: (store.parent.lift.morning || {}).title || '' };
+    lift.tried = {};
+  }
+  return store.parent.lift;
+}
+
+function liftCountToday() {
+  const day = ciToday();
+  if (store.liftDate !== day) { store.liftDate = day; store.liftUsed = 0; }
+  return store.liftUsed || 0;
+}
+
+/* Its own model handle with its own brief. The chat Willow has to hold
+   a conversation and close with a sources line, and squeezing a one
+   line affirmation through those rules produces exactly the kind of
+   thing you would expect. */
+async function liftLoad() {
+  if (lift.model) return lift.model;
+  if (lift.loading) return lift.loading;
+  lift.loading = (async () => {
+    const v = FIREBASE_SDK_VERSION;
+    const { app } = await loadFirebase();
+    const aiMod = await import(`https://www.gstatic.com/firebasejs/${v}/firebase-ai.js`);
+    const ai = aiMod.getAI(app, { backend: new aiMod.GoogleAIBackend() });
+    lift.model = aiMod.getGenerativeModel(ai, {
+      model: WILLOW_MODEL,
+      systemInstruction: LIFT_SYSTEM,
+    });
+    return lift.model;
+  })().catch((err) => { lift.loading = null; throw err; });
+  return lift.loading;
+}
+
+/* Never throws and never blocks anything. Returns the written text
+   straight away and quietly replaces it if Willow answers. */
+function liftWrite(kind, context, onDone) {
+  if (!hasAccess()) return;
+  if (lift.tried[kind]) return;
+  if (liftCountToday() >= LIFT_DAILY_LIMIT) return;
+  lift.tried[kind] = true;
+  store.liftUsed = liftCountToday() + 1;
+
+  liftLoad().then((model) => model.generateContent(liftPrompt(kind, context)))
+    .then((res) => {
+      const raw = res && res.response && typeof res.response.text === 'function'
+        ? res.response.text() : '';
+      const text = String(raw || '').trim();
+      if (!text) return;
+      onDone(text);
+      flushStore();
+      render();
+    })
+    .catch(() => { /* The written one is already on screen. Nothing to do. */ });
+}
+
+function liftContext() {
+  const kids = store.children.filter((k) => !isExampleChild(k)).map((k) => {
+    const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+    return (k.name || 'a child') + (sum && sum.shortLabel ? ', ' + sum.shortLabel : '');
+  });
+  return {
+    parentName: (store.parent.name || '').trim().split(/\s+/)[0] || '',
+    children: kids.join('; '),
+  };
+}
+
+/* TODAY'S AFFIRMATION. Written version first, Willow's when it lands. */
+function liftAffirmation() {
+  const l = liftStore();
+  if (!l.affirmation) {
+    l.affirmation = writtenLift(l.day);
+    l.affirmationFrom = 'written';
+    liftWrite('affirmation', Object.assign(liftContext(), { avoid: l.prev || '' }), (text) => {
+      const cur = liftStore();
+      cur.affirmation = text;
+      cur.affirmationFrom = 'willow';
+    });
+  }
+  return l.affirmation;
+}
+
+/* THE MORNING. Same shape. The model is asked for TITLE: then a line,
+   and anything that does not come back in that shape is ignored rather
+   than shown half parsed. */
+function liftMorning() {
+  const l = liftStore();
+  if (!l.morning) {
+    l.morning = writtenMorning(l.day);
+    l.morningFrom = 'written';
+    liftWrite('morning', Object.assign(liftContext(), { avoid: l.prevMorning || '' }), (text) => {
+      const m = String(text).match(/^\s*TITLE:\s*(.+?)\s*\n+([\s\S]+)$/);
+      if (!m) return;
+      const title = m[1].trim().replace(/[.]$/, '');
+      const body = m[2].trim();
+      if (!title || !body || title.length > 48) return;
+      const cur = liftStore();
+      cur.morning = { title: title, body: body };
+      cur.morningFrom = 'willow';
+    });
+  }
+  return l.morning;
+}
+
+/* THE ANSWER AFTER A CHECK IN.
+
+   She filled the card in, it folded away, and she said she would
+   rather something stepped in. This is that: it reads the shape of the
+   day she just described and says something back. Written first so
+   there is always an answer, then Willow's if she is available. */
+function checkinRunNote(k, day) {
+  if (!k || !k.checkins) return '';
+  let hard = 0;
+  let good = 0;
+  for (let i = 0; i < 5; i++) {
+    const e = k.checkins[ciDayBefore(day, i)];
+    if (!e) break;
+    const shape = checkinShape(e.answers);
+    if (shape === 'allHard' || shape === 'mostlyHard') hard++;
+    else if (shape === 'allGood' || shape === 'mostlyGood') good++;
+    else break;
+  }
+  if (hard >= 3) return CHECKIN_RUN_NOTE;
+  if (good >= 4) return CHECKIN_GOOD_RUN_NOTE;
+  return '';
+}
+
+function makeCheckinReply(k, day) {
+  const entry = k && k.checkins ? k.checkins[day] : null;
+  if (!entry) return;
+  entry.reply = writtenCheckinReply(entry.answers, day + k.id);
+  entry.replyFrom = 'written';
+  entry.runNote = checkinRunNote(k, day);
+
+  /* One per day per child, keyed so two children each get their own. */
+  const rows = checkinRows(getLenses(k.lenses || []));
+  const summary = rows.filter((r) => entry.answers[r.id]).map((r) => {
+    const sc = getCheckinScale(entry.answers[r.id]);
+    return r.label.toLowerCase() + ': ' + (r[entry.answers[r.id]] || sc.label).toLowerCase();
+  }).join('; ');
+
+  const kid = k;
+  const sum = getAgeSummary({ name: kid.name, birthday: kid.birthday });
+  liftWrite('checkin:' + k.id + ':' + day, {
+    parentName: (store.parent.name || '').trim().split(/\s+/)[0] || '',
+    childLine: (kid.name || 'her child') + (sum && sum.shortLabel ? ', ' + sum.shortLabel : ''),
+    summary: summary,
+    note: entry.note || '',
+    run: entry.runNote || '',
+  }, (text) => {
+    const live = activeChild();
+    const target = (live && live.id === k.id) ? live : store.children.filter((x) => x.id === k.id)[0];
+    if (!target || !target.checkins || !target.checkins[day]) return;
+    target.checkins[day].reply = text;
+    target.checkins[day].replyFrom = 'willow';
+  });
+}
+
+/* -----------------------------------------------------------------
    THE DAILY CHECK IN
 
    She asked for this on the front screen: whatever support is turned
@@ -5712,7 +5906,12 @@ function ciSave() {
      day she opened the card and changed her mind. Do not record it. */
   const note = String(d.note || '').trim();
   if (!Object.keys(answers).length && !note) delete k.checkins[day];
-  else k.checkins[day] = { answers: answers, note: note, at: Date.now() };
+  else {
+    k.checkins[day] = { answers: answers, note: note, at: Date.now() };
+    /* Something says something back, rather than the card simply
+       vanishing, which is what she told us it felt like. */
+    makeCheckinReply(k, day);
+  }
 
   ciTrim(k);
   k.updatedAt = Date.now();
@@ -5798,6 +5997,17 @@ function checkinCard() {
         </div>`;
       }).join('')}
       ${saved.note ? `<p class="tiny" style="margin-top:9px">${esc(saved.note)}</p>` : ''}
+
+      ${saved.reply ? `
+      <div class="cireply">
+        <span class="cireply-av">${icon('leaf', 14, '#fff')}</span>
+        <div class="grow">
+          <p class="bodytext">${esc(saved.reply)}</p>
+          ${saved.runNote ? `<p class="tiny" style="margin-top:7px">${esc(saved.runNote)}</p>` : ''}
+          <button class="chip" style="margin-top:9px" data-willow="open">Talk to Willow about it</button>
+        </div>
+      </div>` : ''}
+
       ${streak > 1 ? `<p class="tiny" style="margin-top:9px">${esc(CHECKIN_STREAK_LINES.going.replace('{n}', streak))}</p>` : ''}
       <button class="btn ghost sm" style="width:100%;margin-top:11px" data-go="screen" data-id="checkins">
         See how the last few weeks have gone
@@ -5961,13 +6171,27 @@ function screenCheckins(c) {
    ----------------------------------------------------------------- */
 
 function kidCircle(k) {
-  const on = k.id === store.activeChildId;
+  const on = store.profileWho === k.id;
   const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
   return `
   <button class="kidcirc${on ? ' on' : ''}" data-child="${esc(k.id)}">
-    ${childFace(k, 58)}
+    ${childFace(k, 62)}
     <span class="kidcirc-name">${esc((k.name || 'Unnamed').split(/\s+/)[0])}</span>
     <span class="kidcirc-age">${esc(sum && sum.shortLabel ? sum.shortLabel : "No birthday")}</span>
+  </button>`;
+}
+
+/* Hers sits first, on the left, because she asked for that and because
+   an app that lists everybody in the house except the person holding
+   the phone is saying something. */
+function parentCircle() {
+  const on = store.profileWho === 'me';
+  const first = (store.parent.name || '').trim().split(/\s+/)[0];
+  return `
+  <button class="kidcirc${on ? ' on' : ''}" data-me="1">
+    ${parentFace(62)}
+    <span class="kidcirc-name">${esc(first || 'You')}</span>
+    <span class="kidcirc-age">Your profile</span>
   </button>`;
 }
 
@@ -5976,27 +6200,25 @@ function screenHome(c) {
   const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   const first = (store.parent.name || '').trim().split(/\s+/)[0];
   const kids = store.children;
-  const kid = activeChild();
-  const bag = getBagProgress(store.bagChecked);
-  const cyc = cycleInfo(store.parent.lastPeriod, null, store.parent.cycleLength);
-  const p = kid && c.months != null ? buildPlan(c) : null;
-  const quickLogs = kid && c.months != null ? getLogTypesForAge(c.months).slice(0, 4) : [];
+  const l = liftStore();
+  const affirmation = liftAffirmation();
+  const morning = liftMorning();
+  const isMorning = hour < 12;
 
   return `
   ${cornerLeaves()}
   <div class="sc-head">
-    <p class="eyebrow">${esc(greet)}${first ? ', ' + esc(first) : ''}</p>
-    <h1 class="title">Home</h1>
-    <p class="sub">Small steps today. Brighter tomorrows ahead.</p>
+    <h1 class="title">${esc(greet)}${first ? ',' : ''}</h1>
+    ${first ? `<p class="hello">${esc(first)}</p>` : ''}
   </div>
   <div class="sc">
 
-    <p class="sect">Your family</p>
-    <div class="kidrow">
+    <div class="kidrow home">
+      ${parentCircle()}
       ${kids.map(kidCircle).join('')}
       <button class="kidcirc add" data-go="screen" data-id="addchild">
-        <span class="face plain addface" style="width:58px;height:58px">
-          ${icon('plus', 22, 'var(--sage)')}
+        <span class="face plain addface" style="width:62px;height:62px">
+          ${icon('plus', 23, 'var(--sage)')}
         </span>
         <span class="kidcirc-name">Add</span>
         <span class="kidcirc-age">a child</span>
@@ -6010,6 +6232,19 @@ function screenHome(c) {
       </p>
     </div>`}
 
+    <div class="card liftcard">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Today</p>
+      <p class="liftline">${esc(affirmation)}</p>
+    </div>
+
+    ${morning ? `
+    <div class="card">
+      <p class="eyebrow">${icon(isMorning ? 'sun' : 'moon', 11, 'var(--sage)')}
+        ${isMorning ? 'Something for this morning' : 'For tomorrow morning'}</p>
+      <h3 class="h3" style="font-size:16px;margin-top:5px">${esc(morning.title)}</h3>
+      <p class="bodytext" style="margin-top:4px">${esc(morning.body)}</p>
+    </div>` : ''}
+
     <button class="bigbtn" data-go="screen" data-id="now">
       <span class="bigbtn-ic">${icon('heart', 22, '#fff')}</span>
       <span class="grow">
@@ -6019,106 +6254,45 @@ function screenHome(c) {
       ${icon('chev', 17, 'rgba(255,255,255,.8)')}
     </button>
 
-    ${kid ? `
-    <p class="sect">How ${esc((kid.name || 'they').split(/\s+/)[0])} is doing today</p>
-    ${checkinCard()}` : ''}
-
-    ${isExampleChild(kid) ? `
-    <div class="card" style="border-left:3px solid var(--attention)">
-      <p class="eyebrow">${icon('info', 11, 'var(--sage)')} This is the example child</p>
-      <p class="bodytext" style="margin-top:5px">
-        ${esc((kid && kid.name) || 'This one')} is not yours, the app made them up so there was
-        something to look at. Add your own child and this disappears.
-      </p>
-      <button class="btn" style="margin-top:12px" data-go="screen" data-id="addchild">Add your child</button>
-    </div>` : ''}
-
-    <p class="sect">You</p>
-    ${cyc ? homeCycleCard(cyc) : `
-    <button class="lrow" data-me="1" style="align-items:flex-start">
-      <span class="licon">${icon('calendar', 18)}</span>
-      <span class="grow">
-        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Track your cycle</span>
-        <span class="tiny" style="display:block;margin-top:2px">
-          Add the first day of your last period on your profile and it works out the rest
-        </span>
-      </span>
-      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-    </button>`}
-
-    ${childRow('heart', 'The fourth trimester',
-      'Your recovery week by week, and how you are actually doing',
-      'data-go="screen" data-id="postpartum"')}
-    ${childRow('drop', 'Pumping and breastfeeding',
-      'Flange fitting, schedules, storage, and why frozen milk tastes like soap',
-      'data-go="screen" data-id="pumping"')}
-    ${childRow('bag', 'Hospital bag',
-      bag.done === 0 ? 'A checklist, plus the things people actually forget'
-        : esc(bag.done + ' of ' + bag.total + ' packed'),
-      'data-go="screen" data-id="bag"')}
-    ${childRow('shield', 'Looking after yourself in pregnancy',
-      'CMV first, plus vaccines and the one about not stopping a medication',
-      'data-go="screen" data-id="pregHealth"')}
-
-    ${kid ? `
-    <p class="sect">Today with ${esc((kid.name || 'them').split(/\s+/)[0])}</p>
-
-    ${c.days != null && c.days < 56 && getDiaperDay(c.days) ? `
-    ${newbornCounter(c)}
-    <button class="btn ghost sm" style="width:100%;margin-top:-3px"
-      data-go="screen" data-id="feeding" data-asksub="feedTab" data-asksubval="newborn">
-      Feeds, diapers and how many ounces
-    </button>` : ''}
-
-    ${quickLogs.length ? `
-    <div class="qgrid">
-      ${quickLogs.map((t) => `
-        <button class="q" data-go="log" data-id="${esc(t.id)}">
-          <span class="qi">${icon(logIcon(t.icon), 17)}</span>
-          <span class="qt">${esc(t.label)}</span>
-          <span class="qs">${esc(lastLogLine(t.id))}</span>
-        </button>`).join('')}
-    </div>` : ''}
-
-    ${p && p.morning ? `
-    <div class="plan" style="margin-top:10px">
-      <span class="picon">${icon('sun', 17)}</span>
-      <div class="grow">
-        <p class="eyebrow">Today's plan, morning</p>
-        <h3 class="h3" style="font-size:16px">${esc(p.morning.title)}</h3>
-        <p class="tiny" style="margin-top:3px">${esc(p.morning.description)}</p>
-        <button class="btn ghost sm" style="margin-top:9px" data-go="screen" data-id="plan">
-          The whole plan
-        </button>
-      </div>
-    </div>` : ''}
-
-    <button class="lrow" data-child="${esc(kid.id)}" style="align-items:center;margin-top:4px">
-      <span class="licon">${icon('leaf', 18)}</span>
-      <span class="grow">
-        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">
-          Everything about ${esc((kid.name || 'them').split(/\s+/)[0])}
-        </span>
-        <span class="tiny" style="display:block;margin-top:2px">
-          ${esc(c.summary && c.summary.label ? c.summary.label : 'Development, milestones, support, everyday care')}
-        </span>
-      </span>
-      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-    </button>` : ''}
-
-    <p class="sect">Other parents</p>
-    ${childRow('people', 'Community',
-      'Rooms for parents, under your name rather than your child\'s',
-      'data-tab="community"')}
+    ${(() => {
+      /* The one thing on Home that is about a child rather than about
+         her. It stays because burying the choking page two taps inside
+         a profile would be the wrong call, and because it is the same
+         page whichever child it turns out to be about. */
+      const waiting = kids.filter((k) => !isExampleChild(k) && !ciSavedFor(k));
+      if (!waiting.length) return '';
+      return `
+      <p class="sect">Waiting on you</p>
+      ${waiting.map((k) => `
+        <button class="lrow" data-child="${esc(k.id)}" style="align-items:center">
+          <span class="licon">${icon('sun', 17)}</span>
+          <span class="grow">
+            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">
+              How ${esc((k.name || 'they').split(/\s+/)[0])} is doing today
+            </span>
+            <span class="tiny" style="display:block;margin-top:2px">Thirty seconds, on their profile</span>
+          </span>
+          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+        </button>`).join('')}`;
+    })()}
 
     ${duplicateCard()}
 
-    <div class="card flat" style="margin-top:12px">
-      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Connection before correction</p>
-      <p class="bodytext">When big emotions show up, try getting curious before giving advice. A calm,
-      connected moment builds trust and helps your child feel safe.</p>
-    </div>
+    ${isExampleChild(activeChild()) ? `
+    <div class="card" style="border-left:3px solid var(--attention)">
+      <p class="eyebrow">${icon('info', 11, 'var(--sage)')} This is the example child</p>
+      <p class="bodytext" style="margin-top:5px">
+        The app made one up so there was something to look at. Add your own child and this disappears.
+      </p>
+      <button class="btn" style="margin-top:12px" data-go="screen" data-id="addchild">Add your child</button>
+    </div>` : ''}
   </div>`;
+}
+
+/* Whether a given child already has today recorded, without switching
+   to them to find out. */
+function ciSavedFor(k) {
+  return !!(k && k.checkins && k.checkins[ciToday()]);
 }
 
 /* The same numbers as the profile card, laid out to be glanced at
@@ -6358,7 +6532,35 @@ function screenMyProfile() {
       </div>
     `}
 
-    ${cyc ? cycleCard(cyc) : ''}
+    ${cyc ? cycleCard(cyc) : `
+    <div class="card flat">
+      <p class="bodytext">Add the first day of your last period above and the app works out the rest,
+      the day of your cycle, roughly when the next one is due, and a due date if you are pregnant.</p>
+    </div>`}
+
+    <p class="sect">Your body and your recovery</p>
+    <p class="tiny" style="margin:-4px 0 10px">
+      This part is about you, not about any of them, and it does not disappear when you open a child.
+    </p>
+    ${childRow('heart', 'The fourth trimester',
+      'Your recovery week by week, and how you are actually doing',
+      'data-go="screen" data-id="postpartum"')}
+    ${childRow('drop', 'Pumping and breastfeeding',
+      'Flange fitting, schedules, storage, and why frozen milk tastes like soap',
+      'data-go="screen" data-id="pumping"')}
+    ${childRow('bag', 'Hospital bag',
+      (() => { const bag = getBagProgress(store.bagChecked);
+        return bag.done === 0 ? 'A checklist, plus the things people actually forget'
+          : esc(bag.done + ' of ' + bag.total + ' packed'); })(),
+      'data-go="screen" data-id="bag"')}
+    ${childRow('shield', 'Looking after yourself in pregnancy',
+      'CMV first, plus vaccines and the one about not stopping a medication',
+      'data-go="screen" data-id="pregHealth"')}
+
+    <p class="sect">Other parents</p>
+    ${childRow('people', 'Community',
+      'Rooms for parents, under your name rather than your child\'s',
+      'data-tab="community"')}
 
     <div class="card flat" style="margin-top:6px">
       <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} Who sees this</p>
@@ -6409,6 +6611,55 @@ function screenChild(c) {
         <div style="margin-top:7px">${dateSelects('child:' + kid.id, v.birthday || '', 25, 1)}</div>
       </div>
     ` : ''}` : ''}
+
+    ${checkinCard()}
+
+    ${c.days != null && c.days < 56 && getDiaperDay(c.days) ? `
+    <p class="sect">The newborn count</p>
+    ${newbornCounter(c)}
+    <button class="btn ghost sm" style="width:100%;margin-top:-3px"
+      data-go="screen" data-id="feeding" data-asksub="feedTab" data-asksubval="newborn">
+      Feeds, diapers and how many ounces
+    </button>` : ''}
+
+    ${(() => {
+      const quickLogs = c.months == null ? [] : getLogTypesForAge(c.months).slice(0, 4);
+      if (!quickLogs.length) return '';
+      return `
+      <p class="sect">Log it as it happens</p>
+      <div class="qgrid">
+        ${quickLogs.map((t) => `
+          <button class="q" data-go="log" data-id="${esc(t.id)}">
+            <span class="qi">${icon(logIcon(t.icon), 17)}</span>
+            <span class="qt">${esc(t.label)}</span>
+            <span class="qs">${esc(lastLogLine(t.id))}</span>
+          </button>`).join('')}
+      </div>
+      <button class="btn ghost sm" style="width:100%;margin-top:9px" data-tab="logs">
+        Everything logged so far
+      </button>`;
+    })()}
+
+    ${(() => {
+      const pl = c.months == null ? null : buildPlan(c);
+      if (!pl || !pl.morning) return '';
+      return `
+      <p class="sect">Today's plan</p>
+      <p class="tiny" style="margin:-4px 0 10px">
+        This changes on its own at midnight, so tomorrow is not today again.
+      </p>
+      <div class="plan">
+        <span class="picon">${icon('sun', 17)}</span>
+        <div class="grow">
+          <p class="eyebrow">Morning</p>
+          <h3 class="h3" style="font-size:16px">${esc(pl.morning.title)}</h3>
+          <p class="tiny" style="margin-top:3px">${esc(pl.morning.description)}</p>
+          <button class="btn ghost sm" style="margin-top:9px" data-go="screen" data-id="plan">
+            The whole plan
+          </button>
+        </div>
+      </div>`;
+    })()}
 
     <p class="sect">Where they are now</p>
     ${childRow('chart', 'Milestones',
