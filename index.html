@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-13 20:45">
+<meta name="rsg-build" content="2026-09-13 20:53">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -597,7 +597,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-13 20:45';
+const BUILD_STAMP = '2026-09-13 20:53';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -16837,6 +16837,21 @@ if (typeof document !== 'undefined' && document.addEventListener) {
   window.addEventListener('pagehide', flushStore);
 }
 
+/* A date the old native input let through. Typing a year into one of
+   those three little segments is fiddly enough that a first keystroke
+   landing alone saves a real, parseable, completely wrong date: 0001-03-14
+   rather than 1991-03-14. It looks harmless in storage and then pops a
+   birthday screen in March for somebody born two thousand years ago.
+   Anything outside a plausible range is treated as never answered. */
+function sanitizeStoredDate(value, aheadYears) {
+  const m = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return '';
+  const y = Number(m[1]);
+  const max = new Date().getFullYear() + (Number(aheadYears) || 0);
+  if (y < 1900 || y > max) return '';
+  return value;
+}
+
 function loadStore() {
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (err) { saved = null; }
@@ -16855,9 +16870,12 @@ function loadStore() {
 
   if (saved && Array.isArray(saved.children) && saved.children.length) {
     store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '' }, saved.parent || {});
+    store.parent.birthday = sanitizeStoredDate(store.parent.birthday, 0);
+    store.parent.lastPeriod = sanitizeStoredDate(store.parent.lastPeriod, 0);
     // Fill in any field an older saved record is missing, so a profile
     // written by a previous version cannot crash a newer screen.
     store.children = saved.children.map((k) => Object.assign(newChildRecord('', null), k, {
+      birthday: sanitizeStoredDate(k.birthday, 2) || null,
       lenses: Array.isArray(k.lenses) ? k.lenses : [],
       lensOptions: k.lensOptions && typeof k.lensOptions === 'object' ? k.lensOptions : {},
       lensNumbers: k.lensNumbers && typeof k.lensNumbers === 'object' ? k.lensNumbers : {},
@@ -22300,6 +22318,8 @@ async function cloudFirstSync() {
   const remotePt = Number(remoteUser && remoteUser.updatedAt) || 0;
   if (remoteUser && remotePt > localPt) {
     store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '' }, remoteUser.parent || {});
+    store.parent.birthday = sanitizeStoredDate(store.parent.birthday, 0);
+    store.parent.lastPeriod = sanitizeStoredDate(store.parent.lastPeriod, 0);
     store.bagChecked = Array.isArray(remoteUser.bagChecked) ? remoteUser.bagChecked : [];
     store.birthdaySeen = (remoteUser.birthdaySeen && typeof remoteUser.birthdaySeen === 'object')
       ? remoteUser.birthdaySeen : {};
