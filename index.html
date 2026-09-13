@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-13 17:11">
+<meta name="rsg-build" content="2026-09-13 18:00">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -464,7 +464,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-13 17:11';
+const BUILD_STAMP = '2026-09-13 18:00';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -16000,6 +16000,9 @@ const store = {
      deleted, and without this every sign in would resurrect everything
      ever removed. */
   deletedChildIds: [],
+  /* Name and birthday pairs a parent has told us really are two
+     different children, so the app stops offering to combine them. */
+  notDuplicates: [],
   parentUpdatedAt: 0,
 
   /* A log part way through being filled in, so a re render does not
@@ -16101,6 +16104,7 @@ function flushStore() {
       hadSession: store.hadSession,
       guest: store.guest,
       deletedChildIds: store.deletedChildIds,
+      notDuplicates: store.notDuplicates,
       parentUpdatedAt: store.parentUpdatedAt,
     }));
     /* Everything that saves locally also queues the cloud copy, so no
@@ -16137,6 +16141,7 @@ function loadStore() {
     store.hadSession = !!saved.hadSession;
     store.guest = !!saved.guest;
     store.deletedChildIds = Array.isArray(saved.deletedChildIds) ? saved.deletedChildIds : [];
+    store.notDuplicates = Array.isArray(saved.notDuplicates) ? saved.notDuplicates : [];
     store.parentUpdatedAt = Number(saved.parentUpdatedAt) || 0;
   }
 
@@ -16889,7 +16894,7 @@ function initControls() {
   });
 
   document.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-keepchild],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export]');
     if (!t) return;
 
     if (t.dataset.auth) {
@@ -16954,8 +16959,10 @@ function initControls() {
       return;
     } else if (t.dataset.update === 'later') {
       update.dismissed = true;
-    } else if (t.dataset.keepchild) {
-      keepChildAndRemoveDuplicates(t.dataset.keepchild);
+    } else if (t.dataset.combinechild) {
+      combineDuplicateChildren(t.dataset.combinechild);
+    } else if (t.dataset.notdupe) {
+      markNotDuplicates(t.dataset.notdupe);
     } else if (t.dataset.update === 'check') {
       update.dismissed = false;
       checkForUpdate(true);
@@ -21184,6 +21191,7 @@ function parentPayload() {
     parent: store.parent,
     bagChecked: store.bagChecked || [],
     deletedChildIds: store.deletedChildIds || [],
+    notDuplicates: store.notDuplicates || [],
     updatedAt: store.parentUpdatedAt || 0,
   }));
 }
@@ -21650,10 +21658,13 @@ function findDuplicateChildren() {
     const key = name + '|' + k.birthday;
     (groups[key] = groups[key] || []).push(k);
   });
+  const spared = store.notDuplicates || [];
   return Object.keys(groups)
+    .filter((key) => spared.indexOf(key) === -1)
     .map((key) => groups[key])
     .filter((g) => g.length > 1)
-    .map((g) => g.slice().sort((a, b) => childWeight(b) - childWeight(a)));
+    .map((g) => g.slice().sort((a, b) =>
+      String(a.createdAt || '').localeCompare(String(b.createdAt || ''))));
 }
 
 function duplicateCard() {
@@ -21661,47 +21672,134 @@ function duplicateCard() {
   if (!dupes.length) return '';
   return dupes.map((group) => {
     const best = group[0];
+    const combined = combineChildren(group);
     return `
     <div class="card" style="border-left:3px solid var(--attention)">
       <p class="eyebrow" style="color:var(--attention)">${icon('info', 11, 'var(--attention)')} ${group.length} profiles for ${esc(best.name)}</p>
       <p class="bodytext" style="margin-top:5px">
         This happens the first time two devices start sharing an account, because each of them had
-        its own copy. Keep the one with your work in it and the other goes, on every device.
+        its own copy of ${esc(best.name)}. Combining them keeps everything from both and leaves one
+        profile, on every device.
       </p>
       <div style="margin-top:11px">
         ${group.map((k, i) => `
-          <div style="display:flex;gap:11px;align-items:center;padding:10px 0;
+          <div style="display:flex;gap:11px;align-items:flex-start;padding:9px 0;
             ${i < group.length - 1 ? 'border-bottom:1px solid var(--line2)' : ''}">
+            <span style="flex:none;width:18px;height:18px;border-radius:50%;margin-top:1px;
+              background:var(--leaf2);display:grid;place-items:center;font-size:10px;
+              font-weight:700;color:var(--deep2)">${i + 1}</span>
             <span class="grow">
-              <span style="display:block;font-size:13.5px;font-weight:600;color:var(--ink)">
-                ${esc(childContents(k))}${i === 0 && childWeight(k) > 0 ? ' <span class="tag">Fuller</span>' : ''}
-              </span>
+              <span style="display:block;font-size:13.5px;color:var(--body);line-height:1.45">${esc(childContents(k))}</span>
               <span class="tiny" style="display:block;margin-top:2px">Added ${esc(String(k.createdAt || '').slice(0, 10) || 'at some point')}</span>
             </span>
-            <button class="chip" data-keepchild="${esc(k.id)}" style="flex:none">Keep this one</button>
           </div>`).join('')}
       </div>
-      <p class="tiny" style="margin-top:9px">
-        Nothing is removed until you pick one, and whichever you pick is the one that stays everywhere.
-      </p>
+      <div class="callout" style="margin-top:11px">
+        <strong style="color:var(--ink)">Combined, ${esc(best.name)} would have:</strong><br>
+        ${esc(childContents(combined))}
+      </div>
+      <button class="btn" style="margin-top:12px" data-combinechild="${esc(best.id)}">
+        Combine them into one
+      </button>
+      <button class="chip" style="margin-top:9px" data-notdupe="${esc(best.id)}">
+        These are two different children
+      </button>
     </div>`;
   }).join('');
 }
 
-/* Keeping one means removing the others in that group, tombstones and
-   all, so the copy on the other device goes too rather than syncing
-   itself straight back. */
-function keepChildAndRemoveDuplicates(keepId) {
-  const group = findDuplicateChildren().filter((g) => g.some((k) => k.id === keepId))[0];
-  if (!group) return;
-  group.forEach((k) => {
-    if (k.id === keepId) return;
-    store.children = store.children.filter((x) => x.id !== k.id);
-    if (!store.deletedChildIds) store.deletedChildIds = [];
-    if (store.deletedChildIds.indexOf(k.id) === -1) store.deletedChildIds.push(k.id);
-    cloudDeleteChild(k.id);
+/* COMBINING BEATS CHOOSING.
+
+   This started as a "keep this one" button, on the assumption that one
+   copy would be the real child and the other would be empty. Real data
+   said otherwise the first time it ran: one Stetson had the ADHD lens
+   on, the other had two routine choices, and neither contained the
+   other. Whichever you kept, you lost something, and the app would not
+   have mentioned it.
+
+   So it combines instead. Logs are unioned by id, milestone statuses
+   and lens settings are merged, and where a single value genuinely
+   conflicts the one that was changed from the default wins, because a
+   default is the absence of a choice rather than a choice. Nothing is
+   thrown away, and there is nothing for a parent to weigh up. */
+function combineChildren(group) {
+  /* The oldest record wins the id, so whichever device created her
+     first is the one the others fold into. */
+  const ordered = group.slice().sort((a, b) =>
+    String(a.createdAt || '').localeCompare(String(b.createdAt || '')));
+  const base = ordered[0];
+  const out = Object.assign({}, base);
+
+  out.lenses = [];
+  out.lensOptions = {};
+  out.lensNumbers = {};
+  out.statuses = {};
+  out.routineInclude = [];
+  out.logs = [];
+  const seenLogs = {};
+
+  ordered.forEach((k) => {
+    (k.lenses || []).forEach((id) => { if (out.lenses.indexOf(id) === -1) out.lenses.push(id); });
+    (k.routineInclude || []).forEach((id) => {
+      if (out.routineInclude.indexOf(id) === -1) out.routineInclude.push(id);
+    });
+    /* Later records win on a key by key basis rather than wholesale, so
+       a milestone marked on the phone and a different one marked on the
+       laptop both survive. */
+    ['statuses', 'lensOptions', 'lensNumbers'].forEach((field) => {
+      const src = k[field] || {};
+      Object.keys(src).forEach((key) => { out[field][key] = src[key]; });
+    });
+    (k.logs || []).forEach((l) => {
+      if (!l || !l.id || seenLogs[l.id]) return;
+      seenLogs[l.id] = true;
+      out.logs.push(l);
+    });
+    /* A wake time that is not the default is somebody having set it. */
+    if (k.wakeTime && k.wakeTime !== '06:30') out.wakeTime = k.wakeTime;
+    if (k.napOverride != null) out.napOverride = k.napOverride;
+    if (!out.birthday && k.birthday) out.birthday = k.birthday;
+    if (!out.name && k.name) out.name = k.name;
   });
-  if (!store.children.some((k) => k.id === store.activeChildId)) selectChild(keepId);
+
+  out.logs.sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')));
+  if (out.logs.length > 500) out.logs.length = 500;
+  out.updatedAt = Date.now();
+  return out;
+}
+
+/* Combining means the others go, tombstones and all, so the copies on
+   the other devices go too rather than syncing themselves straight
+   back. */
+function combineDuplicateChildren(anyId) {
+  const group = findDuplicateChildren().filter((g) => g.some((k) => k.id === anyId))[0];
+  if (!group) return;
+  const merged = combineChildren(group);
+
+  const goneIds = group.map((k) => k.id).filter((id) => id !== merged.id);
+  store.children = store.children.filter((k) => group.indexOf(k) === -1);
+  store.children.push(merged);
+  store.children.sort((a, b) => String(a.createdAt || '').localeCompare(String(b.createdAt || '')));
+
+  if (!store.deletedChildIds) store.deletedChildIds = [];
+  goneIds.forEach((id) => {
+    if (store.deletedChildIds.indexOf(id) === -1) store.deletedChildIds.push(id);
+    cloudDeleteChild(id);
+  });
+  if (!store.children.some((k) => k.id === store.activeChildId)) selectChild(merged.id);
+  flushStore();
+}
+
+/* Two children who really do share a name and a birthday is rare but it
+   is not impossible, and the app must not badger somebody about it
+   forever. */
+function markNotDuplicates(anyId) {
+  const group = findDuplicateChildren().filter((g) => g.some((k) => k.id === anyId))[0];
+  if (!group) return;
+  const k = group[0];
+  const key = String(k.name || '').trim().toLowerCase() + '|' + k.birthday;
+  if (!store.notDuplicates) store.notDuplicates = [];
+  if (store.notDuplicates.indexOf(key) === -1) store.notDuplicates.push(key);
   flushStore();
 }
 
