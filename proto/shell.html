@@ -263,6 +263,38 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .tab .dot{width:18px;height:2.5px;border-radius:2px;background:transparent;margin-top:1px}
 .tab[aria-selected="true"] .dot{background:var(--deep)}
 
+/* MILESTONES.
+   A row that has been touched but not saved says so, so the screen
+   never looks like it did something it has not done yet. */
+.ms.changed{
+  border-left:3px solid var(--attention);
+  padding-left:10px;margin-left:-13px;
+  background:linear-gradient(90deg,rgba(224,195,154,.10),transparent 60%);
+  border-radius:0 10px 10px 0;
+}
+.mdate{
+  display:flex;align-items:center;gap:5px;
+  font-size:11.5px;color:var(--muted);margin-top:8px;
+}
+.mdate.pend{color:#B0873F;font-weight:600}
+
+/* THE SAVE BAR.
+   Pinned to the bottom of the screen rather than sitting at the end of
+   a long list. Marking one thing near the top should not mean scrolling
+   past forty rows to keep it. */
+.savebar{
+  position:sticky;bottom:10px;z-index:9;
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+  background:var(--card,#fff);border:1px solid var(--line);
+  border-radius:14px;padding:11px 12px;margin-top:14px;
+  box-shadow:0 8px 24px rgba(45,62,40,.18);
+}
+.savebar .grow{flex:1;min-width:150px}
+.savebar-t{display:block;font-size:13.5px;font-weight:600;color:var(--ink)}
+.savebar-s{display:block;font-size:11.5px;color:var(--muted);margin-top:1px}
+.savebar .btn{width:auto;flex:none;padding:9px 17px;font-size:13.5px}
+.savebar .chip{flex:none}
+
 /* FACES.
    One shape for every photo and avatar in the app, so a face looks the
    same in the corner as it does on Home. */

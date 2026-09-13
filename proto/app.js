@@ -552,6 +552,11 @@ function newChildRecord(name, birthday) {
     lensOptions: {},
     lensNumbers: {},
     statuses: {},
+    /* The day each milestone was first marked as reached. This is the
+       part a parent actually wants later: not that he can do it, but
+       when he started. */
+    statusDates: {},
+    milestonesUpdatedAt: '',
     wakeTime: '06:30',
     napOverride: null,
     routineInclude: [],
@@ -584,6 +589,12 @@ const store = {
      while it is being edited. Nothing reaches the real record until
      Save, so backing out of a half typed change costs nothing. */
   profileEdit: null,
+
+  /* Milestones in progress. Taps land here rather than on the child
+     until Save, and this one IS persisted: a parent who taps four
+     things and then goes to answer the door should find them still
+     waiting when she comes back, not gone. */
+  msEdit: null,
 
   /* Parent scoped. These follow the mother, not any child. */
   bagChecked: [],
@@ -687,7 +698,7 @@ const state = {};
 });
 
 ['parent', 'children', 'activeChildId', 'bagChecked', 'birthdaySeen', 'profileWho',
- 'profileEdit', 'pumpTab', 'pumpGoal',
+ 'profileEdit', 'msEdit', 'pumpTab', 'pumpGoal',
  'pumpProblem', 'flangeMm', 'ppTab', 'ppStage', 'askQuery', 'askAsked',
  'tab', 'view', 'undGroup', 'lensBand', 'feedTab', 'safetyTab',
  'logDraft', 'draftChildName', 'draftChildBday'].forEach((key) => {
@@ -715,6 +726,7 @@ function flushStore() {
       activeChildId: store.activeChildId,
       bagChecked: store.bagChecked,
       birthdaySeen: store.birthdaySeen,
+      msEdit: store.msEdit,
       hadSession: store.hadSession,
       guest: store.guest,
       deletedChildIds: store.deletedChildIds,
@@ -777,6 +789,8 @@ function loadStore() {
     /* A half typed edit never survives a reload. Closing the tab is the
        same as pressing Cancel, which is what she would expect. */
     store.profileEdit = null;
+    store.msEdit = (saved.msEdit && typeof saved.msEdit === 'object' && saved.msEdit.childId)
+      ? saved.msEdit : null;
   }
 
   if (saved && Array.isArray(saved.children) && saved.children.length) {
@@ -791,6 +805,8 @@ function loadStore() {
       lensOptions: k.lensOptions && typeof k.lensOptions === 'object' ? k.lensOptions : {},
       lensNumbers: k.lensNumbers && typeof k.lensNumbers === 'object' ? k.lensNumbers : {},
       statuses: k.statuses && typeof k.statuses === 'object' ? k.statuses : {},
+      statusDates: k.statusDates && typeof k.statusDates === 'object' ? k.statusDates : {},
+      milestonesUpdatedAt: k.milestonesUpdatedAt || '',
       routineInclude: Array.isArray(k.routineInclude) ? k.routineInclude : [],
       logs: Array.isArray(k.logs) ? k.logs : [],
       updatedAt: Number(k.updatedAt) || 0,
@@ -928,7 +944,8 @@ function screenPlan(c) {
   return `
   ${cornerLeaves()}
   <div class="sc-head">
-    <h1 class="title">Today's Plan</h1>
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title" style="margin-top:6px">Today's Plan</h1>
     <p class="sub">${esc(c.child.name)} &middot; ${esc(c.summary.label)}</p>
   </div>
   <div class="sc">
@@ -1046,6 +1063,130 @@ function viewContent(c, id) {
   </div>`;
 }
 
+/* -----------------------------------------------------------------
+   MILESTONES, RECORDED RATHER THAN TAPPED
+
+   Tapping used to write straight to the record, which made the screen
+   feel like nothing had happened. She asked to be able to come back
+   each day, mark what has changed, and press Save, so that reaching
+   something is an act rather than a side effect.
+
+   Two things follow from that. Taps go into a draft and only Save
+   commits them, and the draft is persisted rather than held in memory,
+   because the realistic interruption here is a parent marking four
+   things and then having to put the phone down. She should find them
+   still waiting.
+
+   Save also writes the date. That is the part worth keeping: not that
+   he can do it, but the day he started.
+   ----------------------------------------------------------------- */
+
+function msDraft() {
+  const k = activeChild();
+  if (!k || !store.msEdit || store.msEdit.childId !== k.id) return null;
+  return store.msEdit;
+}
+
+/* What a row should show: the draft if this one has been touched,
+   otherwise what is actually recorded. */
+function msCurrent(id) {
+  const d = msDraft();
+  if (d && Object.prototype.hasOwnProperty.call(d.statuses, id)) return d.statuses[id] || undefined;
+  return state.statuses[id];
+}
+
+/* The saved statuses with the draft laid over the top, for the progress
+   bar and the "worth mentioning" list, so both move as she taps. */
+function msMerged() {
+  const out = Object.assign({}, state.statuses);
+  const d = msDraft();
+  if (d) {
+    Object.keys(d.statuses).forEach((id) => {
+      if (d.statuses[id]) out[id] = d.statuses[id];
+      else delete out[id];
+    });
+  }
+  return out;
+}
+
+function msSet(id, st) {
+  const k = activeChild();
+  if (!k) return;
+  if (!store.msEdit || store.msEdit.childId !== k.id) store.msEdit = { childId: k.id, statuses: {} };
+  const cur = msCurrent(id);
+  /* Tapping the answer already showing clears it, same as everywhere
+     else in the app, so a wrong tap needs no reset button. */
+  const next = cur === st ? '' : st;
+  /* Back to what is already saved is not a change, so it leaves the
+     draft rather than sitting there as a pending edit that does nothing. */
+  if (next === (state.statuses[id] || '')) delete store.msEdit.statuses[id];
+  else store.msEdit.statuses[id] = next;
+  if (!Object.keys(store.msEdit.statuses).length) store.msEdit = null;
+  flushStore();
+}
+
+function msChangeCount() {
+  const d = msDraft();
+  return d ? Object.keys(d.statuses).length : 0;
+}
+
+function msReached(st) {
+  return st === 'sometimes' || st === 'mastered';
+}
+
+function msSave() {
+  const d = msDraft();
+  const k = activeChild();
+  if (!d || !k) return;
+  const now = new Date();
+  const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0')
+    + '-' + String(now.getDate()).padStart(2, '0');
+  if (!k.statusDates) k.statusDates = {};
+
+  Object.keys(d.statuses).forEach((id) => {
+    const val = d.statuses[id];
+    const wasReached = msReached(k.statuses[id]);
+    if (!val) {
+      delete k.statuses[id];
+      delete k.statusDates[id];
+      return;
+    }
+    k.statuses[id] = val;
+    /* The date is stamped the first time it is reached and then left
+       alone. Moving from doing sometimes to mastered is the same
+       milestone, not a new one, so it keeps the day it started. */
+    if (msReached(val) && !wasReached) k.statusDates[id] = today;
+    if (!msReached(val)) delete k.statusDates[id];
+  });
+
+  k.milestonesUpdatedAt = today;
+  k.updatedAt = Date.now();
+  store.msEdit = null;
+  flushStore();
+}
+
+function msDiscard() {
+  store.msEdit = null;
+  flushStore();
+}
+
+/* The bar that appears the moment something is marked and stays until
+   it is saved. Pinned to the bottom of the screen rather than sitting
+   at the end of a long list, because a parent who marks one thing near
+   the top should not have to scroll past forty rows to keep it. */
+function msSaveBar(count) {
+  if (!count) return '';
+  return `
+  <div class="savebar">
+    <span class="grow">
+      <span class="savebar-t">${count} change${count === 1 ? '' : 's'} not saved yet</span>
+      <span class="savebar-s">Save and the date gets recorded with it</span>
+    </span>
+    <button class="chip" data-msave="discard">Undo</button>
+    <button class="btn" data-msave="save">${icon('check', 15, '#fff')} Save</button>
+  </div>`;
+}
+
 function screenMilestones(c) {
   const cp = c.summary.checkpoint;
   if (c.months == null) return emptyScreen('Add a birthday to see milestones.');
@@ -1053,7 +1194,10 @@ function screenMilestones(c) {
     const past = c.months >= 72;
     return `
     ${cornerLeaves()}
-    <div class="sc-head"><h1 class="title">Milestones</h1></div>
+    <div class="sc-head">
+      <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+      <h1 class="title" style="margin-top:6px">Milestones</h1>
+    </div>
     <div class="sc"><div class="empty">
       ${growthSVG(c.growth ? c.growth.order : 6, 78)}
       <p><strong style="color:var(--ink)">${past ? 'Milestone tracking runs to five years.' : 'The first checkpoint is at two months.'}</strong></p>
@@ -1063,15 +1207,20 @@ function screenMilestones(c) {
     </div></div>`;
   }
 
+  const kid = activeChild();
+  const dates = (kid && kid.statusDates) || {};
+  const merged = msMerged();
+  const pending = msChangeCount();
   const groups = getMilestonesByDomain(cp);
-  const prog = summarizeProgress(cp, state.statuses);
+  const prog = summarizeProgress(cp, merged);
   const label = getCheckpoint(cp).ageDescription;
-  const notYet = getNotYetMilestones(cp, state.statuses);
+  const notYet = getNotYetMilestones(cp, merged);
 
   return `
   ${cornerLeaves()}
   <div class="sc-head">
-    <h1 class="title">Milestones</h1>
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title" style="margin-top:6px">Milestones</h1>
     <p class="sub">${esc(label)} &middot; what most children can do by now</p>
   </div>
   <div class="sc">
@@ -1079,25 +1228,35 @@ function screenMilestones(c) {
       <p class="bodytext"><strong style="color:var(--ink)">These are not deadlines.</strong> They describe what about 75 percent of children can do by this age. Reaching one later is common and usually not a concern on its own.</p>
       <div class="pline"><span>Recorded</span><b>${prog.recorded} of ${prog.total}</b></div>
       <div class="bar"><i style="width:${prog.total ? Math.round((prog.showingUp / prog.total) * 100) : 0}%"></i></div>
+      <p class="tiny" style="margin-top:9px">
+        Mark whatever has changed and press Save. Come back as often as you like, the date goes down
+        with it.${kid && kid.milestonesUpdatedAt
+          ? ' Last saved ' + esc(cycleDateLabelWithYear(kid.milestonesUpdatedAt)) + '.' : ''}
+      </p>
     </div>
 
     ${groups.map((g) => `
       <p class="sect">${esc(g.label)}</p>
       ${g.items.map((m) => {
-        const cur = state.statuses[m.id];
+        const cur = msCurrent(m.id);
+        const changed = !!(msDraft() && Object.prototype.hasOwnProperty.call(msDraft().statuses, m.id));
+        const on = dates[m.id];
         return `
-        <div class="ms">
+        <div class="ms${changed ? ' changed' : ''}">
           <p class="mtext">${esc(m.text)}</p>
           <p class="mwin">${esc(describeMilestoneWindow(m, c.flex))}</p>
           <div class="mbtns">
             ${MILESTONE_STATUSES.map((s) => {
-              const on = cur === s.id;
+              const isOn = cur === s.id;
               const col = { notYet: ['#8A9080', '#F2F1EC'], emerging: ['#B0873F', '#F7EFE2'],
                 sometimes: ['#6E8B54', '#EEF2E7'], mastered: ['#547045', '#E7EFE0'], unsure: ['#5C7581', '#E9EEF0'] }[s.id];
-              return `<button class="mb" data-ms="${esc(m.id)}" data-st="${s.id}" aria-pressed="${on}"
-                style="${on ? `background:${col[1]};color:${col[0]}` : ''}">${esc(s.label)}</button>`;
+              return `<button class="mb" data-ms="${esc(m.id)}" data-st="${s.id}" aria-pressed="${isOn}"
+                style="${isOn ? `background:${col[1]};color:${col[0]}` : ''}">${esc(s.label)}</button>`;
             }).join('')}
           </div>
+          ${changed
+            ? `<p class="mdate pend">${icon('clock', 11, '#B0873F')} Not saved yet</p>`
+            : (on ? `<p class="mdate">${icon('check', 11, 'var(--sage)')} Reached ${esc(cycleDateLabelWithYear(on))}</p>` : '')}
         </div>`;
       }).join('')}`).join('')}
 
@@ -1110,6 +1269,7 @@ function screenMilestones(c) {
         <ul class="dlist warn" style="margin-top:12px">${notYet.map((m) => `<li>${esc(m.text)}</li>`).join('')}</ul>
       </div>` : ''}
     <p class="disclaimer">${esc(CONTENT_DISCLAIMER)}</p>
+    ${msSaveBar(pending)}
   </div>`;
 }
 
@@ -1124,7 +1284,8 @@ function screenActivities(c) {
   return `
   ${cornerLeaves()}
   <div class="sc-head">
-    <h1 class="title">Activities</h1>
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title" style="margin-top:6px">Activities</h1>
     <p class="sub">Play today. Brighter tomorrows ahead.</p>
   </div>
   <div class="sc">
@@ -1372,7 +1533,15 @@ function render() {
   /* The birthday card gets the screen to itself. Willow's pill peeking
      out from under the scrim made the moment look like an accident. */
   const bday = birthdayOverlay();
-  if (willowSlot) willowSlot.innerHTML = bday || (willowBubble() + willowPanel());
+  /* Willow steps aside for an unsaved save bar, the same way she does
+     for a birthday card. On a phone her pill sits exactly where the
+     Save button lands, and the thing that needs pressing should not be
+     the thing behind something else. */
+  const pendingSave = !!(v && v.type === 'screen' && v.id === 'milestones'
+    && !willow.open && msChangeCount());
+  if (willowSlot) {
+    willowSlot.innerHTML = bday || (pendingSave ? '' : willowBubble() + willowPanel());
+  }
   /* The canvas has to exist before anything can draw on it, so the
      confetti starts here rather than inside the function that writes the
      markup. It leaves itself alone if it is already running. */
@@ -1591,7 +1760,7 @@ function initControls() {
   });
 
   document.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave]');
     if (!t) return;
 
     if (t.dataset.auth) {
@@ -1800,9 +1969,9 @@ function initControls() {
       const to = t.dataset.back;
       state.view = to && to !== '1' ? { type: 'screen', id: to } : null;
     } else if (t.dataset.ms) {
-      const id = t.dataset.ms;
-      state.statuses[id] = state.statuses[id] === t.dataset.st ? undefined : t.dataset.st;
-      if (!state.statuses[id]) delete state.statuses[id];
+      msSet(t.dataset.ms, t.dataset.st);
+    } else if (t.dataset.msave) {
+      if (t.dataset.msave === 'save') msSave(); else msDiscard();
     } else if (t.dataset.filter === 'setting') {
       actFilter.setting = actFilter.setting === t.dataset.val ? null : t.dataset.val;
     } else if (t.dataset.filter === 'mat') {
@@ -2004,7 +2173,8 @@ function screenSleep(c) {
   return `
   ${cornerLeaves()}
   <div class="sc-head">
-    <h1 class="title">Today's Rhythm</h1>
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title" style="margin-top:6px">Today's Rhythm</h1>
     <p class="sub">Tell it one thing. It builds the rest of the day.</p>
   </div>
   <div class="sc">
@@ -4289,7 +4459,8 @@ function screenUnderstand(c) {
   return `
   ${cornerLeaves()}
   <div class="sc-head">
-    <h1 class="title">Understanding ${esc(state.name || 'your child')}</h1>
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title" style="margin-top:6px">Understanding ${esc(state.name || 'your child')}</h1>
     <p class="sub">How their mind works, in plain English, so the hard moments make more sense.</p>
   </div>
   <div class="sc">
@@ -5283,9 +5454,6 @@ function topBar(markOnly) {
   </div>`;
 }
 
-/* -----------------------------------------------------------------
-   TODAY
-   ----------------------------------------------------------------- */
 
 /* -----------------------------------------------------------------
    HOME
@@ -5369,10 +5537,8 @@ function screenHome(c) {
       <button class="btn" style="margin-top:12px" data-go="screen" data-id="addchild">Add your child</button>
     </div>` : ''}
 
-    ${cyc ? `
     <p class="sect">You</p>
-    ${homeCycleCard(cyc)}` : `
-    <p class="sect">You</p>
+    ${cyc ? homeCycleCard(cyc) : `
     <button class="lrow" data-me="1" style="align-items:flex-start">
       <span class="licon">${icon('calendar', 18)}</span>
       <span class="grow">
@@ -5487,134 +5653,6 @@ function homeCycleCard(info) {
     </div>
     <p class="tiny" style="margin-top:9px;text-align:left">Estimates from one date, not a test and not birth control.</p>
   </button>`;
-}
-
-function screenToday(c) {
-  const hour = new Date().getHours();
-  const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-  const focus = c.content[0];
-  const p = c.months == null ? null : buildPlan(c);
-  const quickLogs = c.months == null ? [] : getLogTypesForAge(c.months).slice(0, 4);
-  const band = c.band;
-  const day = c.months == null ? null
-    : buildDay({ months: c.months, wakeTime: state.wakeTime, naps: state.napOverride });
-  const bed = day && day.ok ? describeDay(day).filter((r) => r.type === 'bedtime')[0] : null;
-
-  const planRow = (eyebrow, ic, title, text, go) => `
-    <div class="plan">
-      <span class="picon">${icon(ic, 17)}</span>
-      <div class="grow">
-        <p class="eyebrow">${eyebrow}</p>
-        <h3 class="h3" style="font-size:16px">${esc(title)}</h3>
-        <p class="tiny" style="margin-top:3px">${esc(text)}</p>
-        ${go ? `<button class="btn ghost sm" style="margin-top:9px" ${go}>Open this</button>` : ''}
-      </div>
-    </div>`;
-
-  return `
-  ${cornerLeaves()}
-  <div class="sc-head">
-    <p class="eyebrow">${esc(greet)}${esc(store.parent.name ? ', ' + store.parent.name : '')}</p>
-    <h1 class="title">Today</h1>
-    <p class="sub">What you are doing together, and somewhere to put it down as it happens.</p>
-  </div>
-  <div class="sc">
-
-    ${isExampleChild(activeChild()) ? `
-    <div class="card" style="border-left:3px solid var(--attention)">
-      <p class="eyebrow">${icon('info', 11, 'var(--sage)')} This is the example child</p>
-      <p class="bodytext" style="margin-top:5px">
-        ${esc(state.name || 'This one')} is not yours, the app made them up so there was something
-        to look at. Add your own child and this disappears.
-      </p>
-      <button class="btn" style="margin-top:12px" data-go="screen" data-id="profile">Add your child</button>
-    </div>` : ''}
-
-    <div class="card">
-      <div class="kid">
-        <div class="avatar">${growthSVG(c.growth ? c.growth.order : 2, 48)}</div>
-        <div class="grow">
-          <p class="kidname">${esc(c.child.name || 'Your child')}</p>
-          <p class="kidage">${esc(c.summary.label || 'Add a birthday')}</p>
-          ${c.stage ? `<span class="stagepill">${icon('leaf', 12, 'var(--deep2)')} ${esc(c.stage.label)}</span>` : ''}
-        </div>
-        <div class="script" style="text-align:right;flex:none;width:74px">A kinder<br>brighter<br>tomorrow</div>
-      </div>
-    </div>
-
-    ${c.days != null && c.days < 56 && getDiaperDay(c.days) ? `
-    <p class="sect">The newborn count</p>
-    ${newbornCounter(c)}
-    <button class="btn ghost sm" style="width:100%;margin-top:-3px"
-      data-go="screen" data-id="feeding" data-asksub="feedTab" data-asksubval="newborn">
-      Feeds, diapers and how many ounces
-    </button>` : ''}
-
-    ${quickLogs.length ? `
-    <p class="sect">Log it as it happens</p>
-    <div class="qgrid">
-      ${quickLogs.map((t) => `
-        <button class="q" data-go="log" data-id="${esc(t.id)}">
-          <span class="qi">${icon(logIcon(t.icon), 17)}</span>
-          <span class="qt">${esc(t.label)}</span>
-          <span class="qs">${esc(lastLogLine(t.id))}</span>
-        </button>`).join('')}
-    </div>
-    <button class="btn ghost sm" style="width:100%;margin-top:9px" data-tab="logs">
-      Everything logged so far
-    </button>` : ''}
-
-    ${p ? `
-    <p class="sect">Today's plan</p>
-    <p class="tiny" style="margin:-4px 0 10px">
-      This changes on its own at midnight, so tomorrow is not today again.
-    </p>
-    ${p.morning ? planRow('Morning', 'sun', p.morning.title, p.morning.description,
-      `data-go="activity" data-id="${esc(p.morning.id)}"`) : ''}
-    ${p.learning ? planRow('Learning moment', 'book', p.learning.title, p.learning.description,
-      `data-go="activity" data-id="${esc(p.learning.id)}"`) : ''}
-    ${p.move ? planRow('Move', 'run', p.move.title, p.move.description,
-      `data-go="activity" data-id="${esc(p.move.id)}"`) : ''}
-    <button class="btn ghost sm" style="width:100%;margin-top:2px" data-go="screen" data-id="plan">
-      The whole plan, including what to say at bedtime
-    </button>` : ''}
-
-    ${band ? `
-    <p class="sect">Today's rhythm</p>
-    <button class="lrow" data-go="screen" data-id="sleep" style="align-items:flex-start">
-      <span class="licon">${icon('moon', 18)}</span>
-      <span class="grow">
-        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">
-          ${band.naps.typical === 0 ? 'No naps at this age' : 'Usually ' + band.naps.typical + (band.naps.typical === 1 ? ' nap' : ' naps')}${bed ? ', bedtime around ' + esc(bed.time) : ''}
-        </span>
-        <span class="tiny" style="display:block;margin-top:2px">Tell it what time they woke and it builds the rest of the day</span>
-      </span>
-      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-    </button>` : ''}
-
-    <p class="sect">One thing worth knowing today</p>
-    ${focus ? `
-    <div class="card leafy">
-      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(focus.ageRange)}</p>
-      <h3 class="h3">${esc(focus.title)}</h3>
-      <p class="bodytext" style="margin-top:5px">${esc(focus.summary)}</p>
-      <button class="btn" style="margin-top:12px" data-go="content" data-id="${esc(focus.id)}">
-        Read this ${icon('chev', 15, '#fff')}
-      </button>
-    </div>` : `
-    <div class="card leafy">
-      <h3 class="h3">Nothing written for this age yet</h3>
-      <p class="bodytext" style="margin-top:5px">Development content runs from birth through eighteen.
-      The thinnest stretch right now is the first three months, and that is a gap worth telling us about.</p>
-    </div>`}
-
-    <div class="card flat">
-      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Connection before correction</p>
-      <p class="bodytext">When big emotions show up, try getting curious before giving advice. A calm,
-      connected moment builds trust and helps your child feel safe.</p>
-    </div>
-    <p class="disclaimer">${esc(CONTENT_DISCLAIMER)}</p>
-  </div>`;
 }
 
 /* -----------------------------------------------------------------
@@ -5878,7 +5916,9 @@ function screenChild(c) {
 
     <p class="sect">Where they are now</p>
     ${childRow('chart', 'Milestones',
-      doneMs ? esc(doneMs + ' marked so far. Ranges, not deadlines.') : 'Ranges, not deadlines',
+      msChangeCount()
+        ? esc(msChangeCount() + ' marked but not saved yet')
+        : (doneMs ? esc(doneMs + ' marked so far. Ranges, not deadlines.') : 'Ranges, not deadlines'),
       'data-go="screen" data-id="milestones"')}
     ${childRow('book', 'Development guidance',
       c.content.length ? esc(c.content.length + ' written for exactly this age') : 'Nothing written for this age yet',
@@ -7059,6 +7099,7 @@ function combineChildren(group) {
   out.lensOptions = {};
   out.lensNumbers = {};
   out.statuses = {};
+  out.statusDates = {};
   out.routineInclude = [];
   out.logs = [];
   const seenLogs = {};
@@ -7071,7 +7112,7 @@ function combineChildren(group) {
     /* Later records win on a key by key basis rather than wholesale, so
        a milestone marked on the phone and a different one marked on the
        laptop both survive. */
-    ['statuses', 'lensOptions', 'lensNumbers'].forEach((field) => {
+    ['statuses', 'statusDates', 'lensOptions', 'lensNumbers'].forEach((field) => {
       const src = k[field] || {};
       Object.keys(src).forEach((key) => { out[field][key] = src[key]; });
     });
