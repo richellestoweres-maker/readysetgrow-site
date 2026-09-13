@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-13 18:57">
+<meta name="rsg-build" content="2026-09-13 19:06">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -231,6 +231,12 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .wmsg.thinking span:nth-child(2){animation-delay:.16s}
 .wmsg.thinking span:nth-child(3){animation-delay:.32s}
 @keyframes wdot{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+
+/* The one button on an emergency card. Big, obvious, and a real phone
+   link so a thumb on a phone actually dials rather than selecting text. */
+.wdial{display:block;margin-top:11px;padding:13px 16px;border-radius:999px;
+  background:#A85A44;color:#fff;text-align:center;font-size:15.5px;font-weight:700;
+  text-decoration:none;letter-spacing:.01em}
 
 .wfoot{display:flex;gap:8px;padding:11px 12px;border-top:1px solid var(--line2);background:var(--surface)}
 .winput{flex:1;min-width:0;font:inherit;font-size:15px;padding:10px 13px;border-radius:999px;
@@ -546,7 +552,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-13 18:57';
+const BUILD_STAMP = '2026-09-13 19:06';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -14421,8 +14427,16 @@ const WILLOW = {
     'needs a real person. Everything else, I am here for.',
 
   notReady:
-    'Willow is not switched on yet. There is one setting left to turn on in Firebase, App Check, and ' +
-    'until then she cannot answer. Everything else in the app works exactly as normal.',
+    'Willow is not switched on yet. The AI service has not been enabled on this project. Everything ' +
+    'else in the app works exactly as normal.',
+
+  /* A different failure with a different fix, so it gets its own words
+     rather than being folded into "something went wrong", which sends
+     somebody off to try again forever at a problem that is a setting. */
+  notVerified:
+    'Willow is almost ready. The app has not been verified with App Check yet, so Google is turning ' +
+    'her requests away at the door. It is one key in the Firebase console and then she works. ' +
+    'Everything else in the app is unaffected.',
 
   failed:
     'Something went wrong reaching me just then. Nothing is lost, try again in a moment. If it is ' +
@@ -14547,33 +14561,111 @@ function willowHistory(messages, limit) {
   return out;
 }
 
-/* Words that must never reach a model, checked on the device. The
-   lists are deliberately blunt: a false alarm shows somebody an
-   emergency card they did not need, which costs them three seconds. */
+/* THE GATES.
+ *
+ * Three kinds of question Willow does not answer, because the right
+ * response is a phone number rather than a paragraph. They are checked
+ * on the device, off a word list, before anything is sent anywhere.
+ *
+ * That placement is the whole point. The moments these cover are the
+ * moments when a parent has no patience for a spinner and no guarantee
+ * of a signal, so the answer cannot depend on a network, a server, or a
+ * model deciding how worried to be. A list of words and an if statement
+ * are cruder than a model and they are also never down.
+ *
+ * The lists are deliberately blunt. A false alarm shows somebody a
+ * number they did not need, which costs three seconds. The other kind
+ * of mistake costs considerably more.
+ */
+
 const WILLOW_STOP_EMERGENCY = [
-  'not breathing', 'stopped breathing', 'cant breathe', 'can not breathe', "can't breathe",
-  'turning blue', 'went blue', 'blue lips', 'grey lips', 'gray lips', 'unresponsive',
-  'wont wake', "won't wake", 'will not wake', 'unconscious', 'passed out', 'seizure',
-  'seizing', 'convulsing', 'choking', 'choked', 'drowning', 'drowned', 'limp and',
-  'no pulse', 'not moving', 'swallowed a battery', 'button battery', 'poison', 'overdose',
-  'fell and', 'hit her head', 'hit his head', 'head injury', 'bleeding badly',
+  'not breathing', 'stopped breathing', 'isnt breathing', 'is not breathing',
+  'cant breathe', 'can not breathe', "can't breathe", 'struggling to breathe',
+  'turning blue', 'went blue', 'blue lips', 'grey lips', 'gray lips', 'lips are blue',
+  'unresponsive', 'wont wake', "won't wake", 'will not wake', 'cant wake', "can't wake",
+  'unconscious', 'passed out', 'seizure', 'seizing', 'convulsing', 'fitting',
+  'choking', 'choked', 'turning purple', 'drowning', 'drowned', 'not moving',
+  'no pulse', 'no heartbeat', 'limp and', 'gone limp',
+  'swallowed a battery', 'button battery', 'swallowed a magnet', 'swallowed bleach',
+  'drank bleach', 'ate a pill', 'swallowed pills', 'poisoned', 'overdose',
+  'hit her head', 'hit his head', 'head injury', 'fell down the stairs',
+  'bleeding badly', 'wont stop bleeding', "won't stop bleeding",
 ];
 
 const WILLOW_STOP_CRISIS = [
-  'kill myself', 'killing myself', 'end my life', 'want to die', 'better off without me',
-  'hurt my baby', 'harm my baby', 'hurt the baby', 'shake the baby', 'shook the baby',
-  'hurt myself', 'harm myself', 'self harm', 'suicidal', 'suicide',
+  'kill myself', 'killing myself', 'end my life', 'take my own life', 'want to die',
+  'dont want to be here', "don't want to be here", 'better off without me',
+  'better off dead', 'no reason to live', 'suicidal', 'suicide', 'end it all',
+  'hurt myself', 'harm myself', 'self harm', 'cutting myself', 'cut myself',
+  'hurt my baby', 'harm my baby', 'hurt the baby', 'hurt my child', 'harm my child',
+  'shake the baby', 'shook the baby', 'shaking the baby',
+  'is cutting herself', 'is cutting himself', 'is self harming', 'wants to die',
+  'talked about killing', 'talking about killing', 'said he wants to die',
+  'said she wants to die',
+];
+
+/* Dosing is its own gate rather than a rule the model is asked to
+   follow. A number is the one thing somebody might act on immediately
+   and cannot check, the amount depends on a weight this app has never
+   measured, and getting it wrong is how a child ends up in an emergency
+   room. So it never goes to a model that might be persuaded. */
+const WILLOW_STOP_DOSING = [
+  'how much tylenol', 'how much motrin', 'how much advil', 'how much ibuprofen',
+  'how much acetaminophen', 'how much paracetamol', 'how much benadryl',
+  'how much medicine', 'how much medication', 'how many ml', 'how many mls',
+  'how much ml of', 'what dose', 'what dosage', 'correct dose', 'right dose',
+  'proper dose', 'dose for', 'dosage for', 'how many milligrams', 'how much mg',
+  'how many teaspoons of', 'can i give him two', 'can i give her two',
+  'double dose', 'is it safe to give', 'how much should i give',
 ];
 
 function willowStopReason(question) {
   const q = ' ' + String(question || '').toLowerCase().replace(/[^a-z' ]+/g, ' ').replace(/\s+/g, ' ') + ' ';
+  /* Order matters. Somebody saying both is in the worse of the two. */
   if (WILLOW_STOP_CRISIS.some((w) => q.indexOf(w) !== -1)) return 'crisis';
   if (WILLOW_STOP_EMERGENCY.some((w) => q.indexOf(w) !== -1)) return 'emergency';
+  if (WILLOW_STOP_DOSING.some((w) => q.indexOf(w) !== -1)) return 'dosing';
   return null;
 }
 
-/* Pulls the SOURCES line off the end so the app can render real links
-   rather than trusting prose to contain them. */
+/* What each gate says, and what it hands over instead of an answer. The
+   line about not being able to give medical advice is stated here
+   rather than implied, because somebody reading one of these cards is
+   entitled to know why they are being handed a phone number. */
+const WILLOW_GATES = {
+  emergency: {
+    title: 'Stop reading and call 911',
+    lead: 'That needs emergency help now, not me. I cannot see your child and I am not able to give '
+      + 'medical advice, so I am not going to try.',
+    after: 'Call 911, or your local emergency number. Once somebody is with you, everything in here '
+      + 'is still here.',
+  },
+  crisis: {
+    title: 'Please talk to a person right now',
+    lead: 'I am not able to help with this the way a real person can, and you deserve a real person. '
+      + 'You do not have to be in crisis to call, and telling someone is the way through rather than '
+      + 'a risk to your family.',
+    after: 'If you are thinking about harming yourself or your baby, call or text 988, or go to an '
+      + 'emergency room. It is rare, it is a medical emergency, and it is treatable.',
+  },
+  dosing: {
+    title: 'I cannot tell you how much to give',
+    lead: 'Dose depends on your child’s exact weight, and I am not able to give medical advice or '
+      + 'a number you might act on. That one comes from your pediatrician or the label on the bottle, '
+      + 'and it is worth the phone call even late at night.',
+    after: 'What I can help with is timing. The medication log in here records what was given and '
+      + 'when, and works out when the next dose of that same medicine is due, which is the part memory '
+      + 'fails at when you are exhausted and rotating two bottles.',
+    poison: 'If you think they have already had too much, call Poison Control on 1-800-222-1222. '
+      + 'They answer 24 hours a day and they would far rather you called.',
+    sources: [
+      { org: 'HealthyChildren.org (AAP)', label: 'Fever and pain medicine, how much and how often', url: 'https://www.healthychildren.org/English/health-issues/conditions/fever/Pages/Medications-Used-to-Treat-Fever.aspx' },
+      { org: 'Poison Control', label: 'Poison Control, 24 hours a day', url: 'https://www.poison.org/' },
+      { org: 'FDA', label: 'Giving medicine to children', url: 'https://www.fda.gov/drugs/information-consumers-and-patients-drugs/giving-medicine-children' },
+    ],
+  },
+};
+
 function willowSplitSources(text) {
   const raw = String(text || '').trim();
   const m = raw.match(/\n?\s*SOURCES\s*:\s*([^\n]*)\s*$/i);
@@ -17392,6 +17484,7 @@ function initControls() {
       if (t.tagName === 'A') return; // source links open normally
       // Following one of her links means you want to read it, not keep chatting.
       if (willow.open && t.closest('.willowpanel')) willow.open = false;
+      if (t.dataset.go === 'log') store.logFrom = { tab: state.tab, view: state.view };
       /* A diaper logged from the newborn screen should land back on the
          newborn screen with the count one higher, not on a list. */
       if (t.dataset.go === 'log') store.logFrom = { tab: state.tab, view: state.view };
@@ -22319,14 +22412,17 @@ async function willowAsk(question) {
     willow.usedToday = willowCountToday() + 1;
     willowSay('willow', split.body || WILLOW.failed, used);
   } catch (err) {
-    /* The two failures mean different things to the person reading.
-       "Not switched on" is a setup step somebody has to take once.
-       "Something went wrong" is a signal that dropped. Telling a parent
-       to try again in a moment when the answer is that a button was
-       never pressed would waste her evening. */
-    const code = String((err && err.code) || (err && err.message) || '');
-    const notSetUp = /api-not-enabled|not been used|SERVICE_DISABLED|403/i.test(code) || !willow.ready;
-    willowSay('willow', notSetUp ? WILLOW.notReady : WILLOW.failed, [], 'failed');
+    /* Three failures, three different fixes, so they get three
+       different sentences. Telling somebody to try again in a moment,
+       when the real answer is that a key was never pasted in, wastes
+       their evening on a problem no amount of retrying will move. */
+    const code = String((err && err.code) || '') + ' ' + String((err && err.message) || '');
+    let message;
+    if (/app.?check|401|unauthenticated/i.test(code)) message = WILLOW.notVerified;
+    else if (/api-not-enabled|not been used|SERVICE_DISABLED|403|permission/i.test(code)) message = WILLOW.notReady;
+    else if (!willow.ready) message = WILLOW.notReady;
+    else message = WILLOW.failed;
+    willowSay('willow', message, [], 'failed');
   }
   willow.busy = false;
   render();
@@ -22348,41 +22444,89 @@ function willowSourceRow(s) {
   return `<button class="wsrc" ${attrs}>${icon('chev', 12, 'var(--deep)')} ${esc(s.title)}</button>`;
 }
 
-/* The two answers she is never allowed to write herself. */
+/* The three answers she is never allowed to write herself. Each one
+   says why it is refusing, then hands over the thing that is actually
+   useful: a number to call, and where it came from. */
+
+function willowPhoneRow(l) {
+  /* Picking a number out of prose is fiddlier than it looks. The
+     maternal hotline is written "1-833-TLC-MAMA, 1-833-852-6262", and
+     a naive match stops dead at the T and dials 1833. So: take every
+     run of digits and punctuation, keep the one with the most actual
+     digits, and only trust it if it is a real length. */
+  const runs = String(l.contact || '').match(/[\d][\d\s().\-]*\d/g) || [];
+  const best = runs
+    .map((r) => r.replace(/[^\d]/g, ''))
+    .sort((a, b) => b.length - a.length)[0] || '';
+  const dial = (best.length >= 10 || best.length === 3) ? 'tel:' + best : null;
+  return `
+  <div style="padding:9px 0;border-top:1px solid rgba(138,90,74,.25)">
+    <p style="margin:0;font-size:13px;font-weight:600;color:#7A4E40">${esc(l.name)}</p>
+    <a href="${dial || esc(l.url)}" ${dial ? '' : 'target="_blank" rel="noopener noreferrer"'}
+       style="font-size:18px;font-weight:600;color:#A85A44;text-decoration:none">${esc(l.contact)}</a>
+    ${l.detail ? `<p class="tiny" style="margin-top:2px;color:#8A5A4A">${esc(l.detail)}</p>` : ''}
+    <a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"
+       class="tiny" style="color:#8A5A4A;text-decoration:underline">Their website</a>
+  </div>`;
+}
+
 function willowEmergencyBlock() {
+  const g = WILLOW_GATES.emergency;
   return `
   <div class="wcard urgent">
-    <p class="eyebrow" style="color:#A85A44">Stop and call 911</p>
-    <ul class="dlist warn" style="margin-top:7px">
-      ${ALWAYS_EMERGENCY.items.slice(0, 3).map((t) => `<li>${esc(t)}</li>`).join('')}
+    <p class="eyebrow" style="color:#A85A44">${esc(g.title)}</p>
+    <p class="bodytext" style="margin-top:5px;color:#7A4E40">${esc(g.lead)}</p>
+    <a href="tel:911" class="wdial">Call 911</a>
+    <p class="tiny" style="margin-top:10px;color:#8A5A4A;font-weight:600">Any of these is 911, now</p>
+    <ul class="dlist warn" style="margin-top:5px">
+      ${ALWAYS_EMERGENCY.items.slice(0, 4).map((t) => `<li>${esc(t)}</li>`).join('')}
     </ul>
-    <p class="tiny" style="margin-top:9px;color:#8A5A4A">${esc(ALWAYS_EMERGENCY.poison)}</p>
-    <p class="tiny" style="margin-top:9px;color:#8A5A4A">
-      I am not going to answer that one myself. Call, then come back to me.
-    </p>
+    <div style="margin-top:8px">
+      ${willowPhoneRow({ name: 'Poison Control', contact: '1-800-222-1222',
+        detail: 'If they swallowed something. 24 hours a day, and call before trying anything at home.',
+        url: 'https://www.poison.org/' })}
+    </div>
+    <p class="tiny" style="margin-top:9px;color:#8A5A4A">${esc(g.after)}</p>
   </div>`;
 }
 
 function willowCrisisBlock() {
+  const g = WILLOW_GATES.crisis;
+  /* 988 goes first here regardless of where it sits in the data, because
+     it is the one somebody may be about to need. */
+  const lines = MATERNAL_SUPPORT_LINES.slice().sort((a, b) => (a.id === '988' ? -1 : b.id === '988' ? 1 : 0));
   return `
   <div class="wcard urgent">
-    <p class="eyebrow" style="color:#A85A44">Please talk to a person right now</p>
-    <p class="bodytext" style="margin-top:5px;color:#7A4E40">
-      You do not have to be in crisis to call, and telling someone is the way through rather than a
-      risk to your family.
-    </p>
+    <p class="eyebrow" style="color:#A85A44">${esc(g.title)}</p>
+    <p class="bodytext" style="margin-top:5px;color:#7A4E40">${esc(g.lead)}</p>
+    <a href="tel:988" class="wdial">Call or text 988</a>
+    <div style="margin-top:6px">${lines.map(willowPhoneRow).join('')}</div>
+    <p class="tiny" style="margin-top:10px;color:#8A5A4A">${esc(g.after)}</p>
+  </div>`;
+}
+
+function willowDosingBlock() {
+  const g = WILLOW_GATES.dosing;
+  return `
+  <div class="wcard urgent">
+    <p class="eyebrow" style="color:#A85A44">${esc(g.title)}</p>
+    <p class="bodytext" style="margin-top:5px;color:#7A4E40">${esc(g.lead)}</p>
+    <p class="bodytext" style="margin-top:9px;color:#7A4E40">${esc(g.after)}</p>
+    <button class="btn" style="margin-top:11px" data-go="log" data-id="medication">
+      Log a medicine and see when the next one is due
+    </button>
     <div style="margin-top:10px">
-      ${MATERNAL_SUPPORT_LINES.map((l) => `
-        <div style="padding:8px 0;border-top:1px solid rgba(138,90,74,.25)">
-          <p style="margin:0;font-size:13px;font-weight:600;color:#7A4E40">${esc(l.name)}</p>
-          <a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"
-             style="font-size:17px;color:#A85A44;text-decoration:none">${esc(l.contact)}</a>
-        </div>`).join('')}
+      ${willowPhoneRow({ name: 'Poison Control', contact: '1-800-222-1222',
+        detail: g.poison, url: 'https://www.poison.org/' })}
     </div>
-    <p class="tiny" style="margin-top:10px;color:#8A5A4A">
-      If you are thinking about harming yourself or your baby, call or text 988, or go to an
-      emergency room. It is rare, it is a medical emergency, and it is treatable.
-    </p>
+    <div style="margin-top:10px;padding-top:9px;border-top:1px solid rgba(138,90,74,.25)">
+      <p class="tiny" style="margin-bottom:5px;color:#8A5A4A;font-weight:600">Where to read it properly</p>
+      ${g.sources.map((sc) => `
+        <a href="${esc(sc.url)}" target="_blank" rel="noopener noreferrer"
+           class="tiny" style="display:block;padding:3px 0;color:#A85A44;text-decoration:underline">
+          ${esc(sc.org)}: ${esc(sc.label)}
+        </a>`).join('')}
+    </div>
   </div>`;
 }
 
@@ -22416,6 +22560,7 @@ function willowPanel() {
         if (m.who === 'you') return `<div class="wmsg you">${esc(m.text)}</div>`;
         if (m.kind === 'emergency') return willowEmergencyBlock();
         if (m.kind === 'crisis') return willowCrisisBlock();
+        if (m.kind === 'dosing') return willowDosingBlock();
         return `
         <div class="wmsg her">
           ${'<p>' + esc(m.text).replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>') + '</p>'}
