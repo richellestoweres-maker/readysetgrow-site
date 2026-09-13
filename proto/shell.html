@@ -1,0 +1,373 @@
+<title>Ready Set Grow Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
+<style>
+/* ---------- WORKBENCH TOKENS (theme aware) ---------- */
+:root{
+  --wb-bg:#EDEBE3; --wb-bg2:#E4E1D6; --wb-panel:#FBFAF6; --wb-ink:#2C3126;
+  --wb-muted:#6E7364; --wb-line:#DAD6C8; --wb-accent:#4A6741; --wb-chip:#FFFFFF;
+  --wb-chip-on:#4A6741; --wb-chip-on-ink:#FFFFFF; --wb-shadow:rgba(60,58,44,.16);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --wb-bg:#16180F; --wb-bg2:#101208; --wb-panel:#20241A; --wb-ink:#EAEDE0;
+    --wb-muted:#9AA18C; --wb-line:#31362A; --wb-accent:#A9C48C; --wb-chip:#2A2F22;
+    --wb-chip-on:#A9C48C; --wb-chip-on-ink:#16180F; --wb-shadow:rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --wb-bg:#16180F; --wb-bg2:#101208; --wb-panel:#20241A; --wb-ink:#EAEDE0;
+  --wb-muted:#9AA18C; --wb-line:#31362A; --wb-accent:#A9C48C; --wb-chip:#2A2F22;
+  --wb-chip-on:#A9C48C; --wb-chip-on-ink:#16180F; --wb-shadow:rgba(0,0,0,.5);
+}
+
+/* ---------- BRAND TOKENS (fixed: this is the product) ---------- */
+:root{
+  --cream:#F7F5EF; --cream2:#EFEBE1; --surface:#FFFFFF; --surface2:#FBFAF6;
+  --sage:#7C9068; --sage-press:#6B7E58; --deep:#4A6741; --deep2:#3C5435;
+  --leaf:#DCE4D2; --leaf2:#EAEFE2; --leaf3:#F1F4EB;
+  --taupe:#A08E7B; --taupe2:#EDE7DE; --blush:#D9B8AC; --blush2:#F0E3DE;
+  --ink:#2C3126; --body:#4E5447; --muted:#8A9080; --faint:#AEB3A5;
+  --line:#E5E1D4; --line2:#EFEBE0;
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --serif:'Playfair Display',Georgia,'Times New Roman',serif;
+  --script:'Caveat','Segoe Script',cursive;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--wb-bg); color:var(--wb-ink);
+  font-family:var(--sans); font-size:15px; line-height:1.55;
+  background-image:radial-gradient(ellipse 110% 70% at 50% -10%,var(--wb-panel) 0%,transparent 60%);
+}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+:focus-visible{outline:2.5px solid var(--wb-accent);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- PAGE ---------- */
+.wrap{max-width:1180px;margin:0 auto;padding:26px 20px 56px}
+.masthead{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 22px;margin-bottom:8px}
+.masthead h1{
+  font-family:var(--serif);font-weight:600;font-size:clamp(26px,3.4vw,38px);
+  margin:0;letter-spacing:-.01em;text-wrap:balance;
+}
+.masthead h1 em{font-style:normal;color:var(--wb-accent)}
+.masthead p{margin:0;color:var(--wb-muted);max-width:56ch;font-size:14.5px}
+.rule{height:1px;background:var(--wb-line);margin:16px 0 22px}
+
+.stage{display:grid;grid-template-columns:330px minmax(0,1fr);gap:34px;align-items:start}
+@media (max-width:900px){.stage{grid-template-columns:1fr;gap:24px}}
+
+/* ---------- CONTROL RAIL ---------- */
+.rail{display:flex;flex-direction:column;gap:18px;position:sticky;top:22px}
+@media (max-width:900px){.rail{position:static}}
+.panel{background:var(--wb-panel);border:1px solid var(--wb-line);border-radius:16px;padding:16px 16px 18px}
+.panel h2{
+  font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--wb-muted);margin:0 0 12px
+}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.field:last-child{margin-bottom:0}
+.field label{font-size:12.5px;font-weight:600;color:var(--wb-muted)}
+.field input{
+  font:inherit;font-size:14px;padding:9px 11px;border-radius:9px;
+  border:1px solid var(--wb-line);background:var(--wb-chip);color:var(--wb-ink);width:100%
+}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{
+  padding:7px 12px;border-radius:999px;background:var(--wb-chip);
+  border:1px solid var(--wb-line);font-size:12.5px;font-weight:500;
+  transition:background .13s,color .13s,border-color .13s;min-height:33px
+}
+.chip:hover{border-color:var(--wb-accent)}
+.chip[aria-pressed="true"]{background:var(--wb-chip-on);color:var(--wb-chip-on-ink);border-color:var(--wb-chip-on)}
+.railnote{font-size:12.5px;color:var(--wb-muted);margin:10px 0 0;line-height:1.5}
+.railnote code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;
+  background:var(--wb-chip);padding:1px 5px;border-radius:4px;border:1px solid var(--wb-line)
+}
+
+/* readout of what the engine computed */
+.readout{display:flex;flex-direction:column;gap:0}
+.rrow{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed var(--wb-line);font-size:13px}
+.rrow:last-child{border-bottom:0}
+.rrow dt{color:var(--wb-muted);margin:0}
+.rrow dd{margin:0;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+
+/* ---------- PHONE ---------- */
+.phonewrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+.phone{
+  width:392px;max-width:100%;height:812px;border-radius:46px;
+  background:#111309;padding:11px;box-shadow:0 26px 60px -18px var(--wb-shadow),0 3px 10px rgba(0,0,0,.14);
+  position:relative;flex:none
+}
+@media (max-width:460px){.phone{height:calc(100dvh - 220px);min-height:560px;border-radius:34px;padding:7px}}
+.screen{
+  width:100%;height:100%;border-radius:36px;overflow:hidden;background:var(--cream);
+  position:relative;display:flex;flex-direction:column;color:var(--body);
+  font-family:var(--sans);font-size:14px
+}
+@media (max-width:460px){.screen{border-radius:28px}}
+.notch{
+  position:absolute;top:11px;left:50%;transform:translateX(-50%);
+  width:112px;height:26px;background:#111309;border-radius:0 0 15px 15px;z-index:9
+}
+.scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 0 14px}
+.scroll::-webkit-scrollbar{width:0}
+
+/* ---------- THE DECORATIVE LAYER ----------
+   In the mockups this is not background noise. Every soft shape is a
+   container holding an affirmation, and the leaf sprigs frame the edges.
+   That is the difference between the mockup and a stack of white cards. */
+.leafart{position:absolute;pointer-events:none;opacity:.55;z-index:0}
+.deco{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+
+/* an affirmation sitting on its own soft shape */
+.affirm{position:absolute;pointer-events:none}
+.affirm svg{position:absolute;inset:0;width:100%;height:100%}
+.affirm span{position:absolute;font-family:var(--script);color:#A79A86;
+  line-height:1.34;display:block}
+.affirm .heart{position:absolute;color:#C4A79A;font-size:12px}
+
+/* brand wordmark, drawn rather than an image so it stays crisp */
+.mark{display:flex;flex-direction:column;align-items:center;position:relative;z-index:2}
+.mark-top{display:flex;align-items:center;justify-content:center}
+.mark-word{font-family:var(--serif);font-weight:500;letter-spacing:.34em;color:#2B2F26;
+  text-indent:.34em;line-height:1}
+.mark-big{display:flex;align-items:flex-end;margin-top:-1px}
+.mark-grow{font-family:var(--serif);font-weight:600;color:#6E8A57;letter-spacing:.01em;line-height:1}
+.mark-o-wrap{position:relative;display:inline-block;margin:0 1px}
+.mark-o-wrap svg{position:absolute;left:0;bottom:0}
+.mark-tag{letter-spacing:.19em;line-height:1.6;text-align:center;color:#8D9682;
+  margin-top:7px;text-transform:uppercase;font-weight:500}
+.mark-holder{padding:16px 18px 0;position:relative;z-index:2}
+
+/* the promise line in the top right of every screen */
+.corner-right{position:absolute;top:15px;right:15px;z-index:1;text-align:right;
+  font-family:var(--serif);font-size:12px;line-height:1.45;color:#A79A86}
+.corner-rule{display:block;width:20px;height:1px;background:#BFB3A2;margin:7px 0 0 auto}
+
+/* ---------- IN-APP TYPE ---------- */
+.statusbar{display:flex;justify-content:space-between;padding:13px 22px 2px;font-size:11.5px;font-weight:600;color:var(--ink);opacity:.75}
+.sc{position:relative;z-index:1;padding:0 18px}
+.sc-head{padding:12px 18px 4px;position:relative;z-index:1;text-align:center}
+.eyebrow{font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin:0 0 5px}
+.title{font-family:var(--serif);font-size:33px;font-weight:600;color:var(--ink);margin:0;letter-spacing:-.015em;line-height:1.14;text-wrap:balance}
+.title.sm{font-size:25px}
+.sub{margin:7px auto 0;font-size:13.5px;color:var(--muted);line-height:1.5;max-width:296px}
+.script{font-family:var(--script);font-size:17px;color:var(--taupe);line-height:1.25}
+.h3{font-family:var(--serif);font-size:18px;font-weight:600;color:var(--ink);margin:0 0 3px}
+.sect{font-family:var(--serif);font-size:17px;font-weight:600;color:var(--ink);margin:20px 0 9px;padding:0 2px}
+
+/* ---------- CARDS ---------- */
+.card{background:var(--surface);border-radius:20px;padding:15px 16px;margin-bottom:11px;box-shadow:0 3px 12px rgba(107,101,80,.07)}
+.card.flat{background:var(--surface2);box-shadow:none;border:1px solid var(--line2)}
+.card.leafy{background:var(--leaf3);box-shadow:none}
+.row{display:flex;align-items:center;gap:12px}
+.grow{flex:1;min-width:0}
+.tiny{font-size:12px;color:var(--muted);line-height:1.45}
+.bodytext{font-size:13.5px;color:var(--body);line-height:1.6;margin:0}
+
+/* child header */
+.kid{display:flex;align-items:center;gap:13px}
+.avatar{width:56px;height:56px;border-radius:50%;background:var(--leaf2);display:grid;place-items:center;flex:none;overflow:hidden}
+.kidname{font-family:var(--serif);font-size:22px;font-weight:600;color:var(--ink);margin:0;line-height:1.15}
+.kidage{font-size:13px;color:var(--muted);margin:1px 0 0}
+.stagepill{display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:3px 10px;border-radius:999px;background:var(--leaf);font-size:11px;font-weight:600;color:var(--deep2)}
+
+/* buttons */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--sage);color:#fff;border-radius:999px;padding:11px 20px;
+  font-size:14.5px;font-weight:600;min-height:44px;width:100%;
+  box-shadow:0 3px 9px rgba(74,103,65,.22)
+}
+.btn:active{background:var(--sage-press)}
+.btn.ghost{background:transparent;color:var(--deep);border:1px solid var(--line);box-shadow:none}
+.btn.sm{padding:8px 15px;min-height:38px;font-size:13px;width:auto}
+
+/* pills / tags */
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.tag{padding:4px 10px;border-radius:999px;background:var(--leaf2);font-size:11px;font-weight:500;color:var(--deep2)}
+.tag.warm{background:var(--taupe2);color:var(--taupe)}
+.tag.time{background:var(--cream2);color:var(--body)}
+
+/* quick action grid */
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.q{background:var(--surface2);border-radius:15px;padding:12px 11px;text-align:left;border:1px solid var(--line2);min-height:44px}
+.qi{width:34px;height:34px;border-radius:50%;background:var(--leaf2);display:grid;place-items:center;margin-bottom:7px}
+.qt{font-size:13px;font-weight:600;color:var(--ink);display:block}
+.qs{font-size:11px;color:var(--muted)}
+
+/* list rows */
+.lrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border-radius:18px;padding:13px 14px;margin-bottom:9px;box-shadow:0 3px 12px rgba(107,101,80,.07);min-height:44px}
+.lrow:active{background:var(--surface2)}
+.licon{width:38px;height:38px;border-radius:12px;background:var(--leaf2);display:grid;place-items:center;flex:none}
+.chev{color:var(--faint);flex:none}
+
+/* plan items */
+.plan{background:var(--surface);border-radius:18px;padding:13px 14px;margin-bottom:9px;box-shadow:0 3px 12px rgba(107,101,80,.07);display:flex;gap:12px}
+.plan .picon{width:36px;height:36px;border-radius:50%;background:var(--leaf2);display:grid;place-items:center;flex:none}
+
+/* progress */
+.bar{height:7px;border-radius:999px;background:#E0DED1;overflow:hidden;margin-top:6px;box-shadow:inset 0 1px 2px rgba(90,85,65,.09)}
+.bar > i{display:block;height:100%;border-radius:999px;background:var(--sage)}
+.pline{display:flex;justify-content:space-between;font-size:12px;margin-top:11px;color:var(--body)}
+.pline b{font-variant-numeric:tabular-nums;color:var(--ink)}
+
+/* milestone statuses */
+.ms{background:var(--surface);border-radius:16px;padding:12px 13px;margin-bottom:8px;box-shadow:0 2px 9px rgba(107,101,80,.06)}
+.mtext{font-size:13.5px;color:var(--ink);line-height:1.45;margin:0 0 3px}
+.mwin{font-size:11.5px;color:var(--muted);margin:0 0 9px;line-height:1.4}
+.mbtns{display:flex;flex-wrap:wrap;gap:5px}
+.mb{padding:5px 10px;border-radius:999px;font-size:11px;font-weight:600;border:1px solid var(--line);background:var(--surface2);color:var(--muted);min-height:30px}
+.mb[aria-pressed="true"]{border-color:transparent}
+
+/* quote / script block */
+.quote{background:var(--leaf3);border-radius:16px;padding:14px 15px;margin-bottom:9px}
+.quote q{font-family:var(--serif);font-size:16.5px;line-height:1.45;color:var(--deep2);display:block;quotes:'“' '”'}
+.quote .why{font-size:12px;color:var(--muted);margin:8px 0 0;line-height:1.5}
+.quote .sit{font-size:10px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--taupe);margin:0 0 7px}
+
+/* detail sections */
+.dsec{margin-bottom:16px}
+.dsec h4{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--taupe);margin:0 0 8px}
+.dlist{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.dlist li{font-size:13.5px;line-height:1.6;color:var(--body);padding-left:17px;position:relative}
+.dlist li::before{content:'';position:absolute;left:2px;top:8px;width:5px;height:5px;border-radius:50%;background:var(--sage)}
+.dlist.warn li::before{background:var(--taupe)}
+.callout{background:var(--taupe2);border-radius:14px;padding:12px 13px;font-size:12.5px;line-height:1.6;color:#6E5D4C}
+.disclaimer{font-size:11px;color:var(--muted);line-height:1.55;padding:14px 4px 4px;border-top:1px solid var(--line2);margin-top:16px}
+
+/* empty state */
+.empty{text-align:center;padding:38px 20px}
+.empty p{font-size:13.5px;color:var(--muted);line-height:1.6;margin:10px 0 0}
+
+/* in app text inputs: the profile fields, and the small numeric ones */
+.inp{
+  font:inherit;font-size:14px;padding:10px 12px;border-radius:11px;
+  border:1px solid var(--line);background:var(--surface2);color:var(--ink);
+  box-sizing:border-box;max-width:100%;
+}
+.inp:focus{border-color:var(--sage);outline:none}
+.inp::placeholder{color:var(--faint)}
+
+/* back link */
+.back{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--deep);padding:6px 2px;min-height:38px}
+
+/* ---------- TAB BAR ---------- */
+.tabs{display:flex;background:var(--surface);border-top:1px solid var(--line2);padding:7px 4px 9px;flex:none;position:relative;z-index:2}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 2px;color:var(--muted);font-size:10px;font-weight:600;min-height:44px}
+.tab[aria-selected="true"]{color:var(--deep)}
+.tab .dot{width:18px;height:2.5px;border-radius:2px;background:transparent;margin-top:1px}
+.tab[aria-selected="true"] .dot{background:var(--deep)}
+
+/* THE UPDATE BAR.
+   Sits above everything, including the header, because the whole point
+   is that it is seen. Deliberately not a modal: somebody at 3am with a
+   screaming baby should not have to dismiss a dialog about software. */
+.updatebar{
+  display:flex;align-items:center;gap:9px;padding:9px 14px;
+  background:var(--leaf);color:var(--deep2);font-size:12.5px;font-weight:500;
+  position:relative;z-index:6;
+}
+.updatebtn{
+  flex:none;padding:5px 12px;border-radius:999px;border:1px solid var(--deep2);
+  background:var(--deep);color:#fff;font:inherit;font-size:12px;font-weight:600;
+  min-height:30px;cursor:pointer;
+}
+.updatebtn.ghost{background:transparent;color:var(--deep2);border-color:transparent}
+
+/* The source badge holds a short code, not a logo, and some of those
+   codes are words rather than three letters. It sizes to what is in it
+   instead of clipping, keeps a square minimum so a row of them lines
+   up, and wraps to a second line before it will ever spill sideways
+   over the text next to it. */
+.srcbadge{
+  width:auto;min-width:38px;max-width:66px;height:38px;padding:3px 6px;
+  font-size:9px;font-weight:700;letter-spacing:.02em;line-height:1.12;
+  color:var(--deep2);text-align:center;overflow:hidden;
+  overflow-wrap:anywhere;
+}
+
+/* ---------- THE PERMANENT HEADER ----------
+   Children on the left, the parent on the right, on every screen.
+   Switching child or getting back to yourself is always one tap and
+   always in the same place, which is the one navigation rule this app
+   is not allowed to break. */
+.topbar{display:flex;align-items:center;gap:8px;padding:10px 14px 2px;position:relative;z-index:3}
+.topbar-kids{display:flex;align-items:center;gap:6px;flex:1;min-width:0;overflow-x:auto;
+  scrollbar-width:none;padding-bottom:2px}
+.topbar-kids::-webkit-scrollbar{height:0}
+.kidchip{display:inline-flex;align-items:center;gap:6px;flex:none;padding:5px 11px 5px 5px;
+  border-radius:999px;background:var(--surface2);border:1px solid var(--line2);
+  font-size:12.5px;font-weight:600;color:var(--body);min-height:34px;max-width:150px}
+.kidchip.on{background:var(--leaf2);border-color:var(--leaf);color:var(--deep2)}
+.kidchip-av{width:24px;height:24px;border-radius:50%;background:var(--cream2);
+  display:grid;place-items:center;flex:none;overflow:hidden}
+.kidchip.on .kidchip-av{background:var(--surface)}
+.kidchip-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kidchip.add{padding:5px 9px;min-width:34px;justify-content:center}
+.mebtn{display:inline-flex;align-items:center;gap:5px;flex:none;padding:6px 12px;border-radius:999px;
+  background:var(--surface2);border:1px solid var(--line2);font-size:12.5px;font-weight:600;
+  color:var(--deep);min-height:34px}
+.mebtn.on{background:var(--deep);border-color:var(--deep);color:#fff}
+
+.hint{font-size:12.5px;color:var(--wb-muted);text-align:center;max-width:44ch;line-height:1.5}
+.sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="grow">
+      <h1>Ready Set Grow, <em>running live</em></h1>
+      <p>This is not a mockup. The phone below is driven by the real data files in your repo. Change the birthday or flip a support lens and every screen recalculates.</p>
+    </div>
+  </header>
+  <div class="rule"></div>
+
+  <div class="stage">
+    <div class="rail">
+      <div class="panel">
+        <h2>The child</h2>
+        <div class="field">
+          <label for="nameIn">Name</label>
+          <input id="nameIn" type="text" value="Stetson" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="bdayIn">Birthday</label>
+          <input id="bdayIn" type="date" value="2022-06-09">
+        </div>
+        <div class="field">
+          <label id="jumpLbl">Jump to an age</label>
+          <div class="chips" id="ageJump" role="group" aria-labelledby="jumpLbl"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Support lenses</h2>
+        <div class="chips" id="lensChips" role="group" aria-label="Support lenses"></div>
+        <p class="railnote">Lenses stack. They reorder what surfaces first, and they never hide the guidance to talk with a pediatrician.</p>
+      </div>
+
+      <div class="panel">
+        <h2>What the engine computed</h2>
+        <dl class="readout" id="readout"></dl>
+        <p class="railnote">All of this falls out of the birthday. Nothing here is hardcoded to an age.</p>
+      </div>
+    </div>
+
+    <div class="phonewrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span>&#9679;&#9679;&#9679;</span></div>
+          <div class="scroll" id="screen"></div>
+          <nav class="tabs" id="tabs" role="tablist" aria-label="App sections"></nav>
+        </div>
+      </div>
+      <p class="hint">Tap around inside the phone. Cards open, milestones are tappable, filters work.</p>
+    </div>
+  </div>
+</div>

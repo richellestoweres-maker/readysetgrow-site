@@ -1,0 +1,230 @@
+<!--
+  READY SET GROW, FULL SCREEN
+  ------------------------------------------------------------------
+  This is the phone app fitted to a browser window, not a desktop
+  redesign of it. Same screens, same components, same decorative layer,
+  and the tab bar stays where it belongs on a phone: across the bottom.
+
+  What changes is only what has to. The reading column is capped so a
+  paragraph does not run the full width of a monitor, and the affirmation
+  shapes and leaf sprigs move out to the window edges instead of the
+  edges of a 392px frame. Everything else is lifted verbatim from
+  proto/shell.html at build time, which is what keeps the two identical.
+
+  The profile controls live in a panel rather than a sidebar, because a
+  phone app does not have a sidebar. It is there so the page is worth
+  touching: change the birthday and every screen recalculates.
+-->
+<style>
+/* ------------------------------------------------------------------
+   FULL SCREEN APP CHROME
+   ------------------------------------------------------------------ */
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--cream);
+  color:var(--body);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;               /* the scroll lives in the screen, as on a phone */
+}
+:focus-visible{outline:2.5px solid var(--sage);outline-offset:3px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- THE FIXED BACKGROUND ---------- */
+/* Affirmations and foliage used to render inside the scrolling screen,
+   which meant they slid away the moment a parent scrolled. They now
+   live in their own fixed layer pinned to the viewport, so they stay
+   exactly where they are while the content moves. */
+.bglayer{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  overflow:hidden;contain:paint;
+}
+.bglayer *{pointer-events:none}
+
+/* The app fills the window the way it fills a phone. */
+.appshell{display:flex;flex-direction:column;height:100%;position:relative;z-index:1}
+.appshell,.scroll,.tabs{background:transparent}
+body.locked .bglayer{display:block}
+/* The wordmark is painted into the fixed background layer at the top of
+   the window, so the scrolling content has to start below it or the
+   first heading on every screen lands on top of the O in GROW. */
+/* The wordmark is part of the pinned header now rather than part of the
+   fixed background, so the scroll simply starts underneath it. Content
+   cannot slide up and sit on top of the logo, because it never reaches
+   it. */
+.scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;position:relative;padding:8px 0}
+
+/* THE PERMANENT HEADER, pinned above the scroll.
+   Children on the left, you on the right, the wordmark centred between
+   them. It is outside the scroll container on purpose: a header that
+   slides up over the wordmark is worse than no header at all. */
+/* One row, three parts: children on the left, the wordmark centred, you
+   on the right. Both side groups take an equal share of what is left so
+   the wordmark sits on the true centre line whether there are no
+   children or six. */
+.topbar-holder{flex:none;position:relative;z-index:4;background:var(--cream)}
+.topbar-holder:empty{display:none}
+.topbar-holder .topbar{display:flex;align-items:flex-start;gap:10px;padding:16px 22px 0}
+.topbar-holder .mark-holder{flex:0 0 auto;max-width:none;margin:0;padding:0 4px 2px}
+/* The front door has no chips and no Me button, so nothing balances the
+   wordmark and it has to centre itself. */
+.topbar-holder .topbar.mark-only{justify-content:center}
+.topbar-holder .kidchip,.topbar-holder .mebtn{cursor:pointer;font-family:inherit;
+  box-shadow:0 3px 14px rgba(107,101,80,.10)}
+.topbar-holder .kidchip:hover,.topbar-holder .mebtn:hover{border-color:var(--sage)}
+/* The wordmark is centred in the same strip, so the chips are capped
+   short of it and the Me button is pushed to the far edge rather than
+   following the chips into the middle. */
+.topbar-holder .topbar-kids,.topbar-holder .me-slot{flex:1 1 0;min-width:0}
+.topbar-holder .me-slot{display:flex;justify-content:flex-end}
+.topbar-holder .topbar-kids{
+  /* With enough children this strip scrolls sideways. The fade at the
+     end is the only thing telling anybody that. */
+  -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent 100%);
+  mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent 100%);
+}
+/* The front door keeps the wordmark and loses everything else. */
+body.locked .topbar-holder{background:transparent}
+/* Below roughly 700px there is no room either side of the centred
+   wordmark for chips, so the header drops underneath it instead of
+   sitting on top of it. */
+/* Below roughly 700px there is no room either side of the wordmark, so
+   it takes a row of its own and the chips drop underneath it. */
+@media (max-width:700px){
+  .topbar-holder .topbar{flex-wrap:wrap;padding:12px 14px 0}
+  .topbar-holder .mark-holder{order:-1;flex:1 0 100%;text-align:center}
+  .topbar-holder .topbar-kids{flex:1 1 auto}
+}
+.scroll::-webkit-scrollbar{width:9px}
+.scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px}
+
+/* ---------- THE TAB BAR, STILL AT THE BOTTOM ---------- */
+/* The phone rules already make this a full width bottom bar. All that
+   changes is the type size, which is sized for a thumb on a phone and
+   too small to read on a monitor, and a capped inner width so five
+   tabs are not flung across a wide screen. */
+.tabs{padding:9px 0 11px;box-shadow:0 -3px 18px rgba(107,101,80,.07)}
+.tabs::before{content:'';position:absolute;inset:0;pointer-events:none}
+.tab{
+  font-size:11.5px;gap:5px;padding:7px 4px;min-height:52px;
+  cursor:pointer;font-family:inherit;border:0;background:transparent;
+  transition:color .13s;
+}
+.tab:hover{color:var(--deep)}
+.tab .dot{width:22px;height:3px}
+@media (min-width:760px){
+  .tabs{justify-content:center}
+  .tab{flex:0 0 128px}
+}
+
+/* ---------- THE READING COLUMN ---------- */
+/* Capped so body copy keeps a comfortable measure, with margin either
+   side for the decorative layer to sit in. */
+.sc,.sc-head{max-width:700px;margin-inline:auto;width:100%;position:relative;z-index:1}
+.sc{padding:0 26px 40px}
+.sc-head{padding:6px 26px 4px}
+.mark-holder{max-width:700px;margin-inline:auto;padding:30px 26px 2px;position:relative;z-index:1}
+@media (max-width:560px){
+  .sc{padding:0 18px 32px}
+  .sc-head{padding:4px 18px 4px}
+}
+
+/* ---------- THE DECORATIVE LAYER ---------- */
+/* The shapes are placed by the table in app.js. These rules only decide
+   which tier is on at a given width.
+
+   The reading column is capped at 700px, so the gutter each side is
+   (viewport - 700) / 2. A shape needs roughly 180px of that. Below the
+   point where a gutter can hold one, the phone set takes over instead,
+   hanging off the edges behind the cards the way the mockups do. */
+.deco{display:none!important}
+.affirm,.leafart,.corner-right{z-index:0}
+.corner-right{top:118px;right:24px;font-size:13px}
+.leafart-soft{opacity:.34}
+
+.affirm-mob,.affirm-core,.affirm-extra,.affirm-wide{display:none!important}
+.leafart-wide{display:none!important}
+
+/* Phone. Shapes bleed off the edges, a little softer so the cards stay
+   comfortably readable on top of them. */
+@media (max-width:1059px){
+  .affirm-mob{display:block!important;opacity:.8}
+}
+@media (max-width:759px){
+  .corner-right{display:none!important}
+}
+
+/* Once there is a gutter. */
+@media (min-width:1060px){
+  .affirm-core{display:block!important}
+}
+@media (min-width:1120px){
+  .affirm-extra{display:block!important}
+}
+@media (min-width:860px){
+  .leafart-soft{display:block!important}
+}
+/* The inner column, once the two columns stop touching. */
+@media (min-width:1540px){
+  .affirm-wide,.leafart-wide{display:block!important}
+}
+@media (max-width:859px){
+  .leafart-soft{display:none!important}
+}
+
+/* ---------- THE PROFILE PANEL ---------- */
+/* The front door carries no app chrome. Nothing to profile and nowhere
+   to navigate until somebody is through it. */
+body.locked .tabs,body.locked .corner-right{display:none!important}
+
+.tryPanel{
+  position:fixed;top:62px;right:20px;z-index:41;width:312px;max-width:calc(100vw - 40px);
+  max-height:calc(100vh - 96px);overflow-y:auto;
+  background:var(--surface);border:1px solid var(--line);border-radius:20px;
+  padding:20px;box-shadow:0 20px 50px -16px rgba(60,58,44,.3);
+}
+.tryPanel h2{
+  font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 10px;
+}
+.tryPanel h2:not(:first-child){margin-top:20px}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.field label{font-size:12px;font-weight:600;color:var(--muted)}
+.field input{
+  font:inherit;font-size:14px;padding:9px 11px;border-radius:10px;
+  border:1px solid var(--line);background:var(--surface2);color:var(--ink);width:100%;
+}
+.field input:focus{border-color:var(--sage);outline:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  padding:6px 11px;border-radius:999px;background:var(--surface2);
+  border:1px solid var(--line);font:inherit;font-size:12px;font-weight:500;color:var(--body);
+  cursor:pointer;min-height:32px;transition:background .13s,color .13s,border-color .13s;
+}
+.chip:hover{border-color:var(--sage)}
+.chip[aria-pressed="true"]{background:var(--sage);color:#fff;border-color:var(--sage)}
+.tryNote{font-size:11.5px;color:var(--muted);line-height:1.5;margin:10px 0 0}
+</style>
+
+<div id="wideLayout" hidden></div>
+
+<!-- The background lives here, outside the scroll container, so the
+     affirmations hold still while the app scrolls behind them. It is
+     fixed to the viewport, ignores pointer events entirely, and sits
+     underneath every piece of chrome. -->
+<div class="bglayer" id="bglayer" aria-hidden="true"></div>
+
+<div class="appshell">
+  <div class="topbar-holder" id="topbar"></div>
+  <div class="scroll" id="screen"></div>
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Sections"></nav>
+</div>
+
+
+
+
