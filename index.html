@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-13 20:17">
+<meta name="rsg-build" content="2026-09-13 20:45">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -196,6 +196,8 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
   animation:bdayup .34s cubic-bezier(.2,.8,.3,1) both;
 }
 @keyframes bdayup{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+.bdayfetti{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.bdaycard{position:relative;z-index:2}
 .bdayone{padding:2px 0}
 .bdayleaf{
   width:54px;height:54px;border-radius:50%;background:var(--deep);
@@ -595,7 +597,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-13 20:17';
+const BUILD_STAMP = '2026-09-13 20:45';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -17430,6 +17432,10 @@ function render() {
      out from under the scrim made the moment look like an accident. */
   const bday = birthdayOverlay();
   if (willowSlot) willowSlot.innerHTML = bday || (willowBubble() + willowPanel());
+  /* The canvas has to exist before anything can draw on it, so the
+     confetti starts here rather than inside the function that writes the
+     markup. It leaves itself alone if it is already running. */
+  if (bday) bdayStartArt(); else bdayStopArt();
   screen.scrollTop = keepId ? keepScroll : 0;
 
   if (keepId) restoreFocus(keepId, keepStart, keepEnd);
@@ -17521,15 +17527,7 @@ function initControls() {
       store.parent[f] = e.target.value;
       flushStore();
     }
-    /* Dates repaint, because a card below them is built from the answer
-       and a parent should see it fill in as she picks the day. */
-    else if (e.target.matches('[data-parentdate]')) {
-      const f = e.target.dataset.parentdate;
-      store.parent[f] = e.target.value;
-      store.parentUpdatedAt = Date.now();
-      flushStore();
-      render();
-    }
+
     else if (e.target.matches('[data-childname]')) {
       const k = store.children.find((x) => x.id === e.target.dataset.childname);
       if (k) { k.name = e.target.value; render(); }
@@ -17579,7 +17577,9 @@ function initControls() {
   let bdayTimer = null;
 
   document.addEventListener('change', (e) => {
-    if (e.target.matches('[data-childbday]')) {
+    if (e.target.matches('[data-datepart]')) {
+      readDateRow(e.target.closest('[data-datefield]'));
+    } else if (e.target.matches('[data-childbday]')) {
       const k = store.children.find((x) => x.id === e.target.dataset.childbday);
       if (!k) return;
       k.birthday = e.target.value || null;
@@ -17666,9 +17666,11 @@ function initControls() {
       state.tab = 'me';
     } else if (t.dataset.addchild) {
       const nameEl = document.getElementById('newChildName');
-      const bdayEl = document.getElementById('newChildBday');
       const nm = nameEl ? nameEl.value.trim() : '';
-      const bd = bdayEl ? bdayEl.value : '';
+      /* The birthday comes from the draft rather than from a field, now
+         that it is three dropdowns and only lands once all three are
+         answered. */
+      const bd = store.draftChildBday || '';
       if (nm || bd) {
         const kid = newChildRecord(nm, bd || null);
         store.children.push(kid);
@@ -17764,7 +17766,9 @@ function initControls() {
       state.napOverride = state.napOverride === n ? null : n;
     } else if (t.dataset.months) {
       state.birthday = birthdayForMonths(Number(t.dataset.months));
-      document.getElementById('bdayIn').value = state.birthday;
+      /* Only the workbench has this field. The website does not. */
+      const bin = document.getElementById('bdayIn');
+      if (bin) bin.value = state.birthday;
       state.view = null; state.napOverride = null;
       document.querySelectorAll('[data-months]').forEach((b) => b.setAttribute('aria-pressed', b === t));
     } else if (t.dataset.lensopt) {
@@ -20515,6 +20519,120 @@ function screenPickChild(what) {
   </div>`;
 }
 
+/* -----------------------------------------------------------------
+   DATE FIELDS
+
+   A native date input looks fine and is miserable to actually use. On a
+   laptop it is three little segments you have to tab between, and the
+   year is the worst of them: four digits typed blind into a two
+   character looking box, and if the first keystroke lands wrong you get
+   0019 and no way to tell what happened. Asking somebody for a birthday
+   in 1991 through that control is asking for a fight.
+
+   Three plain dropdowns instead. Nothing to type, nothing to get wrong,
+   and the year is a list you scroll rather than a number you aim at.
+   ----------------------------------------------------------------- */
+
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'];
+
+function splitISODate(value) {
+  const m = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? { y: m[1], m: m[2], d: m[3] } : { y: '', m: '', d: '' };
+}
+
+function daysInThisMonth(y, m) {
+  const year = Number(y);
+  const mon = Number(m);
+  if (!mon) return 31;
+  if (mon === 2) {
+    if (!year) return 29;
+    return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 29 : 28;
+  }
+  return [4, 6, 9, 11].indexOf(mon) === -1 ? 31 : 30;
+}
+
+/* `target` says where the finished date goes. `back` and `ahead` set how
+   far the year list runs, because a parent's birthday and a due date
+   need very different lists. */
+function dateSelects(target, value, back, ahead) {
+  const cur = splitISODate(value);
+  const thisYear = new Date().getFullYear();
+  const first = thisYear + (Number(ahead) || 0);
+  const last = thisYear - (Number(back) || 100);
+
+  const opt = (v, label, sel) =>
+    `<option value="${esc(v)}"${sel ? ' selected' : ''}>${esc(label)}</option>`;
+
+  let months = opt('', 'Month', !cur.m);
+  MONTH_NAMES.forEach((name, i) => {
+    const v = String(i + 1).padStart(2, '0');
+    months += opt(v, name, cur.m === v);
+  });
+
+  let days = opt('', 'Day', !cur.d);
+  const dayCount = daysInThisMonth(cur.y, cur.m);
+  for (let d = 1; d <= dayCount; d++) {
+    const v = String(d).padStart(2, '0');
+    days += opt(v, String(d), cur.d === v);
+  }
+
+  let years = opt('', 'Year', !cur.y);
+  for (let y = first; y >= last; y--) {
+    years += opt(String(y), String(y), cur.y === String(y));
+  }
+
+  return `
+  <div class="daterow" data-datefield="${esc(target)}">
+    <select class="dsel dsel-m" data-datepart="m" aria-label="Month">${months}</select>
+    <select class="dsel dsel-d" data-datepart="d" aria-label="Day">${days}</select>
+    <select class="dsel dsel-y" data-datepart="y" aria-label="Year">${years}</select>
+  </div>`;
+}
+
+/* Where a finished date lands. One place, so every date field in the app
+   is wired the same way and a new one cannot forget to save. */
+function applyDateField(target, iso) {
+  const parts = String(target || '').split(':');
+  if (parts[0] === 'parent') {
+    store.parent[parts[1]] = iso;
+    store.parentUpdatedAt = Date.now();
+  } else if (parts[0] === 'child') {
+    const k = store.children.find((x) => x.id === parts[1]);
+    if (!k) return;
+    k.birthday = iso || null;
+    k.napOverride = null;
+    k.updatedAt = Date.now();
+  } else if (parts[0] === 'draft') {
+    store.draftChildBday = iso;
+  }
+  flushStore();
+}
+
+/* Reads the three dropdowns in one row and writes the date if all three
+   are answered. A day that no longer exists in the chosen month, such as
+   the 31st after switching to February, is pulled back to the last real
+   day of that month rather than silently saving something else. */
+function readDateRow(wrap) {
+  if (!wrap) return;
+  const pick = (part) => {
+    const sel = wrap.querySelector('[data-datepart="' + part + '"]');
+    return sel ? sel.value : '';
+  };
+  const y = pick('y');
+  const mo = pick('m');
+  let d = pick('d');
+
+  if (mo && d) {
+    const max = daysInThisMonth(y, mo);
+    if (Number(d) > max) d = String(max).padStart(2, '0');
+  }
+
+  if (!y || !mo || !d) return;
+  applyDateField(wrap.dataset.datefield, y + '-' + mo + '-' + d);
+  render();
+}
+
 /* The cycle card only exists once there is a date to build it from, so
    a parent who never fills this in never sees an empty shell of it. */
 function cycleCard() {
@@ -20555,11 +20673,10 @@ function screenProfile() {
   /* A date field asks for a repaint, because the cards underneath it are
      built from the date. The text fields deliberately do not, so typing
      a name never repaints the screen out from under the cursor. */
-  const dateField = (label, key, help) => `
+  const dateField = (label, key, help, back, ahead) => `
     <div class="card flat" style="margin-bottom:8px">
       <p class="eyebrow">${esc(label)}</p>
-      <input class="inp" type="date" data-parentdate="${esc(key)}" id="pd_${esc(key)}"
-        value="${esc(p[key] || '')}" style="margin-top:7px;width:100%" />
+      ${dateSelects('parent:' + key, p[key] || '', back, ahead)}
       ${help ? `<p class="tiny" style="margin-top:6px">${esc(help)}</p>` : ''}
     </div>`;
   const field = (label, key, type, placeholder, help) => `
@@ -20584,9 +20701,9 @@ function screenProfile() {
     ${field('Username', 'username', 'text', 'richelle_s', 'This is what other parents see in the community, not your real name.')}
     ${field('Email', 'email', 'email', 'you@example.com', '')}
     ${dateField('Your birthday', 'birthday',
-      'So the app can say it back to you on the day, the same as it does for the children.')}
+      'So the app can say it back to you on the day, the same as it does for the children.', 100, 0)}
     ${dateField('First day of your last period', 'lastPeriod',
-      'Day one is the first day of real bleeding, not spotting the day before. Only you ever see this.')}
+      'Day one is the first day of real bleeding, not spotting the day before. Only you ever see this.', 2, 0)}
     ${cycleCard()}
 
     <button class="lrow" data-auth="signout" style="align-items:center">
@@ -20611,10 +20728,9 @@ function screenProfile() {
           <input class="inp" type="text" data-childname="${esc(k.id)}" id="cn_${esc(k.id)}"
             value="${esc(k.name)}" placeholder="Name" style="flex:1;min-width:0" />
         </div>
-        <div style="display:flex;align-items:center;gap:9px;margin-top:9px">
-          <span class="tiny" style="width:66px">Birthday</span>
-          <input class="inp" type="date" id="cb_${esc(k.id)}" data-childbday="${esc(k.id)}"
-            value="${esc(k.birthday || '')}" style="flex:1;min-width:0" />
+        <div style="margin-top:9px">
+          <span class="tiny" style="display:block;margin-bottom:5px">Birthday, or a due date if you are expecting</span>
+          ${dateSelects('child:' + k.id, k.birthday || '', 25, 1)}
         </div>
         <p class="tiny" style="margin-top:8px">${esc(childAgeLabel(k))}. ${esc(childLensLine(k))}.</p>
         <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
@@ -20627,8 +20743,7 @@ function screenProfile() {
       <p class="eyebrow">${icon('plus', 11, 'var(--sage)')} Add a child</p>
       <input class="inp" type="text" id="newChildName" value="${esc(store.draftChildName)}"
         placeholder="Their name" autocomplete="off" style="margin-top:8px;width:100%" />
-      <input class="inp" type="date" id="newChildBday" value="${esc(store.draftChildBday)}"
-        style="margin-top:8px;width:100%" />
+      <div style="margin-top:8px">${dateSelects('draft', store.draftChildBday || '', 25, 1)}</div>
       <p class="tiny" style="margin-top:8px">
         Expecting? Leave the date as the due date and the app will follow the pregnancy instead.
       </p>
@@ -23003,6 +23118,7 @@ function birthdayOverlay() {
 
   return `
   <div class="bdaywrap" role="dialog" aria-label="Birthday">
+    <canvas class="bdayfetti" id="bdayfetti" aria-hidden="true"></canvas>
     <div class="bdaycard">
       ${list.map(card).join('<div class="bdayrule"></div>')}
       <button class="bdaybtn" data-bday="close">
@@ -23016,9 +23132,176 @@ function birthdayOverlay() {
   </div>`;
 }
 
+/* -----------------------------------------------------------------
+   CONFETTI AND BALLOONS
+
+   One canvas and one loop drawing both, rather than a few hundred
+   animated divs, because this runs on whatever phone a parent happens
+   to be holding at six in the morning and it should not make the fan
+   come on.
+
+   Everything comes down the screen. Confetti tumbles, balloons drift
+   with a slow sway and a string that trails behind them. The loop runs
+   for a little under fifteen seconds and then stops itself: a
+   celebration that never ends is just a battery drain.
+   ----------------------------------------------------------------- */
+
+const bdayArt = { raf: null, canvas: null, started: 0 };
+
+const BDAY_COLORS = ['#7C9A72', '#A8C09A', '#E8B4A0', '#F0D9A8', '#C9A8D4', '#F2F0E6', '#D98E73'];
+
+function bdayStopArt() {
+  if (bdayArt.raf) cancelAnimationFrame(bdayArt.raf);
+  bdayArt.raf = null;
+  bdayArt.canvas = null;
+}
+
+function bdayStartArt() {
+  const cv = document.getElementById('bdayfetti');
+  if (!cv) { bdayStopArt(); return; }
+  /* Already running on this exact canvas, so leave it alone rather than
+     restarting the burst every time something repaints. */
+  if (bdayArt.canvas === cv && bdayArt.raf) return;
+  bdayStopArt();
+
+  let reduce = false;
+  try {
+    reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (err) { reduce = false; }
+  if (reduce) return;
+
+  const ctxc = cv.getContext && cv.getContext('2d');
+  if (!ctxc) return;
+
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const rect = cv.getBoundingClientRect();
+  const W = Math.max(1, Math.round(rect.width));
+  const H = Math.max(1, Math.round(rect.height));
+  cv.width = Math.round(W * dpr);
+  cv.height = Math.round(H * dpr);
+  ctxc.scale(dpr, dpr);
+
+  const rand = (a, b) => a + Math.random() * (b - a);
+
+  /* Enough to feel like a celebration, few enough to stay smooth on a
+     phone. Scaled to the width so a laptop is not sparse. */
+  const pieceCount = Math.round(Math.min(150, Math.max(60, W / 5)));
+  const pieces = [];
+  for (let i = 0; i < pieceCount; i++) {
+    pieces.push({
+      x: rand(0, W),
+      /* Some of it starts already on screen. A card that appears with an
+         empty sky and confetti arriving a second later does not read as
+         a pop, it reads as a loading delay. */
+      y: rand(-H, H * 0.4),
+      w: rand(5, 11),
+      h: rand(7, 15),
+      vy: rand(55, 135),
+      vx: rand(-22, 22),
+      spin: rand(-3.4, 3.4),
+      a: rand(0, Math.PI * 2),
+      c: BDAY_COLORS[Math.floor(Math.random() * BDAY_COLORS.length)],
+    });
+  }
+
+  const balloonCount = W < 520 ? 6 : 10;
+  const balloons = [];
+  for (let i = 0; i < balloonCount; i++) {
+    const r = rand(17, 27);
+    balloons.push({
+      x: rand(r + 8, W - r - 8),
+      y: rand(-H * 1.1, H * 0.55),
+      r: r,
+      vy: rand(26, 48),
+      sway: rand(11, 26),
+      phase: rand(0, Math.PI * 2),
+      speed: rand(0.5, 1.05),
+      c: BDAY_COLORS[Math.floor(Math.random() * BDAY_COLORS.length)],
+    });
+  }
+
+  const start = Date.now();
+  let prev = start;
+  bdayArt.canvas = cv;
+  bdayArt.started = start;
+
+  const frame = () => {
+    if (bdayArt.canvas !== cv || !cv.isConnected) { bdayStopArt(); return; }
+    const now = Date.now();
+    const dt = Math.min(0.05, (now - prev) / 1000);
+    prev = now;
+    const life = (now - start) / 1000;
+
+    ctxc.clearRect(0, 0, W, H);
+
+    /* The last three seconds fade out rather than stopping mid air. */
+    const fade = life > 11.5 ? Math.max(0, 1 - (life - 11.5) / 3) : 1;
+    ctxc.globalAlpha = fade;
+
+    balloons.forEach((b) => {
+      b.y += b.vy * dt;
+      b.phase += b.speed * dt;
+      const bx = b.x + Math.sin(b.phase) * b.sway;
+      if (b.y - b.r > H) { b.y = -b.r - rand(0, H * 0.6); b.x = rand(b.r + 8, W - b.r - 8); }
+
+      /* The string first, so the balloon sits on top of where it joins. */
+      ctxc.beginPath();
+      ctxc.moveTo(bx, b.y + b.r * 1.22);
+      ctxc.quadraticCurveTo(bx + Math.sin(b.phase + 1) * 9, b.y + b.r * 2.1,
+        bx + Math.sin(b.phase + 2) * 5, b.y + b.r * 2.9);
+      ctxc.strokeStyle = 'rgba(255,255,255,.55)';
+      ctxc.lineWidth = 1.1;
+      ctxc.stroke();
+
+      ctxc.beginPath();
+      ctxc.ellipse(bx, b.y, b.r * 0.82, b.r, 0, 0, Math.PI * 2);
+      ctxc.fillStyle = b.c;
+      ctxc.fill();
+
+      /* The knot. Small, but without it a balloon reads as an egg. */
+      ctxc.beginPath();
+      ctxc.moveTo(bx - 3, b.y + b.r * 0.98);
+      ctxc.lineTo(bx + 3, b.y + b.r * 0.98);
+      ctxc.lineTo(bx, b.y + b.r * 1.24);
+      ctxc.closePath();
+      ctxc.fillStyle = b.c;
+      ctxc.fill();
+
+      /* One soft highlight, which is what makes it look inflated. */
+      ctxc.beginPath();
+      ctxc.ellipse(bx - b.r * 0.29, b.y - b.r * 0.34, b.r * 0.17, b.r * 0.26, -0.5, 0, Math.PI * 2);
+      ctxc.fillStyle = 'rgba(255,255,255,.34)';
+      ctxc.fill();
+    });
+
+    pieces.forEach((p) => {
+      p.y += p.vy * dt;
+      p.x += p.vx * dt;
+      p.a += p.spin * dt;
+      if (p.y - p.h > H) { p.y = -p.h; p.x = rand(0, W); }
+      ctxc.save();
+      ctxc.translate(p.x, p.y);
+      ctxc.rotate(p.a);
+      /* Squashing the height as it turns is what sells a flat piece of
+         paper tumbling rather than a rectangle spinning on the spot. */
+      ctxc.fillStyle = p.c;
+      ctxc.fillRect(-p.w / 2, -p.h / 2, p.w, p.h * Math.abs(Math.cos(p.a * 1.7)));
+      ctxc.restore();
+    });
+
+    ctxc.globalAlpha = 1;
+
+    if (life > 14.5) { ctxc.clearRect(0, 0, W, H); bdayStopArt(); return; }
+    bdayArt.raf = requestAnimationFrame(frame);
+  };
+
+  bdayArt.raf = requestAnimationFrame(frame);
+}
+
 /* Dismissing marks everybody shown, so a house with twins does not get
    the card again an hour later for the second one. */
 function birthdayDismiss() {
+  bdayStopArt();
   if (!store.birthdaySeen) store.birthdaySeen = {};
   birthdaysToday().forEach((w) => { store.birthdaySeen[w.key] = true; });
   store.parentUpdatedAt = Date.now();
