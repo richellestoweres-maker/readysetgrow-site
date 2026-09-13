@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-13 18:00">
+<meta name="rsg-build" content="2026-09-13 18:19">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -176,6 +176,69 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .tab[aria-selected="true"]{color:var(--deep)}
 .tab .dot{width:18px;height:2.5px;border-radius:2px;background:transparent;margin-top:1px}
 .tab[aria-selected="true"] .dot{background:var(--deep)}
+
+/* WILLOW.
+   The circle is deliberately not a square panel with a robot in it. She
+   is a person's name in a soft green pill, sitting where a thumb
+   already rests, and she stays out of the way of the tab bar. */
+.willowdot{
+  position:absolute;right:14px;bottom:calc(100% + 12px);z-index:8;
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--deep);color:#fff;border-radius:999px;
+  padding:9px 16px 9px 10px;min-height:46px;
+  box-shadow:0 6px 20px rgba(45,62,40,.28);cursor:pointer;border:0;font:inherit;
+}
+.willowdot-leaf{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.16);
+  display:grid;place-items:center;flex:none}
+.willowdot-name{font-size:14px;font-weight:600;letter-spacing:.01em}
+.willowdot:active{transform:translateY(1px)}
+
+.willowpanel{
+  position:absolute;right:10px;left:10px;bottom:calc(100% + 10px);z-index:9;
+  max-height:min(560px, 78vh);display:flex;flex-direction:column;
+  background:var(--surface);border:1px solid var(--line);border-radius:22px;
+  box-shadow:0 22px 48px -14px rgba(45,62,40,.38);overflow:hidden;
+}
+.whead{display:flex;align-items:center;gap:10px;padding:13px 14px;
+  background:var(--leaf3);border-bottom:1px solid var(--line2)}
+.whead-av{width:32px;height:32px;border-radius:50%;background:var(--deep);
+  display:grid;place-items:center;flex:none}
+.whead-name{display:block;font-family:var(--serif);font-size:17px;font-weight:600;color:var(--ink);line-height:1.1}
+.whead-sub{display:block;font-size:11.5px;color:var(--muted);margin-top:1px}
+.wclose{flex:none;width:32px;height:32px;border-radius:50%;border:0;background:transparent;
+  display:grid;place-items:center;cursor:pointer;transform:rotate(45deg)}
+
+.wbody{flex:1;overflow-y:auto;padding:13px 14px;display:flex;flex-direction:column;gap:10px}
+.wbody::-webkit-scrollbar{width:0}
+.wcard{background:var(--surface2);border:1px solid var(--line2);border-radius:16px;padding:12px 13px}
+.wcard.urgent{background:#FCF2EE;border-color:#DDA192}
+
+.wmsg{border-radius:16px;padding:11px 13px;font-size:13.5px;line-height:1.55;max-width:88%}
+.wmsg.you{align-self:flex-end;background:var(--leaf);color:var(--deep2);font-weight:500;border-bottom-right-radius:5px}
+.wmsg.her{align-self:flex-start;background:var(--surface2);border:1px solid var(--line2);
+  color:var(--body);border-bottom-left-radius:5px}
+.wmsg.her p{margin:0 0 8px}
+.wmsg.her p:last-child{margin:0}
+.wsrcs{margin-top:9px;padding-top:9px;border-top:1px solid var(--line2)}
+.wsrc{display:block;width:100%;text-align:left;background:transparent;border:0;font:inherit;
+  font-size:12.5px;font-weight:600;color:var(--deep);padding:4px 0;cursor:pointer}
+.wsrc:hover{text-decoration:underline}
+
+/* Three dots, so a wait looks like thinking rather than a broken app. */
+.wmsg.thinking{display:flex;gap:5px;align-items:center;padding:14px 15px}
+.wmsg.thinking span{width:6px;height:6px;border-radius:50%;background:var(--faint);
+  animation:wdot 1.1s infinite ease-in-out}
+.wmsg.thinking span:nth-child(2){animation-delay:.16s}
+.wmsg.thinking span:nth-child(3){animation-delay:.32s}
+@keyframes wdot{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+
+.wfoot{display:flex;gap:8px;padding:11px 12px;border-top:1px solid var(--line2);background:var(--surface)}
+.winput{flex:1;min-width:0;font:inherit;font-size:15px;padding:10px 13px;border-radius:999px;
+  border:1px solid var(--line);background:var(--surface2);color:var(--ink)}
+.winput:focus{border-color:var(--sage);outline:none}
+.wsend{flex:none;width:42px;height:42px;border-radius:50%;border:0;background:var(--sage);
+  display:grid;place-items:center;cursor:pointer}
+.wsend[disabled]{opacity:.5}
 
 /* THE UPDATE BAR.
    Sits above everything, including the header, because the whole point
@@ -355,6 +418,20 @@ body.locked .topbar-holder{background:transparent}
   .tab{flex:0 0 128px}
 }
 
+/* Willow, on a window rather than inside a phone frame. Anchored to
+   the viewport, clear of the tab bar, and capped so she never becomes a
+   full screen takeover on a monitor. */
+#willow{position:fixed;inset:0;pointer-events:none;z-index:8}
+#willow > *{pointer-events:auto}
+.willowdot{position:fixed;right:26px;bottom:96px}
+.willowpanel{position:fixed;right:26px;left:auto;bottom:96px;width:min(420px, calc(100vw - 52px));
+  max-height:min(620px, calc(100vh - 150px))}
+@media (max-width:620px){
+  .willowdot{right:14px;bottom:84px}
+  .willowpanel{right:10px;left:10px;bottom:84px;width:auto;max-height:calc(100vh - 140px)}
+}
+body.locked #willow{display:none}
+
 /* ---------- THE READING COLUMN ---------- */
 /* Capped so body copy keeps a comfortable measure, with margin either
    side for the decorative layer to sit in. */
@@ -452,6 +529,11 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
      underneath every piece of chrome. -->
 <div class="bglayer" id="bglayer" aria-hidden="true"></div>
 
+<!-- Willow lives outside the app shell so she is fixed to the window
+     rather than to the scrolling screen, and so closing her never
+     disturbs what somebody was reading. -->
+<div id="willow"></div>
+
 <div class="appshell">
   <div class="topbar-holder" id="topbar"></div>
   <div class="scroll" id="screen"></div>
@@ -464,7 +546,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-13 18:00';
+const BUILD_STAMP = '2026-09-13 18:19';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -14296,6 +14378,174 @@ function homeAloneIsRelevant(months) {
 }
 
 
+/* ===== src/data/willow.js ===== */
+/**
+ * Ready Set Grow: Willow
+ * ------------------------------------------------------------------
+ * The assistant in the bottom right corner.
+ *
+ * WHAT SHE IS
+ * A way into the content this app already has, not a chatbot wearing
+ * its logo. She is handed the real entries that match a question and
+ * writes the answer out of those, naming where each piece came from.
+ * If the app has nothing on it, she says so.
+ *
+ * WHY IT IS BUILT THAT WAY
+ * Every rule in this project exists because getting it wrong hurts
+ * somebody: never diagnose, safety before explanation, label how well
+ * the evidence holds up. A general purpose model answering from its own
+ * memory breaks all three the first time it reassures a mother about a
+ * six week old's fever. Grounding her in the app's own writing is what
+ * keeps her inside those rules, and it happens to be cheaper and faster
+ * as well.
+ *
+ * WHAT NEVER REACHES HER
+ * Emergencies and crisis language are caught before any request is
+ * sent. A parent typing "not breathing" gets the 911 card instantly,
+ * from a keyword list running on their own device, with no network call
+ * in the way. That is deliberate. The one moment when seconds matter is
+ * the one moment this must not depend on a signal, a server, or a
+ * model's judgement.
+ */
+
+const WILLOW = {
+  name: 'Willow',
+  tagline: 'Ask me anything in here',
+  greeting:
+    'Hi, I am Willow. I can look things up in Ready Set Grow for you and explain what it says. ' +
+    'Ask me the way you would ask a friend.',
+
+  /* Said once, in the panel, rather than appended to every answer where
+     it would become wallpaper. */
+  standing:
+    'I only answer from what is written in this app, and I show you where each answer came from. ' +
+    'I am not a doctor and I cannot see your child. If something feels wrong, your pediatrician ' +
+    'wants you to call.',
+
+  /* Shown before she has been set up, so the app never presents a
+     button that quietly does nothing. */
+  notReady:
+    'Willow is not switched on yet. Everything else in the app works as normal, and the search on ' +
+    'the Right Now tab finds the same entries she would.',
+
+  /* When retrieval comes back empty. She is not allowed to fill the
+     silence with something plausible. */
+  noMatch:
+    'I could not find anything in the app about that, and I would rather tell you that than make ' +
+    'something up. Try saying it a different way, or ask your pediatrician. If something is ' +
+    'happening right now, the Right Now tab is the fastest way in.',
+
+  /* A model can fail, a network can drop. Neither should look like an
+     answer. */
+  failed:
+    'Something went wrong reaching me just then. Nothing is lost, try again in a moment. If it is ' +
+    'urgent, do not wait on me: the Right Now tab works with no connection at all.',
+
+  starters: [
+    'Why won’t she sleep through the night',
+    'How many wet diapers should there be',
+    'What are retractions',
+    'How much formula for his weight',
+    'He hits when he is angry',
+    'I feel like I am failing at this',
+  ],
+};
+
+/* The rules, written as instructions to the model. Every line here is
+   a rule that already governs the rest of the app. */
+const WILLOW_RULES = [
+  'You are Willow, the assistant inside a parenting app called Ready Set Grow. You are warm, calm and plain spoken, like a friend who happens to know this material well.',
+  '',
+  'THE ONE RULE THAT OUTRANKS EVERYTHING: answer only from the entries given to you below. They are the app’s own written content. If they do not cover what was asked, say so plainly and suggest the pediatrician. Never answer from your own knowledge, never guess, never fill a gap with something that sounds right.',
+  '',
+  'Never diagnose. Say "some children" and "one possibility is". Never say "your child has" or name a condition as a fact about this child.',
+  'Never give a medication dose or amount. Dose comes from a pediatrician or the label. You may talk about timing.',
+  'Never soften or leave out a reason to call a doctor. If an entry says call, you say call, and you say it early rather than at the end.',
+  'Never contradict the entries, and never present something as more settled than the entry does. If an entry labels something as a parent tip rather than studied, keep that label.',
+  'You cannot see the child and you are not a clinician. Do not imply otherwise.',
+  '',
+  'HOW TO WRITE: short. Two or three sentences, then a few lines if they help. Lead with the answer rather than a preamble. Use the child’s name if you are given it. Do not open by restating the question. Do not sign off.',
+  'Never use dashes as punctuation. Use commas, or full stops, or the words "such as".',
+  'Do not add a disclaimer at the end. The app shows one already.',
+  '',
+  'FINISH every reply with a line on its own in exactly this form, listing the entries you actually used:',
+  'SOURCES: id1, id2',
+  'Use the ids exactly as given. If you used none because nothing matched, write SOURCES: none',
+];
+
+/** The system instruction, assembled. */
+function willowSystemPrompt() {
+  return WILLOW_RULES.join('\n');
+}
+
+/**
+ * The turn prompt: who the child is, what was asked, and the entries
+ * she is allowed to use. Entry text is trimmed, because a whole care
+ * topic is longer than the answer needs and every word costs something.
+ */
+function willowPrompt(question, entries, childLine) {
+  const parts = [];
+  if (childLine) parts.push('About the child: ' + childLine);
+  parts.push('The parent asked: ' + String(question).trim());
+  parts.push('');
+  parts.push('ENTRIES YOU MAY USE. Nothing else exists.');
+  entries.forEach((e) => {
+    parts.push('');
+    parts.push('[id: ' + e.id + '] ' + e.kind + ': ' + e.title);
+    const body = String(e.text || '').replace(/\s+/g, ' ').trim();
+    parts.push(body.length > 1400 ? body.slice(0, 1400) + '...' : body);
+  });
+  if (!entries.length) parts.push('(nothing matched, so say so)');
+  return parts.join('\n');
+}
+
+/* Words that must never reach a model, checked on the device. The
+   lists are deliberately blunt: a false alarm shows somebody an
+   emergency card they did not need, which costs them three seconds. */
+const WILLOW_STOP_EMERGENCY = [
+  'not breathing', 'stopped breathing', 'cant breathe', 'can not breathe', "can't breathe",
+  'turning blue', 'went blue', 'blue lips', 'grey lips', 'gray lips', 'unresponsive',
+  'wont wake', "won't wake", 'will not wake', 'unconscious', 'passed out', 'seizure',
+  'seizing', 'convulsing', 'choking', 'choked', 'drowning', 'drowned', 'limp and',
+  'no pulse', 'not moving', 'swallowed a battery', 'button battery', 'poison', 'overdose',
+  'fell and', 'hit her head', 'hit his head', 'head injury', 'bleeding badly',
+];
+
+const WILLOW_STOP_CRISIS = [
+  'kill myself', 'killing myself', 'end my life', 'want to die', 'better off without me',
+  'hurt my baby', 'harm my baby', 'hurt the baby', 'shake the baby', 'shook the baby',
+  'hurt myself', 'harm myself', 'self harm', 'suicidal', 'suicide',
+];
+
+function willowStopReason(question) {
+  const q = ' ' + String(question || '').toLowerCase().replace(/[^a-z' ]+/g, ' ').replace(/\s+/g, ' ') + ' ';
+  if (WILLOW_STOP_CRISIS.some((w) => q.indexOf(w) !== -1)) return 'crisis';
+  if (WILLOW_STOP_EMERGENCY.some((w) => q.indexOf(w) !== -1)) return 'emergency';
+  return null;
+}
+
+/* Pulls the SOURCES line off the end so the app can render real links
+   rather than trusting prose to contain them. */
+function willowSplitSources(text) {
+  const raw = String(text || '').trim();
+  const m = raw.match(/\n?\s*SOURCES\s*:\s*([^\n]*)\s*$/i);
+  if (!m) return { body: raw, ids: [] };
+  const ids = m[1].split(',').map((s) => s.trim()).filter((s) => s && s.toLowerCase() !== 'none');
+  return { body: raw.slice(0, m.index).trim(), ids };
+}
+
+/* Gemini 2.5 shuts down in October 2026, which is next month, so
+   starting there would have meant a broken app before Christmas. 3.5
+   Flash-Lite is the current cheap workhorse, it has a free tier, and it
+   does not require the paid Blaze plan through the Gemini Developer
+   API. Worth rechecking against the model list once a year. */
+const WILLOW_MODEL = 'gemini-3.5-flash-lite';
+
+/* A cap, per device per day. One person leaning on it hard should not
+   be able to run up a bill, and nobody with a real question hits it. */
+const WILLOW_DAILY_LIMIT = 40;
+
+
 /* ===== src/data/postpartum.js ===== */
 /**
  * Ready Set Grow: Postpartum
@@ -15519,8 +15769,15 @@ const FIREBASE_CONFIG = {
 
 /* The SDK is loaded from Google's CDN as ES modules. Pinning the version
    means a future SDK release cannot change behavior under the app
-   without somebody deciding to move it. */
-const FIREBASE_SDK_VERSION = '11.0.2';
+   without somebody deciding to move it.
+
+   Moved from 11.0.2 to 12.19.0 for Willow. The firebase-ai module, which
+   is what lets the app talk to Gemini without ever holding a key, only
+   exists from 12.5 onward. Auth and Firestore are used through the same
+   calls in both versions, so the sign in and the syncing are unaffected,
+   but this is the one line to put back if either of those ever misbehave
+   after a release. */
+const FIREBASE_SDK_VERSION = '12.19.0';
 
 
 </script>
@@ -16640,6 +16897,8 @@ function render() {
     if (tabsEl) tabsEl.innerHTML = '';
     const barEl = document.getElementById('topbar');
     if (barEl) barEl.innerHTML = topBar(true);
+    const wEl = document.getElementById('willow');
+    if (wEl) wEl.innerHTML = '';
     restoreFocus();
     saveStore();
     return;
@@ -16714,6 +16973,11 @@ function render() {
   const barSlot = document.getElementById('topbar');
   if (barSlot) { barSlot.innerHTML = bar; screen.innerHTML = html; }
   else screen.innerHTML = bar + html;
+
+  /* Willow sits outside the scrolling screen so she stays put, and
+     outside the header so she is reachable with a thumb. */
+  const willowSlot = document.getElementById('willow');
+  if (willowSlot) willowSlot.innerHTML = willowBubble() + willowPanel();
   screen.scrollTop = keepId ? keepScroll : 0;
 
   if (keepId) restoreFocus(keepId, keepStart, keepEnd);
@@ -16790,6 +17054,7 @@ function initControls() {
   document.addEventListener('input', (e) => {
     if (e.target.matches('[data-wake]')) { state.wakeTime = e.target.value || '06:30'; render(); }
     else if (e.target.id === 'askIn') { state.askQuery = e.target.value; }
+    else if (e.target.id === 'willowIn') { willow.input = e.target.value; }
     else if (e.target.id === 'flangeIn') {
       const digits = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
       e.target.value = digits;
@@ -16891,10 +17156,16 @@ function initControls() {
       state.askAsked = state.askQuery.trim();
       render();
     }
+    if (e.target.id === 'willowIn' && e.key === 'Enter') {
+      e.preventDefault();
+      willowAsk(willow.input);
+    }
+    /* Escape closes her, which is what everybody tries first. */
+    if (e.key === 'Escape' && willow.open) { willow.open = false; render(); }
   });
 
   document.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export]');
     if (!t) return;
 
     if (t.dataset.auth) {
@@ -16959,6 +17230,17 @@ function initControls() {
       return;
     } else if (t.dataset.update === 'later') {
       update.dismissed = true;
+    } else if (t.dataset.willow === 'open') {
+      willow.open = true;
+      if (!willow.ready && !willow.loading) willowLoad().catch(() => {});
+    } else if (t.dataset.willow === 'close') {
+      willow.open = false;
+    } else if (t.dataset.willow === 'send') {
+      willowAsk(willow.input);
+      return;
+    } else if (t.dataset.willow === 'try') {
+      willowAsk(t.dataset.q);
+      return;
     } else if (t.dataset.combinechild) {
       combineDuplicateChildren(t.dataset.combinechild);
     } else if (t.dataset.notdupe) {
@@ -17037,6 +17319,8 @@ function initControls() {
       state.tab = t.dataset.id; state.view = null;
     } else if (t.dataset.go) {
       if (t.tagName === 'A') return; // source links open normally
+      // Following one of her links means you want to read it, not keep chatting.
+      if (willow.open && t.closest('.willowpanel')) willow.open = false;
       /* A diaper logged from the newborn screen should land back on the
          newborn screen with the count one higher, not on a list. */
       if (t.dataset.go === 'log') store.logFrom = { tab: state.tab, view: state.view };
@@ -21801,6 +22085,258 @@ function markNotDuplicates(anyId) {
   if (!store.notDuplicates) store.notDuplicates = [];
   if (store.notDuplicates.indexOf(key) === -1) store.notDuplicates.push(key);
   flushStore();
+}
+
+
+/* =================================================================
+   WILLOW
+
+   The circle in the bottom right, and what happens when it is tapped.
+
+   THE ORDER OF OPERATIONS IS THE SAFETY DESIGN
+   A question goes through three gates before any request leaves the
+   device, and the first two never touch the network:
+
+     1. Crisis words    -> the maternal mental health lines, at once
+     2. Emergency words -> the 911 card, at once
+     3. Retrieval       -> the app's own entries, ranked
+     4. The model       -> writes an answer using only those entries
+
+   Steps one and two run on a keyword list in the browser because the
+   single moment when seconds matter is the moment this must not depend
+   on a signal, a server, or a model deciding how worried to be.
+
+   IF SHE IS NOT SET UP, SHE SAYS SO
+   The app ships before Firebase AI Logic is switched on, so the panel
+   opens, explains that plainly, and points at the search that does the
+   same retrieval without her. A button that quietly does nothing is
+   worse than no button.
+   ================================================================= */
+
+const willow = {
+  open: false,
+  busy: false,
+  input: '',
+  messages: [],     // { who: 'you' | 'willow', text, sources: [], kind }
+  ai: null,         // the model handle, once loaded
+  loading: null,    // the in flight load promise
+  ready: false,
+  failed: false,
+  usedToday: 0,
+  usedDate: '',
+};
+
+function willowCountToday() {
+  const today = todayKey();
+  if (willow.usedDate !== today) { willow.usedDate = today; willow.usedToday = 0; }
+  return willow.usedToday;
+}
+
+/* The Firebase AI Logic SDK. The key never comes near this file: the
+   request goes to Google's proxy, which holds it. That is the whole
+   reason for using this rather than calling Gemini directly, where the
+   key would sit in the page source for anyone to read. */
+async function willowLoad() {
+  if (willow.ai) return willow.ai;
+  if (willow.loading) return willow.loading;
+  willow.loading = (async () => {
+    const v = FIREBASE_SDK_VERSION;
+    const { app } = await loadFirebase();
+    const aiMod = await import(`https://www.gstatic.com/firebasejs/${v}/firebase-ai.js`);
+    const ai = aiMod.getAI(app, { backend: new aiMod.GoogleAIBackend() });
+    willow.ai = aiMod.getGenerativeModel(ai, {
+      model: WILLOW_MODEL,
+      systemInstruction: willowSystemPrompt(),
+    });
+    willow.ready = true;
+    return willow.ai;
+  })().catch((err) => {
+    willow.loading = null;
+    willow.failed = true;
+    throw err;
+  });
+  return willow.loading;
+}
+
+/* One line about who we are talking about, so she can use the name and
+   the age rather than saying "your child" eleven times. */
+function willowChildLine(c) {
+  const k = activeChild();
+  if (!k || !k.name) return '';
+  const bits = [k.name];
+  if (c.summary && c.summary.label) bits.push(c.summary.label);
+  if (state.lenses && state.lenses.length) {
+    bits.push('support lenses on: ' + getLenses(state.lenses).map((l) => l.label).join(', '));
+  }
+  return bits.join(', ');
+}
+
+function willowSay(who, text, sources, kind) {
+  willow.messages.push({ who: who, text: text, sources: sources || [], kind: kind || '' });
+}
+
+async function willowAsk(question) {
+  const q = String(question || '').trim();
+  if (!q || willow.busy) return;
+  willowSay('you', q);
+  willow.input = '';
+
+  /* Gate one and two. No network, no model, no waiting. */
+  const stop = willowStopReason(q);
+  if (stop) {
+    willowSay('willow', '', [], stop);
+    render();
+    return;
+  }
+
+  if (willowCountToday() >= WILLOW_DAILY_LIMIT) {
+    willowSay('willow', 'That is a lot of questions for one day, and I am going to stop here so this '
+      + 'stays affordable to run. Everything in the app is still there to read, and I will be back '
+      + 'tomorrow.', [], 'limit');
+    render();
+    return;
+  }
+
+  willow.busy = true;
+  render();
+
+  const c = ctx();
+  const hits = askSearch(q, c).map((r) => r.item);
+  if (!hits.length) {
+    willow.busy = false;
+    willowSay('willow', WILLOW.noMatch, [], 'nomatch');
+    render();
+    return;
+  }
+
+  try {
+    const model = await willowLoad();
+    const res = await model.generateContent(willowPrompt(q, hits.slice(0, 5), willowChildLine(c)));
+    const raw = res && res.response && typeof res.response.text === 'function'
+      ? res.response.text() : String(res || '');
+    const split = willowSplitSources(raw);
+    /* Only entries that were actually offered can be linked, whatever
+       the model wrote on that line. */
+    const byId = {};
+    hits.forEach((h) => { byId[h.id] = h; });
+    let used = split.ids.map((id) => byId[id]).filter(Boolean);
+    if (!used.length) used = hits.slice(0, 2);
+    willow.usedToday = willowCountToday() + 1;
+    willowSay('willow', split.body || WILLOW.failed, used);
+  } catch (err) {
+    willowSay('willow', willow.failed && !willow.ready ? WILLOW.notReady : WILLOW.failed, [], 'failed');
+  }
+  willow.busy = false;
+  render();
+}
+
+function willowBubble() {
+  if (!hasAccess()) return '';
+  if (willow.open) return '';
+  return `
+  <button class="willowdot" data-willow="open" aria-label="Ask ${esc(WILLOW.name)}">
+    <span class="willowdot-leaf">${icon('leaf', 21, '#fff')}</span>
+    <span class="willowdot-name">${esc(WILLOW.name)}</span>
+  </button>`;
+}
+
+function willowSourceRow(s) {
+  const attrs = 'data-go="' + esc(s.go) + '" data-id="' + esc(s.id) + '"'
+    + (s.sub ? ' data-asksub="' + esc(s.sub[0]) + '" data-asksubval="' + esc(s.sub[1]) + '"' : '');
+  return `<button class="wsrc" ${attrs}>${icon('chev', 12, 'var(--deep)')} ${esc(s.title)}</button>`;
+}
+
+/* The two answers she is never allowed to write herself. */
+function willowEmergencyBlock() {
+  return `
+  <div class="wcard urgent">
+    <p class="eyebrow" style="color:#A85A44">Stop and call 911</p>
+    <ul class="dlist warn" style="margin-top:7px">
+      ${ALWAYS_EMERGENCY.items.slice(0, 3).map((t) => `<li>${esc(t)}</li>`).join('')}
+    </ul>
+    <p class="tiny" style="margin-top:9px;color:#8A5A4A">${esc(ALWAYS_EMERGENCY.poison)}</p>
+    <p class="tiny" style="margin-top:9px;color:#8A5A4A">
+      I am not going to answer that one myself. Call, then come back to me.
+    </p>
+  </div>`;
+}
+
+function willowCrisisBlock() {
+  return `
+  <div class="wcard urgent">
+    <p class="eyebrow" style="color:#A85A44">Please talk to a person right now</p>
+    <p class="bodytext" style="margin-top:5px;color:#7A4E40">
+      You do not have to be in crisis to call, and telling someone is the way through rather than a
+      risk to your family.
+    </p>
+    <div style="margin-top:10px">
+      ${MATERNAL_SUPPORT_LINES.map((l) => `
+        <div style="padding:8px 0;border-top:1px solid rgba(138,90,74,.25)">
+          <p style="margin:0;font-size:13px;font-weight:600;color:#7A4E40">${esc(l.name)}</p>
+          <a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"
+             style="font-size:17px;color:#A85A44;text-decoration:none">${esc(l.contact)}</a>
+        </div>`).join('')}
+    </div>
+    <p class="tiny" style="margin-top:10px;color:#8A5A4A">
+      If you are thinking about harming yourself or your baby, call or text 988, or go to an
+      emergency room. It is rare, it is a medical emergency, and it is treatable.
+    </p>
+  </div>`;
+}
+
+function willowPanel() {
+  if (!willow.open) return '';
+  const msgs = willow.messages;
+  return `
+  <div class="willowpanel" role="dialog" aria-label="Ask ${esc(WILLOW.name)}">
+    <div class="whead">
+      <span class="whead-av">${icon('leaf', 17, '#fff')}</span>
+      <span class="grow">
+        <span class="whead-name">${esc(WILLOW.name)}</span>
+        <span class="whead-sub">${esc(WILLOW.tagline)}</span>
+      </span>
+      <button class="wclose" data-willow="close" aria-label="Close">${icon('plus', 18, 'var(--muted)')}</button>
+    </div>
+
+    <div class="wbody" id="wbody">
+      <div class="wcard">
+        <p class="bodytext">${esc(WILLOW.greeting)}</p>
+        <p class="tiny" style="margin-top:8px">${esc(WILLOW.standing)}</p>
+      </div>
+
+      ${!msgs.length ? `
+      <p class="tiny" style="margin:4px 2px 6px">Things people ask</p>
+      <div class="chips" style="gap:6px">
+        ${WILLOW.starters.map((s) => `<button class="chip" data-willow="try" data-q="${esc(s)}">${esc(s)}</button>`).join('')}
+      </div>` : ''}
+
+      ${msgs.map((m) => {
+        if (m.who === 'you') return `<div class="wmsg you">${esc(m.text)}</div>`;
+        if (m.kind === 'emergency') return willowEmergencyBlock();
+        if (m.kind === 'crisis') return willowCrisisBlock();
+        return `
+        <div class="wmsg her">
+          ${esc(m.text).replace(/\n{2,}/g, '</p><p>').replace(/^/, '<p>').replace(/$/, '</p>')}
+          ${m.sources && m.sources.length ? `
+            <div class="wsrcs">
+              <span class="tiny" style="display:block;margin-bottom:5px">Where this came from</span>
+              ${m.sources.map(willowSourceRow).join('')}
+            </div>` : ''}
+        </div>`;
+      }).join('')}
+
+      ${willow.busy ? `<div class="wmsg her thinking"><span></span><span></span><span></span></div>` : ''}
+    </div>
+
+    <div class="wfoot">
+      <input id="willowIn" class="winput" type="text" autocomplete="off"
+        placeholder="Ask ${esc(WILLOW.name)} something" value="${esc(willow.input)}"
+        ${willow.busy ? 'disabled' : ''} />
+      <button class="wsend" data-willow="send" aria-label="Send" ${willow.busy ? 'disabled' : ''}>
+        ${icon('chev', 17, '#fff')}
+      </button>
+    </div>
+  </div>`;
 }
 
 /* -----------------------------------------------------------------
