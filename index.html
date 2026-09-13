@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-13 19:23">
+<meta name="rsg-build" content="2026-09-13 20:17">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -176,6 +176,49 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .tab[aria-selected="true"]{color:var(--deep)}
 .tab .dot{width:18px;height:2.5px;border-radius:2px;background:transparent;margin-top:1px}
 .tab[aria-selected="true"] .dot{background:var(--deep)}
+
+/* BIRTHDAYS.
+   A scrim rather than a toast, because this is the one interruption in
+   the app that has earned the whole screen for a moment. It sits over
+   everything including Willow, and there is no way past it except the
+   button, which is the point: it should be read, once, and then gone. */
+.bdaywrap{
+  position:absolute;inset:0;z-index:60;
+  display:grid;place-items:center;padding:22px;
+  background:rgba(45,62,40,.42);backdrop-filter:blur(3px);
+  animation:bdayin .28s ease both;
+}
+@keyframes bdayin{from{opacity:0}to{opacity:1}}
+.bdaycard{
+  width:100%;max-width:330px;max-height:100%;overflow-y:auto;
+  background:var(--card,#fff);border-radius:20px;padding:22px 20px 18px;
+  box-shadow:0 18px 46px rgba(45,62,40,.34);text-align:center;
+  animation:bdayup .34s cubic-bezier(.2,.8,.3,1) both;
+}
+@keyframes bdayup{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+.bdayone{padding:2px 0}
+.bdayleaf{
+  width:54px;height:54px;border-radius:50%;background:var(--deep);
+  display:grid;place-items:center;margin:0 auto 11px;
+  box-shadow:0 6px 18px rgba(45,62,40,.26);
+}
+.bdayname{font-size:21px;font-weight:700;color:var(--ink);line-height:1.22;letter-spacing:-.01em}
+.bdayage{font-size:13px;font-weight:600;color:var(--deep);margin-top:4px}
+.bdayline{font-size:14px;line-height:1.5;color:var(--muted);margin-top:9px}
+.bdayrule{height:1px;background:rgba(0,0,0,.08);margin:16px 0}
+.bdaybtn{
+  margin-top:18px;width:100%;border:0;font:inherit;cursor:pointer;
+  background:var(--deep);color:#fff;border-radius:999px;
+  padding:12px 16px;font-size:14px;font-weight:600;
+}
+.bdaybtn:active{transform:translateY(1px)}
+.bdaylater{
+  margin-top:8px;width:100%;border:0;background:none;font:inherit;cursor:pointer;
+  color:var(--deep);font-size:13px;font-weight:600;padding:7px;
+}
+@media (prefers-reduced-motion:reduce){
+  .bdaywrap,.bdaycard{animation:none}
+}
 
 /* WILLOW.
    The circle is deliberately not a square panel with a robot in it. She
@@ -552,7 +595,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-13 19:23';
+const BUILD_STAMP = '2026-09-13 20:17';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -15876,6 +15919,241 @@ function getAllVaccineSources() {
 }
 
 
+/* ===== src/data/cycle.js ===== */
+/**
+ * Ready Set Grow: Cycle And Dates
+ * ------------------------------------------------------------------
+ * Two small things a parent tells the app about herself, and what the
+ * app is allowed to do with them.
+ *
+ *   1. The first day of her last period. From that one date comes the
+ *      day of her cycle, a rough estimate of when the next one is due,
+ *      the window where conception is most likely, and, if she is
+ *      pregnant, how far along she is and the date her provider would
+ *      call her due date.
+ *
+ *   2. Her own birthday, so the app can say happy birthday to her the
+ *      same way it does for the children. A parenting app that
+ *      remembers everybody's birthday except hers is telling her
+ *      something, and it is not a kind thing.
+ *
+ * WHAT THIS FILE IS NOT
+ * None of this is a diagnosis, a pregnancy test, or birth control.
+ * Cycles move. Twenty eight days is an average, not a promise, and a
+ * perfectly healthy cycle can run anywhere from twenty one to thirty
+ * five days. Every number below is an estimate from one date, said
+ * plainly as an estimate, and every screen that shows one says so.
+ *
+ * Naegele's rule, the due date math here, is what an obstetric
+ * provider starts with too: last period plus 280 days. An early
+ * ultrasound beats it and always wins, which the copy says out loud.
+ */
+
+/** A plain YYYY-MM-DD string into { y, m, d }, or null. */
+function cycleParts(value) {
+  if (!value) return null;
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return null;
+    return { y: value.getFullYear(), m: value.getMonth() + 1, d: value.getDate() };
+  }
+  const s = String(value).trim();
+  const m = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  if (!y || mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+  return { y: y, m: mo, d: d };
+}
+
+/** Whole days since the epoch, in UTC, so nothing shifts across a time change. */
+function cycleDayNumber(p) {
+  return Math.floor(Date.UTC(p.y, p.m - 1, p.d) / 86400000);
+}
+
+function cycleToday(ref) {
+  const p = cycleParts(ref);
+  if (p) return p;
+  const now = new Date();
+  return { y: now.getFullYear(), m: now.getMonth() + 1, d: now.getDate() };
+}
+
+/** A day number back into YYYY-MM-DD. */
+function cycleDateString(dayNum) {
+  const dt = new Date(dayNum * 86400000);
+  const mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(dt.getUTCDate()).padStart(2, '0');
+  return dt.getUTCFullYear() + '-' + mm + '-' + dd;
+}
+
+/** The way a person says a date out loud. */
+function cycleDateLabel(value) {
+  const p = cycleParts(value);
+  if (!p) return '';
+  const months = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+  return months[p.m - 1] + ' ' + p.d;
+}
+
+function cycleDateLabelWithYear(value) {
+  const p = cycleParts(value);
+  if (!p) return '';
+  return cycleDateLabel(value) + ', ' + p.y;
+}
+
+/** An average cycle, and the outside edges of a normal one. */
+const CYCLE_AVERAGE_LENGTH = 28;
+const CYCLE_NORMAL_RANGE = { min: 21, max: 35 };
+const CYCLE_LUTEAL_DAYS = 14;
+const PREGNANCY_DAYS = 280;
+
+/**
+ * Everything derivable from one date. Returns null when there is no
+ * usable date, so a screen can simply not draw the card.
+ *
+ *   dayOfCycle      day 1 is the first day of bleeding
+ *   nextPeriod      estimated first day of the next one
+ *   daysToNext      negative once it is late
+ *   fertileStart    the six day window that ends on estimated ovulation
+ *   ovulation       estimated, and only ever estimated
+ *   dueDate         if she is pregnant, what Naegele's rule gives
+ *   weeksPregnant   how a provider would count it, weeks plus days
+ */
+function cycleInfo(lastPeriod, ref, cycleLength) {
+  const start = cycleParts(lastPeriod);
+  if (!start) return null;
+  const today = cycleToday(ref);
+  const startNum = cycleDayNumber(start);
+  const todayNum = cycleDayNumber(today);
+  const elapsed = todayNum - startNum;
+  if (elapsed < 0) return null;
+
+  const len = Math.max(CYCLE_NORMAL_RANGE.min,
+    Math.min(CYCLE_NORMAL_RANGE.max, Number(cycleLength) || CYCLE_AVERAGE_LENGTH));
+
+  const ovulationNum = startNum + (len - CYCLE_LUTEAL_DAYS);
+  const nextNum = startNum + len;
+  const dueNum = startNum + PREGNANCY_DAYS;
+
+  const weeks = Math.floor(elapsed / 7);
+  const days = elapsed % 7;
+
+  return {
+    lastPeriod: cycleDateString(startNum),
+    cycleLength: len,
+    dayOfCycle: elapsed + 1,
+    daysSince: elapsed,
+    nextPeriod: cycleDateString(nextNum),
+    daysToNext: nextNum - todayNum,
+    isLate: todayNum > nextNum,
+    daysLate: Math.max(0, todayNum - nextNum),
+    ovulation: cycleDateString(ovulationNum),
+    fertileStart: cycleDateString(ovulationNum - 5),
+    fertileEnd: cycleDateString(ovulationNum),
+    inFertileWindow: todayNum >= ovulationNum - 5 && todayNum <= ovulationNum,
+    dueDate: cycleDateString(dueNum),
+    daysToDue: dueNum - todayNum,
+    weeksPregnant: weeks,
+    daysIntoWeek: days,
+    pregnancyLabel: weeks + ' weeks' + (days ? ' and ' + days + ' day' + (days === 1 ? '' : 's') : ''),
+  };
+}
+
+/** One sentence for wherever the cycle card is small. */
+function cycleShortLine(info) {
+  if (!info) return '';
+  if (info.isLate) {
+    return 'Day ' + info.dayOfCycle + ', which is ' + info.daysLate + ' day'
+      + (info.daysLate === 1 ? '' : 's') + ' past the estimate';
+  }
+  if (info.daysToNext === 0) return 'Day ' + info.dayOfCycle + ', the estimate lands today';
+  if (info.inFertileWindow) return 'Day ' + info.dayOfCycle + ', inside the estimated fertile window';
+  return 'Day ' + info.dayOfCycle + ', next one estimated ' + cycleDateLabel(info.nextPeriod);
+}
+
+/** The standing caveat. Shown wherever a number from here is shown. */
+const CYCLE_DISCLAIMER = 'These are estimates from one date, not a test and not birth '
+  + 'control. Cycles move with stress, illness, travel, feeding a baby and plenty else. A late '
+  + 'period, a cycle that keeps changing length, bleeding between periods or pain that stops your '
+  + 'day are all worth a call to your own provider.';
+
+const CYCLE_DUE_DATE_NOTE = 'A due date from a last period is where providers start, not '
+  + 'where they finish. A dating ultrasound in the first trimester is more accurate and it wins '
+  + 'over this number every time.';
+
+const CYCLE_NOTES = [
+  'Day one is the first day of real bleeding, not spotting the day before.',
+  'Twenty eight days is an average. Anywhere from twenty one to thirty five is ordinary.',
+  'Ovulation is estimated backward from the next period, not forward from this one, which is why '
+    + 'a cycle that runs long moves the window later.',
+  'The fertile window is about six days: the five before ovulation and the day itself. Sperm last '
+    + 'longer than the egg does.',
+  'Cycles take a while to settle after a baby, after stopping hormonal birth control, and while '
+    + 'breastfeeding. Irregular for a few months in those seasons is expected.',
+];
+
+const CYCLE_SOURCES = [
+  { org: 'ACOG', label: 'Your first period and tracking your cycle',
+    url: 'https://www.acog.org/womens-health/faqs/your-first-period' },
+  { org: 'ACOG', label: 'How your fetus grows during pregnancy',
+    url: 'https://www.acog.org/womens-health/faqs/how-your-fetus-grows-during-pregnancy' },
+  { org: 'Office on Women’s Health', label: 'Your menstrual cycle',
+    url: 'https://womenshealth.gov/menstrual-cycle/your-menstrual-cycle' },
+];
+
+/* ------------------------------------------------------------------
+ * BIRTHDAYS
+ *
+ * The greeting is deliberately warm and deliberately short. It appears
+ * once, on the day, and it is dismissable, because a five in the
+ * morning feed is not the moment for a full screen of confetti you
+ * cannot get past.
+ * ------------------------------------------------------------------ */
+
+/** The card for the parent reads differently from the card for a child. */
+const BIRTHDAY_PARENT_LINES = [
+  'Somebody has to say it, so it may as well be the app that watches you do all of this.',
+  'You have kept a whole person alive for another year. That counts, even on the days it did not feel like it.',
+  'The house runs on you. Today it can run a little slower.',
+  'Whatever else today holds, this part is yours.',
+];
+
+const BIRTHDAY_CHILD_LINES = [
+  'A whole year of them.',
+  'Look how far they have come.',
+  'Another year of being their person.',
+  'They got here on your watch.',
+];
+
+/** A number a child will actually care about. */
+function birthdayOrdinal(n) {
+  const num = Number(n);
+  if (!Number.isFinite(num) || num < 0) return '';
+  const rem100 = num % 100;
+  if (rem100 >= 11 && rem100 <= 13) return num + 'th';
+  const rem10 = num % 10;
+  if (rem10 === 1) return num + 'st';
+  if (rem10 === 2) return num + 'nd';
+  if (rem10 === 3) return num + 'rd';
+  return num + 'th';
+}
+
+/** Whole years old today. Null when the date is missing or in the future. */
+function yearsOldToday(birthday, ref) {
+  const b = cycleParts(birthday);
+  if (!b) return null;
+  const t = cycleToday(ref);
+  let years = t.y - b.y;
+  if (t.m < b.m || (t.m === b.m && t.d < b.d)) years -= 1;
+  return years < 0 ? null : years;
+}
+
+/** Which year of the greeting this is, so it shows once and not every open. */
+function birthdaySeenKey(who, ref) {
+  const t = cycleToday(ref);
+  return String(who) + ':' + t.y;
+}
+
 /* ===== src/data/firebaseConfig.js ===== */
 /**
  * Ready Set Grow: Firebase configuration
@@ -16389,9 +16667,14 @@ const store = {
   /* The parent's own account. Password is deliberately absent. A real
      account needs a server, and storing one in a browser would be worse
      than not having one at all. The profile screen says so out loud. */
-  parent: { name: '', username: '', email: '' },
+  parent: { name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '' },
   children: [],
   activeChildId: null,
+
+  /* Which birthday greetings have already been seen, keyed by who and
+     year, so the card shows once on the day rather than every single
+     time the app is opened between breakfast and bedtime. */
+  birthdaySeen: {},
 
   /* Parent scoped. These follow the mother, not any child. */
   bagChecked: [],
@@ -16494,7 +16777,7 @@ const state = {};
   });
 });
 
-['parent', 'children', 'activeChildId', 'bagChecked', 'pumpTab', 'pumpGoal',
+['parent', 'children', 'activeChildId', 'bagChecked', 'birthdaySeen', 'pumpTab', 'pumpGoal',
  'pumpProblem', 'flangeMm', 'ppTab', 'ppStage', 'askQuery', 'askAsked',
  'tab', 'view', 'undGroup', 'lensBand', 'feedTab', 'safetyTab',
  'logDraft', 'draftChildName', 'draftChildBday'].forEach((key) => {
@@ -16521,6 +16804,7 @@ function flushStore() {
       children: store.children,
       activeChildId: store.activeChildId,
       bagChecked: store.bagChecked,
+      birthdaySeen: store.birthdaySeen,
       hadSession: store.hadSession,
       guest: store.guest,
       deletedChildIds: store.deletedChildIds,
@@ -16563,10 +16847,12 @@ function loadStore() {
     store.deletedChildIds = Array.isArray(saved.deletedChildIds) ? saved.deletedChildIds : [];
     store.notDuplicates = Array.isArray(saved.notDuplicates) ? saved.notDuplicates : [];
     store.parentUpdatedAt = Number(saved.parentUpdatedAt) || 0;
+    store.birthdaySeen = (saved.birthdaySeen && typeof saved.birthdaySeen === 'object')
+      ? saved.birthdaySeen : {};
   }
 
   if (saved && Array.isArray(saved.children) && saved.children.length) {
-    store.parent = Object.assign({ name: '', username: '', email: '' }, saved.parent || {});
+    store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '' }, saved.parent || {});
     // Fill in any field an older saved record is missing, so a profile
     // written by a previous version cannot crash a newer screen.
     store.children = saved.children.map((k) => Object.assign(newChildRecord('', null), k, {
@@ -17140,7 +17426,10 @@ function render() {
   /* Willow sits outside the scrolling screen so she stays put, and
      outside the header so she is reachable with a thumb. */
   const willowSlot = document.getElementById('willow');
-  if (willowSlot) willowSlot.innerHTML = willowBubble() + willowPanel();
+  /* The birthday card gets the screen to itself. Willow's pill peeking
+     out from under the scrim made the moment look like an accident. */
+  const bday = birthdayOverlay();
+  if (willowSlot) willowSlot.innerHTML = bday || (willowBubble() + willowPanel());
   screen.scrollTop = keepId ? keepScroll : 0;
 
   if (keepId) restoreFocus(keepId, keepStart, keepEnd);
@@ -17231,6 +17520,15 @@ function initControls() {
       const f = e.target.dataset.parentfield;
       store.parent[f] = e.target.value;
       flushStore();
+    }
+    /* Dates repaint, because a card below them is built from the answer
+       and a parent should see it fill in as she picks the day. */
+    else if (e.target.matches('[data-parentdate]')) {
+      const f = e.target.dataset.parentdate;
+      store.parent[f] = e.target.value;
+      store.parentUpdatedAt = Date.now();
+      flushStore();
+      render();
     }
     else if (e.target.matches('[data-childname]')) {
       const k = store.children.find((x) => x.id === e.target.dataset.childname);
@@ -17328,7 +17626,7 @@ function initControls() {
   });
 
   document.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday]');
     if (!t) return;
 
     if (t.dataset.auth) {
@@ -17386,8 +17684,16 @@ function initControls() {
       if (!store.deletedChildIds) store.deletedChildIds = [];
       if (store.deletedChildIds.indexOf(id) === -1) store.deletedChildIds.push(id);
       cloudDeleteChild(id);
+      willowForget(id);
       if (store.activeChildId === id) selectChild(null);
       flushStore();
+    } else if (t.dataset.bday) {
+      const how = t.dataset.bday;
+      const kid = t.dataset.id;
+      birthdayDismiss();
+      if (how === 'open' && kid) { selectChild(kid); state.tab = 'child'; }
+      render();
+      return;
     } else if (t.dataset.update === 'go') {
       applyUpdate();
       return;
@@ -20209,8 +20515,53 @@ function screenPickChild(what) {
   </div>`;
 }
 
+/* The cycle card only exists once there is a date to build it from, so
+   a parent who never fills this in never sees an empty shell of it. */
+function cycleCard() {
+  const info = cycleInfo(store.parent.lastPeriod, null, store.parent.cycleLength);
+  if (!info) return '';
+  const row = (label, value, note) => `
+    <div style="display:flex;gap:10px;align-items:baseline;padding:6px 0;border-top:1px solid rgba(0,0,0,.05)">
+      <span class="tiny" style="width:118px;flex:none">${esc(label)}</span>
+      <span class="grow">
+        <span style="font-size:13px;font-weight:600;color:var(--ink)">${esc(value)}</span>
+        ${note ? `<span class="tiny" style="display:block;margin-top:1px">${esc(note)}</span>` : ''}
+      </span>
+    </div>`;
+
+  return `
+  <div class="card" style="margin-bottom:8px">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Where you are in your cycle</p>
+    <p class="bodytext" style="margin-top:5px">${esc(cycleShortLine(info))}.</p>
+
+    <div style="margin-top:9px">
+      ${row('Next period', cycleDateLabel(info.nextPeriod),
+        info.isLate
+          ? info.daysLate + ' day' + (info.daysLate === 1 ? '' : 's') + ' past the estimate'
+          : 'estimated, about ' + info.daysToNext + ' day' + (info.daysToNext === 1 ? '' : 's') + ' away')}
+      ${row('Fertile window', cycleDateLabel(info.fertileStart) + ' to ' + cycleDateLabel(info.fertileEnd),
+        info.inFertileWindow ? 'today falls inside it' : 'estimated, the six days ending at ovulation')}
+      ${row('If you are pregnant', info.pregnancyLabel,
+        'due ' + cycleDateLabelWithYear(info.dueDate) + ', by last period')}
+    </div>
+
+    <p class="tiny" style="margin-top:10px">${esc(CYCLE_DUE_DATE_NOTE)}</p>
+    <p class="disclaimer" style="margin-top:8px">${esc(CYCLE_DISCLAIMER)}</p>
+  </div>`;
+}
+
 function screenProfile() {
   const p = store.parent;
+  /* A date field asks for a repaint, because the cards underneath it are
+     built from the date. The text fields deliberately do not, so typing
+     a name never repaints the screen out from under the cursor. */
+  const dateField = (label, key, help) => `
+    <div class="card flat" style="margin-bottom:8px">
+      <p class="eyebrow">${esc(label)}</p>
+      <input class="inp" type="date" data-parentdate="${esc(key)}" id="pd_${esc(key)}"
+        value="${esc(p[key] || '')}" style="margin-top:7px;width:100%" />
+      ${help ? `<p class="tiny" style="margin-top:6px">${esc(help)}</p>` : ''}
+    </div>`;
   const field = (label, key, type, placeholder, help) => `
     <div class="card flat" style="margin-bottom:8px">
       <p class="eyebrow">${esc(label)}</p>
@@ -20232,6 +20583,11 @@ function screenProfile() {
     ${field('Your name', 'name', 'text', 'Richelle', '')}
     ${field('Username', 'username', 'text', 'richelle_s', 'This is what other parents see in the community, not your real name.')}
     ${field('Email', 'email', 'email', 'you@example.com', '')}
+    ${dateField('Your birthday', 'birthday',
+      'So the app can say it back to you on the day, the same as it does for the children.')}
+    ${dateField('First day of your last period', 'lastPeriod',
+      'Day one is the first day of real bleeding, not spotting the day before. Only you ever see this.')}
+    ${cycleCard()}
 
     <button class="lrow" data-auth="signout" style="align-items:center">
       <span class="licon">${icon('back', 17, 'var(--deep)')}</span>
@@ -20560,7 +20916,8 @@ async function doSignOut() {
        them, so this is a clear rather than a loss. */
     store.children = [];
     store.activeChildId = null;
-    store.parent = { name: '', username: '', email: '' };
+    store.parent = { name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '' };
+    store.birthdaySeen = {};
     store.bagChecked = [];
     store.deletedChildIds = [];
     store.parentUpdatedAt = 0;
@@ -21656,6 +22013,9 @@ function parentPayload() {
   return JSON.parse(JSON.stringify({
     parent: store.parent,
     bagChecked: store.bagChecked || [],
+    /* Carried so the greeting that already appeared on her phone does
+       not appear again on the laptop the same afternoon. */
+    birthdaySeen: store.birthdaySeen || {},
     deletedChildIds: store.deletedChildIds || [],
     notDuplicates: store.notDuplicates || [],
     updatedAt: store.parentUpdatedAt || 0,
@@ -21824,8 +22184,10 @@ async function cloudFirstSync() {
   const localPt = Number(store.parentUpdatedAt) || 0;
   const remotePt = Number(remoteUser && remoteUser.updatedAt) || 0;
   if (remoteUser && remotePt > localPt) {
-    store.parent = Object.assign({ name: '', username: '', email: '' }, remoteUser.parent || {});
+    store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '' }, remoteUser.parent || {});
     store.bagChecked = Array.isArray(remoteUser.bagChecked) ? remoteUser.bagChecked : [];
+    store.birthdaySeen = (remoteUser.birthdaySeen && typeof remoteUser.birthdaySeen === 'object')
+      ? remoteUser.birthdaySeen : {};
     store.parentUpdatedAt = remotePt;
   }
 
@@ -22251,6 +22613,7 @@ function combineDuplicateChildren(anyId) {
   goneIds.forEach((id) => {
     if (store.deletedChildIds.indexOf(id) === -1) store.deletedChildIds.push(id);
     cloudDeleteChild(id);
+    willowForget(id);
   });
   if (!store.children.some((k) => k.id === store.activeChildId)) selectChild(merged.id);
   flushStore();
@@ -22297,9 +22660,9 @@ function markNotDuplicates(anyId) {
 
 const willow = {
   open: false,
-  busy: false,
+  busyKey: '',      // the child whose question is in flight, '' when idle
   input: '',
-  messages: [],     // { who: 'you' | 'willow', text, sources: [], kind }
+  threads: {},      // childId -> [ { who: 'you' | 'willow', text, sources: [], kind } ]
   ai: null,         // the model handle, once loaded
   loading: null,    // the in flight load promise
   ready: false,
@@ -22307,6 +22670,31 @@ const willow = {
   usedToday: 0,
   usedDate: '',
 };
+
+/* One conversation per child rather than one for the whole app.
+   Everything else in here is scoped to the active child, and a single
+   shared thread meant switching from one kid to another carried the
+   first one's turns into the second one's questions: ask about
+   Hartlee's bedtime, switch to Stetson, ask "what about at naps", and
+   the model is still thinking about a twelve year old. The threads are
+   deliberately memory only. A conversation is a thing you are in the
+   middle of, not a record to keep, and the questions people ask her
+   are the last thing that should be sitting in a saved file. */
+function willowThreadKey() {
+  const k = activeChild();
+  return (k && k.id) ? String(k.id) : '_none';
+}
+
+function willowThread(key) {
+  const id = key || willowThreadKey();
+  if (!willow.threads[id]) willow.threads[id] = [];
+  return willow.threads[id];
+}
+
+/* A child who is gone takes her conversation with her. */
+function willowForget(id) {
+  if (id && willow.threads[String(id)]) delete willow.threads[String(id)];
+}
 
 function willowCountToday() {
   const today = todayKey();
@@ -22353,20 +22741,25 @@ function willowChildLine(c) {
   return bits.join(', ');
 }
 
-function willowSay(who, text, sources, kind) {
-  willow.messages.push({ who: who, text: text, sources: sources || [], kind: kind || '' });
+function willowSay(who, text, sources, kind, key) {
+  willowThread(key).push({ who: who, text: text, sources: sources || [], kind: kind || '' });
 }
 
 async function willowAsk(question) {
   const q = String(question || '').trim();
-  if (!q || willow.busy) return;
-  willowSay('you', q);
+  if (!q || willow.busyKey) return;
+  /* Pinned once, here. If she switches children while an answer is in
+     flight, the answer still belongs to the child who was asked about,
+     and it lands back in that thread rather than in front of a parent
+     who is now looking at somebody else. */
+  const key = willowThreadKey();
+  willowSay('you', q, [], '', key);
   willow.input = '';
 
   /* Gate one and two. No network, no model, no waiting. */
   const stop = willowStopReason(q);
   if (stop) {
-    willowSay('willow', '', [], stop);
+    willowSay('willow', '', [], stop, key);
     render();
     return;
   }
@@ -22374,12 +22767,12 @@ async function willowAsk(question) {
   if (willowCountToday() >= WILLOW_DAILY_LIMIT) {
     willowSay('willow', 'That is a lot of questions for one day, and I am going to stop here so this '
       + 'stays affordable to run. Everything in the app is still there to read, and I will be back '
-      + 'tomorrow.', [], 'limit');
+      + 'tomorrow.', [], 'limit', key);
     render();
     return;
   }
 
-  willow.busy = true;
+  willow.busyKey = key;
   render();
 
   const c = ctx();
@@ -22395,7 +22788,7 @@ async function willowAsk(question) {
        of what made her feel like a search box: every message used to
        arrive with no memory of the one before it, so a parent could not
        say "what about at naps?" and be understood. */
-    const history = willowHistory(willow.messages.slice(0, -1), 10);
+    const history = willowHistory(willowThread(key).slice(0, -1), 10);
     const chat = model.startChat({ history: history });
     const res = await chat.sendMessage(willowPrompt(q, hits.slice(0, 4), willowChildLine(c)));
     const raw = res && res.response && typeof res.response.text === 'function'
@@ -22410,7 +22803,7 @@ async function willowAsk(question) {
        than links to whatever happened to rank highest. */
     const used = split.ids.map((id) => byId[id]).filter(Boolean);
     willow.usedToday = willowCountToday() + 1;
-    willowSay('willow', split.body || WILLOW.failed, used);
+    willowSay('willow', split.body || WILLOW.failed, used, '', key);
   } catch (err) {
     /* Three failures, three different fixes, so they get three
        different sentences. Telling somebody to try again in a moment,
@@ -22422,9 +22815,9 @@ async function willowAsk(question) {
     else if (/api-not-enabled|not been used|SERVICE_DISABLED|403|permission/i.test(code)) message = WILLOW.notReady;
     else if (!willow.ready) message = WILLOW.notReady;
     else message = WILLOW.failed;
-    willowSay('willow', message, [], 'failed');
+    willowSay('willow', message, [], 'failed', key);
   }
-  willow.busy = false;
+  willow.busyKey = '';
   render();
 }
 
@@ -22530,9 +22923,113 @@ function willowDosingBlock() {
   </div>`;
 }
 
+/* -----------------------------------------------------------------
+   BIRTHDAYS
+
+   An app that knows every date in the house should be the thing that
+   remembers. It appears once on the day, for the parent and for each
+   child whose birthday it is, and then it gets out of the way. Not a
+   banner that sits there all day, not a thing you have to hunt for,
+   and not a thing that comes back every time the app is opened between
+   the first feed and bedtime.
+
+   The parent's card is written differently from a child's on purpose.
+   Everybody says happy birthday to the kids.
+   ----------------------------------------------------------------- */
+
+/* Whose birthday is today, and who has not been wished yet this year. */
+function birthdaysToday() {
+  const out = [];
+  const p = store.parent || {};
+  const seen = store.birthdaySeen || {};
+
+  if (p.birthday && isBirthdayToday(p.birthday)) {
+    const key = birthdaySeenKey('parent');
+    if (!seen[key]) {
+      out.push({
+        key: key,
+        isParent: true,
+        name: (p.name || '').split(' ')[0] || '',
+        years: yearsOldToday(p.birthday),
+      });
+    }
+  }
+
+  (store.children || []).forEach((k) => {
+    if (!k.birthday || !isBirthdayToday(k.birthday)) return;
+    const key = birthdaySeenKey(k.id);
+    if (seen[key]) return;
+    out.push({
+      key: key,
+      isParent: false,
+      id: k.id,
+      name: k.name || 'your little one',
+      years: yearsOldToday(k.birthday),
+    });
+  });
+
+  return out;
+}
+
+/* Seeded on the date so the line holds still if the screen repaints
+   while she is reading it. */
+function birthdayLine(who) {
+  const lines = who.isParent ? BIRTHDAY_PARENT_LINES : BIRTHDAY_CHILD_LINES;
+  const seed = String(who.key) + String(who.name);
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  return lines[h % lines.length];
+}
+
+function birthdayAgeLine(who) {
+  if (who.years === null || who.years === undefined) return '';
+  if (who.isParent) return 'Another year around.';
+  if (who.years === 0) return 'One whole year old today.';
+  return birthdayOrdinal(who.years) + ' birthday.';
+}
+
+function birthdayOverlay() {
+  if (!hasAccess()) return '';
+  const list = birthdaysToday();
+  if (!list.length) return '';
+
+  const card = (who) => `
+    <div class="bdayone">
+      <span class="bdayleaf">${icon('leaf', 26, '#fff')}</span>
+      <p class="bdayname">Happy birthday${who.name ? ', ' + esc(who.name) : ''}</p>
+      ${birthdayAgeLine(who) ? `<p class="bdayage">${esc(birthdayAgeLine(who))}</p>` : ''}
+      <p class="bdayline">${esc(birthdayLine(who))}</p>
+    </div>`;
+
+  return `
+  <div class="bdaywrap" role="dialog" aria-label="Birthday">
+    <div class="bdaycard">
+      ${list.map(card).join('<div class="bdayrule"></div>')}
+      <button class="bdaybtn" data-bday="close">
+        ${list.length > 1 ? 'Lovely, thank you' : 'Thank you'}
+      </button>
+      ${list.some((w) => !w.isParent) ? `
+        <button class="bdaylater" data-bday="open" data-id="${esc((list.find((w) => !w.isParent) || {}).id || '')}">
+          Open their profile
+        </button>` : ''}
+    </div>
+  </div>`;
+}
+
+/* Dismissing marks everybody shown, so a house with twins does not get
+   the card again an hour later for the second one. */
+function birthdayDismiss() {
+  if (!store.birthdaySeen) store.birthdaySeen = {};
+  birthdaysToday().forEach((w) => { store.birthdaySeen[w.key] = true; });
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+}
+
 function willowPanel() {
   if (!willow.open) return '';
-  const msgs = willow.messages;
+  const key = willowThreadKey();
+  const msgs = willowThread(key);
+  const thinking = willow.busyKey === key;
   return `
   <div class="willowpanel" role="dialog" aria-label="Ask ${esc(WILLOW.name)}">
     <div class="whead">
@@ -22572,14 +23069,14 @@ function willowPanel() {
         </div>`;
       }).join('')}
 
-      ${willow.busy ? `<div class="wmsg her thinking"><span></span><span></span><span></span></div>` : ''}
+      ${thinking ? `<div class="wmsg her thinking"><span></span><span></span><span></span></div>` : ''}
     </div>
 
     <div class="wfoot">
       <input id="willowIn" class="winput" type="text" autocomplete="off"
         placeholder="Ask ${esc(WILLOW.name)} something" value="${esc(willow.input)}"
-        ${willow.busy ? 'disabled' : ''} />
-      <button class="wsend" data-willow="send" aria-label="Send" ${willow.busy ? 'disabled' : ''}>
+        ${thinking ? 'disabled' : ''} />
+      <button class="wsend" data-willow="send" aria-label="Send" ${thinking ? 'disabled' : ''}>
         ${icon('chev', 17, '#fff')}
       </button>
     </div>
