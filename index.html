@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-13 18:24">
+<meta name="rsg-build" content="2026-09-13 18:57">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -546,7 +546,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-13 18:24';
+const BUILD_STAMP = '2026-09-13 18:57';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -14410,67 +14410,91 @@ function homeAloneIsRelevant(months) {
 
 const WILLOW = {
   name: 'Willow',
-  tagline: 'Ask me anything in here',
+  tagline: 'Here whenever you need me',
   greeting:
-    'Hi, I am Willow. I can look things up in Ready Set Grow for you and explain what it says. ' +
-    'Ask me the way you would ask a friend.',
+    'Hi, I am Willow. Ask me anything, or just tell me how it is going. I know this app inside out ' +
+    'and I know a fair bit about children besides, and some nights the useful thing is not ' +
+    'information at all.',
 
-  /* Said once, in the panel, rather than appended to every answer where
-     it would become wallpaper. */
   standing:
-    'I only answer from what is written in this app, and I show you where each answer came from. ' +
-    'I am not a doctor and I cannot see your child. If something feels wrong, your pediatrician ' +
-    'wants you to call.',
+    'I am not a doctor or a therapist and I cannot see your child, so anything that needs examining ' +
+    'needs a real person. Everything else, I am here for.',
 
-  /* Shown before she has been set up, so the app never presents a
-     button that quietly does nothing. */
   notReady:
-    'Willow is not switched on yet. Everything else in the app works as normal, and the search on ' +
-    'the Right Now tab finds the same entries she would.',
+    'Willow is not switched on yet. There is one setting left to turn on in Firebase, App Check, and ' +
+    'until then she cannot answer. Everything else in the app works exactly as normal.',
 
-  /* When retrieval comes back empty. She is not allowed to fill the
-     silence with something plausible. */
-  noMatch:
-    'I could not find anything in the app about that, and I would rather tell you that than make ' +
-    'something up. Try saying it a different way, or ask your pediatrician. If something is ' +
-    'happening right now, the Right Now tab is the fastest way in.',
-
-  /* A model can fail, a network can drop. Neither should look like an
-     answer. */
   failed:
     'Something went wrong reaching me just then. Nothing is lost, try again in a moment. If it is ' +
     'urgent, do not wait on me: the Right Now tab works with no connection at all.',
 
   starters: [
-    'Why won’t she sleep through the night',
+    'I can’t get him to listen and I am so tired',
+    'How do I start sleep training',
+    'She bites at daycare',
     'How many wet diapers should there be',
-    'What are retractions',
-    'How much formula for his weight',
-    'He hits when he is angry',
     'I feel like I am failing at this',
+    'What do I say about the divorce',
   ],
 };
 
-/* The rules, written as instructions to the model. Every line here is
-   a rule that already governs the rest of the app. */
+/* THE RULES.
+ *
+ * The first version of these said "answer only from the entries given
+ * to you". It was safe and it was useless. A mother typed "i cant get
+ * my son to listen and i feel frustrated" and what she needed was
+ * somebody to say that sounds exhausting, followed by two things to try
+ * tonight. What a retrieval-only assistant does with that is hand back
+ * three article links, which is what she could already do herself.
+ *
+ * So Willow knows things now. The app's content is her best material,
+ * because it is sourced and written for an exact age, and she reaches
+ * for it first and says when she has. But she is allowed to be useful
+ * past the edge of it, the way any knowledgeable friend would be.
+ *
+ * What did not move is the line underneath: she does not diagnose, she
+ * does not dose, she never talks anybody out of getting care, and
+ * emergencies never reach her at all. Those are not stylistic. Those
+ * are the difference between a helpful app and a dangerous one.
+ */
 const WILLOW_RULES = [
-  'You are Willow, the assistant inside a parenting app called Ready Set Grow. You are warm, calm and plain spoken, like a friend who happens to know this material well.',
+  'You are Willow, inside a parenting app called Ready Set Grow. You are talking with a parent, often a tired one, sometimes at three in the morning.',
   '',
-  'THE ONE RULE THAT OUTRANKS EVERYTHING: answer only from the entries given to you below. They are the app’s own written content. If they do not cover what was asked, say so plainly and suggest the pediatrician. Never answer from your own knowledge, never guess, never fill a gap with something that sounds right.',
+  'WHO YOU ARE TO THEM',
+  'You are the friend who happens to know this material. Warm, steady, never breezy, never clinical. You take people seriously. You do not perform sympathy and you do not lecture.',
+  'Read what is actually being asked for before you answer:',
+  '- When somebody is upset, worn out, or ashamed, respond to the person first. One or two lines that land, not a paragraph of validation. Then something to actually do, because being handed only feelings when you asked for help is its own kind of dismissal.',
+  '- When somebody wants a method, such as sleep, feeding, potty training or behaviour, be specific and practical. Steps, numbers, what to expect, how long it usually takes. Vague encouragement is useless here.',
+  '- When somebody asks something medical, be careful and concrete about what is normal, what is worth watching, and what means call today. Never leave the last part out.',
+  '- When somebody is just chatting or thinking out loud, talk with them like a person. Not everything needs advice.',
   '',
-  'Never diagnose. Say "some children" and "one possibility is". Never say "your child has" or name a condition as a fact about this child.',
-  'Never give a medication dose or amount. Dose comes from a pediatrician or the label. You may talk about timing.',
-  'Never soften or leave out a reason to call a doctor. If an entry says call, you say call, and you say it early rather than at the end.',
-  'Never contradict the entries, and never present something as more settled than the entry does. If an entry labels something as a parent tip rather than studied, keep that label.',
-  'You cannot see the child and you are not a clinician. Do not imply otherwise.',
+  'THE LINE YOU DO NOT CROSS',
+  'You are not a doctor, a therapist, a lawyer or a dietitian, and you never imply you are.',
+  'Never diagnose. Never say a child has a condition. You may say what some children do, and what is worth raising with a professional.',
+  'Never give a medication dose, amount or concentration, for a child or an adult. Dose comes from a pediatrician or the label. Timing and intervals are fine.',
+  'Never talk somebody out of seeking care, and never soften a reason to call a doctor. If something warrants a call, say so early rather than at the end.',
+  'Never promise an outcome. No "this will work" or "she will grow out of it".',
+  'Do not give legal or financial advice. You can talk about what a conversation with a lawyer might cover.',
+  'You support, you do not treat. If somebody is describing something that needs real help, such as ongoing depression, an eating disorder, abuse or addiction, say plainly that this deserves a professional and keep being kind rather than going quiet on them.',
+  'If you are not sure about something, say you are not sure. Never invent a study, a statistic, a guideline or a source.',
   '',
-  'HOW TO WRITE: short. Two or three sentences, then a few lines if they help. Lead with the answer rather than a preamble. Use the child’s name if you are given it. Do not open by restating the question. Do not sign off.',
+  'USING THE APP',
+  'Notes from the app may be attached to a question. They are written for an exact age and they carry real sources, so prefer them when they fit, and name the ones you used on the SOURCES line so the parent can tap through.',
+  'When the notes do not cover it, answer anyway from what you know. Do not send somebody away empty handed just because this app has not written that page yet.',
+  'Never contradict a note, and never present something as more settled than the note does.',
+  '',
+  'HOW YOU WRITE',
+  'Short. Usually three or four sentences, or a few lines when steps genuinely help. Longer only when somebody asks for detail.',
+  'Lead with the answer or the acknowledgement. Never open by restating the question.',
+  'Plain words. No headings, no bullet symbols, no bold. Write it the way you would say it.',
   'Never use dashes as punctuation. Use commas, or full stops, or the words "such as".',
-  'Do not add a disclaimer at the end. The app shows one already.',
+  'Use the child’s name and age when you have them.',
+  'Do not add a disclaimer at the end. The app already shows one. Do not sign off.',
+  'You remember this conversation. Refer back to it rather than asking again.',
   '',
-  'FINISH every reply with a line on its own in exactly this form, listing the entries you actually used:',
+  'FINISH every reply with a line on its own, exactly this form:',
   'SOURCES: id1, id2',
-  'Use the ids exactly as given. If you used none because nothing matched, write SOURCES: none',
+  'List only the note ids you actually drew on. If you did not use any, write SOURCES: none. Never invent an id.',
 ];
 
 /** The system instruction, assembled. */
@@ -14479,24 +14503,48 @@ function willowSystemPrompt() {
 }
 
 /**
- * The turn prompt: who the child is, what was asked, and the entries
- * she is allowed to use. Entry text is trimmed, because a whole care
- * topic is longer than the answer needs and every word costs something.
+ * One turn. The question, who the child is, and whatever the app had
+ * that might help. The notes are offered rather than imposed: a
+ * question about a friendship problem at school should not be answered
+ * out of a reflux entry just because reflux was the closest match.
  */
 function willowPrompt(question, entries, childLine) {
   const parts = [];
-  if (childLine) parts.push('About the child: ' + childLine);
-  parts.push('The parent asked: ' + String(question).trim());
-  parts.push('');
-  parts.push('ENTRIES YOU MAY USE. Nothing else exists.');
-  entries.forEach((e) => {
+  parts.push(String(question).trim());
+  if (childLine) {
     parts.push('');
-    parts.push('[id: ' + e.id + '] ' + e.kind + ': ' + e.title);
-    const body = String(e.text || '').replace(/\s+/g, ' ').trim();
-    parts.push(body.length > 1400 ? body.slice(0, 1400) + '...' : body);
-  });
-  if (!entries.length) parts.push('(nothing matched, so say so)');
+    parts.push('(Who we are talking about: ' + childLine + ')');
+  }
+  if (entries && entries.length) {
+    parts.push('');
+    parts.push('(Notes from this app that may or may not be relevant. Use the ones that fit and name '
+      + 'them on the SOURCES line. Ignore the rest.)');
+    entries.forEach((e) => {
+      parts.push('');
+      parts.push('[id: ' + e.id + '] ' + e.kind + ': ' + e.title);
+      const body = String(e.text || '').replace(/\s+/g, ' ').trim();
+      parts.push(body.length > 1100 ? body.slice(0, 1100) + '...' : body);
+    });
+  }
   return parts.join('\n');
+}
+
+/**
+ * The conversation so far, in the shape the model expects. Capped,
+ * because every earlier turn is paid for again on the next one, and
+ * because a parent asking about sleep at midnight does not need
+ * yesterday's potty training question in the room.
+ */
+function willowHistory(messages, limit) {
+  const out = [];
+  const usable = (messages || []).filter((m) => m.text && !m.kind);
+  usable.slice(-(limit || 10)).forEach((m) => {
+    out.push({ role: m.who === 'you' ? 'user' : 'model', parts: [{ text: m.text }] });
+  });
+  /* The model requires the history to begin with the parent, not with
+     Willow, or it refuses the whole request. */
+  while (out.length && out[0].role !== 'user') out.shift();
+  return out;
 }
 
 /* Words that must never reach a model, checked on the device. The
@@ -14543,7 +14591,7 @@ const WILLOW_MODEL = 'gemini-3.5-flash-lite';
 
 /* A cap, per device per day. One person leaning on it hard should not
    be able to run up a bill, and nobody with a real question hits it. */
-const WILLOW_DAILY_LIMIT = 40;
+const WILLOW_DAILY_LIMIT = 60;
 
 
 /* ===== src/data/postpartum.js ===== */
@@ -15778,6 +15826,29 @@ const FIREBASE_CONFIG = {
    but this is the one line to put back if either of those ever misbehave
    after a release. */
 const FIREBASE_SDK_VERSION = '12.19.0';
+
+/* ------------------------------------------------------------------
+ * APP CHECK
+ *
+ * App Check is what proves a request came from this website rather than
+ * from somebody who read the config above and decided to spend the AI
+ * quota. Firebase already enforces it on AI Logic, which is why Willow
+ * returns a 401 until this is filled in, and from 2 November 2026 it is
+ * required rather than merely enforced by default.
+ *
+ * The value below is a reCAPTCHA Enterprise SITE key. Site keys are
+ * public by design, the same as the API key above: it is the half that
+ * goes in the page. The secret half never leaves Google.
+ *
+ * To get one: Firebase console, App Check, Apps, Register on the web
+ * app, choose reCAPTCHA Enterprise, and it walks you through creating
+ * the key. Paste it here, rebuild, and Willow starts answering.
+ *
+ * Leave it empty and the app still works completely. App Check is
+ * simply skipped, which means everything except Willow carries on as
+ * normal rather than the whole site failing over a missing key.
+ * ------------------------------------------------------------------ */
+const RECAPTCHA_SITE_KEY = '';
 
 
 </script>
@@ -20278,6 +20349,24 @@ function loadFirebase() {
     const appMod = await import(`https://www.gstatic.com/firebasejs/${v}/firebase-app.js`);
     const authMod = await import(`https://www.gstatic.com/firebasejs/${v}/firebase-auth.js`);
     const app = appMod.initializeApp(FIREBASE_CONFIG);
+
+    /* App Check, if there is a key to do it with. It has to be set up
+       before anything else touches the app, which is why it lives here
+       rather than next to Willow, who is the only part that currently
+       needs it. Wrapped because a bad or missing key must cost the site
+       Willow, not sign in and not syncing. */
+    if (typeof RECAPTCHA_SITE_KEY === 'string' && RECAPTCHA_SITE_KEY) {
+      try {
+        const acMod = await import(`https://www.gstatic.com/firebasejs/${v}/firebase-app-check.js`);
+        acMod.initializeAppCheck(app, {
+          provider: new acMod.ReCaptchaEnterpriseProvider(RECAPTCHA_SITE_KEY),
+          isTokenAutoRefreshEnabled: true,
+        });
+      } catch (err) {
+        /* Carry on unprotected rather than not at all. */
+      }
+    }
+
     const fbAuth = authMod.getAuth(app);
     authMod.onAuthStateChanged(fbAuth, (u) => {
       auth.user = u;
@@ -22201,17 +22290,21 @@ async function willowAsk(question) {
   render();
 
   const c = ctx();
+  /* Retrieval is now a suggestion rather than a gate. Nothing matching
+     used to end the conversation, which is exactly the wrong answer to
+     "I feel like I am failing at this", a sentence no search index has
+     ever had a good entry for. */
   const hits = askSearch(q, c).map((r) => r.item);
-  if (!hits.length) {
-    willow.busy = false;
-    willowSay('willow', WILLOW.noMatch, [], 'nomatch');
-    render();
-    return;
-  }
 
   try {
     const model = await willowLoad();
-    const res = await model.generateContent(willowPrompt(q, hits.slice(0, 5), willowChildLine(c)));
+    /* A chat rather than a series of unrelated questions. This is most
+       of what made her feel like a search box: every message used to
+       arrive with no memory of the one before it, so a parent could not
+       say "what about at naps?" and be understood. */
+    const history = willowHistory(willow.messages.slice(0, -1), 10);
+    const chat = model.startChat({ history: history });
+    const res = await chat.sendMessage(willowPrompt(q, hits.slice(0, 4), willowChildLine(c)));
     const raw = res && res.response && typeof res.response.text === 'function'
       ? res.response.text() : String(res || '');
     const split = willowSplitSources(raw);
@@ -22219,8 +22312,10 @@ async function willowAsk(question) {
        the model wrote on that line. */
     const byId = {};
     hits.forEach((h) => { byId[h.id] = h; });
-    let used = split.ids.map((id) => byId[id]).filter(Boolean);
-    if (!used.length) used = hits.slice(0, 2);
+    /* Only what she said she used, and only if it was really offered.
+       An answer she wrote from her own knowledge gets no links, rather
+       than links to whatever happened to rank highest. */
+    const used = split.ids.map((id) => byId[id]).filter(Boolean);
     willow.usedToday = willowCountToday() + 1;
     willowSay('willow', split.body || WILLOW.failed, used);
   } catch (err) {
@@ -22323,7 +22418,7 @@ function willowPanel() {
         if (m.kind === 'crisis') return willowCrisisBlock();
         return `
         <div class="wmsg her">
-          ${esc(m.text).replace(/\n{2,}/g, '</p><p>').replace(/^/, '<p>').replace(/$/, '</p>')}
+          ${'<p>' + esc(m.text).replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>') + '</p>'}
           ${m.sources && m.sources.length ? `
             <div class="wsrcs">
               <span class="tiny" style="display:block;margin-bottom:5px">Where this came from</span>
