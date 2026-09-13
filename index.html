@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-13 20:53">
+<meta name="rsg-build" content="2026-09-13 21:28">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -597,7 +597,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-13 20:53';
+const BUILD_STAMP = '2026-09-13 21:28';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -23230,7 +23230,10 @@ function bdayStartArt() {
     const r = rand(17, 27);
     balloons.push({
       x: rand(r + 8, W - r - 8),
-      y: rand(-H * 1.1, H * 0.55),
+      /* Balloons start below the fold and rise, which is what balloons
+         do. A few begin already on screen so the card opens with some
+         of them mid climb rather than with an empty sky. */
+      y: rand(H * 0.25, H * 2.1),
       r: r,
       vy: rand(26, 48),
       sway: rand(11, 26),
@@ -23259,10 +23262,18 @@ function bdayStartArt() {
     ctxc.globalAlpha = fade;
 
     balloons.forEach((b) => {
-      b.y += b.vy * dt;
+      /* Up, while the confetti comes down. */
+      b.y -= b.vy * dt;
       b.phase += b.speed * dt;
       const bx = b.x + Math.sin(b.phase) * b.sway;
-      if (b.y - b.r > H) { b.y = -b.r - rand(0, H * 0.6); b.x = rand(b.r + 8, W - b.r - 8); }
+      /* Once the string has cleared the top, send it back below with a
+         new colour and a new lane, so the stream never looks like the
+         same eight balloons on a loop. */
+      if (b.y + b.r * 3 < 0) {
+        b.y = H + b.r + rand(0, H * 0.7);
+        b.x = rand(b.r + 8, W - b.r - 8);
+        b.c = BDAY_COLORS[Math.floor(Math.random() * BDAY_COLORS.length)];
+      }
 
       /* The string first, so the balloon sits on top of where it joins. */
       ctxc.beginPath();
