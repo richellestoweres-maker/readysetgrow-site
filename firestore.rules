@@ -1,0 +1,129 @@
+rules_version = '2';
+
+/*
+ * Ready Set Grow, Firestore security rules
+ * ------------------------------------------------------------------
+ * The rule that matters most, stated once so it is impossible to miss:
+ *
+ *   A child's profile, milestones, logs and support lenses are readable
+ *   only by the parent account that owns them. There is no path in this
+ *   file that lets one account read another account's children, and
+ *   there never should be.
+ *
+ * Community content is deliberately kept somewhere else entirely, at the
+ * top level, written against a username rather than a child. Nothing a
+ * parent posts can reach back into a child's record, and nothing about a
+ * child can leak sideways into a public room. That separation is
+ * structural rather than a promise.
+ *
+ * Everything not named below is denied. Firestore denies by default, and
+ * the final block says so out loud for whoever reads this next.
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isAuthor() {
+      return signedIn() && request.resource.data.authorUid == request.auth.uid;
+    }
+
+    function ownsExisting() {
+      return signedIn() && resource.data.authorUid == request.auth.uid;
+    }
+
+    /* ---------------------------------------------------------------
+     * THE PARENT, AND EVERY CHILD UNDERNEATH THEM
+     * One account, one subtree, nobody else. The nested match is what
+     * covers children, their logs and their milestones, because rules
+     * do not cascade on their own.
+     * --------------------------------------------------------------- */
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+
+      match /{document=**} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+
+    /* ---------------------------------------------------------------
+     * USERNAMES
+     * One document per taken username, so two parents cannot claim the
+     * same one. Readable so the signup screen can check availability,
+     * and claimable only for yourself.
+     * --------------------------------------------------------------- */
+    match /usernames/{username} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && username.size() >= 3
+        && username.size() <= 20;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+      allow update: if false;
+    }
+
+    /* ---------------------------------------------------------------
+     * COMMUNITY
+     * Any signed in parent can read a room. You may only write as
+     * yourself, you may only edit or delete your own, and a post may
+     * not carry a child id, which is the structural half of the promise
+     * that child records never become community content.
+     * --------------------------------------------------------------- */
+    match /community/{roomId}/posts/{postId} {
+      allow read: if signedIn();
+
+      allow create: if isAuthor()
+        && request.resource.data.body is string
+        && request.resource.data.body.size() > 0
+        && request.resource.data.body.size() <= 4000
+        && !('childId' in request.resource.data)
+        && !('birthday' in request.resource.data);
+
+      allow update: if ownsExisting()
+        && request.resource.data.authorUid == resource.data.authorUid
+        && request.resource.data.body.size() <= 4000;
+
+      allow delete: if ownsExisting();
+
+      match /replies/{replyId} {
+        allow read: if signedIn();
+        allow create: if isAuthor()
+          && request.resource.data.body is string
+          && request.resource.data.body.size() > 0
+          && request.resource.data.body.size() <= 2000
+          && !('childId' in request.resource.data);
+        allow update: if ownsExisting()
+          && request.resource.data.authorUid == resource.data.authorUid;
+        allow delete: if ownsExisting();
+      }
+    }
+
+    /* ---------------------------------------------------------------
+     * REPORTS
+     * Reports go in and nothing comes out. A person who reports a post
+     * must not be able to read other people's reports, and must not be
+     * able to edit their own after the fact.
+     * --------------------------------------------------------------- */
+    match /reports/{reportId} {
+      allow create: if signedIn()
+        && request.resource.data.reporterUid == request.auth.uid;
+      allow read, update, delete: if false;
+    }
+
+    /* ---------------------------------------------------------------
+     * EVERYTHING ELSE
+     * Firestore already denies anything not explicitly allowed. This is
+     * here so that is obvious rather than assumed.
+     * --------------------------------------------------------------- */
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

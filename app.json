@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Ready Set Grow",
+    "slug": "ready-set-grow",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#F7F5EF",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#F7F5EF"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.readysetgrow.app"
+    },
+    "android": {
+      "package": "com.readysetgrow.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#F7F5EF"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
