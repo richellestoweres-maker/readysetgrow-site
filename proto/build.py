@@ -59,6 +59,7 @@ order = [
     ('postpartum',          SRC/'data/postpartum.js'),
     ('communityWisdom',     SRC/'data/communityWisdom.js'),
     ('vaccines',            SRC/'data/vaccines.js'),
+    ('checkins',            SRC/'data/checkins.js'),
     ('cycle',               SRC/'data/cycle.js'),
     ('firebaseConfig',      SRC/'data/firebaseConfig.js'),
 ]

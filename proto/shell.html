@@ -263,6 +263,38 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .tab .dot{width:18px;height:2.5px;border-radius:2px;background:transparent;margin-top:1px}
 .tab[aria-selected="true"] .dot{background:var(--deep)}
 
+/* THE DAILY CHECK IN. */
+.cicard{border:1px solid var(--line)}
+.cirow{padding:11px 0;border-top:1px solid rgba(0,0,0,.055)}
+.cirow:first-of-type{border-top:0}
+.ciq{font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.35}
+.cibtns{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.cib{
+  flex:1 1 96px;min-width:0;font:inherit;font-size:12px;font-weight:600;line-height:1.3;
+  background:var(--surface);border:1px solid var(--line);color:var(--muted);
+  border-radius:11px;padding:9px 8px;cursor:pointer;text-align:center;
+}
+.cib:active{transform:translateY(1px)}
+
+.cirow.done{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.cirow-l{font-size:12.5px;font-weight:600;color:var(--ink);width:112px;flex:none}
+.cipill{
+  display:inline-block;font-size:11.5px;font-weight:600;
+  border-radius:999px;padding:4px 10px;line-height:1.3;
+}
+
+.cistrip{display:inline-flex;gap:3px;align-items:center;margin-left:auto}
+.cidot{width:9px;height:14px;border-radius:3px;background:var(--sage);display:block}
+.cidot.none{background:rgba(0,0,0,.07)}
+
+.cibar{display:flex;gap:2px;height:9px;border-radius:5px;overflow:hidden;background:rgba(0,0,0,.05)}
+.cibar i{display:block;min-width:4px}
+
+@media (max-width:430px){
+  .cirow-l{width:100%}
+  .cistrip{margin-left:0}
+}
+
 /* MILESTONES.
    A row that has been touched but not saved says so, so the screen
    never looks like it did something it has not done yet. */

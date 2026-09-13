@@ -557,6 +557,8 @@ function newChildRecord(name, birthday) {
        when he started. */
     statusDates: {},
     milestonesUpdatedAt: '',
+    /* One entry per day, keyed YYYY-MM-DD. See src/data/checkins.js. */
+    checkins: {},
     wakeTime: '06:30',
     napOverride: null,
     routineInclude: [],
@@ -595,6 +597,11 @@ const store = {
      things and then goes to answer the door should find them still
      waiting when she comes back, not gone. */
   msEdit: null,
+
+  /* Today's check in, before it is saved. Same shape and the same
+     reasoning as the milestone draft. */
+  ciEdit: null,
+  ciOpen: false,
 
   /* Parent scoped. These follow the mother, not any child. */
   bagChecked: [],
@@ -698,7 +705,7 @@ const state = {};
 });
 
 ['parent', 'children', 'activeChildId', 'bagChecked', 'birthdaySeen', 'profileWho',
- 'profileEdit', 'msEdit', 'pumpTab', 'pumpGoal',
+ 'profileEdit', 'msEdit', 'ciEdit', 'ciOpen', 'pumpTab', 'pumpGoal',
  'pumpProblem', 'flangeMm', 'ppTab', 'ppStage', 'askQuery', 'askAsked',
  'tab', 'view', 'undGroup', 'lensBand', 'feedTab', 'safetyTab',
  'logDraft', 'draftChildName', 'draftChildBday'].forEach((key) => {
@@ -727,6 +734,7 @@ function flushStore() {
       bagChecked: store.bagChecked,
       birthdaySeen: store.birthdaySeen,
       msEdit: store.msEdit,
+      ciEdit: store.ciEdit,
       hadSession: store.hadSession,
       guest: store.guest,
       deletedChildIds: store.deletedChildIds,
@@ -791,6 +799,8 @@ function loadStore() {
     store.profileEdit = null;
     store.msEdit = (saved.msEdit && typeof saved.msEdit === 'object' && saved.msEdit.childId)
       ? saved.msEdit : null;
+    store.ciEdit = (saved.ciEdit && typeof saved.ciEdit === 'object' && saved.ciEdit.childId)
+      ? saved.ciEdit : null;
   }
 
   if (saved && Array.isArray(saved.children) && saved.children.length) {
@@ -807,6 +817,7 @@ function loadStore() {
       statuses: k.statuses && typeof k.statuses === 'object' ? k.statuses : {},
       statusDates: k.statusDates && typeof k.statusDates === 'object' ? k.statusDates : {},
       milestonesUpdatedAt: k.milestonesUpdatedAt || '',
+      checkins: k.checkins && typeof k.checkins === 'object' ? k.checkins : {},
       routineInclude: Array.isArray(k.routineInclude) ? k.routineInclude : [],
       logs: Array.isArray(k.logs) ? k.logs : [],
       updatedAt: Number(k.updatedAt) || 0,
@@ -1383,6 +1394,30 @@ function tabList() {
 
 let lastFocus = { id: null, start: null, end: null };
 
+/* Which screen the last paint was of. Everything in this app repaints
+   the whole screen on every tap, which used to throw a parent back to
+   the top of the page each time she marked a milestone. Forty rows in,
+   that is maddening.
+
+   So: same screen, same scroll position. A different screen starts at
+   the top, which is what you want when you have just opened something.
+   The sub tab fields are in the key on purpose, because switching from
+   one tab of a screen to another really is new content and should
+   start at the beginning. */
+let lastRoute = null;
+
+function routeKey() {
+  const v = state.view;
+  return [
+    state.tab,
+    v ? v.type + ':' + v.id : '-',
+    store.activeChildId || '-',
+    store.profileWho || '-',
+    state.feedTab, state.safetyTab, state.ppTab, state.pumpTab,
+    state.undGroup, state.lensBand,
+  ].join('|');
+}
+
 function restoreFocus(id, start, end) {
   const useId = id || lastFocus.id;
   if (!useId) return;
@@ -1455,7 +1490,7 @@ function render() {
   /* Screens that only make sense inside one child. Reaching one with no
      child open sends you to the picker rather than to an empty screen. */
   const CHILD_SCOPED = ['milestones', 'activities', 'topics', 'understand', 'feeding',
-    'safety', 'plan', 'sleep', 'development'];
+    'safety', 'plan', 'sleep', 'development', 'checkins'];
   if (v && v.type === 'screen' && CHILD_SCOPED.indexOf(v.id) !== -1 && !activeChild()) {
     v = null; state.view = null; state.tab = 'home';
   }
@@ -1479,6 +1514,7 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'pumping') html = screenPumping();
   else if (v && v.type === 'screen' && v.id === 'postpartum') html = screenPostpartum(c);
   else if (v && v.type === 'screen' && v.id === 'pregHealth') html = screenPregHealth();
+  else if (v && v.type === 'screen' && v.id === 'checkins') html = screenCheckins(c);
   else if (v && v.type === 'screen' && v.id === 'addchild') html = screenAddChild();
   /* Every old link that said "profile" meant her own, so it still lands
      there rather than on a dead route. */
@@ -1546,7 +1582,12 @@ function render() {
      confetti starts here rather than inside the function that writes the
      markup. It leaves itself alone if it is already running. */
   if (bday) bdayStartArt(); else bdayStopArt();
-  screen.scrollTop = keepId ? keepScroll : 0;
+  /* Computed after every redirect above has had its say, so the key
+     describes the screen that was actually painted. */
+  const nowRoute = routeKey();
+  const sameRoute = nowRoute === lastRoute;
+  lastRoute = nowRoute;
+  screen.scrollTop = (keepId || sameRoute) ? keepScroll : 0;
 
   if (keepId) restoreFocus(keepId, keepStart, keepEnd);
 
@@ -1651,6 +1692,10 @@ function initControls() {
     }
     else if (e.target.matches('[data-editname]')) {
       if (store.profileEdit) store.profileEdit.values.name = e.target.value;
+    }
+    else if (e.target.matches('[data-cinote]')) {
+      const d = ciEnsureDraft();
+      if (d) { d.note = e.target.value; saveStore(); }
     }
 
     else if (e.target.matches('[data-childname]')) {
@@ -1760,7 +1805,7 @@ function initControls() {
   });
 
   document.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci]');
     if (!t) return;
 
     if (t.dataset.auth) {
@@ -1972,6 +2017,12 @@ function initControls() {
       msSet(t.dataset.ms, t.dataset.st);
     } else if (t.dataset.msave) {
       if (t.dataset.msave === 'save') msSave(); else msDiscard();
+    } else if (t.dataset.ci) {
+      const how = t.dataset.ci;
+      if (how === 'set') ciSet(t.dataset.row, t.dataset.val);
+      else if (how === 'save') ciSave();
+      else if (how === 'cancel') ciDiscard();
+      else if (how === 'open') { ciEnsureDraft(); store.ciOpen = true; flushStore(); }
     } else if (t.dataset.filter === 'setting') {
       actFilter.setting = actFilter.setting === t.dataset.val ? null : t.dataset.val;
     } else if (t.dataset.filter === 'mat') {
@@ -5456,6 +5507,353 @@ function topBar(markOnly) {
 
 
 /* -----------------------------------------------------------------
+   THE DAILY CHECK IN
+
+   She asked for this on the front screen: whatever support is turned
+   on for a child should check in with her every day, so she can see
+   how they are actually doing rather than trying to remember.
+
+   It follows the same rule as the milestones: taps go into a draft,
+   Save is what writes, and the draft survives putting the phone down.
+   Once today is saved the card folds down to what she answered, with
+   a strip of the last fortnight underneath, because the whole value of
+   doing this daily is being able to see the run.
+   ----------------------------------------------------------------- */
+
+function ciToday() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+    + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function ciDayBefore(key, back) {
+  const p = String(key).split('-');
+  const d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+  d.setDate(d.getDate() - back);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+    + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+/* The rows for whoever is open: the day itself, then one per support
+   lens they have turned on. */
+function ciRows() {
+  const k = activeChild();
+  if (!k) return [];
+  return checkinRows(getLenses(k.lenses || []));
+}
+
+function ciSaved(dayKey) {
+  const k = activeChild();
+  if (!k || !k.checkins) return null;
+  return k.checkins[dayKey || ciToday()] || null;
+}
+
+function ciDraft() {
+  const k = activeChild();
+  if (!k || !store.ciEdit || store.ciEdit.childId !== k.id) return null;
+  /* A draft left over from yesterday is yesterday's day, not today's,
+     and quietly saving it under today's date would be a lie. */
+  if (store.ciEdit.day !== ciToday()) return null;
+  return store.ciEdit;
+}
+
+function ciCurrent(rowId) {
+  const d = ciDraft();
+  if (d && Object.prototype.hasOwnProperty.call(d.answers, rowId)) return d.answers[rowId] || undefined;
+  const saved = ciSaved();
+  return saved ? saved.answers[rowId] : undefined;
+}
+
+function ciEnsureDraft() {
+  const k = activeChild();
+  if (!k) return null;
+  if (!store.ciEdit || store.ciEdit.childId !== k.id || store.ciEdit.day !== ciToday()) {
+    const saved = ciSaved();
+    store.ciEdit = {
+      childId: k.id,
+      day: ciToday(),
+      answers: {},
+      note: saved ? (saved.note || '') : '',
+    };
+  }
+  return store.ciEdit;
+}
+
+function ciSet(rowId, val) {
+  const d = ciEnsureDraft();
+  if (!d) return;
+  const cur = ciCurrent(rowId);
+  d.answers[rowId] = cur === val ? '' : val;
+  store.ciOpen = true;
+  flushStore();
+}
+
+function ciChangeCount() {
+  const d = ciDraft();
+  if (!d) return 0;
+  const saved = ciSaved();
+  let n = 0;
+  Object.keys(d.answers).forEach((id) => {
+    const was = saved ? (saved.answers[id] || '') : '';
+    if ((d.answers[id] || '') !== was) n++;
+  });
+  if ((d.note || '') !== (saved ? (saved.note || '') : '')) n++;
+  return n;
+}
+
+function ciSave() {
+  const d = ciDraft();
+  const k = activeChild();
+  if (!d || !k) return;
+  const day = ciToday();
+  if (!k.checkins) k.checkins = {};
+  const prev = k.checkins[day] || { answers: {}, note: '' };
+  const answers = Object.assign({}, prev.answers);
+  Object.keys(d.answers).forEach((id) => {
+    if (d.answers[id]) answers[id] = d.answers[id];
+    else delete answers[id];
+  });
+
+  /* An empty answer set with an empty note is not a check in, it is a
+     day she opened the card and changed her mind. Do not record it. */
+  const note = String(d.note || '').trim();
+  if (!Object.keys(answers).length && !note) delete k.checkins[day];
+  else k.checkins[day] = { answers: answers, note: note, at: Date.now() };
+
+  ciTrim(k);
+  k.updatedAt = Date.now();
+  store.ciEdit = null;
+  store.ciOpen = false;
+  flushStore();
+}
+
+function ciDiscard() {
+  store.ciEdit = null;
+  store.ciOpen = false;
+  flushStore();
+}
+
+/* Half a year is plenty to see a season in, and it keeps the record
+   small enough to sync without anybody noticing. */
+function ciTrim(k) {
+  if (!k || !k.checkins) return;
+  const keys = Object.keys(k.checkins).sort();
+  const cutoff = ciDayBefore(ciToday(), CHECKIN_KEEP_DAYS);
+  keys.forEach((day) => { if (day < cutoff) delete k.checkins[day]; });
+}
+
+/* How many days in a row up to and including today, so the card can
+   say something true rather than nagging. */
+function ciStreak() {
+  const k = activeChild();
+  if (!k || !k.checkins) return 0;
+  let n = 0;
+  let day = ciToday();
+  while (k.checkins[day]) { n++; day = ciDayBefore(day, 1); }
+  return n;
+}
+
+/* The fortnight strip. Oldest on the left, today on the right, one
+   square per day, empty where nothing was recorded. */
+function ciStrip(rowId, days) {
+  const k = activeChild();
+  if (!k) return '';
+  const n = days || CHECKIN_STRIP_DAYS;
+  const cells = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const day = ciDayBefore(ciToday(), i);
+    const entry = k.checkins ? k.checkins[day] : null;
+    const val = entry ? entry.answers[rowId] : null;
+    const sc = val ? getCheckinScale(val) : null;
+    cells.push(`<span class="cidot${sc ? '' : ' none'}"
+      style="${sc ? 'background:' + sc.color : ''}"
+      title="${esc(cycleDateLabel(day) + (sc ? ', ' + sc.label.toLowerCase() : ', nothing recorded'))}"></span>`);
+  }
+  return `<span class="cistrip">${cells.join('')}</span>`;
+}
+
+/* The card itself. Two states: asking, and folded down to what she
+   said. She can always reopen it, because a day can look different at
+   four in the afternoon than it did at nine. */
+function checkinCard() {
+  const k = activeChild();
+  if (!k) return '';
+  const rows = ciRows();
+  if (!rows.length) return '';
+
+  const saved = ciSaved();
+  const pending = ciChangeCount();
+  const open = store.ciOpen || !saved;
+  const name = (k.name || 'them').split(/\s+/)[0];
+  const streak = ciStreak();
+
+  if (!open) {
+    return `
+    <div class="card cicard">
+      <div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap">
+        <p class="eyebrow grow">${icon('check', 11, 'var(--sage)')} Today is recorded</p>
+        <button class="chip" data-ci="open">Change it</button>
+      </div>
+      ${rows.filter((r) => saved.answers[r.id]).map((r) => {
+        const sc = getCheckinScale(saved.answers[r.id]);
+        return `
+        <div class="cirow done">
+          <span class="cirow-l">${esc(r.label)}</span>
+          <span class="cipill" style="background:${sc.tint};color:${sc.color}">${esc(r[saved.answers[r.id]] || sc.label)}</span>
+          ${ciStrip(r.id)}
+        </div>`;
+      }).join('')}
+      ${saved.note ? `<p class="tiny" style="margin-top:9px">${esc(saved.note)}</p>` : ''}
+      ${streak > 1 ? `<p class="tiny" style="margin-top:9px">${esc(CHECKIN_STREAK_LINES.going.replace('{n}', streak))}</p>` : ''}
+      <button class="btn ghost sm" style="width:100%;margin-top:11px" data-go="screen" data-id="checkins">
+        See how the last few weeks have gone
+      </button>
+    </div>`;
+  }
+
+  return `
+  <div class="card cicard">
+    <p class="eyebrow">${icon('sun', 11, 'var(--sage)')} How is today going, ${esc(name)}?</p>
+    <p class="tiny" style="margin-top:4px">${esc(CHECKIN_INTRO)}</p>
+
+    ${rows.map((r) => {
+      const cur = ciCurrent(r.id);
+      return `
+      <div class="cirow">
+        <p class="ciq">${esc(r.question)}</p>
+        <div class="cibtns">
+          ${CHECKIN_SCALE.map((sc) => {
+            const on = cur === sc.id;
+            return `<button class="cib" data-ci="set" data-row="${esc(r.id)}" data-val="${sc.id}"
+              aria-pressed="${on}"
+              style="${on ? 'background:' + sc.tint + ';color:' + sc.color + ';border-color:' + sc.color : ''}"
+              >${esc(r[sc.id] || sc.label)}</button>`;
+          }).join('')}
+        </div>
+        ${ciSaved() || ciStreakHasAny() ? ciStrip(r.id) : ''}
+      </div>`;
+    }).join('')}
+
+    <input class="inp" type="text" id="ciNote" data-cinote="1"
+      value="${esc((ciDraft() && ciDraft().note) || (saved && saved.note) || '')}"
+      placeholder="${esc(CHECKIN_NOTE_PROMPT)}" autocomplete="off"
+      style="margin-top:10px;width:100%" />
+
+    <div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap;justify-content:flex-end">
+      ${saved || pending ? `<button class="chip" data-ci="cancel">${saved ? 'Leave it as it was' : 'Not now'}</button>` : ''}
+      <button class="btn" data-ci="save" ${pending ? '' : 'disabled'}
+        style="width:auto;flex:none;padding:10px 20px">${icon('check', 15, '#fff')} Save today</button>
+    </div>
+    <p class="tiny" style="margin-top:9px">${esc(CHECKIN_PATTERN_NOTE)}</p>
+  </div>`;
+}
+
+/* Whether there is any history at all, so the strip does not appear as
+   fourteen empty squares on somebody's first day. */
+function ciStreakHasAny() {
+  const k = activeChild();
+  return !!(k && k.checkins && Object.keys(k.checkins).length);
+}
+
+/* -----------------------------------------------------------------
+   THE PATTERN
+
+   Everything recorded, laid out so a run of hard days is visible
+   rather than something she has to hold in her head. This is the
+   screen worth opening on the way into an appointment.
+   ----------------------------------------------------------------- */
+
+function screenCheckins(c) {
+  const k = activeChild();
+  if (!k) return emptyScreen('Open a child to see their check ins.');
+  const rows = ciRows();
+  const days = Object.keys(k.checkins || {}).sort().reverse();
+  const name = (k.name || 'them').split(/\s+/)[0];
+
+  const counts = {};
+  rows.forEach((r) => { counts[r.id] = { hard: 0, mixed: 0, good: 0 }; });
+  days.slice(0, 30).forEach((day) => {
+    const e = k.checkins[day];
+    Object.keys(e.answers || {}).forEach((id) => {
+      if (counts[id] && counts[id][e.answers[id]] !== undefined) counts[id][e.answers[id]]++;
+    });
+  });
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title" style="margin-top:6px">How ${esc(name)} has been</h1>
+    <p class="sub">${days.length
+      ? esc(days.length + ' day' + (days.length === 1 ? '' : 's') + ' recorded')
+      : 'Nothing recorded yet'}</p>
+  </div>
+  <div class="sc">
+
+    ${!days.length ? `
+    <div class="card flat">
+      <p class="bodytext">Check in from Home once and this fills in. A week of it is enough to
+      start seeing a shape.</p>
+    </div>` : `
+
+    <p class="sect">The last two weeks</p>
+    <div class="card">
+      ${rows.map((r) => `
+        <div class="cirow done">
+          <span class="cirow-l">${esc(r.label)}</span>
+          ${ciStrip(r.id)}
+        </div>`).join('')}
+      <p class="tiny" style="margin-top:10px">Oldest on the left, today on the right. An empty square
+      is a day nothing was recorded, which is not the same as a bad day.</p>
+    </div>
+
+    <p class="sect">The last month, counted</p>
+    <div class="card">
+      ${rows.map((r) => {
+        const cc = counts[r.id];
+        const total = cc.hard + cc.mixed + cc.good;
+        if (!total) return '';
+        return `
+        <div style="padding:8px 0;border-top:1px solid rgba(0,0,0,.055)">
+          <p style="font-size:13.5px;font-weight:600;color:var(--ink)">${esc(r.label)}</p>
+          <div class="cibar" style="margin-top:6px">
+            ${CHECKIN_SCALE.map((sc) => cc[sc.id]
+              ? `<i style="flex:${cc[sc.id]};background:${sc.color}" title="${cc[sc.id]} ${esc(sc.label.toLowerCase())}"></i>`
+              : '').join('')}
+          </div>
+          <p class="tiny" style="margin-top:5px">
+            ${CHECKIN_SCALE.map((sc) => cc[sc.id] + ' ' + sc.label.toLowerCase()).join(', ')}
+          </p>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <p class="sect">Day by day</p>
+    ${days.slice(0, 30).map((day) => {
+      const e = k.checkins[day];
+      const answered = rows.filter((r) => e.answers[r.id]);
+      return `
+      <div class="card" style="margin-bottom:8px">
+        <p class="eyebrow">${esc(cycleDateLabelWithYear(day))}</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px">
+          ${answered.map((r) => {
+            const sc = getCheckinScale(e.answers[r.id]);
+            return `<span class="cipill" style="background:${sc.tint};color:${sc.color}">${esc(r.label)}: ${esc(r[e.answers[r.id]] || sc.label)}</span>`;
+          }).join('')}
+        </div>
+        ${e.note ? `<p class="bodytext" style="margin-top:8px">${esc(e.note)}</p>` : ''}
+      </div>`;
+    }).join('')}`}
+
+    <div class="card flat">
+      <p class="eyebrow">${icon('info', 11, 'var(--sage)')} What this is and is not</p>
+      <p class="bodytext" style="margin-top:5px">${esc(CHECKIN_PATTERN_NOTE)}</p>
+    </div>
+    <p class="disclaimer">${esc(CONTENT_DISCLAIMER)}</p>
+  </div>`;
+}
+
+/* -----------------------------------------------------------------
    HOME
 
    Hers. Not a child's screen with her name on it. The faces across the
@@ -5526,6 +5924,10 @@ function screenHome(c) {
       </span>
       ${icon('chev', 17, 'rgba(255,255,255,.8)')}
     </button>
+
+    ${kid ? `
+    <p class="sect">How ${esc((kid.name || 'they').split(/\s+/)[0])} is doing today</p>
+    ${checkinCard()}` : ''}
 
     ${isExampleChild(kid) ? `
     <div class="card" style="border-left:3px solid var(--attention)">
@@ -7100,6 +7502,7 @@ function combineChildren(group) {
   out.lensNumbers = {};
   out.statuses = {};
   out.statusDates = {};
+  out.checkins = {};
   out.routineInclude = [];
   out.logs = [];
   const seenLogs = {};
@@ -7112,7 +7515,7 @@ function combineChildren(group) {
     /* Later records win on a key by key basis rather than wholesale, so
        a milestone marked on the phone and a different one marked on the
        laptop both survive. */
-    ['statuses', 'statusDates', 'lensOptions', 'lensNumbers'].forEach((field) => {
+    ['statuses', 'statusDates', 'checkins', 'lensOptions', 'lensNumbers'].forEach((field) => {
       const src = k[field] || {};
       Object.keys(src).forEach((key) => { out[field][key] = src[key]; });
     });
