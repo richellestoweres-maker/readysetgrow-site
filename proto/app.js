@@ -442,9 +442,14 @@ const store = {
   /* The parent's own account. Password is deliberately absent. A real
      account needs a server, and storing one in a browser would be worse
      than not having one at all. The profile screen says so out loud. */
-  parent: { name: '', username: '', email: '' },
+  parent: { name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '' },
   children: [],
   activeChildId: null,
+
+  /* Which birthday greetings have already been seen, keyed by who and
+     year, so the card shows once on the day rather than every single
+     time the app is opened between breakfast and bedtime. */
+  birthdaySeen: {},
 
   /* Parent scoped. These follow the mother, not any child. */
   bagChecked: [],
@@ -547,7 +552,7 @@ const state = {};
   });
 });
 
-['parent', 'children', 'activeChildId', 'bagChecked', 'pumpTab', 'pumpGoal',
+['parent', 'children', 'activeChildId', 'bagChecked', 'birthdaySeen', 'pumpTab', 'pumpGoal',
  'pumpProblem', 'flangeMm', 'ppTab', 'ppStage', 'askQuery', 'askAsked',
  'tab', 'view', 'undGroup', 'lensBand', 'feedTab', 'safetyTab',
  'logDraft', 'draftChildName', 'draftChildBday'].forEach((key) => {
@@ -574,6 +579,7 @@ function flushStore() {
       children: store.children,
       activeChildId: store.activeChildId,
       bagChecked: store.bagChecked,
+      birthdaySeen: store.birthdaySeen,
       hadSession: store.hadSession,
       guest: store.guest,
       deletedChildIds: store.deletedChildIds,
@@ -616,10 +622,12 @@ function loadStore() {
     store.deletedChildIds = Array.isArray(saved.deletedChildIds) ? saved.deletedChildIds : [];
     store.notDuplicates = Array.isArray(saved.notDuplicates) ? saved.notDuplicates : [];
     store.parentUpdatedAt = Number(saved.parentUpdatedAt) || 0;
+    store.birthdaySeen = (saved.birthdaySeen && typeof saved.birthdaySeen === 'object')
+      ? saved.birthdaySeen : {};
   }
 
   if (saved && Array.isArray(saved.children) && saved.children.length) {
-    store.parent = Object.assign({ name: '', username: '', email: '' }, saved.parent || {});
+    store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '' }, saved.parent || {});
     // Fill in any field an older saved record is missing, so a profile
     // written by a previous version cannot crash a newer screen.
     store.children = saved.children.map((k) => Object.assign(newChildRecord('', null), k, {
@@ -1113,6 +1121,8 @@ function render() {
     if (tabsEl) tabsEl.innerHTML = '';
     const barEl = document.getElementById('topbar');
     if (barEl) barEl.innerHTML = topBar(true);
+    const wEl = document.getElementById('willow');
+    if (wEl) wEl.innerHTML = '';
     restoreFocus();
     saveStore();
     return;
@@ -1187,6 +1197,14 @@ function render() {
   const barSlot = document.getElementById('topbar');
   if (barSlot) { barSlot.innerHTML = bar; screen.innerHTML = html; }
   else screen.innerHTML = bar + html;
+
+  /* Willow sits outside the scrolling screen so she stays put, and
+     outside the header so she is reachable with a thumb. */
+  const willowSlot = document.getElementById('willow');
+  /* The birthday card gets the screen to itself. Willow's pill peeking
+     out from under the scrim made the moment look like an accident. */
+  const bday = birthdayOverlay();
+  if (willowSlot) willowSlot.innerHTML = bday || (willowBubble() + willowPanel());
   screen.scrollTop = keepId ? keepScroll : 0;
 
   if (keepId) restoreFocus(keepId, keepStart, keepEnd);
@@ -1263,6 +1281,7 @@ function initControls() {
   document.addEventListener('input', (e) => {
     if (e.target.matches('[data-wake]')) { state.wakeTime = e.target.value || '06:30'; render(); }
     else if (e.target.id === 'askIn') { state.askQuery = e.target.value; }
+    else if (e.target.id === 'willowIn') { willow.input = e.target.value; }
     else if (e.target.id === 'flangeIn') {
       const digits = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
       e.target.value = digits;
@@ -1276,6 +1295,15 @@ function initControls() {
       const f = e.target.dataset.parentfield;
       store.parent[f] = e.target.value;
       flushStore();
+    }
+    /* Dates repaint, because a card below them is built from the answer
+       and a parent should see it fill in as she picks the day. */
+    else if (e.target.matches('[data-parentdate]')) {
+      const f = e.target.dataset.parentdate;
+      store.parent[f] = e.target.value;
+      store.parentUpdatedAt = Date.now();
+      flushStore();
+      render();
     }
     else if (e.target.matches('[data-childname]')) {
       const k = store.children.find((x) => x.id === e.target.dataset.childname);
@@ -1364,10 +1392,16 @@ function initControls() {
       state.askAsked = state.askQuery.trim();
       render();
     }
+    if (e.target.id === 'willowIn' && e.key === 'Enter') {
+      e.preventDefault();
+      willowAsk(willow.input);
+    }
+    /* Escape closes her, which is what everybody tries first. */
+    if (e.key === 'Escape' && willow.open) { willow.open = false; render(); }
   });
 
   document.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday]');
     if (!t) return;
 
     if (t.dataset.auth) {
@@ -1425,13 +1459,32 @@ function initControls() {
       if (!store.deletedChildIds) store.deletedChildIds = [];
       if (store.deletedChildIds.indexOf(id) === -1) store.deletedChildIds.push(id);
       cloudDeleteChild(id);
+      willowForget(id);
       if (store.activeChildId === id) selectChild(null);
       flushStore();
+    } else if (t.dataset.bday) {
+      const how = t.dataset.bday;
+      const kid = t.dataset.id;
+      birthdayDismiss();
+      if (how === 'open' && kid) { selectChild(kid); state.tab = 'child'; }
+      render();
+      return;
     } else if (t.dataset.update === 'go') {
       applyUpdate();
       return;
     } else if (t.dataset.update === 'later') {
       update.dismissed = true;
+    } else if (t.dataset.willow === 'open') {
+      willow.open = true;
+      if (!willow.ready && !willow.loading) willowLoad().catch(() => {});
+    } else if (t.dataset.willow === 'close') {
+      willow.open = false;
+    } else if (t.dataset.willow === 'send') {
+      willowAsk(willow.input);
+      return;
+    } else if (t.dataset.willow === 'try') {
+      willowAsk(t.dataset.q);
+      return;
     } else if (t.dataset.combinechild) {
       combineDuplicateChildren(t.dataset.combinechild);
     } else if (t.dataset.notdupe) {
@@ -1510,6 +1563,9 @@ function initControls() {
       state.tab = t.dataset.id; state.view = null;
     } else if (t.dataset.go) {
       if (t.tagName === 'A') return; // source links open normally
+      // Following one of her links means you want to read it, not keep chatting.
+      if (willow.open && t.closest('.willowpanel')) willow.open = false;
+      if (t.dataset.go === 'log') store.logFrom = { tab: state.tab, view: state.view };
       /* A diaper logged from the newborn screen should land back on the
          newborn screen with the count one higher, not on a list. */
       if (t.dataset.go === 'log') store.logFrom = { tab: state.tab, view: state.view };
@@ -4234,8 +4290,53 @@ function screenPickChild(what) {
   </div>`;
 }
 
+/* The cycle card only exists once there is a date to build it from, so
+   a parent who never fills this in never sees an empty shell of it. */
+function cycleCard() {
+  const info = cycleInfo(store.parent.lastPeriod, null, store.parent.cycleLength);
+  if (!info) return '';
+  const row = (label, value, note) => `
+    <div style="display:flex;gap:10px;align-items:baseline;padding:6px 0;border-top:1px solid rgba(0,0,0,.05)">
+      <span class="tiny" style="width:118px;flex:none">${esc(label)}</span>
+      <span class="grow">
+        <span style="font-size:13px;font-weight:600;color:var(--ink)">${esc(value)}</span>
+        ${note ? `<span class="tiny" style="display:block;margin-top:1px">${esc(note)}</span>` : ''}
+      </span>
+    </div>`;
+
+  return `
+  <div class="card" style="margin-bottom:8px">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Where you are in your cycle</p>
+    <p class="bodytext" style="margin-top:5px">${esc(cycleShortLine(info))}.</p>
+
+    <div style="margin-top:9px">
+      ${row('Next period', cycleDateLabel(info.nextPeriod),
+        info.isLate
+          ? info.daysLate + ' day' + (info.daysLate === 1 ? '' : 's') + ' past the estimate'
+          : 'estimated, about ' + info.daysToNext + ' day' + (info.daysToNext === 1 ? '' : 's') + ' away')}
+      ${row('Fertile window', cycleDateLabel(info.fertileStart) + ' to ' + cycleDateLabel(info.fertileEnd),
+        info.inFertileWindow ? 'today falls inside it' : 'estimated, the six days ending at ovulation')}
+      ${row('If you are pregnant', info.pregnancyLabel,
+        'due ' + cycleDateLabelWithYear(info.dueDate) + ', by last period')}
+    </div>
+
+    <p class="tiny" style="margin-top:10px">${esc(CYCLE_DUE_DATE_NOTE)}</p>
+    <p class="disclaimer" style="margin-top:8px">${esc(CYCLE_DISCLAIMER)}</p>
+  </div>`;
+}
+
 function screenProfile() {
   const p = store.parent;
+  /* A date field asks for a repaint, because the cards underneath it are
+     built from the date. The text fields deliberately do not, so typing
+     a name never repaints the screen out from under the cursor. */
+  const dateField = (label, key, help) => `
+    <div class="card flat" style="margin-bottom:8px">
+      <p class="eyebrow">${esc(label)}</p>
+      <input class="inp" type="date" data-parentdate="${esc(key)}" id="pd_${esc(key)}"
+        value="${esc(p[key] || '')}" style="margin-top:7px;width:100%" />
+      ${help ? `<p class="tiny" style="margin-top:6px">${esc(help)}</p>` : ''}
+    </div>`;
   const field = (label, key, type, placeholder, help) => `
     <div class="card flat" style="margin-bottom:8px">
       <p class="eyebrow">${esc(label)}</p>
@@ -4257,6 +4358,11 @@ function screenProfile() {
     ${field('Your name', 'name', 'text', 'Richelle', '')}
     ${field('Username', 'username', 'text', 'richelle_s', 'This is what other parents see in the community, not your real name.')}
     ${field('Email', 'email', 'email', 'you@example.com', '')}
+    ${dateField('Your birthday', 'birthday',
+      'So the app can say it back to you on the day, the same as it does for the children.')}
+    ${dateField('First day of your last period', 'lastPeriod',
+      'Day one is the first day of real bleeding, not spotting the day before. Only you ever see this.')}
+    ${cycleCard()}
 
     <button class="lrow" data-auth="signout" style="align-items:center">
       <span class="licon">${icon('back', 17, 'var(--deep)')}</span>
@@ -4467,6 +4573,24 @@ function loadFirebase() {
     const appMod = await import(`https://www.gstatic.com/firebasejs/${v}/firebase-app.js`);
     const authMod = await import(`https://www.gstatic.com/firebasejs/${v}/firebase-auth.js`);
     const app = appMod.initializeApp(FIREBASE_CONFIG);
+
+    /* App Check, if there is a key to do it with. It has to be set up
+       before anything else touches the app, which is why it lives here
+       rather than next to Willow, who is the only part that currently
+       needs it. Wrapped because a bad or missing key must cost the site
+       Willow, not sign in and not syncing. */
+    if (typeof RECAPTCHA_SITE_KEY === 'string' && RECAPTCHA_SITE_KEY) {
+      try {
+        const acMod = await import(`https://www.gstatic.com/firebasejs/${v}/firebase-app-check.js`);
+        acMod.initializeAppCheck(app, {
+          provider: new acMod.ReCaptchaEnterpriseProvider(RECAPTCHA_SITE_KEY),
+          isTokenAutoRefreshEnabled: true,
+        });
+      } catch (err) {
+        /* Carry on unprotected rather than not at all. */
+      }
+    }
+
     const fbAuth = authMod.getAuth(app);
     authMod.onAuthStateChanged(fbAuth, (u) => {
       auth.user = u;
@@ -4567,7 +4691,8 @@ async function doSignOut() {
        them, so this is a clear rather than a loss. */
     store.children = [];
     store.activeChildId = null;
-    store.parent = { name: '', username: '', email: '' };
+    store.parent = { name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '' };
+    store.birthdaySeen = {};
     store.bagChecked = [];
     store.deletedChildIds = [];
     store.parentUpdatedAt = 0;
@@ -5663,6 +5788,9 @@ function parentPayload() {
   return JSON.parse(JSON.stringify({
     parent: store.parent,
     bagChecked: store.bagChecked || [],
+    /* Carried so the greeting that already appeared on her phone does
+       not appear again on the laptop the same afternoon. */
+    birthdaySeen: store.birthdaySeen || {},
     deletedChildIds: store.deletedChildIds || [],
     notDuplicates: store.notDuplicates || [],
     updatedAt: store.parentUpdatedAt || 0,
@@ -5831,8 +5959,10 @@ async function cloudFirstSync() {
   const localPt = Number(store.parentUpdatedAt) || 0;
   const remotePt = Number(remoteUser && remoteUser.updatedAt) || 0;
   if (remoteUser && remotePt > localPt) {
-    store.parent = Object.assign({ name: '', username: '', email: '' }, remoteUser.parent || {});
+    store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '' }, remoteUser.parent || {});
     store.bagChecked = Array.isArray(remoteUser.bagChecked) ? remoteUser.bagChecked : [];
+    store.birthdaySeen = (remoteUser.birthdaySeen && typeof remoteUser.birthdaySeen === 'object')
+      ? remoteUser.birthdaySeen : {};
     store.parentUpdatedAt = remotePt;
   }
 
@@ -6258,6 +6388,7 @@ function combineDuplicateChildren(anyId) {
   goneIds.forEach((id) => {
     if (store.deletedChildIds.indexOf(id) === -1) store.deletedChildIds.push(id);
     cloudDeleteChild(id);
+    willowForget(id);
   });
   if (!store.children.some((k) => k.id === store.activeChildId)) selectChild(merged.id);
   flushStore();
@@ -6274,6 +6405,457 @@ function markNotDuplicates(anyId) {
   if (!store.notDuplicates) store.notDuplicates = [];
   if (store.notDuplicates.indexOf(key) === -1) store.notDuplicates.push(key);
   flushStore();
+}
+
+
+/* =================================================================
+   WILLOW
+
+   The circle in the bottom right, and what happens when it is tapped.
+
+   THE ORDER OF OPERATIONS IS THE SAFETY DESIGN
+   A question goes through three gates before any request leaves the
+   device, and the first two never touch the network:
+
+     1. Crisis words    -> the maternal mental health lines, at once
+     2. Emergency words -> the 911 card, at once
+     3. Retrieval       -> the app's own entries, ranked
+     4. The model       -> writes an answer using only those entries
+
+   Steps one and two run on a keyword list in the browser because the
+   single moment when seconds matter is the moment this must not depend
+   on a signal, a server, or a model deciding how worried to be.
+
+   IF SHE IS NOT SET UP, SHE SAYS SO
+   The app ships before Firebase AI Logic is switched on, so the panel
+   opens, explains that plainly, and points at the search that does the
+   same retrieval without her. A button that quietly does nothing is
+   worse than no button.
+   ================================================================= */
+
+const willow = {
+  open: false,
+  busyKey: '',      // the child whose question is in flight, '' when idle
+  input: '',
+  threads: {},      // childId -> [ { who: 'you' | 'willow', text, sources: [], kind } ]
+  ai: null,         // the model handle, once loaded
+  loading: null,    // the in flight load promise
+  ready: false,
+  failed: false,
+  usedToday: 0,
+  usedDate: '',
+};
+
+/* One conversation per child rather than one for the whole app.
+   Everything else in here is scoped to the active child, and a single
+   shared thread meant switching from one kid to another carried the
+   first one's turns into the second one's questions: ask about
+   Hartlee's bedtime, switch to Stetson, ask "what about at naps", and
+   the model is still thinking about a twelve year old. The threads are
+   deliberately memory only. A conversation is a thing you are in the
+   middle of, not a record to keep, and the questions people ask her
+   are the last thing that should be sitting in a saved file. */
+function willowThreadKey() {
+  const k = activeChild();
+  return (k && k.id) ? String(k.id) : '_none';
+}
+
+function willowThread(key) {
+  const id = key || willowThreadKey();
+  if (!willow.threads[id]) willow.threads[id] = [];
+  return willow.threads[id];
+}
+
+/* A child who is gone takes her conversation with her. */
+function willowForget(id) {
+  if (id && willow.threads[String(id)]) delete willow.threads[String(id)];
+}
+
+function willowCountToday() {
+  const today = todayKey();
+  if (willow.usedDate !== today) { willow.usedDate = today; willow.usedToday = 0; }
+  return willow.usedToday;
+}
+
+/* The Firebase AI Logic SDK. The key never comes near this file: the
+   request goes to Google's proxy, which holds it. That is the whole
+   reason for using this rather than calling Gemini directly, where the
+   key would sit in the page source for anyone to read. */
+async function willowLoad() {
+  if (willow.ai) return willow.ai;
+  if (willow.loading) return willow.loading;
+  willow.loading = (async () => {
+    const v = FIREBASE_SDK_VERSION;
+    const { app } = await loadFirebase();
+    const aiMod = await import(`https://www.gstatic.com/firebasejs/${v}/firebase-ai.js`);
+    const ai = aiMod.getAI(app, { backend: new aiMod.GoogleAIBackend() });
+    willow.ai = aiMod.getGenerativeModel(ai, {
+      model: WILLOW_MODEL,
+      systemInstruction: willowSystemPrompt(),
+    });
+    willow.ready = true;
+    return willow.ai;
+  })().catch((err) => {
+    willow.loading = null;
+    willow.failed = true;
+    throw err;
+  });
+  return willow.loading;
+}
+
+/* One line about who we are talking about, so she can use the name and
+   the age rather than saying "your child" eleven times. */
+function willowChildLine(c) {
+  const k = activeChild();
+  if (!k || !k.name) return '';
+  const bits = [k.name];
+  if (c.summary && c.summary.label) bits.push(c.summary.label);
+  if (state.lenses && state.lenses.length) {
+    bits.push('support lenses on: ' + getLenses(state.lenses).map((l) => l.label).join(', '));
+  }
+  return bits.join(', ');
+}
+
+function willowSay(who, text, sources, kind, key) {
+  willowThread(key).push({ who: who, text: text, sources: sources || [], kind: kind || '' });
+}
+
+async function willowAsk(question) {
+  const q = String(question || '').trim();
+  if (!q || willow.busyKey) return;
+  /* Pinned once, here. If she switches children while an answer is in
+     flight, the answer still belongs to the child who was asked about,
+     and it lands back in that thread rather than in front of a parent
+     who is now looking at somebody else. */
+  const key = willowThreadKey();
+  willowSay('you', q, [], '', key);
+  willow.input = '';
+
+  /* Gate one and two. No network, no model, no waiting. */
+  const stop = willowStopReason(q);
+  if (stop) {
+    willowSay('willow', '', [], stop, key);
+    render();
+    return;
+  }
+
+  if (willowCountToday() >= WILLOW_DAILY_LIMIT) {
+    willowSay('willow', 'That is a lot of questions for one day, and I am going to stop here so this '
+      + 'stays affordable to run. Everything in the app is still there to read, and I will be back '
+      + 'tomorrow.', [], 'limit', key);
+    render();
+    return;
+  }
+
+  willow.busyKey = key;
+  render();
+
+  const c = ctx();
+  /* Retrieval is now a suggestion rather than a gate. Nothing matching
+     used to end the conversation, which is exactly the wrong answer to
+     "I feel like I am failing at this", a sentence no search index has
+     ever had a good entry for. */
+  const hits = askSearch(q, c).map((r) => r.item);
+
+  try {
+    const model = await willowLoad();
+    /* A chat rather than a series of unrelated questions. This is most
+       of what made her feel like a search box: every message used to
+       arrive with no memory of the one before it, so a parent could not
+       say "what about at naps?" and be understood. */
+    const history = willowHistory(willowThread(key).slice(0, -1), 10);
+    const chat = model.startChat({ history: history });
+    const res = await chat.sendMessage(willowPrompt(q, hits.slice(0, 4), willowChildLine(c)));
+    const raw = res && res.response && typeof res.response.text === 'function'
+      ? res.response.text() : String(res || '');
+    const split = willowSplitSources(raw);
+    /* Only entries that were actually offered can be linked, whatever
+       the model wrote on that line. */
+    const byId = {};
+    hits.forEach((h) => { byId[h.id] = h; });
+    /* Only what she said she used, and only if it was really offered.
+       An answer she wrote from her own knowledge gets no links, rather
+       than links to whatever happened to rank highest. */
+    const used = split.ids.map((id) => byId[id]).filter(Boolean);
+    willow.usedToday = willowCountToday() + 1;
+    willowSay('willow', split.body || WILLOW.failed, used, '', key);
+  } catch (err) {
+    /* Three failures, three different fixes, so they get three
+       different sentences. Telling somebody to try again in a moment,
+       when the real answer is that a key was never pasted in, wastes
+       their evening on a problem no amount of retrying will move. */
+    const code = String((err && err.code) || '') + ' ' + String((err && err.message) || '');
+    let message;
+    if (/app.?check|401|unauthenticated/i.test(code)) message = WILLOW.notVerified;
+    else if (/api-not-enabled|not been used|SERVICE_DISABLED|403|permission/i.test(code)) message = WILLOW.notReady;
+    else if (!willow.ready) message = WILLOW.notReady;
+    else message = WILLOW.failed;
+    willowSay('willow', message, [], 'failed', key);
+  }
+  willow.busyKey = '';
+  render();
+}
+
+function willowBubble() {
+  if (!hasAccess()) return '';
+  if (willow.open) return '';
+  return `
+  <button class="willowdot" data-willow="open" aria-label="Ask ${esc(WILLOW.name)}">
+    <span class="willowdot-leaf">${icon('leaf', 21, '#fff')}</span>
+    <span class="willowdot-name">${esc(WILLOW.name)}</span>
+  </button>`;
+}
+
+function willowSourceRow(s) {
+  const attrs = 'data-go="' + esc(s.go) + '" data-id="' + esc(s.id) + '"'
+    + (s.sub ? ' data-asksub="' + esc(s.sub[0]) + '" data-asksubval="' + esc(s.sub[1]) + '"' : '');
+  return `<button class="wsrc" ${attrs}>${icon('chev', 12, 'var(--deep)')} ${esc(s.title)}</button>`;
+}
+
+/* The three answers she is never allowed to write herself. Each one
+   says why it is refusing, then hands over the thing that is actually
+   useful: a number to call, and where it came from. */
+
+function willowPhoneRow(l) {
+  /* Picking a number out of prose is fiddlier than it looks. The
+     maternal hotline is written "1-833-TLC-MAMA, 1-833-852-6262", and
+     a naive match stops dead at the T and dials 1833. So: take every
+     run of digits and punctuation, keep the one with the most actual
+     digits, and only trust it if it is a real length. */
+  const runs = String(l.contact || '').match(/[\d][\d\s().\-]*\d/g) || [];
+  const best = runs
+    .map((r) => r.replace(/[^\d]/g, ''))
+    .sort((a, b) => b.length - a.length)[0] || '';
+  const dial = (best.length >= 10 || best.length === 3) ? 'tel:' + best : null;
+  return `
+  <div style="padding:9px 0;border-top:1px solid rgba(138,90,74,.25)">
+    <p style="margin:0;font-size:13px;font-weight:600;color:#7A4E40">${esc(l.name)}</p>
+    <a href="${dial || esc(l.url)}" ${dial ? '' : 'target="_blank" rel="noopener noreferrer"'}
+       style="font-size:18px;font-weight:600;color:#A85A44;text-decoration:none">${esc(l.contact)}</a>
+    ${l.detail ? `<p class="tiny" style="margin-top:2px;color:#8A5A4A">${esc(l.detail)}</p>` : ''}
+    <a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"
+       class="tiny" style="color:#8A5A4A;text-decoration:underline">Their website</a>
+  </div>`;
+}
+
+function willowEmergencyBlock() {
+  const g = WILLOW_GATES.emergency;
+  return `
+  <div class="wcard urgent">
+    <p class="eyebrow" style="color:#A85A44">${esc(g.title)}</p>
+    <p class="bodytext" style="margin-top:5px;color:#7A4E40">${esc(g.lead)}</p>
+    <a href="tel:911" class="wdial">Call 911</a>
+    <p class="tiny" style="margin-top:10px;color:#8A5A4A;font-weight:600">Any of these is 911, now</p>
+    <ul class="dlist warn" style="margin-top:5px">
+      ${ALWAYS_EMERGENCY.items.slice(0, 4).map((t) => `<li>${esc(t)}</li>`).join('')}
+    </ul>
+    <div style="margin-top:8px">
+      ${willowPhoneRow({ name: 'Poison Control', contact: '1-800-222-1222',
+        detail: 'If they swallowed something. 24 hours a day, and call before trying anything at home.',
+        url: 'https://www.poison.org/' })}
+    </div>
+    <p class="tiny" style="margin-top:9px;color:#8A5A4A">${esc(g.after)}</p>
+  </div>`;
+}
+
+function willowCrisisBlock() {
+  const g = WILLOW_GATES.crisis;
+  /* 988 goes first here regardless of where it sits in the data, because
+     it is the one somebody may be about to need. */
+  const lines = MATERNAL_SUPPORT_LINES.slice().sort((a, b) => (a.id === '988' ? -1 : b.id === '988' ? 1 : 0));
+  return `
+  <div class="wcard urgent">
+    <p class="eyebrow" style="color:#A85A44">${esc(g.title)}</p>
+    <p class="bodytext" style="margin-top:5px;color:#7A4E40">${esc(g.lead)}</p>
+    <a href="tel:988" class="wdial">Call or text 988</a>
+    <div style="margin-top:6px">${lines.map(willowPhoneRow).join('')}</div>
+    <p class="tiny" style="margin-top:10px;color:#8A5A4A">${esc(g.after)}</p>
+  </div>`;
+}
+
+function willowDosingBlock() {
+  const g = WILLOW_GATES.dosing;
+  return `
+  <div class="wcard urgent">
+    <p class="eyebrow" style="color:#A85A44">${esc(g.title)}</p>
+    <p class="bodytext" style="margin-top:5px;color:#7A4E40">${esc(g.lead)}</p>
+    <p class="bodytext" style="margin-top:9px;color:#7A4E40">${esc(g.after)}</p>
+    <button class="btn" style="margin-top:11px" data-go="log" data-id="medication">
+      Log a medicine and see when the next one is due
+    </button>
+    <div style="margin-top:10px">
+      ${willowPhoneRow({ name: 'Poison Control', contact: '1-800-222-1222',
+        detail: g.poison, url: 'https://www.poison.org/' })}
+    </div>
+    <div style="margin-top:10px;padding-top:9px;border-top:1px solid rgba(138,90,74,.25)">
+      <p class="tiny" style="margin-bottom:5px;color:#8A5A4A;font-weight:600">Where to read it properly</p>
+      ${g.sources.map((sc) => `
+        <a href="${esc(sc.url)}" target="_blank" rel="noopener noreferrer"
+           class="tiny" style="display:block;padding:3px 0;color:#A85A44;text-decoration:underline">
+          ${esc(sc.org)}: ${esc(sc.label)}
+        </a>`).join('')}
+    </div>
+  </div>`;
+}
+
+/* -----------------------------------------------------------------
+   BIRTHDAYS
+
+   An app that knows every date in the house should be the thing that
+   remembers. It appears once on the day, for the parent and for each
+   child whose birthday it is, and then it gets out of the way. Not a
+   banner that sits there all day, not a thing you have to hunt for,
+   and not a thing that comes back every time the app is opened between
+   the first feed and bedtime.
+
+   The parent's card is written differently from a child's on purpose.
+   Everybody says happy birthday to the kids.
+   ----------------------------------------------------------------- */
+
+/* Whose birthday is today, and who has not been wished yet this year. */
+function birthdaysToday() {
+  const out = [];
+  const p = store.parent || {};
+  const seen = store.birthdaySeen || {};
+
+  if (p.birthday && isBirthdayToday(p.birthday)) {
+    const key = birthdaySeenKey('parent');
+    if (!seen[key]) {
+      out.push({
+        key: key,
+        isParent: true,
+        name: (p.name || '').split(' ')[0] || '',
+        years: yearsOldToday(p.birthday),
+      });
+    }
+  }
+
+  (store.children || []).forEach((k) => {
+    if (!k.birthday || !isBirthdayToday(k.birthday)) return;
+    const key = birthdaySeenKey(k.id);
+    if (seen[key]) return;
+    out.push({
+      key: key,
+      isParent: false,
+      id: k.id,
+      name: k.name || 'your little one',
+      years: yearsOldToday(k.birthday),
+    });
+  });
+
+  return out;
+}
+
+/* Seeded on the date so the line holds still if the screen repaints
+   while she is reading it. */
+function birthdayLine(who) {
+  const lines = who.isParent ? BIRTHDAY_PARENT_LINES : BIRTHDAY_CHILD_LINES;
+  const seed = String(who.key) + String(who.name);
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  return lines[h % lines.length];
+}
+
+function birthdayAgeLine(who) {
+  if (who.years === null || who.years === undefined) return '';
+  if (who.isParent) return 'Another year around.';
+  if (who.years === 0) return 'One whole year old today.';
+  return birthdayOrdinal(who.years) + ' birthday.';
+}
+
+function birthdayOverlay() {
+  if (!hasAccess()) return '';
+  const list = birthdaysToday();
+  if (!list.length) return '';
+
+  const card = (who) => `
+    <div class="bdayone">
+      <span class="bdayleaf">${icon('leaf', 26, '#fff')}</span>
+      <p class="bdayname">Happy birthday${who.name ? ', ' + esc(who.name) : ''}</p>
+      ${birthdayAgeLine(who) ? `<p class="bdayage">${esc(birthdayAgeLine(who))}</p>` : ''}
+      <p class="bdayline">${esc(birthdayLine(who))}</p>
+    </div>`;
+
+  return `
+  <div class="bdaywrap" role="dialog" aria-label="Birthday">
+    <div class="bdaycard">
+      ${list.map(card).join('<div class="bdayrule"></div>')}
+      <button class="bdaybtn" data-bday="close">
+        ${list.length > 1 ? 'Lovely, thank you' : 'Thank you'}
+      </button>
+      ${list.some((w) => !w.isParent) ? `
+        <button class="bdaylater" data-bday="open" data-id="${esc((list.find((w) => !w.isParent) || {}).id || '')}">
+          Open their profile
+        </button>` : ''}
+    </div>
+  </div>`;
+}
+
+/* Dismissing marks everybody shown, so a house with twins does not get
+   the card again an hour later for the second one. */
+function birthdayDismiss() {
+  if (!store.birthdaySeen) store.birthdaySeen = {};
+  birthdaysToday().forEach((w) => { store.birthdaySeen[w.key] = true; });
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+}
+
+function willowPanel() {
+  if (!willow.open) return '';
+  const key = willowThreadKey();
+  const msgs = willowThread(key);
+  const thinking = willow.busyKey === key;
+  return `
+  <div class="willowpanel" role="dialog" aria-label="Ask ${esc(WILLOW.name)}">
+    <div class="whead">
+      <span class="whead-av">${icon('leaf', 17, '#fff')}</span>
+      <span class="grow">
+        <span class="whead-name">${esc(WILLOW.name)}</span>
+        <span class="whead-sub">${esc(WILLOW.tagline)}</span>
+      </span>
+      <button class="wclose" data-willow="close" aria-label="Close">${icon('plus', 18, 'var(--muted)')}</button>
+    </div>
+
+    <div class="wbody" id="wbody">
+      <div class="wcard">
+        <p class="bodytext">${esc(WILLOW.greeting)}</p>
+        <p class="tiny" style="margin-top:8px">${esc(WILLOW.standing)}</p>
+      </div>
+
+      ${!msgs.length ? `
+      <p class="tiny" style="margin:4px 2px 6px">Things people ask</p>
+      <div class="chips" style="gap:6px">
+        ${WILLOW.starters.map((s) => `<button class="chip" data-willow="try" data-q="${esc(s)}">${esc(s)}</button>`).join('')}
+      </div>` : ''}
+
+      ${msgs.map((m) => {
+        if (m.who === 'you') return `<div class="wmsg you">${esc(m.text)}</div>`;
+        if (m.kind === 'emergency') return willowEmergencyBlock();
+        if (m.kind === 'crisis') return willowCrisisBlock();
+        if (m.kind === 'dosing') return willowDosingBlock();
+        return `
+        <div class="wmsg her">
+          ${'<p>' + esc(m.text).replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>') + '</p>'}
+          ${m.sources && m.sources.length ? `
+            <div class="wsrcs">
+              <span class="tiny" style="display:block;margin-bottom:5px">Where this came from</span>
+              ${m.sources.map(willowSourceRow).join('')}
+            </div>` : ''}
+        </div>`;
+      }).join('')}
+
+      ${thinking ? `<div class="wmsg her thinking"><span></span><span></span><span></span></div>` : ''}
+    </div>
+
+    <div class="wfoot">
+      <input id="willowIn" class="winput" type="text" autocomplete="off"
+        placeholder="Ask ${esc(WILLOW.name)} something" value="${esc(willow.input)}"
+        ${thinking ? 'disabled' : ''} />
+      <button class="wsend" data-willow="send" aria-label="Send" ${thinking ? 'disabled' : ''}>
+        ${icon('chev', 17, '#fff')}
+      </button>
+    </div>
+  </div>`;
 }
 
 /* -----------------------------------------------------------------
