@@ -263,6 +263,127 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .tab .dot{width:18px;height:2.5px;border-radius:2px;background:transparent;margin-top:1px}
 .tab[aria-selected="true"] .dot{background:var(--deep)}
 
+/* FACES.
+   One shape for every photo and avatar in the app, so a face looks the
+   same in the corner as it does on Home. */
+.face{
+  display:inline-grid;place-items:center;flex:none;
+  border-radius:50%;overflow:hidden;background:var(--leaf2);
+  box-shadow:0 1px 3px rgba(45,62,40,.12);
+}
+.face img{width:100%;height:100%;object-fit:cover;display:block}
+.face.plain{background:var(--leaf3);border:1px solid var(--leaf)}
+.face.addface{background:var(--surface);border:1.5px dashed var(--leaf);box-shadow:none}
+
+.bigface{display:flex;justify-content:center}
+.bigface .face{box-shadow:0 4px 14px rgba(45,62,40,.16)}
+
+/* THE FAMILY ROW.
+   Faces rather than names. Scrolls sideways when there are more than
+   fit, which is the one place in the app allowed to do that. */
+.kidrow{
+  display:flex;gap:12px;overflow-x:auto;padding:2px 2px 8px;margin:0 -2px 6px;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+}
+.kidrow::-webkit-scrollbar{display:none}
+.kidcirc{
+  flex:none;width:76px;border:0;background:none;font:inherit;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:4px;padding:3px 0;
+}
+.kidcirc .face{transition:box-shadow .16s ease}
+.kidcirc.on .face{box-shadow:0 0 0 2.5px var(--deep),0 3px 10px rgba(45,62,40,.2)}
+.kidcirc-name{
+  font-size:12.5px;font-weight:600;color:var(--ink);margin-top:2px;
+  max-width:76px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.kidcirc-age{font-size:10.5px;color:var(--muted);line-height:1.25;text-align:center}
+.kidcirc:active{transform:translateY(1px)}
+
+/* THE ONE BUTTON THAT MATTERS WHEN SOMETHING IS HAPPENING. */
+.bigbtn{
+  width:100%;display:flex;align-items:center;gap:12px;text-align:left;
+  border:0;font:inherit;cursor:pointer;margin:4px 0 14px;
+  background:var(--deep);color:#fff;border-radius:16px;padding:14px 15px;
+  box-shadow:0 5px 16px rgba(45,62,40,.22);
+}
+.bigbtn-ic{
+  width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.15);
+  display:grid;place-items:center;flex:none;
+}
+.bigbtn-t{display:block;font-size:14.5px;font-weight:600;line-height:1.3}
+.bigbtn-s{display:block;font-size:11.5px;color:rgba(255,255,255,.78);margin-top:2px;line-height:1.35}
+.bigbtn:active{transform:translateY(1px)}
+
+/* THE CYCLE GLANCE ON HOME. */
+.cyccard{width:100%;text-align:left;border:1px solid var(--line);font:inherit;cursor:pointer;display:block}
+.cycday{
+  width:52px;height:52px;border-radius:50%;flex:none;
+  background:var(--leaf3);border:1px solid var(--leaf);
+  display:grid;place-items:center;align-content:center;
+}
+.cycday-n{display:block;font-size:19px;font-weight:700;color:var(--deep);line-height:1}
+.cycday-l{display:block;font-size:9.5px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+
+/* READ MODE.
+   A profile that is not being edited shows values, not input boxes. */
+.readrow{
+  display:flex;gap:12px;align-items:baseline;padding:8px 0;
+  border-top:1px solid rgba(0,0,0,.055);
+}
+.readrow:first-child{border-top:0;padding-top:2px}
+.readrow-l{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);width:116px;flex:none}
+.readrow-v{font-size:14px;color:var(--ink);font-weight:600;flex:1;min-width:0;overflow-wrap:anywhere}
+.readrow-v.none{font-weight:400;color:var(--faint)}
+
+.editbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;justify-content:flex-end}
+.editbar .btn{width:auto;flex:none;padding:9px 18px;font-size:13.5px}
+
+/* THE FACE PICKER. */
+.facepick{
+  display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  padding:13px;margin-bottom:12px;
+}
+.facepick-now{flex:none}
+.facepick .grow{flex:1;min-width:190px}
+.avrow{display:flex;gap:7px;flex-wrap:wrap}
+.avdot{
+  width:34px;height:34px;border-radius:50%;border:2px solid transparent;
+  display:grid;place-items:center;cursor:pointer;padding:0;
+}
+.avdot.on{border-color:var(--deep);box-shadow:0 0 0 2px var(--cream) inset}
+.photobtn{cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+
+/* THE DATE DROPDOWNS. */
+.daterow{display:flex;gap:7px;margin-top:7px;flex-wrap:wrap}
+.dsel{
+  font:inherit;font-size:14px;color:var(--ink);
+  background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  padding:10px 9px;min-width:0;cursor:pointer;
+}
+.dsel-m{flex:1.5 1 108px}
+.dsel-d{flex:1 1 74px}
+.dsel-y{flex:1 1 90px}
+.dsel:focus{outline:2px solid var(--leaf);outline-offset:1px}
+
+/* HOME IN THE MIDDLE.
+   Raised out of the row, because it is the one you reach for without
+   looking and the thumb should find it by shape as well as position. */
+.tab.center{position:relative}
+.tabdisc{
+  width:42px;height:42px;border-radius:50%;background:var(--deep);
+  display:grid;place-items:center;margin:-13px 0 1px;
+  box-shadow:0 4px 12px rgba(45,62,40,.28);
+  transition:transform .14s ease;
+}
+.tab.center.on .tabdisc{transform:translateY(-2px)}
+/* The disc stays green because it is the anchor of the bar, but the
+   label only lights up when Home is the screen you are actually on. */
+.tab.center span:not(.tabdisc){font-weight:600}
+.tab.center.on span:not(.tabdisc){color:var(--deep)}
+
+.topbar-left{flex:1;min-width:0}
+
 /* BIRTHDAYS.
    A scrim rather than a toast, because this is the one interruption in
    the app that has earned the whole screen for a moment. It sits over
@@ -423,10 +544,13 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .kidchip.on .kidchip-av{background:var(--surface)}
 .kidchip-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .kidchip.add{padding:5px 9px;min-width:34px;justify-content:center}
-.mebtn{display:inline-flex;align-items:center;gap:5px;flex:none;padding:6px 12px;border-radius:999px;
+.mebtn{display:inline-flex;align-items:center;gap:7px;flex:none;padding:4px 13px 4px 4px;border-radius:999px;
   background:var(--surface2);border:1px solid var(--line2);font-size:12.5px;font-weight:600;
-  color:var(--deep);min-height:34px}
+  color:var(--deep);min-height:36px;cursor:pointer;max-width:150px}
+.mebtn span:not(.face){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mebtn .face{box-shadow:none}
 .mebtn.on{background:var(--deep);border-color:var(--deep);color:#fff}
+.mebtn.on .face.plain{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35)}
 
 .hint{font-size:12.5px;color:var(--wb-muted);text-align:center;max-width:44ch;line-height:1.5}
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -489,7 +613,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-13 21:28';
+const BUILD_STAMP = '2026-09-13 21:52';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -16155,6 +16279,9 @@ const ICON = {
   bag:'<rect x="3.5" y="7.5" width="17" height="12.5" rx="2.5"/><path d="M8.5 7.5V6a3.5 3.5 0 0 1 7 0v1.5"/>',
   shield:'<path d="M12 3.2l7 2.6v5.4c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V5.8Z"/>',
   user:'<circle cx="12" cy="8" r="3.7"/><path d="M4.9 20.2a7.1 7.1 0 0 1 14.2 0"/>',
+  gear:'<circle cx="12" cy="12" r="3.1"/><path d="M19.1 14.6a1.6 1.6 0 0 0 .3 1.8l.1.1a1.9 1.9 0 1 1-2.7 2.7l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5v.2a1.9 1.9 0 1 1-3.8 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a1.9 1.9 0 1 1-2.7-2.7l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1h-.2a1.9 1.9 0 1 1 0-3.8h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a1.9 1.9 0 1 1 2.7-2.7l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5v-.2a1.9 1.9 0 1 1 3.8 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a1.9 1.9 0 1 1 2.7 2.7l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1h.2a1.9 1.9 0 1 1 0 3.8h-.1a1.6 1.6 0 0 0-1.5 1Z"/>',
+  camera:'<path d="M3.5 8.5h3l1.6-2.4h6.8L16.5 8.5h4a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5h-17A1.5 1.5 0 0 1 2 18v-8a1.5 1.5 0 0 1 1.5-1.5Z"/><circle cx="12" cy="13.6" r="3.4"/>',
+  flower:'<circle cx="12" cy="10" r="2.1"/><path d="M12 7.9c0-2 .8-3.6 2-3.6s1.4 2 .4 3.3M12 7.9c0-2-.8-3.6-2-3.6s-1.4 2-.4 3.3M14.1 10c2 0 3.6.8 3.6 2s-2 1.4-3.3.4M9.9 10c-2 0-3.6.8-3.6 2s2 1.4 3.3.4M12 12.1V20M12 16c1.6 0 3-1 3.4-2"/>',
 };
 
 function icon(name, size = 19, color = 'var(--deep)', sw = 1.7) {
@@ -16538,11 +16665,132 @@ const STORE_KEY = 'readysetgrow:v2';
 /* A new child record. Everything about a child starts here, which is
    also what structurally stops one child's notes turning up under a
    sibling's name. */
+/* -----------------------------------------------------------------
+   FACES
+
+   A row of names is a list. A row of faces is your family. Every
+   profile, hers included, can carry a real photo or one of the drawn
+   avatars, and a child with neither falls back to the growth sprout at
+   their stage, which is still better than a grey silhouette.
+
+   Photos never leave her account. They are resized down to 256 square
+   in the browser before anything is stored, which keeps a 4MB phone
+   photo from becoming a 4MB row in her database, and means the whole
+   thing works on the free plan with no file storage set up at all.
+   ----------------------------------------------------------------- */
+
+const AVATARS = [
+  { id: 'leaf', icon: 'leaf', bg: '#7C9A72' },
+  { id: 'flower', icon: 'flower', bg: '#E8B4A0' },
+  { id: 'sun', icon: 'sun', bg: '#F0D9A8' },
+  { id: 'moon', icon: 'moon', bg: '#9BB8C4' },
+  { id: 'star', icon: 'star', bg: '#C9A8D4' },
+  { id: 'heart', icon: 'heart', bg: '#D98E73' },
+  { id: 'drop', icon: 'drop', bg: '#A8C09A' },
+  { id: 'bulb', icon: 'bulb', bg: '#C4B49B' },
+];
+
+function getAvatar(id) {
+  return AVATARS.filter((a) => a.id === id)[0] || null;
+}
+
+/* One renderer for every face in the app, so a photo looks the same in
+   the corner as it does on Home. `fallback` is either a growth order
+   number for a child or the string 'me' for her. */
+function faceHTML(photo, size, fallback) {
+  const px = Math.round(size);
+  const val = String(photo || '');
+
+  if (val.indexOf('data:image') === 0) {
+    return `<span class="face" style="width:${px}px;height:${px}px">
+      <img src="${esc(val)}" alt="" />
+    </span>`;
+  }
+
+  if (val.indexOf('avatar:') === 0) {
+    const av = getAvatar(val.slice(7));
+    if (av) {
+      return `<span class="face" style="width:${px}px;height:${px}px;background:${av.bg}">
+        ${icon(av.icon, Math.round(px * 0.52), '#fff', 1.8)}
+      </span>`;
+    }
+  }
+
+  if (fallback === 'me') {
+    return `<span class="face plain" style="width:${px}px;height:${px}px">
+      ${icon('user', Math.round(px * 0.5), 'var(--deep)')}
+    </span>`;
+  }
+
+  return `<span class="face plain" style="width:${px}px;height:${px}px">
+    ${growthSVG(typeof fallback === 'number' ? fallback : 2, Math.round(px * 0.72))}
+  </span>`;
+}
+
+/* The face for a child, with their growth stage as the fallback. */
+function childFace(k, size) {
+  return faceHTML(k && k.photo, size, chipGrowthOrder(k));
+}
+
+function parentFace(size) {
+  return faceHTML(store.parent && store.parent.photo, size, 'me');
+}
+
+/* Down to 256 square, centre cropped, before anything is saved. A phone
+   photo is four thousand pixels wide and nobody needs that to fill a
+   circle forty pixels across. */
+function readPhotoFile(file, done) {
+  if (!file || !/^image\//.test(file.type || '')) { done(''); return; }
+  const fr = new FileReader();
+  fr.onerror = () => done('');
+  fr.onload = () => {
+    const img = new Image();
+    img.onerror = () => done('');
+    img.onload = () => {
+      try {
+        const S = 256;
+        const cv = document.createElement('canvas');
+        cv.width = S; cv.height = S;
+        const cx = cv.getContext('2d');
+        const side = Math.min(img.width, img.height);
+        cx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, S, S);
+        done(cv.toDataURL('image/jpeg', 0.82));
+      } catch (err) { done(''); }
+    };
+    img.src = String(fr.result || '');
+  };
+  fr.readAsDataURL(file);
+}
+
+/* Where a finished face lands. 'me' or a child id, same shape as the
+   date fields, for the same reason. A face chosen while a profile is
+   being edited goes into the draft and waits for Save like everything
+   else on that screen. */
+function applyFaceValue(target, value) {
+  const e = store.profileEdit;
+  if (e && e.who === target) { e.values.photo = value; render(); return; }
+  if (target === 'me') {
+    store.parent.photo = value;
+    store.parentUpdatedAt = Date.now();
+  } else {
+    const k = store.children.filter((x) => x.id === target)[0];
+    if (!k) return;
+    k.photo = value;
+    k.updatedAt = Date.now();
+  }
+  flushStore();
+  render();
+}
+
 function newChildRecord(name, birthday) {
   return {
     id: 'c' + Date.now() + Math.floor(Math.random() * 1000),
     name: (name || '').trim(),
     birthday: birthday || null,
+    /* A photo of this child, or 'avatar:<id>' for one of the drawn ones,
+       or empty for the growth sprout. Stored on the record so it follows
+       them to every device rather than living in one browser. */
+    photo: '',
     lenses: [],
     lensOptions: {},
     lensNumbers: {},
@@ -16569,6 +16817,16 @@ const store = {
      year, so the card shows once on the day rather than every single
      time the app is opened between breakfast and bedtime. */
   birthdaySeen: {},
+
+  /* The Profile tab shows whoever is selected. Tapping her own face in
+     the corner puts 'me' here, tapping a child's circle on Home puts
+     their id, and the tab simply renders whoever that is. */
+  profileWho: 'me',
+
+  /* Null when a profile is sitting there being read, and an object
+     while it is being edited. Nothing reaches the real record until
+     Save, so backing out of a half typed change costs nothing. */
+  profileEdit: null,
 
   /* Parent scoped. These follow the mother, not any child. */
   bagChecked: [],
@@ -16609,7 +16867,7 @@ const store = {
   logFrom: null,
 
   /* Navigation. */
-  tab: IS_DESKTOP ? 'today' : 'welcome',
+  tab: IS_DESKTOP ? 'home' : 'welcome',
   view: null,
   undGroup: null,
 
@@ -16671,7 +16929,8 @@ const state = {};
   });
 });
 
-['parent', 'children', 'activeChildId', 'bagChecked', 'birthdaySeen', 'pumpTab', 'pumpGoal',
+['parent', 'children', 'activeChildId', 'bagChecked', 'birthdaySeen', 'profileWho',
+ 'profileEdit', 'pumpTab', 'pumpGoal',
  'pumpProblem', 'flangeMm', 'ppTab', 'ppStage', 'askQuery', 'askAsked',
  'tab', 'view', 'undGroup', 'lensBand', 'feedTab', 'safetyTab',
  'logDraft', 'draftChildName', 'draftChildBday'].forEach((key) => {
@@ -16758,6 +17017,9 @@ function loadStore() {
     store.parentUpdatedAt = Number(saved.parentUpdatedAt) || 0;
     store.birthdaySeen = (saved.birthdaySeen && typeof saved.birthdaySeen === 'object')
       ? saved.birthdaySeen : {};
+    /* A half typed edit never survives a reload. Closing the tab is the
+       same as pressing Cancel, which is what she would expect. */
+    store.profileEdit = null;
   }
 
   if (saved && Array.isArray(saved.children) && saved.children.length) {
@@ -17190,17 +17452,14 @@ function emptyScreen(msg) {
 const BOTTOM_BAR = ['today', 'now', 'child', 'logs', 'me'];
 
 function tabList() {
-  const kid = activeChild();
-  const nm = kid && kid.name ? kid.name.trim() : '';
-  /* A long name would push the other four labels out of shape, so it
-     gets a first name and a cap rather than a scrollbar. */
-  const short = nm ? nm.split(/\s+/)[0].slice(0, 9) : 'Child';
+  /* Home sits in the middle on purpose. It is the one you reach for
+     without thinking, and the thumb lands there first. */
   return [
-    { id: 'today', label: 'Today', icon: 'home' },
-    { id: 'now', label: 'Right Now', icon: 'heart' },
-    { id: 'child', label: short, icon: 'leaf' },
+    { id: 'community', label: 'Community', icon: 'people' },
     { id: 'logs', label: 'Logs', icon: 'note' },
-    { id: 'me', label: 'Me', icon: 'user' },
+    { id: 'home', label: 'Home', icon: 'home', center: true },
+    { id: 'profile', label: 'Profile', icon: 'user' },
+    { id: 'settings', label: 'Settings', icon: 'gear' },
   ];
 }
 
@@ -17242,6 +17501,15 @@ function render() {
     lastFocus = { id: live.id, start: st, end: en };
   }
   const c = ctx();
+  /* The tab set changed. A browser still holding 'today' or 'me' from
+     the old five would render the right screen but light up none of the
+     new tabs, so it gets moved across once, here. */
+  const TAB_MOVED = { today: 'home', now: 'home', child: 'profile', me: 'profile' };
+  if (TAB_MOVED[state.tab]) {
+    if (state.tab === 'child') store.profileWho = store.activeChildId || 'me';
+    if (state.tab === 'me') store.profileWho = 'me';
+    state.tab = TAB_MOVED[state.tab];
+  }
   const screen = document.getElementById('screen');
 
   let html;
@@ -17271,9 +17539,9 @@ function render() {
   const CHILD_SCOPED = ['milestones', 'activities', 'topics', 'understand', 'feeding',
     'safety', 'plan', 'sleep', 'development'];
   if (v && v.type === 'screen' && CHILD_SCOPED.indexOf(v.id) !== -1 && !activeChild()) {
-    v = null; state.view = null; state.tab = 'today';
+    v = null; state.view = null; state.tab = 'home';
   }
-  if (v && v.type === 'log' && !activeChild()) { v = null; state.view = null; state.tab = 'today'; }
+  if (v && v.type === 'log' && !activeChild()) { v = null; state.view = null; state.tab = 'home'; }
 
   if (v && v.type === 'content') html = viewContent(c, v.id);
   else if (v && v.type === 'activity') html = viewActivity(c, v.id);
@@ -17293,22 +17561,28 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'pumping') html = screenPumping();
   else if (v && v.type === 'screen' && v.id === 'postpartum') html = screenPostpartum(c);
   else if (v && v.type === 'screen' && v.id === 'pregHealth') html = screenPregHealth();
-  else if (v && v.type === 'screen' && v.id === 'profile') html = screenProfile();
+  else if (v && v.type === 'screen' && v.id === 'addchild') html = screenAddChild();
+  /* Every old link that said "profile" meant her own, so it still lands
+     there rather than on a dead route. */
+  else if (v && v.type === 'screen' && v.id === 'profile') {
+    state.view = null; store.profileWho = 'me'; state.tab = 'profile'; html = screenMyProfile();
+  }
   else if (v && v.type === 'screen' && v.id === 'wisdom') html = screenWisdom();
   else if (v && v.type === 'screen' && v.id === 'vaccines') html = screenVaccines();
   else if (v && v.type === 'screen' && v.id === 'understand') html = screenUnderstand(c);
   else if (v && v.type === 'lens') html = viewLens(c, v.id);
   else if (v && v.type === 'infection') html = viewInfection(v.id);
+  else if (v && v.type === 'screen' && v.id === 'now') html = screenNow(c);
   else if (state.tab === 'welcome') html = screenWelcome(c);
-  // Me is the parent's own tab and never asks which child you mean, which
-  // is the whole point of it being a tab rather than a fallback.
-  else if (state.tab === 'me') html = screenMe();
-  // Right Now carries the emergency card and the search box whether or not
-  // a child is open, because neither of those should wait for a profile.
-  else if (state.tab === 'now') html = screenNow(c);
+  else if (state.tab === 'settings') html = screenSettings();
+  /* Profile shows whoever is selected. Her own face in the corner puts
+     her here, a child's circle on Home puts them here. */
+  else if (state.tab === 'profile') html = screenProfileTab(c);
+  else if (state.tab === 'community') html = screenCommunity(c);
   else if (state.tab === 'logs') html = activeChild() ? screenLogs(c) : screenPickChild('Logs');
-  else if (state.tab === 'child') html = activeChild() ? screenChild(c) : screenPickChild('This part of the app');
-  else html = activeChild() ? screenToday(c) : screenPickChild('Today');
+  /* Home is hers and never asks which child you mean, which is the whole
+     point of it being the middle tab. */
+  else html = screenHome(c);
 
   // Inputs inside the screen are destroyed by this swap, so remember where
   // the caret was and put it back, or typing loses focus every keystroke.
@@ -17350,11 +17624,21 @@ function render() {
 
   if (keepId) restoreFocus(keepId, keepStart, keepEnd);
 
-  document.getElementById('tabs').innerHTML = tabList().map((t) => `
-    <button class="tab" role="tab" data-tab="${t.id}" aria-selected="${state.tab === t.id && !state.view}">
-      ${icon(t.icon, 20, state.tab === t.id && !state.view ? 'var(--deep)' : 'var(--muted)')}
+  document.getElementById('tabs').innerHTML = tabList().map((t) => {
+    const on = state.tab === t.id && !state.view;
+    if (t.center) {
+      return `
+      <button class="tab center${on ? ' on' : ''}" role="tab" data-tab="${t.id}" aria-selected="${on}">
+        <span class="tabdisc">${icon(t.icon, 21, '#fff')}</span>
+        <span>${t.label}</span>
+      </button>`;
+    }
+    return `
+    <button class="tab" role="tab" data-tab="${t.id}" aria-selected="${on}">
+      ${icon(t.icon, 20, on ? 'var(--deep)' : 'var(--muted)')}
       <span>${t.label}</span><span class="dot"></span>
-    </button>`).join('');
+    </button>`;
+  }).join('');
 
   let cpText;
   if (c.summary.checkpoint) cpText = `${c.summary.checkpoint} months`;
@@ -17434,8 +17718,13 @@ function initControls() {
     else if (e.target.id === 'authPass') { auth.form.password = e.target.value; }
     else if (e.target.matches('[data-parentfield]')) {
       const f = e.target.dataset.parentfield;
-      store.parent[f] = e.target.value;
-      flushStore();
+      /* These fields only exist while editing, so the value goes to the
+         draft. No repaint, or the caret jumps on every keystroke. */
+      if (store.profileEdit && store.profileEdit.who === 'me') store.profileEdit.values[f] = e.target.value;
+      else { store.parent[f] = e.target.value; flushStore(); }
+    }
+    else if (e.target.matches('[data-editname]')) {
+      if (store.profileEdit) store.profileEdit.values.name = e.target.value;
     }
 
     else if (e.target.matches('[data-childname]')) {
@@ -17487,6 +17776,15 @@ function initControls() {
   let bdayTimer = null;
 
   document.addEventListener('change', (e) => {
+    if (e.target.matches('[data-photofor]')) {
+      const target = e.target.dataset.photofor;
+      const file = e.target.files && e.target.files[0];
+      /* Clear the input either way, so choosing the same file twice
+         still fires a change the second time. */
+      readPhotoFile(file, (url) => { if (url) applyFaceValue(target, url); });
+      e.target.value = '';
+      return;
+    }
     if (e.target.matches('[data-datepart]')) {
       readDateRow(e.target.closest('[data-datefield]'));
     } else if (e.target.matches('[data-childbday]')) {
@@ -17536,7 +17834,7 @@ function initControls() {
   });
 
   document.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit]');
     if (!t) return;
 
     if (t.dataset.auth) {
@@ -17556,7 +17854,7 @@ function initControls() {
         auth.guest = true;
         store.guest = true;
         flushStore();
-        state.tab = IS_DESKTOP ? 'today' : 'welcome';
+        state.tab = IS_DESKTOP ? 'home' : 'welcome';
       }
       else if (a === 'signup') { doSignUp(); return; }
       else if (a === 'login') { doSignIn(); return; }
@@ -17570,10 +17868,29 @@ function initControls() {
       // Opening a child switches every child scoped screen at once, which
       // is the whole reason profiles are separate in the first place.
       selectChild(t.dataset.child);
-      if (['now', 'me'].indexOf(state.tab) === -1) state.tab = 'today';
+      /* Tapping a face opens that child's profile, which is what the
+         circle looks like it should do. */
+      store.profileWho = t.dataset.child;
+      store.profileEdit = null;
+      state.tab = 'profile';
+    } else if (t.dataset.edit) {
+      const how = t.dataset.edit;
+      if (how === 'save') editSave();
+      else if (how === 'cancel') editCancel();
+      else editStart(how);
+    } else if (t.dataset.face !== undefined && t.dataset.avatar !== undefined) {
+      const target = t.dataset.face;
+      const av = t.dataset.avatar;
+      applyFaceValue(target, av ? 'avatar:' + av : '');
+      return;
+    } else if (t.dataset.me) {
+      store.profileWho = 'me';
+      store.profileEdit = null;
+      state.view = null;
+      state.tab = 'profile';
     } else if (t.dataset.allprofiles) {
       selectChild(null);
-      state.tab = 'me';
+      state.tab = 'home';
     } else if (t.dataset.addchild) {
       const nameEl = document.getElementById('newChildName');
       const nm = nameEl ? nameEl.value.trim() : '';
@@ -17587,7 +17904,9 @@ function initControls() {
         store.draftChildName = '';
         store.draftChildBday = '';
         selectChild(kid.id);
-        state.tab = 'today';
+        store.profileWho = kid.id;
+        store.profileEdit = null;
+        state.tab = 'profile';
         flushStore();
       }
     } else if (t.dataset.removechild) {
@@ -17603,7 +17922,12 @@ function initControls() {
       const how = t.dataset.bday;
       const kid = t.dataset.id;
       birthdayDismiss();
-      if (how === 'open' && kid) { selectChild(kid); state.tab = 'child'; }
+      if (how === 'open' && kid) {
+        selectChild(kid);
+        store.profileWho = kid;
+        store.profileEdit = null;
+        state.tab = 'profile';
+      }
       render();
       return;
     } else if (t.dataset.update === 'go') {
@@ -17750,7 +18074,8 @@ function screenNow(c) {
   return `
   ${cornerLeaves()}
   <div class="sc-head">
-    <p class="eyebrow">What is happening right now</p>
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <p class="eyebrow" style="margin-top:6px">What is happening right now</p>
     <h1 class="title">I need help</h1>
     <p class="sub">Tap what is going on, or type it the way you would say it out loud.</p>
   </div>
@@ -18181,7 +18506,7 @@ function screenWelcome(c) {
       <p style="font-size:17px;color:var(--ink);margin:6px 0 0">${esc(state.birthday)}</p>
       <p class="tiny" style="margin-top:4px">That makes them ${esc(c.summary.label)}.</p>
     </div>
-    <button class="btn" data-tab="today">Start ${icon('chev', 15, '#fff')}</button>
+    <button class="btn" data-tab="home">Start ${icon('chev', 15, '#fff')}</button>
 
     <div style="display:flex;align-items:center;gap:12px;margin:26px 0 18px">
       <div style="flex:1;height:1px;background:var(--line)"></div>
@@ -20504,6 +20829,13 @@ function dateSelects(target, value, back, ahead) {
    is wired the same way and a new one cannot forget to save. */
 function applyDateField(target, iso) {
   const parts = String(target || '').split(':');
+  /* A date changed inside an open edit goes to the draft, not to the
+     record. Save is the only thing that commits. */
+  const e = store.profileEdit;
+  if (e) {
+    if (parts[0] === 'parent' && e.who === 'me') { e.values[parts[1]] = iso; render(); return; }
+    if (parts[0] === 'child' && e.who === parts[1]) { e.values.birthday = iso; render(); return; }
+  }
   if (parts[0] === 'parent') {
     store.parent[parts[1]] = iso;
     store.parentUpdatedAt = Date.now();
@@ -20517,6 +20849,7 @@ function applyDateField(target, iso) {
     store.draftChildBday = iso;
   }
   flushStore();
+  render();
 }
 
 /* Reads the three dropdowns in one row and writes the date if all three
@@ -20539,14 +20872,14 @@ function readDateRow(wrap) {
   }
 
   if (!y || !mo || !d) return;
+  /* applyDateField repaints, either from the draft or from the record. */
   applyDateField(wrap.dataset.datefield, y + '-' + mo + '-' + d);
-  render();
 }
 
 /* The cycle card only exists once there is a date to build it from, so
    a parent who never fills this in never sees an empty shell of it. */
-function cycleCard() {
-  const info = cycleInfo(store.parent.lastPeriod, null, store.parent.cycleLength);
+function cycleCard(passed) {
+  const info = passed || cycleInfo(store.parent.lastPeriod, null, store.parent.cycleLength);
   if (!info) return '';
   const row = (label, value, note) => `
     <div style="display:flex;gap:10px;align-items:baseline;padding:6px 0;border-top:1px solid rgba(0,0,0,.05)">
@@ -20578,43 +20911,67 @@ function cycleCard() {
   </div>`;
 }
 
-function screenProfile() {
-  const p = store.parent;
-  /* A date field asks for a repaint, because the cards underneath it are
-     built from the date. The text fields deliberately do not, so typing
-     a name never repaints the screen out from under the cursor. */
-  const dateField = (label, key, help, back, ahead) => `
-    <div class="card flat" style="margin-bottom:8px">
-      <p class="eyebrow">${esc(label)}</p>
-      ${dateSelects('parent:' + key, p[key] || '', back, ahead)}
-      ${help ? `<p class="tiny" style="margin-top:6px">${esc(help)}</p>` : ''}
-    </div>`;
-  const field = (label, key, type, placeholder, help) => `
-    <div class="card flat" style="margin-bottom:8px">
-      <p class="eyebrow">${esc(label)}</p>
-      <input class="inp" type="${type}" data-parentfield="${esc(key)}" id="pf_${esc(key)}"
-        value="${esc(p[key] || '')}" placeholder="${esc(placeholder)}" autocomplete="off"
-        style="margin-top:7px;width:100%" />
-      ${help ? `<p class="tiny" style="margin-top:6px">${esc(help)}</p>` : ''}
-    </div>`;
+/* The old all in one Profile screen is gone. It did four jobs: her
+   details, the list of children, adding one, and the account. Each of
+   those now has its own home, which is what made the app feel, in her
+   words, all over the place. This is what is left of it: adding a
+   child, which is the one job that needed a screen of its own. */
+
+/* -----------------------------------------------------------------
+   SETTINGS
+
+   The things that are about the app rather than about anybody in it.
+   Account, sync, the list of children as records rather than as faces,
+   and which copy of the app this device is running.
+   ----------------------------------------------------------------- */
+
+function settingsChildRow(k) {
+  const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+  return `
+  <div class="card" style="margin-bottom:8px">
+    <div style="display:flex;align-items:center;gap:11px">
+      ${childFace(k, 40)}
+      <span class="grow">
+        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">
+          ${esc(k.name || 'Unnamed')}${isExampleChild(k) ? ' (example)' : ''}
+        </span>
+        <span class="tiny" style="display:block;margin-top:2px">
+          ${esc(sum && sum.label ? sum.label : 'No birthday yet')}
+        </span>
+      </span>
+    </div>
+    <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+      <button class="chip" data-child="${esc(k.id)}">Open their profile</button>
+      <button class="chip" data-removechild="${esc(k.id)}">Remove</button>
+    </div>
+  </div>`;
+}
+
+function screenSettings() {
+  const kids = store.children;
+  const st = cloudStatusLine();
+  const border = st.tone === 'good' ? 'var(--sage)' : st.tone === 'warn' ? 'var(--attention)' : 'var(--line)';
 
   return `
   ${cornerLeaves()}
   <div class="sc-head">
-    <h1 class="title">Profile</h1>
-    <p class="sub">You, and everyone you are raising.</p>
+    <h1 class="title">Settings</h1>
+    <p class="sub">Your account, your children's records, and this copy of the app.</p>
   </div>
   <div class="sc">
 
-    <p class="sect">About you</p>
-    ${field('Your name', 'name', 'text', 'Richelle', '')}
-    ${field('Username', 'username', 'text', 'richelle_s', 'This is what other parents see in the community, not your real name.')}
-    ${field('Email', 'email', 'email', 'you@example.com', '')}
-    ${dateField('Your birthday', 'birthday',
-      'So the app can say it back to you on the day, the same as it does for the children.', 100, 0)}
-    ${dateField('First day of your last period', 'lastPeriod',
-      'Day one is the first day of real bleeding, not spotting the day before. Only you ever see this.', 2, 0)}
-    ${cycleCard()}
+    <p class="sect">Your account</p>
+    <div class="card" style="border-left:3px solid ${border}">
+      <p class="eyebrow">${icon(st.tone === 'good' ? 'check' : 'info', 11, 'var(--sage)')} ${esc(st.title)}</p>
+      <p class="bodytext" style="margin-top:5px">${esc(st.text)}</p>
+      ${st.action ? `<button class="btn" style="margin-top:12px" data-auth="account">${esc(st.action)}</button>` : ''}
+    </div>
+
+    ${childRow('user', 'Your profile',
+      store.parent.name
+        ? esc(store.parent.name) + (store.parent.email ? ', ' + esc(store.parent.email) : '')
+        : 'Add your name so the app knows who it is talking to',
+      'data-me="1"')}
 
     <button class="lrow" data-auth="signout" style="align-items:center">
       <span class="licon">${icon('back', 17, 'var(--deep)')}</span>
@@ -20627,68 +20984,81 @@ function screenProfile() {
     </button>
 
     <p class="sect">Your children</p>
-    <p class="tiny" style="margin:-4px 0 10px">
-      Each child keeps their own age, their own support lenses, and their own notes. Nothing crosses over.
-    </p>
-    ${store.children.map((k) => `
-      <div class="card" style="margin-bottom:10px">
-        <div style="display:flex;align-items:center;gap:9px">
-          ${growthSVG((() => { const su = getAgeSummary({ name: k.name, birthday: k.birthday });
-            const g = su.stageId ? getGrowthDetail(su.stageId) : null; return g ? g.order : 0; })(), 32)}
-          <input class="inp" type="text" data-childname="${esc(k.id)}" id="cn_${esc(k.id)}"
-            value="${esc(k.name)}" placeholder="Name" style="flex:1;min-width:0" />
-        </div>
-        <div style="margin-top:9px">
-          <span class="tiny" style="display:block;margin-bottom:5px">Birthday, or a due date if you are expecting</span>
-          ${dateSelects('child:' + k.id, k.birthday || '', 25, 1)}
-        </div>
-        <p class="tiny" style="margin-top:8px">${esc(childAgeLabel(k))}. ${esc(childLensLine(k))}.</p>
-        <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
-          <button class="chip" data-child="${esc(k.id)}">Open ${esc(k.name || 'this profile')}</button>
-          <button class="chip" data-removechild="${esc(k.id)}">Remove</button>
-        </div>
-      </div>`).join('')}
+    ${duplicateCard()}
+    ${kids.length ? kids.map(settingsChildRow).join('') : `
+      <div class="card flat">
+        <p class="bodytext">No profiles yet. Add one from Home and the whole app reshapes around
+        their age.</p>
+      </div>`}
+    ${childRow('plus', 'Add a child', 'Name and birthday is all it takes to start',
+      'data-go="screen" data-id="addchild"')}
 
-    <div class="card">
-      <p class="eyebrow">${icon('plus', 11, 'var(--sage)')} Add a child</p>
-      <input class="inp" type="text" id="newChildName" value="${esc(store.draftChildName)}"
-        placeholder="Their name" autocomplete="off" style="margin-top:8px;width:100%" />
-      <div style="margin-top:8px">${dateSelects('draft', store.draftChildBday || '', 25, 1)}</div>
-      <p class="tiny" style="margin-top:8px">
-        Expecting? Leave the date as the due date and the app will follow the pregnancy instead.
-      </p>
-      <button class="chip" data-addchild="1" style="margin-top:10px">Add this child</button>
-    </div>
+    <p class="sect">This app</p>
+    ${(() => {
+      const stamp = buildStamp();
+      return `
+      <div class="card flat">
+        <p class="eyebrow">${icon('info', 11, 'var(--sage)')} Version</p>
+        <p class="bodytext" style="margin-top:5px">
+          ${stamp ? 'This device is running the copy built ' + esc(stamp) + '.'
+            : 'This copy does not carry a build stamp.'}
+          ${update.available ? ' A newer one is available.' : ''}
+        </p>
+        ${update.available
+          ? `<button class="btn" style="margin-top:12px" data-update="go">Load the new version</button>`
+          : `<button class="chip" style="margin-top:10px" data-update="check">Check for an update</button>`}
+      </div>`;
+    })()}
 
-    <div class="card flat" style="margin-top:14px">
+    <div class="card flat">
       <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} Your children's privacy</p>
       <p class="bodytext" style="margin-top:5px">
         A child's profile, milestones and notes belong to your account alone. They are never shown to
         another parent, never part of the community, and never carried into a post.
       </p>
     </div>
-
-    ${(() => {
-      /* Which copy of the app is this device running. Put here because
-         "it works on my laptop but not my phone" is almost always two
-         different copies, and until this line existed there was no way
-         to tell them apart from the screen. */
-      const st = cloudStatusLine();
-      return `
-      <div class="card flat">
-        <p class="eyebrow">${icon('info', 11, 'var(--sage)')} This device</p>
-        <p class="tiny" style="margin-top:5px">App version ${esc(buildStamp() || 'unknown')}</p>
-        <p class="tiny" style="margin-top:3px">${esc(st.title)}</p>
-        ${update.available ? `
-          <p class="tiny" style="margin-top:6px;color:var(--attention)">
-            Version ${esc(update.stamp)} is available.
-          </p>
-          <button class="btn sm" style="margin-top:9px;width:100%" data-update="go">Update now</button>
-        ` : `<button class="chip" style="margin-top:9px" data-update="check">Check for an update</button>`}
-      </div>`;
-    })()}
   </div>`;
 }
+
+function screenAddChild() {
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title" style="margin-top:6px">Add a child</h1>
+    <p class="sub">A name and a birthday is all it takes to start.</p>
+  </div>
+  <div class="sc">
+    <div class="card">
+      <p class="eyebrow">Their name</p>
+      <input class="inp" type="text" id="newChildName" value="${esc(store.draftChildName)}"
+        placeholder="Their name" autocomplete="off" style="margin-top:8px;width:100%" />
+      <p class="eyebrow" style="margin-top:14px">Their birthday</p>
+      <div style="margin-top:7px">${dateSelects('draft', store.draftChildBday || '', 25, 1)}</div>
+      <p class="tiny" style="margin-top:9px">
+        Expecting? Put the due date in and the app follows the pregnancy instead.
+      </p>
+      <button class="btn" data-addchild="1" style="margin-top:14px;width:100%">Add this child</button>
+    </div>
+
+    <div class="card flat">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} What happens next</p>
+      <p class="bodytext" style="margin-top:5px">
+        Everything reshapes around their age straight away, from sleep windows to what to say at
+        bedtime. You can add their photo, and turn on any support lenses, from their own profile.
+      </p>
+    </div>
+
+    <div class="card flat">
+      <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} Your children's privacy</p>
+      <p class="bodytext" style="margin-top:5px">
+        A child's profile, milestones and notes belong to your account alone. They are never shown to
+        another parent, never part of the community, and never carried into a post.
+      </p>
+    </div>
+  </div>`;
+}
+
 
 
 /* =================================================================
@@ -20951,7 +21321,7 @@ async function doSignOut() {
   flushStore();
   auth.form = { name: '', email: '', password: '' };
   auth.mode = 'login';
-  state.tab = IS_DESKTOP ? 'today' : 'welcome';
+  state.tab = IS_DESKTOP ? 'home' : 'welcome';
   state.view = null;
   selectChild(null);
   render();
@@ -21135,37 +21505,232 @@ function chipGrowthOrder(k) {
    it sits above every screen rather than inside some of them. */
 /* markOnly is the front door, where there is nobody to switch to and
    nowhere to navigate, but the wordmark still belongs at the top. */
+/* The row of faces lives on Home now rather than up here, so the header
+   is the wordmark and her own face. Hers is a way back to herself from
+   anywhere in the app, including from the middle of a child's profile,
+   which is the thing the old chip row never quite did. */
 function topBar(markOnly) {
-  const kids = store.children;
-  const act = store.activeChildId;
-  const meOn = state.tab === 'me' && !state.view;
+  const meOn = state.tab === 'profile' && store.profileWho === 'me' && !state.view;
   const mark = IS_DESKTOP ? `<div class="mark-holder">${wordmark(false)}</div>` : '';
   if (markOnly) return updateBar() + `<div class="topbar mark-only">${mark}</div>`;
+  const first = (store.parent.name || '').trim().split(/\s+/)[0];
   return updateBar() + `
   <div class="topbar">
-    <div class="topbar-kids">
-      ${kids.map((k) => `
-        <button class="kidchip${k.id === act ? ' on' : ''}" data-child="${esc(k.id)}">
-          <span class="kidchip-av">${growthSVG(chipGrowthOrder(k), 19)}</span>
-          <span class="kidchip-name">${esc(k.name || 'Unnamed')}${isExampleChild(k) ? ' (example)' : ''}</span>
-        </button>`).join('')}
-      <button class="kidchip add" data-go="screen" data-id="profile" aria-label="Add a child">
-        ${icon('plus', 15, 'var(--sage)')}
+    <div class="topbar-left"></div>
+    ${mark}
+    <div class="me-slot">
+      <button class="mebtn${meOn ? ' on' : ''}" data-me="1" aria-label="Your profile">
+        ${parentFace(26)}<span>${esc(first || 'Me')}</span>
       </button>
     </div>
-    ${mark}
-    ${IS_DESKTOP ? `
-    <div class="me-slot">
-      <button class="mebtn${meOn ? ' on' : ''}" data-tab="me" aria-label="You">
-        ${icon('user', 15, meOn ? '#fff' : 'var(--deep)')}<span>Me</span>
-      </button>
-    </div>` : ''}
   </div>`;
 }
 
 /* -----------------------------------------------------------------
    TODAY
    ----------------------------------------------------------------- */
+
+/* -----------------------------------------------------------------
+   HOME
+
+   Hers. Not a child's screen with her name on it. The faces across the
+   top are the family, one tap each into that child. Underneath is the
+   thing she reaches for when something is happening, then her own body
+   and her own dates, then whatever is going on today with whoever is
+   open.
+
+   The order is deliberate. Everything above the fold is either about
+   her or one tap from help.
+   ----------------------------------------------------------------- */
+
+function kidCircle(k) {
+  const on = k.id === store.activeChildId;
+  const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+  return `
+  <button class="kidcirc${on ? ' on' : ''}" data-child="${esc(k.id)}">
+    ${childFace(k, 58)}
+    <span class="kidcirc-name">${esc((k.name || 'Unnamed').split(/\s+/)[0])}</span>
+    <span class="kidcirc-age">${esc(sum && sum.shortLabel ? sum.shortLabel : "No birthday")}</span>
+  </button>`;
+}
+
+function screenHome(c) {
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const first = (store.parent.name || '').trim().split(/\s+/)[0];
+  const kids = store.children;
+  const kid = activeChild();
+  const bag = getBagProgress(store.bagChecked);
+  const cyc = cycleInfo(store.parent.lastPeriod, null, store.parent.cycleLength);
+  const p = kid && c.months != null ? buildPlan(c) : null;
+  const quickLogs = kid && c.months != null ? getLogTypesForAge(c.months).slice(0, 4) : [];
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <p class="eyebrow">${esc(greet)}${first ? ', ' + esc(first) : ''}</p>
+    <h1 class="title">Home</h1>
+    <p class="sub">Small steps today. Brighter tomorrows ahead.</p>
+  </div>
+  <div class="sc">
+
+    <p class="sect">Your family</p>
+    <div class="kidrow">
+      ${kids.map(kidCircle).join('')}
+      <button class="kidcirc add" data-go="screen" data-id="addchild">
+        <span class="face plain addface" style="width:58px;height:58px">
+          ${icon('plus', 22, 'var(--sage)')}
+        </span>
+        <span class="kidcirc-name">Add</span>
+        <span class="kidcirc-age">a child</span>
+      </button>
+    </div>
+    ${kids.length ? '' : `
+    <div class="card flat" style="margin-top:2px">
+      <p class="bodytext">
+        Add a child and everything in the app reshapes around their age, from sleep windows to what
+        to say at bedtime. Add as many as you like. Each one keeps their own notes.
+      </p>
+    </div>`}
+
+    <button class="bigbtn" data-go="screen" data-id="now">
+      <span class="bigbtn-ic">${icon('heart', 22, '#fff')}</span>
+      <span class="grow">
+        <span class="bigbtn-t">Something is happening right now</span>
+        <span class="bigbtn-s">Witching hour, a fever, crying that will not stop, choking</span>
+      </span>
+      ${icon('chev', 17, 'rgba(255,255,255,.8)')}
+    </button>
+
+    ${isExampleChild(kid) ? `
+    <div class="card" style="border-left:3px solid var(--attention)">
+      <p class="eyebrow">${icon('info', 11, 'var(--sage)')} This is the example child</p>
+      <p class="bodytext" style="margin-top:5px">
+        ${esc((kid && kid.name) || 'This one')} is not yours, the app made them up so there was
+        something to look at. Add your own child and this disappears.
+      </p>
+      <button class="btn" style="margin-top:12px" data-go="screen" data-id="addchild">Add your child</button>
+    </div>` : ''}
+
+    ${cyc ? `
+    <p class="sect">You</p>
+    ${homeCycleCard(cyc)}` : `
+    <p class="sect">You</p>
+    <button class="lrow" data-me="1" style="align-items:flex-start">
+      <span class="licon">${icon('calendar', 18)}</span>
+      <span class="grow">
+        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Track your cycle</span>
+        <span class="tiny" style="display:block;margin-top:2px">
+          Add the first day of your last period on your profile and it works out the rest
+        </span>
+      </span>
+      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+    </button>`}
+
+    ${childRow('heart', 'The fourth trimester',
+      'Your recovery week by week, and how you are actually doing',
+      'data-go="screen" data-id="postpartum"')}
+    ${childRow('drop', 'Pumping and breastfeeding',
+      'Flange fitting, schedules, storage, and why frozen milk tastes like soap',
+      'data-go="screen" data-id="pumping"')}
+    ${childRow('bag', 'Hospital bag',
+      bag.done === 0 ? 'A checklist, plus the things people actually forget'
+        : esc(bag.done + ' of ' + bag.total + ' packed'),
+      'data-go="screen" data-id="bag"')}
+    ${childRow('shield', 'Looking after yourself in pregnancy',
+      'CMV first, plus vaccines and the one about not stopping a medication',
+      'data-go="screen" data-id="pregHealth"')}
+
+    ${kid ? `
+    <p class="sect">Today with ${esc((kid.name || 'them').split(/\s+/)[0])}</p>
+
+    ${c.days != null && c.days < 56 && getDiaperDay(c.days) ? `
+    ${newbornCounter(c)}
+    <button class="btn ghost sm" style="width:100%;margin-top:-3px"
+      data-go="screen" data-id="feeding" data-asksub="feedTab" data-asksubval="newborn">
+      Feeds, diapers and how many ounces
+    </button>` : ''}
+
+    ${quickLogs.length ? `
+    <div class="qgrid">
+      ${quickLogs.map((t) => `
+        <button class="q" data-go="log" data-id="${esc(t.id)}">
+          <span class="qi">${icon(logIcon(t.icon), 17)}</span>
+          <span class="qt">${esc(t.label)}</span>
+          <span class="qs">${esc(lastLogLine(t.id))}</span>
+        </button>`).join('')}
+    </div>` : ''}
+
+    ${p && p.morning ? `
+    <div class="plan" style="margin-top:10px">
+      <span class="picon">${icon('sun', 17)}</span>
+      <div class="grow">
+        <p class="eyebrow">Today's plan, morning</p>
+        <h3 class="h3" style="font-size:16px">${esc(p.morning.title)}</h3>
+        <p class="tiny" style="margin-top:3px">${esc(p.morning.description)}</p>
+        <button class="btn ghost sm" style="margin-top:9px" data-go="screen" data-id="plan">
+          The whole plan
+        </button>
+      </div>
+    </div>` : ''}
+
+    <button class="lrow" data-child="${esc(kid.id)}" style="align-items:center;margin-top:4px">
+      <span class="licon">${icon('leaf', 18)}</span>
+      <span class="grow">
+        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">
+          Everything about ${esc((kid.name || 'them').split(/\s+/)[0])}
+        </span>
+        <span class="tiny" style="display:block;margin-top:2px">
+          ${esc(c.summary && c.summary.label ? c.summary.label : 'Development, milestones, support, everyday care')}
+        </span>
+      </span>
+      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+    </button>` : ''}
+
+    <p class="sect">Other parents</p>
+    ${childRow('people', 'Community',
+      'Rooms for parents, under your name rather than your child\'s',
+      'data-tab="community"')}
+
+    ${duplicateCard()}
+
+    <div class="card flat" style="margin-top:12px">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Connection before correction</p>
+      <p class="bodytext">When big emotions show up, try getting curious before giving advice. A calm,
+      connected moment builds trust and helps your child feel safe.</p>
+    </div>
+  </div>`;
+}
+
+/* The same numbers as the profile card, laid out to be glanced at
+   rather than read. */
+function homeCycleCard(info) {
+  const lead = info.isLate
+    ? info.daysLate + ' day' + (info.daysLate === 1 ? '' : 's') + ' past the estimate'
+    : info.daysToNext === 0 ? 'The estimate lands today'
+    : info.inFertileWindow ? 'Inside the estimated fertile window'
+    : 'About ' + info.daysToNext + ' day' + (info.daysToNext === 1 ? '' : 's') + ' to the next one';
+
+  return `
+  <button class="card cyccard" data-me="1">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="cycday">
+        <span class="cycday-n">${info.dayOfCycle}</span>
+        <span class="cycday-l">day</span>
+      </span>
+      <span class="grow" style="text-align:left">
+        <span class="eyebrow" style="display:block">Your cycle</span>
+        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink);margin-top:2px">${esc(lead)}</span>
+        <span class="tiny" style="display:block;margin-top:3px">
+          Next one estimated ${esc(cycleDateLabel(info.nextPeriod))}, fertile window
+          ${esc(cycleDateLabel(info.fertileStart))} to ${esc(cycleDateLabel(info.fertileEnd))}
+        </span>
+      </span>
+      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+    </div>
+    <p class="tiny" style="margin-top:9px;text-align:left">Estimates from one date, not a test and not birth control.</p>
+  </button>`;
+}
 
 function screenToday(c) {
   const hour = new Date().getHours();
@@ -21322,18 +21887,237 @@ function childRow(ic, title, sub, attrs) {
 const COMMON_LENSES = ['adhd', 'autism', 'sensory', 'anxiety', 'ocd', 'speech',
   'emotionalRegulation', 'executiveFunction', 'learningDifferences', 'downSyndrome'];
 
+/* -----------------------------------------------------------------
+   EDITING A PROFILE
+
+   Nothing on a profile saves as you type any more. She asked for Edit
+   and Save, and she is right: a screen that quietly commits every
+   keystroke gives you no way to change your mind, and no way to tell
+   whether it worked. So a profile sits there being read until you press
+   Edit, the changes live in a draft while you make them, and Save is
+   the only thing that touches the real record.
+
+   The draft is deliberately memory only. Backing out by closing the tab
+   is the same as pressing Cancel.
+   ----------------------------------------------------------------- */
+
+function editingWho() {
+  return store.profileEdit ? store.profileEdit.who : null;
+}
+
+function editStart(who) {
+  if (who === 'me') {
+    const p = store.parent || {};
+    store.profileEdit = { who: 'me', values: {
+      name: p.name || '', username: p.username || '', email: p.email || '',
+      birthday: p.birthday || '', lastPeriod: p.lastPeriod || '', photo: p.photo || '',
+    } };
+    return;
+  }
+  const k = store.children.filter((x) => x.id === who)[0];
+  if (!k) return;
+  store.profileEdit = { who: who, values: {
+    name: k.name || '', birthday: k.birthday || '', photo: k.photo || '',
+  } };
+}
+
+function editCancel() { store.profileEdit = null; }
+
+function editSave() {
+  const e = store.profileEdit;
+  if (!e) return;
+  if (e.who === 'me') {
+    ['name', 'username', 'email', 'birthday', 'lastPeriod', 'photo'].forEach((f) => {
+      store.parent[f] = e.values[f] || '';
+    });
+    store.parentUpdatedAt = Date.now();
+  } else {
+    const k = store.children.filter((x) => x.id === e.who)[0];
+    if (k) {
+      k.name = (e.values.name || '').trim();
+      /* A changed birthday changes the whole app underneath them, so the
+         nap override goes with it rather than sitting there describing a
+         day that no longer applies. */
+      if (k.birthday !== (e.values.birthday || null)) k.napOverride = null;
+      k.birthday = e.values.birthday || null;
+      k.photo = e.values.photo || '';
+      k.updatedAt = Date.now();
+    }
+  }
+  store.profileEdit = null;
+  flushStore();
+}
+
+/* Read mode shows a value, not an input. It is the clearest possible
+   signal that nothing here is going to move while you look at it. */
+function readRow(label, value, empty) {
+  const has = value !== null && value !== undefined && String(value) !== '';
+  return `
+  <div class="readrow">
+    <span class="readrow-l">${esc(label)}</span>
+    <span class="readrow-v${has ? '' : ' none'}">${esc(has ? String(value) : (empty || 'Not set'))}</span>
+  </div>`;
+}
+
+/* The face picker. Shown only while editing, because changing a photo
+   is an edit like any other. */
+function facePicker(target, current) {
+  const val = String(current || '');
+  return `
+  <div class="facepick">
+    <div class="facepick-now">${faceHTML(val, 72, target === 'me' ? 'me' : 2)}</div>
+    <div class="grow">
+      <p class="tiny" style="margin-bottom:7px">Use a photo, or pick one of these.</p>
+      <div class="avrow">
+        ${AVATARS.map((a) => `
+          <button class="avdot${val === 'avatar:' + a.id ? ' on' : ''}" style="background:${a.bg}"
+            data-avatar="${esc(a.id)}" data-face="${esc(target)}" aria-label="${esc(a.id)} avatar">
+            ${icon(a.icon, 17, '#fff', 1.9)}
+          </button>`).join('')}
+      </div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px">
+        <label class="chip photobtn">
+          ${icon('camera', 13, 'var(--deep)')} Upload a photo
+          <input type="file" accept="image/*" data-photofor="${esc(target)}" hidden />
+        </label>
+        ${val ? `<button class="chip" data-avatar="" data-face="${esc(target)}">Remove</button>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* -----------------------------------------------------------------
+   THE PROFILE TAB
+
+   Whoever is selected. Her face in the corner puts her here, a child's
+   circle on Home puts them here.
+   ----------------------------------------------------------------- */
+
+function screenProfileTab(c) {
+  const who = store.profileWho || 'me';
+  if (who !== 'me') {
+    const k = store.children.filter((x) => x.id === who)[0];
+    if (k && k.id === store.activeChildId) return screenChild(c);
+    /* The selected child is gone, or somebody else got opened from a
+       different screen. Fall back to her rather than to nothing. */
+    if (!k) { store.profileWho = 'me'; store.profileEdit = null; }
+    else return screenChild(c);
+  }
+  return screenMyProfile();
+}
+
+function screenMyProfile() {
+  const p = store.parent || {};
+  const editing = editingWho() === 'me';
+  const v = editing ? store.profileEdit.values : p;
+  const cyc = cycleInfo(v.lastPeriod, null, p.cycleLength);
+
+  const textField = (label, key, type, placeholder, help) => `
+    <div class="card flat" style="margin-bottom:8px">
+      <p class="eyebrow">${esc(label)}</p>
+      <input class="inp" type="${type}" data-parentfield="${esc(key)}" id="pf_${esc(key)}"
+        value="${esc(v[key] || '')}" placeholder="${esc(placeholder)}" autocomplete="off"
+        style="margin-top:7px;width:100%" />
+      ${help ? `<p class="tiny" style="margin-top:6px">${esc(help)}</p>` : ''}
+    </div>`;
+
+  const dateField = (label, key, help, back, ahead) => `
+    <div class="card flat" style="margin-bottom:8px">
+      <p class="eyebrow">${esc(label)}</p>
+      ${dateSelects('parent:' + key, v[key] || '', back, ahead)}
+      ${help ? `<p class="tiny" style="margin-top:6px">${esc(help)}</p>` : ''}
+    </div>`;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <div class="bigface">${faceHTML(v.photo, 84, 'me')}</div>
+    <h1 class="title" style="margin-top:8px">${esc(p.name || 'Your profile')}</h1>
+    <p class="sub">Everything here is yours, and none of it is on any child.</p>
+  </div>
+  <div class="sc">
+
+    <div class="editbar">
+      ${editing ? `
+        <button class="btn" data-edit="save">${icon('check', 15, '#fff')} Save</button>
+        <button class="btn ghost" data-edit="cancel">Cancel</button>
+      ` : `
+        <button class="btn ghost" data-edit="me">${icon('star', 14, 'var(--deep)')} Edit</button>
+      `}
+    </div>
+
+    ${editing ? facePicker('me', v.photo) : ''}
+
+    <p class="sect">About you</p>
+    ${editing ? `
+      ${textField('Your name', 'name', 'text', 'Richelle', '')}
+      ${textField('Username', 'username', 'text', 'richelle_s', 'This is what other parents see in the community, not your real name.')}
+      ${textField('Email', 'email', 'email', 'you@example.com', '')}
+      ${dateField('Your birthday', 'birthday',
+        'So the app can say it back to you on the day, the same as it does for the children.', 100, 0)}
+      ${dateField('First day of your last period', 'lastPeriod',
+        'Day one is the first day of real bleeding, not spotting the day before. Only you ever see this.', 2, 0)}
+    ` : `
+      <div class="card">
+        ${readRow('Name', p.name, 'Add your name so the app knows who it is talking to')}
+        ${readRow('Username', p.username, 'Not set, so the community will ask for one')}
+        ${readRow('Email', p.email)}
+        ${readRow('Birthday', p.birthday ? cycleDateLabelWithYear(p.birthday) : '')}
+        ${readRow('Last period began', p.lastPeriod ? cycleDateLabel(p.lastPeriod) : '', 'Add it and the app works out the rest')}
+      </div>
+    `}
+
+    ${cyc ? cycleCard(cyc) : ''}
+
+    <div class="card flat" style="margin-top:6px">
+      <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} Who sees this</p>
+      <p class="bodytext" style="margin-top:5px">
+        Your dates, your photo and your real name are yours alone. The community only ever shows
+        your username. None of this is attached to any child, and none of it is shared with anyone.
+      </p>
+    </div>
+  </div>`;
+}
+
 function screenChild(c) {
+  const kid = activeChild();
   const name = state.name || 'this child';
+  const editing = kid && editingWho() === kid.id;
+  const v = editing ? store.profileEdit.values : (kid || {});
   const doneMs = Object.keys(state.statuses || {}).filter(
     (id) => ['sometimes', 'mastered'].indexOf(state.statuses[id]) !== -1).length;
 
   return `
   ${cornerLeaves()}
   <div class="sc-head">
-    <h1 class="title">${esc(name)}</h1>
+    <div class="bigface">${faceHTML(v.photo, 84, c.growth ? c.growth.order : 2)}</div>
+    <h1 class="title" style="margin-top:8px">${esc(name)}</h1>
     <p class="sub">${esc(c.summary.label || 'Add a birthday')}${c.stage ? ' &middot; ' + esc(c.stage.label) : ''}</p>
   </div>
   <div class="sc">
+
+    ${kid ? `
+    <div class="editbar">
+      ${editing ? `
+        <button class="btn" data-edit="save">${icon('check', 15, '#fff')} Save</button>
+        <button class="btn ghost" data-edit="cancel">Cancel</button>
+      ` : `
+        <button class="btn ghost" data-edit="${esc(kid.id)}">${icon('star', 14, 'var(--deep)')} Edit their details</button>
+      `}
+    </div>
+
+    ${editing ? `
+      ${facePicker(kid.id, v.photo)}
+      <div class="card flat" style="margin-bottom:8px">
+        <p class="eyebrow">Their name</p>
+        <input class="inp" type="text" data-editname="1" id="ce_name" value="${esc(v.name || '')}"
+          placeholder="Name" autocomplete="off" style="margin-top:7px;width:100%" />
+      </div>
+      <div class="card flat" style="margin-bottom:8px">
+        <p class="eyebrow">Their birthday, or a due date if you are expecting</p>
+        <div style="margin-top:7px">${dateSelects('child:' + kid.id, v.birthday || '', 25, 1)}</div>
+      </div>
+    ` : ''}` : ''}
 
     <p class="sect">Where they are now</p>
     ${childRow('chart', 'Milestones',
@@ -21382,7 +22166,7 @@ function screenChild(c) {
       'data-go="screen" data-id="vaccines"')}
     ${childRow('pill', 'Something is wrong right now',
       'Fever, rashes, crying that will not stop, and when to call',
-      'data-tab="now"')}
+      'data-go="screen" data-id="now"')}
 
     <p class="sect">If something happens</p>
     ${childRow('heart', 'CPR, choking and staying safe',
@@ -21653,77 +22437,6 @@ function viewLog(c, typeId) {
    had nowhere of their own. Now it is a tab, and it is always there.
    ----------------------------------------------------------------- */
 
-function screenMe() {
-  const hour = new Date().getHours();
-  const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-  const who = store.parent.name ? ', ' + store.parent.name : '';
-  const kids = store.children;
-  const bag = getBagProgress(store.bagChecked);
-
-  return `
-  ${cornerLeaves()}
-  <div class="sc-head">
-    <p class="eyebrow">${esc(greet)}${esc(who)}</p>
-    <h1 class="title">You</h1>
-    <p class="sub">Small steps today. Brighter tomorrows ahead.</p>
-  </div>
-  <div class="sc">
-
-    <p class="sect">Your body and your recovery</p>
-    <p class="tiny" style="margin:-4px 0 10px">
-      This part of the app is about you, not about any of them, and it does not disappear when you open a child.
-    </p>
-    ${childRow('heart', 'The fourth trimester',
-      'Your recovery week by week, and how you are actually doing',
-      'data-go="screen" data-id="postpartum"')}
-    ${childRow('drop', 'Pumping and breastfeeding',
-      'Flange fitting, schedules, storage, and why frozen milk tastes like soap',
-      'data-go="screen" data-id="pumping"')}
-    ${childRow('bag', 'Hospital bag',
-      bag.done === 0 ? 'A checklist, plus the things people actually forget'
-        : esc(bag.done + ' of ' + bag.total + ' packed'),
-      'data-go="screen" data-id="bag"')}
-    ${childRow('shield', 'Looking after yourself in pregnancy',
-      'CMV first, plus vaccines and the one about not stopping a medication',
-      'data-go="screen" data-id="pregHealth"')}
-
-    <p class="sect">Other parents</p>
-    ${childRow('people', 'Community',
-      'Rooms for parents, under your name rather than your child\'s',
-      'data-go="screen" data-id="community"')}
-
-    <p class="sect">Your children</p>
-    ${duplicateCard()}
-    ${kids.length
-      ? kids.map((k) => childCard(k, k.id === store.activeChildId)).join('')
-      : `<div class="card flat">
-           <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} No profiles yet</p>
-           <p class="bodytext" style="margin-top:5px">
-             Add a child and everything in the app reshapes around their age, from sleep windows to
-             what to say at bedtime. Add as many as you like. Each one keeps their own notes.
-           </p>
-         </div>`}
-    ${childRow('plus', 'Add a child', 'Name and birthday is all it takes to start',
-      'data-go="screen" data-id="profile"')}
-
-    <p class="sect">Your account</p>
-    ${(() => {
-      const st = cloudStatusLine();
-      const border = st.tone === 'good' ? 'var(--sage)' : st.tone === 'warn' ? 'var(--attention)' : 'var(--line)';
-      return `
-      <div class="card" style="border-left:3px solid ${border}">
-        <p class="eyebrow">${icon(st.tone === 'good' ? 'check' : 'info', 11, 'var(--sage)')} ${esc(st.title)}</p>
-        <p class="bodytext" style="margin-top:5px">${esc(st.text)}</p>
-        ${st.action ? `<button class="btn" style="margin-top:12px" data-auth="account">${esc(st.action)}</button>` : ''}
-      </div>`;
-    })()}
-    ${childRow('star', 'Profile and settings',
-      store.parent.name
-        ? esc(store.parent.name) + (store.parent.email ? ', ' + esc(store.parent.email) : '')
-        : 'Add your name so the app knows who it is talking to',
-      'data-go="screen" data-id="profile"')}
-  </div>`;
-}
 
 /* The pediatrician summary. Plain text on purpose, because the thing
    a parent needs in the room is something they can read aloud. */
