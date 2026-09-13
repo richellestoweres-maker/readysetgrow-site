@@ -495,28 +495,123 @@ function parentFace(size) {
 
 /* Down to 256 square, centre cropped, before anything is saved. A phone
    photo is four thousand pixels wide and nobody needs that to fill a
-   circle forty pixels across. */
+   circle forty pixels across.
+
+   Two things worth knowing about the route this takes. It goes through
+   createImageBitmap rather than a FileReader, because that reads the
+   orientation tag phones write into their photos: without it a picture
+   taken in portrait comes out lying on its side, which is the classic
+   version of this bug. And it never turns the original into a base64
+   string, which on an eight megabyte photo would mean holding eleven
+   megabytes of text in memory on a phone for no reason. */
+function cropSquare(src, w, h) {
+  const S = 256;
+  const cv = document.createElement('canvas');
+  cv.width = S; cv.height = S;
+  const cx = cv.getContext('2d');
+  const side = Math.min(w, h);
+  cx.drawImage(src, (w - side) / 2, (h - side) / 2, side, side, 0, 0, S, S);
+  return cv.toDataURL('image/jpeg', 0.82);
+}
+
 function readPhotoFile(file, done) {
-  if (!file || !/^image\//.test(file.type || '')) { done(''); return; }
-  const fr = new FileReader();
-  fr.onerror = () => done('');
-  fr.onload = () => {
+  if (!file) { done('', 'No photo came back from the picker. Try choosing it again.'); return; }
+  if (!/^image\//.test(file.type || '')) {
+    done('', 'That file is not a photo. A jpg, png or heic from your camera roll works.');
+    return;
+  }
+
+  /* The old browser route. An object URL rather than a data URL, so a
+     big photo is not copied into a string first. */
+  const viaImage = () => {
+    let url = '';
+    try { url = URL.createObjectURL(file); } catch (err) { done('', 'That photo could not be opened.'); return; }
     const img = new Image();
-    img.onerror = () => done('');
     img.onload = () => {
-      try {
-        const S = 256;
-        const cv = document.createElement('canvas');
-        cv.width = S; cv.height = S;
-        const cx = cv.getContext('2d');
-        const side = Math.min(img.width, img.height);
-        cx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, S, S);
-        done(cv.toDataURL('image/jpeg', 0.82));
-      } catch (err) { done(''); }
+      let out = '';
+      try { out = cropSquare(img, img.naturalWidth || img.width, img.naturalHeight || img.height); }
+      catch (err) { out = ''; }
+      try { URL.revokeObjectURL(url); } catch (err) {}
+      done(out, out ? '' : 'That photo could not be resized. A smaller one usually works.');
     };
-    img.src = String(fr.result || '');
+    img.onerror = () => {
+      try { URL.revokeObjectURL(url); } catch (err) {}
+      done('', 'That photo could not be opened. If it came from a text message, try saving it first.');
+    };
+    img.src = url;
   };
-  fr.readAsDataURL(file);
+
+  if (typeof createImageBitmap === 'function') {
+    let p = null;
+    try { p = createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (err) { p = null; }
+    if (p && typeof p.then === 'function') {
+      p.then((bmp) => {
+        let out = '';
+        try { out = cropSquare(bmp, bmp.width, bmp.height); } catch (err) { out = ''; }
+        try { if (bmp.close) bmp.close(); } catch (err) {}
+        if (out) done(out, '');
+        else viaImage();
+      }).catch(viaImage);
+      return;
+    }
+  }
+  viaImage();
+}
+
+/* ONE file input, for the whole app, living outside the screen.
+
+   This is the bug she hit. The input used to sit inside the picker,
+   which means inside the part of the page that gets thrown away and
+   rebuilt on every repaint. Choosing a photo on a phone backgrounds
+   the app while the camera roll is open, and if anything repainted in
+   that moment the input she picked into no longer existed by the time
+   the picker handed the file back. The change event fired at nothing
+   and the photo quietly vanished.
+
+   An element appended to the body once, at boot, cannot be thrown away
+   by a repaint. */
+let photoInput = null;
+let photoTarget = '';
+
+function ensurePhotoInput() {
+  if (photoInput && photoInput.isConnected) return photoInput;
+  const el = document.createElement('input');
+  el.type = 'file';
+  el.accept = 'image/*';
+  el.id = 'rsgPhotoIn';
+  el.style.position = 'fixed';
+  el.style.left = '-9999px';
+  el.style.width = '1px';
+  el.style.height = '1px';
+  el.setAttribute('aria-hidden', 'true');
+  el.addEventListener('change', () => {
+    const file = el.files && el.files[0];
+    const target = photoTarget;
+    el.value = '';
+    if (!target) return;
+    store.photoBusy = true;
+    store.photoError = '';
+    render();
+    readPhotoFile(file, (url, err) => {
+      store.photoBusy = false;
+      store.photoError = err || '';
+      if (url) applyFaceValue(target, url);
+      else render();
+    });
+  });
+  document.body.appendChild(el);
+  photoInput = el;
+  return el;
+}
+
+function pickPhoto(target) {
+  photoTarget = target;
+  store.photoError = '';
+  const el = ensurePhotoInput();
+  try { el.click(); } catch (err) {
+    store.photoError = 'This browser would not open the photo picker.';
+    render();
+  }
 }
 
 /* Where a finished face lands. 'me' or a child id, same shape as the
@@ -602,6 +697,11 @@ const store = {
      reasoning as the milestone draft. */
   ciEdit: null,
   ciOpen: false,
+
+  /* A photo being resized, and whatever went wrong if it did. Never
+     persisted: a failure belongs to the moment it happened. */
+  photoBusy: false,
+  photoError: '',
 
   /* Parent scoped. These follow the mother, not any child. */
   bagChecked: [],
@@ -705,7 +805,7 @@ const state = {};
 });
 
 ['parent', 'children', 'activeChildId', 'bagChecked', 'birthdaySeen', 'profileWho',
- 'profileEdit', 'msEdit', 'ciEdit', 'ciOpen', 'pumpTab', 'pumpGoal',
+ 'profileEdit', 'msEdit', 'ciEdit', 'ciOpen', 'photoBusy', 'photoError', 'pumpTab', 'pumpGoal',
  'pumpProblem', 'flangeMm', 'ppTab', 'ppStage', 'askQuery', 'askAsked',
  'tab', 'view', 'undGroup', 'lensBand', 'feedTab', 'safetyTab',
  'logDraft', 'draftChildName', 'draftChildBday'].forEach((key) => {
@@ -1747,15 +1847,6 @@ function initControls() {
   let bdayTimer = null;
 
   document.addEventListener('change', (e) => {
-    if (e.target.matches('[data-photofor]')) {
-      const target = e.target.dataset.photofor;
-      const file = e.target.files && e.target.files[0];
-      /* Clear the input either way, so choosing the same file twice
-         still fires a change the second time. */
-      readPhotoFile(file, (url) => { if (url) applyFaceValue(target, url); });
-      e.target.value = '';
-      return;
-    }
     if (e.target.matches('[data-datepart]')) {
       readDateRow(e.target.closest('[data-datefield]'));
     } else if (e.target.matches('[data-childbday]')) {
@@ -1805,7 +1896,7 @@ function initControls() {
   });
 
   document.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick]');
     if (!t) return;
 
     if (t.dataset.auth) {
@@ -1849,6 +1940,9 @@ function initControls() {
       if (how === 'save') editSave();
       else if (how === 'cancel') editCancel();
       else editStart(how);
+    } else if (t.dataset.photopick) {
+      pickPhoto(t.dataset.photopick);
+      return;
     } else if (t.dataset.face !== undefined && t.dataset.avatar !== undefined) {
       const target = t.dataset.face;
       const av = t.dataset.avatar;
@@ -6173,12 +6267,12 @@ function facePicker(target, current) {
           </button>`).join('')}
       </div>
       <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px">
-        <label class="chip photobtn">
-          ${icon('camera', 13, 'var(--deep)')} Upload a photo
-          <input type="file" accept="image/*" data-photofor="${esc(target)}" hidden />
-        </label>
+        <button class="chip photobtn" data-photopick="${esc(target)}" ${store.photoBusy ? 'disabled' : ''}>
+          ${icon('camera', 13, 'var(--deep)')} ${store.photoBusy ? 'Working on it' : 'Upload a photo'}
+        </button>
         ${val ? `<button class="chip" data-avatar="" data-face="${esc(target)}">Remove</button>` : ''}
       </div>
+      ${store.photoError ? `<p class="tiny" style="margin-top:7px;color:#A85A44">${esc(store.photoError)}</p>` : ''}
     </div>
   </div>`;
 }
@@ -8156,7 +8250,7 @@ function willowPanel() {
       <span class="whead-av">${icon('leaf', 17, '#fff')}</span>
       <span class="grow">
         <span class="whead-name">${esc(WILLOW.name)}</span>
-        <span class="whead-sub">${esc(WILLOW.tagline)}</span>
+        ${WILLOW.tagline ? `<span class="whead-sub">${esc(WILLOW.tagline)}</span>` : ''}
       </span>
       <button class="wclose" data-willow="close" aria-label="Close">${icon('plus', 18, 'var(--muted)')}</button>
     </div>
@@ -8167,7 +8261,7 @@ function willowPanel() {
         <p class="tiny" style="margin-top:8px">${esc(WILLOW.standing)}</p>
       </div>
 
-      ${!msgs.length ? `
+      ${!msgs.length && WILLOW.starters.length ? `
       <p class="tiny" style="margin:4px 2px 6px">Things people ask</p>
       <div class="chips" style="gap:6px">
         ${WILLOW.starters.map((s) => `<button class="chip" data-willow="try" data-q="${esc(s)}">${esc(s)}</button>`).join('')}
