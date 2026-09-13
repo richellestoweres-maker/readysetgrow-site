@@ -263,6 +263,127 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .tab .dot{width:18px;height:2.5px;border-radius:2px;background:transparent;margin-top:1px}
 .tab[aria-selected="true"] .dot{background:var(--deep)}
 
+/* FACES.
+   One shape for every photo and avatar in the app, so a face looks the
+   same in the corner as it does on Home. */
+.face{
+  display:inline-grid;place-items:center;flex:none;
+  border-radius:50%;overflow:hidden;background:var(--leaf2);
+  box-shadow:0 1px 3px rgba(45,62,40,.12);
+}
+.face img{width:100%;height:100%;object-fit:cover;display:block}
+.face.plain{background:var(--leaf3);border:1px solid var(--leaf)}
+.face.addface{background:var(--surface);border:1.5px dashed var(--leaf);box-shadow:none}
+
+.bigface{display:flex;justify-content:center}
+.bigface .face{box-shadow:0 4px 14px rgba(45,62,40,.16)}
+
+/* THE FAMILY ROW.
+   Faces rather than names. Scrolls sideways when there are more than
+   fit, which is the one place in the app allowed to do that. */
+.kidrow{
+  display:flex;gap:12px;overflow-x:auto;padding:2px 2px 8px;margin:0 -2px 6px;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+}
+.kidrow::-webkit-scrollbar{display:none}
+.kidcirc{
+  flex:none;width:76px;border:0;background:none;font:inherit;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:4px;padding:3px 0;
+}
+.kidcirc .face{transition:box-shadow .16s ease}
+.kidcirc.on .face{box-shadow:0 0 0 2.5px var(--deep),0 3px 10px rgba(45,62,40,.2)}
+.kidcirc-name{
+  font-size:12.5px;font-weight:600;color:var(--ink);margin-top:2px;
+  max-width:76px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.kidcirc-age{font-size:10.5px;color:var(--muted);line-height:1.25;text-align:center}
+.kidcirc:active{transform:translateY(1px)}
+
+/* THE ONE BUTTON THAT MATTERS WHEN SOMETHING IS HAPPENING. */
+.bigbtn{
+  width:100%;display:flex;align-items:center;gap:12px;text-align:left;
+  border:0;font:inherit;cursor:pointer;margin:4px 0 14px;
+  background:var(--deep);color:#fff;border-radius:16px;padding:14px 15px;
+  box-shadow:0 5px 16px rgba(45,62,40,.22);
+}
+.bigbtn-ic{
+  width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.15);
+  display:grid;place-items:center;flex:none;
+}
+.bigbtn-t{display:block;font-size:14.5px;font-weight:600;line-height:1.3}
+.bigbtn-s{display:block;font-size:11.5px;color:rgba(255,255,255,.78);margin-top:2px;line-height:1.35}
+.bigbtn:active{transform:translateY(1px)}
+
+/* THE CYCLE GLANCE ON HOME. */
+.cyccard{width:100%;text-align:left;border:1px solid var(--line);font:inherit;cursor:pointer;display:block}
+.cycday{
+  width:52px;height:52px;border-radius:50%;flex:none;
+  background:var(--leaf3);border:1px solid var(--leaf);
+  display:grid;place-items:center;align-content:center;
+}
+.cycday-n{display:block;font-size:19px;font-weight:700;color:var(--deep);line-height:1}
+.cycday-l{display:block;font-size:9.5px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+
+/* READ MODE.
+   A profile that is not being edited shows values, not input boxes. */
+.readrow{
+  display:flex;gap:12px;align-items:baseline;padding:8px 0;
+  border-top:1px solid rgba(0,0,0,.055);
+}
+.readrow:first-child{border-top:0;padding-top:2px}
+.readrow-l{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);width:116px;flex:none}
+.readrow-v{font-size:14px;color:var(--ink);font-weight:600;flex:1;min-width:0;overflow-wrap:anywhere}
+.readrow-v.none{font-weight:400;color:var(--faint)}
+
+.editbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;justify-content:flex-end}
+.editbar .btn{width:auto;flex:none;padding:9px 18px;font-size:13.5px}
+
+/* THE FACE PICKER. */
+.facepick{
+  display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  padding:13px;margin-bottom:12px;
+}
+.facepick-now{flex:none}
+.facepick .grow{flex:1;min-width:190px}
+.avrow{display:flex;gap:7px;flex-wrap:wrap}
+.avdot{
+  width:34px;height:34px;border-radius:50%;border:2px solid transparent;
+  display:grid;place-items:center;cursor:pointer;padding:0;
+}
+.avdot.on{border-color:var(--deep);box-shadow:0 0 0 2px var(--cream) inset}
+.photobtn{cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+
+/* THE DATE DROPDOWNS. */
+.daterow{display:flex;gap:7px;margin-top:7px;flex-wrap:wrap}
+.dsel{
+  font:inherit;font-size:14px;color:var(--ink);
+  background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  padding:10px 9px;min-width:0;cursor:pointer;
+}
+.dsel-m{flex:1.5 1 108px}
+.dsel-d{flex:1 1 74px}
+.dsel-y{flex:1 1 90px}
+.dsel:focus{outline:2px solid var(--leaf);outline-offset:1px}
+
+/* HOME IN THE MIDDLE.
+   Raised out of the row, because it is the one you reach for without
+   looking and the thumb should find it by shape as well as position. */
+.tab.center{position:relative}
+.tabdisc{
+  width:42px;height:42px;border-radius:50%;background:var(--deep);
+  display:grid;place-items:center;margin:-13px 0 1px;
+  box-shadow:0 4px 12px rgba(45,62,40,.28);
+  transition:transform .14s ease;
+}
+.tab.center.on .tabdisc{transform:translateY(-2px)}
+/* The disc stays green because it is the anchor of the bar, but the
+   label only lights up when Home is the screen you are actually on. */
+.tab.center span:not(.tabdisc){font-weight:600}
+.tab.center.on span:not(.tabdisc){color:var(--deep)}
+
+.topbar-left{flex:1;min-width:0}
+
 /* BIRTHDAYS.
    A scrim rather than a toast, because this is the one interruption in
    the app that has earned the whole screen for a moment. It sits over
@@ -423,10 +544,13 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .kidchip.on .kidchip-av{background:var(--surface)}
 .kidchip-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .kidchip.add{padding:5px 9px;min-width:34px;justify-content:center}
-.mebtn{display:inline-flex;align-items:center;gap:5px;flex:none;padding:6px 12px;border-radius:999px;
+.mebtn{display:inline-flex;align-items:center;gap:7px;flex:none;padding:4px 13px 4px 4px;border-radius:999px;
   background:var(--surface2);border:1px solid var(--line2);font-size:12.5px;font-weight:600;
-  color:var(--deep);min-height:34px}
+  color:var(--deep);min-height:36px;cursor:pointer;max-width:150px}
+.mebtn span:not(.face){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mebtn .face{box-shadow:none}
 .mebtn.on{background:var(--deep);border-color:var(--deep);color:#fff}
+.mebtn.on .face.plain{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35)}
 
 .hint{font-size:12.5px;color:var(--wb-muted);text-align:center;max-width:44ch;line-height:1.5}
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
