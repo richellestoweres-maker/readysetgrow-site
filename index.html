@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-14 16:06">
+<meta name="rsg-build" content="2026-09-14 18:18">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -152,6 +152,12 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .dlist li{font-size:13.5px;line-height:1.6;color:var(--body);padding-left:17px;position:relative}
 .dlist li::before{content:'';position:absolute;left:2px;top:8px;width:5px;height:5px;border-radius:50%;background:var(--sage)}
 .dlist.warn li::before{background:var(--taupe)}
+.btn.urgent{background:var(--concern);border-color:var(--concern)}
+/* numbered steps, for the do this first lists */
+.nlist{margin:0;padding:0;list-style:none;counter-reset:n;display:flex;flex-direction:column;gap:10px}
+.nlist li{font-size:13.5px;line-height:1.6;color:var(--body);padding-left:27px;position:relative;counter-increment:n}
+.nlist li::before{content:counter(n);position:absolute;left:0;top:1px;width:19px;height:19px;border-radius:50%;
+  background:var(--leaf2);color:var(--deep);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .callout{background:var(--taupe2);border-radius:14px;padding:12px 13px;font-size:12.5px;line-height:1.6;color:#6E5D4C}
 .disclaimer{font-size:11px;color:var(--muted);line-height:1.55;padding:14px 4px 4px;border-top:1px solid var(--line2);margin-top:16px}
 
@@ -981,7 +987,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-14 16:06';
+const BUILD_STAMP = '2026-09-14 18:18';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -17211,6 +17217,531 @@ const PARENT_LEARN_DISCLAIMER =
   'General information written for parents, not therapy and not a diagnosis. If something here '
   + 'describes you and it has been going on, a GP or a therapist is the right next step.';
 
+/* ===== src/data/momNow.js ===== */
+/**
+ * Ready Set Grow: Right Now, for her
+ * ------------------------------------------------------------------
+ * The child version of Right Now answers "something is happening to my
+ * baby". This one answers "something is happening to ME", which is the
+ * half that every parenting app leaves out.
+ *
+ * WHY THIS EXISTS
+ * The most dangerous window for a mother in the United States is the
+ * one right after birth, and most of the deaths in it are preventable.
+ * The warning signs are not obscure. They are simply never said out
+ * loud to the person who needs them, because everyone in the room is
+ * looking at the baby. This file says them out loud.
+ *
+ * THE RULES, same as the child version
+ * 1. Anything that can kill her is first, undecorated, and never
+ *    collapsed behind a tap.
+ * 2. Something to do in the first sixty seconds, not a lecture.
+ * 3. Nothing here diagnoses. "This can mean", never "you have".
+ * 4. Nothing here shames her for how she feels. The entries about her
+ *    head are written as if the reader is already ashamed, because
+ *    usually she is.
+ *
+ * WHAT SHOWS WHEN
+ * Every entry names the shape of life it belongs to, so a mother of a
+ * twelve year old is never handed postpartum hemorrhage signs, and
+ * somebody who has never pumped is never handed flange sizing.
+ *   'always'      everyone, every stage
+ *   'postpartum'  within POSTPARTUM_WINDOW_MONTHS of a birth
+ *   'year-one'    within twelve months, the slower recovery items
+ *   'feeding'     breastfeeding or pumping is switched on
+ *   'pregnant'    she has marked herself expecting
+ */
+
+/* The outer edge of the postpartum window. Twelve weeks, because
+   hemorrhage and preeclampsia both still happen at eleven, and because
+   the six week checkup has convinced a great many people that they are
+   finished when they are not. */
+const POSTPARTUM_WINDOW_MONTHS = 3;
+
+const MOM_URGENCY = {
+  emergency: {
+    id: 'emergency',
+    label: 'Go now',
+    description: 'Call 911 or go to an emergency room. Say that you gave birth recently.',
+  },
+  callNow: {
+    id: 'callNow',
+    label: 'Call now',
+    description: 'Call your OB or midwife today, including after hours. This is what the line is for.',
+  },
+  sameDay: {
+    id: 'sameDay',
+    label: 'Be seen today',
+    description: 'Ask for an appointment today rather than waiting for the next one.',
+  },
+  support: {
+    id: 'support',
+    label: 'You are not in trouble',
+    description: 'Nothing here is an emergency. It is still worth saying out loud to someone.',
+  },
+};
+
+/* ------------------------------------------------------------------
+ * THE CARD THAT IS ALWAYS ON TOP
+ *
+ * Adapted from the AWHONN POST-BIRTH warning signs, which exist because
+ * mothers were being sent home without them. The line that matters most
+ * is the last one: say that you gave birth. Emergency rooms miss
+ * postpartum complications when nobody tells them.
+ * ------------------------------------------------------------------ */
+
+const MOM_ALWAYS_EMERGENCY = {
+  id: 'mom-emergency',
+  title: 'Call 911 for any of these',
+  shows: 'postpartum',
+  signs: [
+    'Bleeding that soaks through a pad in an hour, or clots bigger than an egg',
+    'Chest pain, trouble breathing, or a racing heart that will not settle',
+    'A headache that will not lift, changes in your vision, or seeing spots',
+    'Pain or swelling in one leg, especially the calf, with warmth or redness',
+    'A fever of 100.4 or higher',
+    'Thoughts of hurting yourself or your baby',
+  ],
+  sayThis: 'Tell them how many weeks ago you gave birth. Say it first, before anything else. ' +
+    'Postpartum complications get missed when the person taking the history does not know.',
+  source: { org: 'AWHONN', label: 'POST-BIRTH Warning Signs',
+    url: 'https://www.awhonn.org/education/hospital-products/post-birth-warning-signs-education-program/' },
+};
+
+/* ------------------------------------------------------------------
+ * THE SITUATIONS
+ * ------------------------------------------------------------------ */
+
+const MOM_NOW = [
+
+  /* ---------------- HER BODY ---------------- */
+
+  {
+    id: 'bleeding',
+    label: 'I am bleeding a lot',
+    blurb: 'How much is too much, and the number that means go now',
+    icon: 'heart',
+    category: 'body',
+    shows: 'postpartum',
+    urgencyCheck: {
+      urgency: 'emergency',
+      title: 'Go now if either of these is true',
+      signs: [
+        'You are soaking through a maxi pad in an hour or less',
+        'You are passing clots bigger than an egg',
+      ],
+      note: 'Postpartum hemorrhage is not only a first day problem. It happens at three weeks and at ' +
+        'eight weeks, and it is one of the things most likely to be brushed off.',
+    },
+    tryRightNow: [
+      'Put on a fresh pad and write down the time.',
+      'Check it in an hour. If it is soaked through, that is the number. Go.',
+      'If you are dizzy, grey in the face, or your heart is pounding, do not wait the hour.',
+    ],
+    whatIsHappening:
+      'Bleeding after birth normally slows and changes colour over several weeks, red to pink to brown ' +
+      'to nothing. A day of heavier bleeding after a day of doing too much is common and usually settles ' +
+      'with rest. Bleeding that gets heavier rather than lighter, or goes back to bright red after it had ' +
+      'stopped, is the pattern worth a phone call.',
+    callDoctorIf: [
+      'It is getting heavier rather than lighter',
+      'It went back to bright red after slowing down',
+      'It smells bad, which can mean infection',
+      'You are still bleeding heavily at six weeks',
+    ],
+  },
+
+  {
+    id: 'headache-vision',
+    label: 'I have a headache that will not go away',
+    blurb: 'Blood pressure after birth, and the signs nobody mentions',
+    icon: 'info',
+    category: 'body',
+    shows: 'postpartum',
+    urgencyCheck: {
+      urgency: 'emergency',
+      title: 'These together are an emergency',
+      signs: [
+        'A bad headache that does not lift with water, food and paracetamol',
+        'Blurry vision, spots or flashes of light',
+        'Pain high up under your ribs, usually on the right',
+        'Swelling in your face or hands that came on quickly',
+      ],
+      note: 'Preeclampsia can start AFTER the birth, including in someone whose pregnancy was ' +
+        'completely normal. Most cases that appear after birth show up within the first week, and it ' +
+        'can happen up to six weeks out. Almost nobody is told this on the way home.',
+    },
+    tryRightNow: [
+      'If you have a cuff, take your blood pressure sitting down, feet flat, arm at heart height.',
+      '140 over 90 or higher, twice, twenty minutes apart, is a call.',
+      '160 over 110 or higher is a go now, cuff or no cuff.',
+    ],
+    whatIsHappening:
+      'Plenty of headaches after birth are ordinary ones made worse by no sleep, no water and no food. ' +
+      'The reason this entry is written so plainly anyway is that the serious version looks the same at ' +
+      'the start, and the cost of checking is a phone call.',
+    callDoctorIf: [
+      'It is the worst headache of your life',
+      'It came on suddenly, like a switch',
+      'You had high blood pressure at any point in the pregnancy',
+    ],
+  },
+
+  {
+    id: 'fever-mom',
+    label: 'I have a fever',
+    blurb: '100.4 is the number, and where the infection usually is',
+    icon: 'info',
+    category: 'body',
+    shows: 'year-one',
+    urgencyCheck: {
+      urgency: 'callNow',
+      title: 'A fever of 100.4 or higher after birth is always a call',
+      signs: [
+        'Shaking chills, whether or not the thermometer agrees yet',
+        'Discharge that smells bad',
+        'A red hot area on your breast',
+        'An incision or tear that is hot, opening, or leaking',
+      ],
+    },
+    tryRightNow: [
+      'Take your temperature properly, not with the back of your hand.',
+      'Look at your incision or your stitches in a mirror, and at both breasts.',
+      'Call whether or not you find the cause. Finding it is their job.',
+    ],
+    whatIsHappening:
+      'After a birth a fever is treated as an infection until something else explains it. The usual ' +
+      'places are the uterus, an incision or tear, the bladder, and the breast. All of them are ' +
+      'treatable and all of them get worse if left.',
+    callDoctorIf: ['Any fever of 100.4 or higher, full stop'],
+  },
+
+  {
+    id: 'incision',
+    label: 'My incision or stitches do not look right',
+    blurb: 'What healing looks like, and what does not',
+    icon: 'shield',
+    category: 'body',
+    shows: 'postpartum',
+    urgencyCheck: {
+      urgency: 'callNow',
+      title: 'Call today for any of these',
+      signs: [
+        'Spreading redness, or heat around it',
+        'It is pulling apart or opening',
+        'Pus, or a smell',
+        'Pain that is increasing rather than easing',
+        'A fever with any of the above',
+      ],
+    },
+    tryRightNow: [
+      'Take a photo in good light. It makes the next comparison honest, and it is useful on the phone.',
+      'Keep it clean and dry. No scrubbing, no ointment unless you were told to.',
+    ],
+    whatIsHappening:
+      'A healing incision gets less painful, less red and less swollen week by week, with itching along ' +
+      'the way. Any reversal of that direction is the thing to report. Numbness around a cesarean scar ' +
+      'is normal and can last a long time.',
+    callDoctorIf: ['Anything above', 'You are worried and cannot tell. That is a good enough reason'],
+  },
+
+  {
+    id: 'leg-or-breath',
+    label: 'My leg hurts, or I cannot catch my breath',
+    blurb: 'Clot risk stays high for weeks after birth',
+    icon: 'info',
+    category: 'body',
+    shows: 'postpartum',
+    urgencyCheck: {
+      urgency: 'emergency',
+      title: 'Go now',
+      signs: [
+        'One calf that is swollen, warm, red or painful, especially standing',
+        'Sudden shortness of breath',
+        'Chest pain, or pain when you breathe in',
+        'Coughing blood',
+      ],
+      note: 'Pregnancy and the weeks after it make the blood clot more readily. That protects against ' +
+        'bleeding during birth and it raises clot risk afterwards. This is why a swollen calf gets ' +
+        'taken seriously now in a way it would not have a year ago.',
+    },
+    tryRightNow: [
+      'Compare both calves side by side. One noticeably bigger is the sign.',
+      'Do not massage it and do not walk it off.',
+    ],
+    whatIsHappening:
+      'Swelling in both legs and feet after birth is extremely common and settles over a couple of ' +
+      'weeks. One leg is the one that matters.',
+    callDoctorIf: ['Any of the above, immediately'],
+  },
+
+  /* ---------------- FEEDING ---------------- */
+
+  {
+    id: 'breast-pain',
+    label: 'My breast is sore, hot or lumpy',
+    blurb: 'The clog and mastitis guidance changed in 2022',
+    icon: 'heart',
+    category: 'feeding',
+    shows: 'feeding',
+    urgencyCheck: {
+      urgency: 'callNow',
+      title: 'Call today if you have',
+      signs: [
+        'A fever of 100.4 or higher',
+        'Chills, body aches, or feeling like you have flu',
+        'A red wedge shaped area that is spreading',
+      ],
+    },
+    tryRightNow: [
+      'Ice, not heat. Ten minutes at a time.',
+      'Feed or pump on your normal schedule. Not more.',
+      'Do not deep massage it. Stroke gently toward the armpit if you touch it at all.',
+      'Ibuprofen, if you can take it, brings down the swelling that is causing the block.',
+    ],
+    whatIsHappening:
+      'The old advice was heat, aggressive massage and emptying the breast as often as possible. The ' +
+      'Academy of Breastfeeding Medicine rewrote it in 2022, because that approach makes it worse. A ' +
+      'clog is now understood as swelling narrowing the duct rather than a plug of milk sitting in it. ' +
+      'Extra pumping tells your body to make more milk into an already swollen breast, and hard massage ' +
+      'damages the tissue. Most of the internet has not caught up, including people who will tell you ' +
+      'confidently to get in a hot shower and push it out.',
+    callDoctorIf: [
+      'Fever or flu feeling, which is the mastitis line',
+      'It is not improving in twenty four hours',
+      'You are getting them over and over, which is worth investigating rather than enduring',
+    ],
+    topics: ['clogs-mastitis'],
+    sources: [
+      { org: 'ABM', label: 'Protocol 36, The Mastitis Spectrum, revised 2022',
+        url: 'https://abm.memberclicks.net/assets/DOCUMENTS/PROTOCOLS/36-mitchell-et-al-2022-academy-of-breastfeeding-medicine-clinical-protocol-36-the-mastitis-spectrum-revised-2022.pdf' },
+    ],
+  },
+
+  {
+    id: 'feeding-hurts',
+    label: 'Feeding or pumping hurts',
+    blurb: 'Pain is information, not something to get through',
+    icon: 'heart',
+    category: 'feeding',
+    shows: 'feeding',
+    tryRightNow: [
+      'If you are pumping, turn the suction down. Higher is not more milk, it is more damage.',
+      'If you are feeding, break the seal with a finger and start the latch again rather than enduring it.',
+      'Look at your nipple right after. A wedge or a slant shape points at the latch or the flange.',
+    ],
+    whatIsHappening:
+      'Some tenderness in the first couple of weeks is common. Pain that makes you dread the next one is ' +
+      'not a stage to push through, it is a fixable mechanical problem most of the time. Flange size, ' +
+      'latch, suction setting, a tie, or thrush. All of them have answers.',
+    callDoctorIf: [
+      'Cracked, bleeding or blistered',
+      'Burning pain that carries on after the feed, which can be thrush or vasospasm',
+      'It hurts every single time and nothing you change helps',
+    ],
+    topics: ['pumping-hurts', 'flange-fitting'],
+  },
+
+  /* ---------------- HER HEAD ---------------- */
+
+  {
+    id: 'rage',
+    label: 'I am angrier than I have ever been',
+    blurb: 'Anger is a symptom people miss because they are watching for sadness',
+    icon: 'heart',
+    category: 'head',
+    shows: 'always',
+    tryRightNow: [
+      'If you are holding the baby and you feel out of control, put them somewhere safe and walk out of ' +
+        'the room. A crying baby in a cot is safe. Walking away is the right move, not a failure.',
+      'Cold water on your wrists and the back of your neck.',
+      'Say out loud what happened right before it, even to nobody. It slows the next one down.',
+    ],
+    whatIsHappening:
+      'Postpartum mood disorders show up as irritability and a short fuse at least as often as they show ' +
+      'up as crying. People miss it in themselves for months because they are checking whether they feel ' +
+      'sad, and they do not, they feel furious. Anger counts. It is on the list. It responds to treatment ' +
+      'the same way the sad version does.',
+    callDoctorIf: [
+      'It is most days',
+      'You frightened yourself',
+      'You are avoiding being alone with your child because of it',
+    ],
+    sayThis: 'I am not sad, I am angry all the time, and it is not like me. I think something is wrong.',
+    support: true,
+  },
+
+  {
+    id: 'intrusive',
+    label: 'I keep having awful thoughts about something happening to the baby',
+    blurb: 'Almost everyone has these, and almost nobody says so',
+    icon: 'shield',
+    category: 'head',
+    shows: 'always',
+    urgencyCheck: {
+      urgency: 'callNow',
+      title: 'One thing makes this urgent rather than ordinary',
+      signs: [
+        'You feel pulled toward the thought rather than horrified by it',
+        'You are making a plan',
+        'You are thinking about hurting yourself',
+      ],
+      note: 'Call 1-833-852-6262 or 988. Both are free and confidential, day or night.',
+    },
+    tryRightNow: [
+      'Notice that the thought disgusts you. That reaction is the whole difference, and it is the part ' +
+        'a clinician listens for.',
+      'Do not try to force it away. Arguing with it feeds it. Name it as anxiety and carry on with ' +
+        'what you were doing.',
+      'Tell one person. It loses most of its power the first time you say it out loud.',
+    ],
+    whatIsHappening:
+      'Sudden vivid images of something terrible happening to your baby are reported by the large ' +
+      'majority of new parents, mothers and fathers both. They are a symptom of anxiety, not a wish and ' +
+      'not a warning. The horror you feel is the evidence. Nobody will take your child away for ' +
+      'reporting them, and providers hear them constantly.',
+    callDoctorIf: [
+      'They are constant, or taking up the day',
+      'You are doing rituals to keep them away',
+      'Anything in the box above',
+    ],
+    sayThis: 'I am getting intrusive thoughts about the baby being hurt. They scare me. I do not want ' +
+      'to act on them and I want help with the anxiety.',
+    support: true,
+    sensitive: true,
+  },
+
+  {
+    id: 'nothing-left',
+    label: 'I have nothing left today',
+    blurb: 'Touched out, done, and still three hours from bedtime',
+    icon: 'leaf',
+    category: 'head',
+    shows: 'always',
+    tryRightNow: [
+      'Lower the bar to safe and fed. That is a complete day. Everything else was optional and you can ' +
+        'prove it tomorrow.',
+      'Screen time, cereal for dinner, the same film again. None of it will be the thing that shaped them.',
+      'Ten minutes where nobody touches you, even if it is standing in the kitchen with the door shut.',
+    ],
+    whatIsHappening:
+      'Being touched out is a real and physical feeling, not ingratitude. A body that has been climbed ' +
+      'on, fed from and leaned against since six in the morning is running out of a resource, and the ' +
+      'resource is refilled by being left alone, not by trying harder.',
+    callDoctorIf: [
+      'It is every day rather than a bad day',
+      'You are not enjoying anything at all any more, including things you used to',
+    ],
+    support: true,
+  },
+
+  {
+    id: 'not-myself',
+    label: 'I do not feel like myself',
+    blurb: 'Two weeks is the line between adjusting and something treatable',
+    icon: 'star',
+    category: 'head',
+    shows: 'always',
+    tryRightNow: [
+      'Count backwards. Has it been more than two weeks?',
+      'If yes, that is the whole test. It is worth a call, and the call is short.',
+    ],
+    whatIsHappening:
+      'The first fortnight after a birth is chemically brutal and tearfulness in it is expected. Past two ' +
+      'weeks, low mood, anxiety, not sleeping even when the baby sleeps, not feeling connected, or not ' +
+      'feeling anything at all, all point at something with a name and a treatment. Perinatal mood ' +
+      'disorders are the most common complication of childbirth. They are also among the most treatable, ' +
+      'and treatment does not automatically mean medication.',
+    callDoctorIf: [
+      'More than two weeks',
+      'You cannot sleep even when you have the chance',
+      'You feel nothing when you look at your child, which is a symptom and not a verdict on you',
+    ],
+    sayThis: 'It has been more than two weeks and I do not feel like myself. I want to talk about ' +
+      'perinatal mental health.',
+    support: true,
+  },
+
+  {
+    id: 'no-help',
+    label: 'Nobody is helping me',
+    blurb: 'Words for asking, when hinting has stopped working',
+    icon: 'people',
+    category: 'head',
+    shows: 'always',
+    tryRightNow: [
+      'Pick one task, not a feeling. "Can you take her from seven to eight" lands. "I need more support" does not.',
+      'Name the day and the hour. Open ended offers never get used.',
+      'Ask the person most likely to say yes first, not the person who ought to.',
+    ],
+    whatIsHappening:
+      'People who are not doing the work genuinely cannot see it, and waiting for them to notice is a ' +
+      'strategy that has already failed. Specific requests get met far more often than general ones, ' +
+      'which is not fair, it is just true, and it is worth using.',
+    scripts: [
+      { when: 'To a partner', say: 'I need you to take bedtime on your own on Tuesday and Thursday. Not help with it. Take it.' },
+      { when: 'To a parent or friend', say: 'Could you come Saturday morning for two hours so I can sleep? You would not need to do anything but hold her.' },
+      { when: 'To someone who says let me know if you need anything',
+        say: 'Actually yes. Could you bring dinner Wednesday? Anything at all, I am not fussy.' },
+    ],
+    support: true,
+  },
+];
+
+/* ------------------------------------------------------------------
+ * WHICH OF THESE BELONG TO HER TODAY
+ * ------------------------------------------------------------------ */
+
+const MOM_CATEGORY_LABELS = {
+  body: 'Your body',
+  feeding: 'Feeding',
+  head: 'Your head',
+};
+
+/**
+ * shape describes where she is:
+ *   { monthsSinceBirth, feeding, pregnant }
+ * monthsSinceBirth is the age in months of her youngest child, or null.
+ */
+function momSituationShows(entryShows, shape) {
+  const s = shape || {};
+  const m = s.monthsSinceBirth;
+  if (entryShows === 'always') return true;
+  if (entryShows === 'pregnant') return !!s.pregnant;
+  if (entryShows === 'feeding') return !!s.feeding;
+  if (entryShows === 'postpartum') return m != null && m < POSTPARTUM_WINDOW_MONTHS;
+  if (entryShows === 'year-one') return m != null && m < 12;
+  return false;
+}
+
+function getMomSituations(shape) {
+  return MOM_NOW.filter((e) => momSituationShows(e.shows, shape));
+}
+
+function getMomSituation(id) {
+  return MOM_NOW.filter((e) => e.id === id)[0] || null;
+}
+
+function getMomSituationsByCategory(shape) {
+  const out = {};
+  getMomSituations(shape).forEach((e) => {
+    if (!out[e.category]) out[e.category] = [];
+    out[e.category].push(e);
+  });
+  return out;
+}
+
+function showsMomEmergencyCard(shape) {
+  return momSituationShows(MOM_ALWAYS_EMERGENCY.shows, shape);
+}
+
+const MOM_NOW_IDS = MOM_NOW.map((e) => e.id);
+
+const MOM_NOW_DISCLAIMER =
+  'Written to help you decide whether to call, not to tell you what is wrong. Nobody here is your ' +
+  'doctor or your midwife, and calling them when it turns out to be nothing is exactly what they ' +
+  'would rather you did.';
+
 /* ===== src/data/cycle.js ===== */
 /**
  * Ready Set Grow: Cycle And Dates
@@ -19430,6 +19961,8 @@ function render() {
   else if (v && v.type === 'lens') html = viewLens(c, v.id);
   else if (v && v.type === 'infection') html = viewInfection(v.id);
   else if (v && v.type === 'screen' && v.id === 'now') html = screenNow(c);
+  else if (v && v.type === 'screen' && v.id === 'momnow') html = screenMomNow();
+  else if (v && v.type === 'momnow') html = screenMomNowOne(v.id);
   else if (state.tab === 'welcome') html = screenWelcome(c);
   else if (state.tab === 'settings') html = screenSettings();
   /* Profile shows whoever is selected. Her own face in the corner puts
@@ -19982,7 +20515,16 @@ function initControls() {
       state.view = { type: t.dataset.go, id: t.dataset.id };
     } else if (t.dataset.back) {
       const to = t.dataset.back;
-      state.view = to && to !== '1' ? { type: 'screen', id: to } : null;
+      if (to === 'offchild') {
+        /* Coming back off a child's profile means going where she tapped
+           their circle from, which is her own Home. */
+        store.profileWho = 'me';
+        store.profileEdit = null;
+        state.tab = 'home';
+        state.view = null;
+      } else {
+        state.view = to && to !== '1' ? { type: 'screen', id: to } : null;
+      }
     } else if (t.dataset.ms) {
       msSet(t.dataset.ms, t.dataset.st);
     } else if (t.dataset.msave) {
@@ -22690,11 +23232,7 @@ function screenPickChild(what) {
     <p class="sub">${esc(what)} is different for every age, so pick whose you want to see.</p>
   </div>
   <div class="sc">
-    ${store.children.length
-      ? store.children.map((k) => childCard(k, false)).join('')
-      : `<div class="card flat">
-           <p class="bodytext">No child profiles yet. Add one and this fills in straight away.</p>
-         </div>`}
+    ${store.children.map((k) => childCard(k, false)).join('')}
     <button class="lrow" data-go="screen" data-id="profile">
       <span class="licon">${icon('plus', 18, 'var(--sage)')}</span>
       <span class="grow"><span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Add a child</span></span>
@@ -23002,11 +23540,7 @@ function screenSettings() {
 
     <p class="sect">Your children</p>
     ${duplicateCard()}
-    ${kids.length ? kids.map(settingsChildRow).join('') : `
-      <div class="card flat">
-        <p class="bodytext">No profiles yet. Add one from Home and the whole app reshapes around
-        their age.</p>
-      </div>`}
+    ${kids.map(settingsChildRow).join('')}
     ${childRow('plus', 'Add a child', 'Name and birthday is all it takes to start',
       'data-go="screen" data-id="addchild"')}
 
@@ -23647,11 +24181,14 @@ function topBar(markOnly) {
   const mark = IS_DESKTOP ? `<div class="mark-holder">${wordmark(false)}</div>` : '';
   if (markOnly) return updateBar() + `<div class="topbar mark-only">${mark}</div>`;
   const who = whoIsOpen();
-  const deep = !!state.view;
+  /* Every deep screen carries its own Back, so the chip would make two.
+     The one place nothing goes back is a child's profile, reached by
+     tapping their circle, and that is what this is for. */
+  const deep = !state.view && !!store.profileWho && store.profileWho !== 'me';
   return updateBar() + `
   <div class="topbar">
     <div class="topbar-left">
-      ${deep ? `<button class="backchip" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>` : ''}
+      ${deep ? `<button class="backchip" data-back="offchild">${icon('back', 15, 'var(--deep)')} Back</button>` : ''}
     </div>
     ${mark}
     <div class="me-slot">
@@ -24031,12 +24568,6 @@ function postComposer() {
       <button class="chip" data-photopick="post" ${d.photos.length >= 4 || store.photoBusy ? 'disabled' : ''}>
         ${icon('camera', 13, 'var(--deep)')} ${store.photoBusy ? 'Working on it' : 'Photo'}
       </button>
-      ${store.children.length ? `
-        <select class="dsel" data-postchild style="flex:0 1 auto;max-width:150px">
-          <option value="">Not about anyone</option>
-          ${store.children.map((k) => `
-            <option value="${esc(k.id)}"${d.childId === k.id ? ' selected' : ''}>${esc(k.name || 'Unnamed')}</option>`).join('')}
-        </select>` : ''}
     </div>
 
     <div class="vispick">
@@ -24045,11 +24576,11 @@ function postComposer() {
           ${vis === v.id ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
           >${v.id === 'private' ? icon('shield', 12, 'var(--deep)') : icon('people', 12, 'var(--deep)')} ${esc(v.label)}</button>`).join('')}
     </div>
+    ${vis === 'public' ? `
     <p class="tiny" style="margin-top:6px">
       ${esc((POST_VISIBILITY.filter((v) => v.id === vis)[0] || {}).help || '')}
-      ${vis === 'public' && d.photos.length
-        ? ' This post has a photo in it. Once it is out there you cannot take it back.' : ''}
-    </p>
+      ${d.photos.length ? ' This post has a photo in it. Once it is out there you cannot take it back.' : ''}
+    </p>` : ''}
     ${store.photoError ? `<p class="tiny" style="margin-top:6px;color:#A85A44">${esc(store.photoError)}</p>` : ''}
 
     <div style="display:flex;gap:8px;margin-top:11px;justify-content:flex-end;flex-wrap:wrap">
@@ -24717,10 +25248,8 @@ function screenCheckins(c) {
   <div class="sc">
 
     ${!days.length ? `
-    <div class="card flat">
-      <p class="bodytext">Check in from Home once and this fills in. A week of it is enough to
-      start seeing a shape.</p>
-    </div>` : `
+    <p class="tiny" style="text-align:center;padding:6px 0">Check in from Home once and this fills in.</p>
+    ` : `
 
     <p class="sect">The last two weeks</p>
     <div class="card">
@@ -24861,19 +25390,19 @@ function screenHome(c) {
       <p class="liftline">${esc(affirmation)}</p>
     </div>
 
-    ${morning ? `
-    <div class="card">
-      <p class="eyebrow">${icon(isMorning ? 'sun' : 'moon', 11, 'var(--sage)')}
-        ${isMorning ? 'Something for this morning' : 'For tomorrow morning'}</p>
-      <h3 class="h3" style="font-size:16px;margin-top:5px">${esc(morning.title)}</h3>
-      <p class="bodytext" style="margin-top:4px">${esc(morning.body)}</p>
-    </div>` : ''}
+    <p class="sect">Your posts</p>
+    ${postComposer()}
+    ${mine.map((p) => postCard(p, true)).join('')}
+    ${(store.posts || []).length > 3 ? `
+    <button class="btn ghost sm" style="width:100%" data-me="1">
+      All ${(store.posts || []).length} posts, on your profile
+    </button>` : ''}
 
-    <button class="bigbtn" data-go="screen" data-id="now">
+    <button class="bigbtn" data-go="screen" data-id="momnow">
       <span class="bigbtn-ic">${icon('heart', 22, '#fff')}</span>
       <span class="grow">
         <span class="bigbtn-t">Something is happening right now</span>
-        <span class="bigbtn-s">Witching hour, a fever, crying that will not stop, choking</span>
+        <span class="bigbtn-s">${esc(momNowBlurb())}</span>
       </span>
       ${icon('chev', 17, 'rgba(255,255,255,.8)')}
     </button>
@@ -24892,17 +25421,13 @@ function screenHome(c) {
       Everything written for you
     </button>
 
-    <p class="sect">Your posts</p>
-    ${postComposer()}
-    ${mine.length ? mine.map((p) => postCard(p, true)).join('') : `
-    <div class="card flat">
-      <p class="bodytext">Nothing here yet. Write something down, on its own or with a photo. It stays
-      private unless you say otherwise.</p>
-    </div>`}
-    ${(store.posts || []).length > 3 ? `
-    <button class="btn ghost sm" style="width:100%" data-me="1">
-      All ${(store.posts || []).length} posts, on your profile
-    </button>` : ''}
+    ${morning ? `
+    <div class="card">
+      <p class="eyebrow">${icon(isMorning ? 'sun' : 'moon', 11, 'var(--sage)')}
+        ${isMorning ? 'Something for this morning' : 'For tomorrow morning'}</p>
+      <h3 class="h3" style="font-size:16px;margin-top:5px">${esc(morning.title)}</h3>
+      <p class="bodytext" style="margin-top:4px">${esc(morning.body)}</p>
+    </div>` : ''}
 
     ${duplicateCard()}
 
@@ -24916,6 +25441,186 @@ function screenHome(c) {
     </div>` : ''}
   </div>`;
 }
+
+/* =================================================================
+   RIGHT NOW, FOR HER
+
+   The child version answers "something is happening to my baby".
+   This one answers "something is happening to me", which is the half
+   she said was missing. What shows is driven by where she actually
+   is, so a mother of a four year old is never handed hemorrhage
+   signs and somebody who has never pumped never sees flange sizing.
+   ================================================================= */
+
+const MOM_URG_COLOR = {
+  emergency: 'var(--concern)',
+  callNow: '#B5705C',
+  sameDay: 'var(--attention)',
+  support: 'var(--sage)',
+};
+
+/* Where she is today, worked out rather than asked. The youngest
+   child's age is what puts her in or out of the postpartum window. */
+function momShape() {
+  const ages = childAges();
+  const youngest = ages.length ? Math.min.apply(null, ages) : null;
+  const sit = situation();
+  return {
+    monthsSinceBirth: youngest,
+    feeding: sitShows('feeding'),
+    pregnant: hasStage(sit, 'expecting'),
+  };
+}
+
+function momNowRow(e) {
+  return `
+  <button class="lrow" data-go="momnow" data-id="${esc(e.id)}">
+    <span class="licon">${icon(e.icon || 'heart', 18)}</span>
+    <span class="grow">
+      <span style="display:block;font-size:14.5px;font-weight:600;color:var(--ink)">${esc(e.label)}</span>
+      <span class="tiny" style="display:block;margin-top:2px">${esc(e.blurb)}</span>
+    </span>
+    <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+  </button>`;
+}
+
+/* The line under the button names what is actually behind it today,
+   so it reads as hers rather than as a generic panic button. */
+function momNowBlurb() {
+  const shape = momShape();
+  const bits = [];
+  if (shape.monthsSinceBirth != null && shape.monthsSinceBirth < POSTPARTUM_WINDOW_MONTHS) {
+    bits.push('bleeding', 'blood pressure');
+  }
+  if (shape.feeding) bits.push('a sore breast');
+  bits.push('rage', 'nothing left today');
+  return bits.slice(0, 4).join(', ');
+}
+
+function screenMomNow() {
+  const shape = momShape();
+  const groups = getMomSituationsByCategory(shape);
+  const em = showsMomEmergencyCard(shape);
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title" style="margin-top:6px">Something is happening</h1>
+    <p class="sub">This one is about you.</p>
+  </div>
+  <div class="sc">
+
+    ${em ? `
+    <div class="card" style="border-left:3px solid var(--concern)">
+      <p class="eyebrow" style="color:var(--concern)">
+        ${icon('info', 11, 'var(--concern)')} ${esc(MOM_ALWAYS_EMERGENCY.title)}
+      </p>
+      <ul class="dlist" style="margin-top:7px">
+        ${MOM_ALWAYS_EMERGENCY.signs.map((x) => `<li>${esc(x)}</li>`).join('')}
+      </ul>
+      <p class="bodytext" style="margin-top:9px"><strong style="color:var(--ink)">${esc(MOM_ALWAYS_EMERGENCY.sayThis)}</strong></p>
+      <a class="btn urgent" href="tel:911" style="margin-top:12px;text-decoration:none">
+        ${icon('info', 15, '#fff')} Call 911
+      </a>
+    </div>` : ''}
+
+    ${Object.keys(MOM_CATEGORY_LABELS).filter((c) => (groups[c] || []).length).map((c) => `
+      <p class="sect">${esc(MOM_CATEGORY_LABELS[c])}</p>
+      ${groups[c].map(momNowRow).join('')}
+    `).join('')}
+
+    <p class="sect">If you need a person</p>
+    ${MATERNAL_SUPPORT_LINES.map((l) => `
+      <div class="card flat">
+        <p class="eyebrow">${icon('people', 11, 'var(--sage)')} ${esc(l.name)}</p>
+        <p class="bodytext" style="margin-top:4px">${esc(l.detail)}</p>
+        <a class="btn ghost sm" style="margin-top:9px;text-decoration:none;display:block;text-align:center"
+          href="tel:${esc(String(l.contact).replace(/[^0-9]/g, '').slice(-11))}">${esc(l.contact)}</a>
+      </div>`).join('')}
+
+    <p class="tiny" style="margin-top:12px">${esc(MOM_NOW_DISCLAIMER)}</p>
+  </div>`;
+}
+
+function screenMomNowOne(id) {
+  const e = getMomSituation(id);
+  if (!e) return emptyScreen('That one is not here', 'Go back and pick again.');
+  const u = e.urgencyCheck;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="momnow">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title" style="margin-top:6px">${esc(e.label)}</h1>
+  </div>
+  <div class="sc">
+
+    ${u ? `
+    <div class="card" style="border-left:3px solid ${MOM_URG_COLOR[u.urgency] || 'var(--concern)'}">
+      <p class="eyebrow" style="color:${MOM_URG_COLOR[u.urgency] || 'var(--concern)'}">
+        ${icon('info', 11, MOM_URG_COLOR[u.urgency] || 'var(--concern)')}
+        ${esc(MOM_URGENCY[u.urgency] ? MOM_URGENCY[u.urgency].label : '')} &middot; ${esc(u.title)}
+      </p>
+      <ul class="dlist" style="margin-top:7px">
+        ${u.signs.map((x) => `<li>${esc(x)}</li>`).join('')}
+      </ul>
+      ${u.note ? `<p class="bodytext" style="margin-top:8px">${esc(u.note)}</p>` : ''}
+      ${u.urgency === 'emergency' ? `
+      <a class="btn urgent" href="tel:911" style="margin-top:12px;text-decoration:none">
+        ${icon('info', 15, '#fff')} Call 911
+      </a>` : ''}
+    </div>` : ''}
+
+    ${e.tryRightNow && e.tryRightNow.length ? `
+    <p class="sect">Right now</p>
+    <div class="card">
+      <ol class="nlist">${e.tryRightNow.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>
+    </div>` : ''}
+
+    ${e.whatIsHappening ? `
+    <p class="sect">What is going on</p>
+    <div class="card flat"><p class="bodytext">${esc(e.whatIsHappening)}</p></div>` : ''}
+
+    ${e.scripts && e.scripts.length ? `
+    <p class="sect">Words for it</p>
+    ${e.scripts.map((s) => `
+      <div class="card flat">
+        <p class="eyebrow">${esc(s.when)}</p>
+        <p class="bodytext" style="margin-top:4px;font-style:italic">${esc(s.say)}</p>
+      </div>`).join('')}` : ''}
+
+    ${e.sayThis ? `
+    <p class="sect">What to say when you call</p>
+    <div class="card flat"><p class="bodytext" style="font-style:italic">${esc(e.sayThis)}</p></div>` : ''}
+
+    ${e.callDoctorIf && e.callDoctorIf.length ? `
+    <p class="sect">Call if</p>
+    <div class="card flat" style="border-left:3px solid var(--attention)">
+      <ul class="dlist">${e.callDoctorIf.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+    </div>` : ''}
+
+    ${e.support ? `
+    <p class="sect">Somebody to talk to</p>
+    ${MATERNAL_SUPPORT_LINES.map((l) => `
+      <div class="card flat">
+        <p class="eyebrow">${icon('people', 11, 'var(--sage)')} ${esc(l.name)}</p>
+        <p class="bodytext" style="margin-top:4px">${esc(l.detail)}</p>
+        <a class="btn ghost sm" style="margin-top:9px;text-decoration:none;display:block;text-align:center"
+          href="tel:${esc(String(l.contact).replace(/[^0-9]/g, '').slice(-11))}">${esc(l.contact)}</a>
+      </div>`).join('')}` : ''}
+
+    ${e.sources && e.sources.length ? `
+    <p class="sect">Where this comes from</p>
+    <div class="card flat">
+      ${e.sources.map((s) => `
+        <p class="tiny" style="margin-bottom:5px">
+          <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.org)}, ${esc(s.label)}</a>
+        </p>`).join('')}
+    </div>` : ''}
+  </div>`;
+}
+
 
 /* -----------------------------------------------------------------
    LEARNING, FOR HER
@@ -25217,22 +25922,12 @@ function screenMyProfile() {
 
     ${postComposer()}
 
-    ${posts.length ? posts.map((x) => postCard(x, true)).join('') : `
-    <div class="card flat">
-      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} This is what other parents would see</p>
-      <p class="bodytext" style="margin-top:5px">
-        Your name, your photo and anything you have chosen to share. Nothing else. Your children's
-        profiles, their notes, your dates and everything in Settings stay private to you, always.
-      </p>
-    </div>`}
+    ${posts.map((x) => postCard(x, true)).join('')}
 
-    <div class="card flat" style="margin-top:6px">
-      <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} What is private</p>
-      <p class="bodytext" style="margin-top:5px">
-        Every profile you keep for a child is yours alone. It is a place to document, never a place
-        anybody else can look. Only a post can be shared, and only when you choose it on that post.
-      </p>
-    </div>
+    <p class="tiny" style="margin-top:10px;text-align:center">
+      ${icon('shield', 10, 'var(--muted)')} Only posts can be shared, and only the ones you choose.
+      Everything else stays yours.
+    </p>
 
     ${editing ? editSaveBar() : ''}
   </div>`;
@@ -25536,9 +26231,7 @@ function screenLogs(c) {
           <button class="chip" data-dellog="${esc(l.id)}" style="min-height:30px;padding:5px 10px">Remove</button>
         </div>`;
       }).join('')}`).join('') : `
-      <div class="card flat">
-        <p class="bodytext">Nothing logged yet. Tap any of the buttons above and it lands here with a time on it.</p>
-      </div>`}
+      <p class="tiny" style="text-align:center;padding:6px 0">Nothing logged yet.</p>`}
 
     ${logs.length ? `
     <p class="sect">For your pediatrician</p>
