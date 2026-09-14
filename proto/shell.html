@@ -292,6 +292,145 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 }
 .cireply .grow{flex:1;min-width:0}
 
+/* THE CORNER MENU.
+   Whoever is open, and what is waiting. */
+.me-slot{position:relative}
+.backchip{
+  display:inline-flex;align-items:center;gap:5px;cursor:pointer;font:inherit;
+  font-size:12.5px;font-weight:600;color:var(--deep);
+  background:var(--surface2);border:1px solid var(--line2);border-radius:999px;
+  padding:7px 13px 7px 10px;
+}
+.cmenu{
+  position:absolute;right:0;top:calc(100% + 8px);z-index:30;
+  width:264px;max-width:calc(100vw - 28px);
+  background:var(--card,#fff);border:1px solid var(--line);border-radius:15px;
+  box-shadow:0 14px 34px rgba(45,62,40,.2);padding:8px;
+  max-height:min(70vh,520px);overflow-y:auto;text-align:left;
+}
+.cmenu-h{
+  font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);padding:7px 9px 5px;margin:0;
+}
+.cmenu-empty{font-size:12.5px;color:var(--faint);padding:2px 9px 8px;margin:0;line-height:1.4}
+.cmenu-row{
+  display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+  border:0;background:none;font:inherit;cursor:pointer;
+  padding:8px 9px;border-radius:11px;
+}
+.cmenu-row:hover{background:var(--leaf3)}
+.cmenu-row.on{background:var(--leaf2)}
+.cmenu-ic{
+  width:28px;height:28px;border-radius:50%;background:var(--leaf3);
+  display:grid;place-items:center;flex:none;
+}
+.cmenu-t{display:block;font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.3}
+.cmenu-s{display:block;font-size:11.5px;color:var(--muted);margin-top:1px;line-height:1.3}
+.cmenu-rule{height:1px;background:rgba(0,0,0,.07);margin:6px 4px}
+
+/* TICK BOXES.
+   A list you read, not a form you fill in. */
+.tick{
+  display:flex;align-items:flex-start;gap:11px;width:100%;text-align:left;
+  border:0;background:none;font:inherit;cursor:pointer;
+  padding:9px 2px;border-top:1px solid rgba(0,0,0,.055);
+}
+.tick:first-child{border-top:0;padding-top:2px}
+.tickbox{
+  width:21px;height:21px;border-radius:6px;flex:none;margin-top:1px;
+  border:1.6px solid var(--line2);background:var(--surface);
+  display:grid;place-items:center;
+}
+.tick.on .tickbox{background:var(--deep);border-color:var(--deep)}
+.tick-l{display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.35}
+.tick.on .tick-l{color:var(--deep)}
+.tick-h{display:block;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4}
+
+/* THE CYCLE CALENDAR. */
+.calwrap{margin-top:13px;border-top:1px solid rgba(0,0,0,.06);padding-top:11px}
+.calhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+.calmonth{font-size:13.5px;font-weight:600;color:var(--ink)}
+.calnav{
+  width:30px;height:30px;border-radius:50%;flex:none;cursor:pointer;
+  background:var(--surface2);border:1px solid var(--line2);
+  display:grid;place-items:center;
+}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-w{
+  font-size:10px;color:var(--muted);text-align:center;padding:2px 0 4px;
+  letter-spacing:.04em;
+}
+.cal-pad{aspect-ratio:1}
+.cal-d{
+  aspect-ratio:1;display:grid;place-items:center;border-radius:9px;
+  font-size:12px;color:var(--body);
+  font-variant-numeric:tabular-nums;
+}
+.cal-d.bleed{background:#F0D3CB;color:#8C4A38;font-weight:600}
+.cal-d.fertile{background:#E4EDDC;color:#4F6B3E}
+.cal-d.ovul{background:#C9DDB6;color:#3E5730;font-weight:700}
+.cal-d.today{box-shadow:0 0 0 2px var(--deep) inset;font-weight:700}
+.callegend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--muted)}
+.callegend span{display:inline-flex;align-items:center;gap:5px}
+.callegend i{width:11px;height:11px;border-radius:4px;display:block}
+.k-bleed{background:#F0D3CB}
+.k-fertile{background:#E4EDDC}
+.k-ovul{background:#C9DDB6}
+
+/* LEARNING CARD. */
+.learncard{
+  display:block;width:100%;text-align:left;cursor:pointer;
+  border:1px solid var(--line);font:inherit;
+}
+
+/* POSTS. */
+.composer{display:block;width:100%}
+.composer.shut{
+  display:flex;align-items:center;gap:11px;text-align:left;cursor:pointer;
+  background:var(--card,#fff);border:1px solid var(--line);border-radius:16px;
+  padding:11px 13px;font:inherit;margin-bottom:10px;
+}
+.composer-hint{flex:1;min-width:0;font-size:14px;color:var(--faint)}
+.composer-cam{
+  width:34px;height:34px;border-radius:50%;background:var(--leaf3);
+  display:grid;place-items:center;flex:none;
+}
+.composer-in{
+  flex:1;min-width:0;resize:vertical;min-height:70px;line-height:1.5;
+  font-family:inherit;
+}
+.composer-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.vispick{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+
+.postcard{margin-bottom:10px}
+.post-who{display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3}
+.post-when{display:block;font-size:11.5px;color:var(--muted);margin-top:1px}
+.post-vis{
+  display:inline-flex;align-items:center;gap:4px;flex:none;
+  font-size:11px;font-weight:600;color:var(--muted);
+  background:var(--surface2);border-radius:999px;padding:4px 9px;
+}
+.post-vis.pub{color:#6E8B54;background:#EEF2E7}
+
+.postpics{display:grid;gap:5px;margin-top:10px;grid-template-columns:1fr}
+.postpics.n2,.postpics.n4{grid-template-columns:1fr 1fr}
+.postpics.n3{grid-template-columns:1fr 1fr}
+.postpics.draft{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
+.postpic{position:relative;display:block;border-radius:12px;overflow:hidden;background:var(--leaf3)}
+.postpic img{width:100%;height:100%;object-fit:cover;display:block;max-height:340px}
+.postpics.draft .postpic img{aspect-ratio:1;max-height:none}
+.postpic-x{
+  position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;
+  background:rgba(0,0,0,.55);border:0;cursor:pointer;display:grid;place-items:center;
+  transform:rotate(45deg);
+}
+
+.profstats{
+  display:flex;gap:18px;justify-content:center;flex-wrap:wrap;
+  margin:-2px 0 14px;font-size:12.5px;color:var(--muted);
+}
+.profstats b{color:var(--ink);font-size:15px}
+
 /* THE DAILY CHECK IN. */
 .cicard{border:1px solid var(--line)}
 .cirow{padding:11px 0;border-top:1px solid rgba(0,0,0,.055)}
