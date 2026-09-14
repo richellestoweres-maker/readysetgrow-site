@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-14 00:33">
+<meta name="rsg-build" content="2026-09-14 00:45">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -837,7 +837,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-14 00:33';
+const BUILD_STAMP = '2026-09-14 00:45';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -18110,18 +18110,8 @@ function loadStore() {
     store.parent.lastPeriod = sanitizeStoredDate(store.parent.lastPeriod, 0);
     // Fill in any field an older saved record is missing, so a profile
     // written by a previous version cannot crash a newer screen.
-    store.children = saved.children.map((k) => Object.assign(newChildRecord('', null), k, {
+    store.children = saved.children.map((k) => Object.assign(normalizeChild(k), {
       birthday: sanitizeStoredDate(k.birthday, 2) || null,
-      lenses: Array.isArray(k.lenses) ? k.lenses : [],
-      lensOptions: k.lensOptions && typeof k.lensOptions === 'object' ? k.lensOptions : {},
-      lensNumbers: k.lensNumbers && typeof k.lensNumbers === 'object' ? k.lensNumbers : {},
-      statuses: k.statuses && typeof k.statuses === 'object' ? k.statuses : {},
-      statusDates: k.statusDates && typeof k.statusDates === 'object' ? k.statusDates : {},
-      milestonesUpdatedAt: k.milestonesUpdatedAt || '',
-      checkins: k.checkins && typeof k.checkins === 'object' ? k.checkins : {},
-      routineInclude: Array.isArray(k.routineInclude) ? k.routineInclude : [],
-      logs: Array.isArray(k.logs) ? k.logs : [],
-      updatedAt: Number(k.updatedAt) || 0,
     }));
     store.bagChecked = Array.isArray(saved.bagChecked) ? saved.bagChecked : [];
     /* Reopen whoever was open last. Three of the five tabs are about one
@@ -24502,26 +24492,71 @@ const cloud = {
 /* Everything that belongs to the cloud copy of one child. JSON round
    trip on purpose: it drops undefined, which Firestore rejects outright,
    and it gives a stable string to compare against. */
+/* WHAT GOES UP, AND WHY THIS IS A DENY LIST
+
+   This used to name the fields to sync one by one. That is the kind of
+   thing that looks careful and is actually a trap: every field added to
+   a child after it was written, such as her photo, the day each
+   milestone was reached, and every daily check in, was quietly left out
+   of the payload. So the cloud never received them, and worse, the
+   moment a record was adopted back from the cloud it arrived without
+   them and overwrote the local copy that had them. A photo saved on
+   Tuesday could simply be gone on Wednesday through no fault of
+   anybody, which is exactly what happened.
+
+   So it is a deny list now. Everything on a child syncs unless it is
+   named here as belonging to this browser rather than to the child. Add
+   a field to a child and it syncs, which is the behaviour anybody would
+   assume. */
+const CHILD_LOCAL_ONLY = ['seeded'];
+
 function childPayload(k) {
-  return JSON.parse(JSON.stringify({
-    id: k.id,
-    name: k.name || '',
-    birthday: k.birthday || null,
-    lenses: k.lenses || [],
-    lensOptions: k.lensOptions || {},
-    lensNumbers: k.lensNumbers || {},
-    statuses: k.statuses || {},
-    wakeTime: k.wakeTime || '06:30',
-    napOverride: k.napOverride == null ? null : k.napOverride,
-    routineInclude: k.routineInclude || [],
-    logs: Array.isArray(k.logs) ? k.logs : [],
-    createdAt: k.createdAt || null,
-    updatedAt: k.updatedAt || 0,
-  }));
+  const src = k || {};
+  const out = {};
+  Object.keys(src).forEach((key) => {
+    if (CHILD_LOCAL_ONLY.indexOf(key) !== -1) return;
+    if (src[key] === undefined) return;
+    out[key] = src[key];
+  });
+  /* The handful the rest of the app assumes are always present get a
+     shape even on a record that predates them. */
+  out.id = src.id;
+  out.name = src.name || '';
+  out.birthday = src.birthday || null;
+  out.lenses = src.lenses || [];
+  out.lensOptions = src.lensOptions || {};
+  out.lensNumbers = src.lensNumbers || {};
+  out.statuses = src.statuses || {};
+  out.statusDates = src.statusDates || {};
+  out.checkins = src.checkins || {};
+  out.photo = src.photo || '';
+  out.wakeTime = src.wakeTime || '06:30';
+  out.napOverride = src.napOverride == null ? null : src.napOverride;
+  out.routineInclude = src.routineInclude || [];
+  out.logs = Array.isArray(src.logs) ? src.logs : [];
+  out.createdAt = src.createdAt || null;
+  out.updatedAt = src.updatedAt || 0;
+  return JSON.parse(JSON.stringify(out));
 }
-/* The flag is deliberately not in the payload above. It describes where
-   a record came from in this browser, and once it reaches an account it
-   is simply one of her children. */
+
+/* A record coming back from the cloud may have been written by an older
+   copy of the app and be missing fields this one expects. Filling them
+   in here means adopting a record can never hand a half shaped child to
+   a screen that assumes the whole thing. */
+function normalizeChild(k) {
+  return Object.assign(newChildRecord('', null), k, {
+    lenses: Array.isArray(k.lenses) ? k.lenses : [],
+    lensOptions: k.lensOptions && typeof k.lensOptions === 'object' ? k.lensOptions : {},
+    lensNumbers: k.lensNumbers && typeof k.lensNumbers === 'object' ? k.lensNumbers : {},
+    statuses: k.statuses && typeof k.statuses === 'object' ? k.statuses : {},
+    statusDates: k.statusDates && typeof k.statusDates === 'object' ? k.statusDates : {},
+    checkins: k.checkins && typeof k.checkins === 'object' ? k.checkins : {},
+    photo: k.photo || '',
+    routineInclude: Array.isArray(k.routineInclude) ? k.routineInclude : [],
+    logs: Array.isArray(k.logs) ? k.logs : [],
+    updatedAt: Number(k.updatedAt) || 0,
+  });
+}
 
 function parentPayload() {
   return JSON.parse(JSON.stringify({
@@ -24582,10 +24617,10 @@ function mergeChildren(local, remote, deletedIds) {
   Object.keys(byId).forEach((id) => {
     const pair = byId[id];
     if (pair.local && !pair.remote) { out.push(pair.local); upload.push(id); return; }
-    if (pair.remote && !pair.local) { out.push(pair.remote); adopted.push(id); return; }
+    if (pair.remote && !pair.local) { out.push(normalizeChild(pair.remote)); adopted.push(id); return; }
     const lt = Number(pair.local.updatedAt) || 0;
     const rt = Number(pair.remote.updatedAt) || 0;
-    if (rt > lt) { out.push(pair.remote); adopted.push(id); }
+    if (rt > lt) { out.push(normalizeChild(pair.remote)); adopted.push(id); }
     else {
       out.push(pair.local);
       /* Equal timestamps with different content means two devices
@@ -24731,10 +24766,13 @@ function cloudListen() {
       const key = contentKey(remote);
       cloud.known[remote.id] = key;
       const i = store.children.findIndex((k) => k.id === remote.id);
-      if (i === -1) { store.children.push(remote); changed = true; return; }
+      if (i === -1) { store.children.push(normalizeChild(remote)); changed = true; return; }
       const lt = Number(store.children[i].updatedAt) || 0;
       const rt = Number(remote.updatedAt) || 0;
-      if (rt > lt) { store.children[i] = remote; changed = true; }
+      /* Through the normaliser, same as the first sync. A record written
+         by an older copy of the app must never arrive missing fields
+         and take the local copy's with it. */
+      if (rt > lt) { store.children[i] = normalizeChild(remote); changed = true; }
     });
     if (changed) {
       if (store.activeChildId && !store.children.some((k) => k.id === store.activeChildId)) {
