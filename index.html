@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-14 00:45">
+<meta name="rsg-build" content="2026-09-14 15:38">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -55,7 +55,8 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .mark-o-wrap svg{position:absolute;left:0;bottom:0}
 .mark-tag{letter-spacing:.19em;line-height:1.6;text-align:center;color:#8D9682;
   margin-top:7px;text-transform:uppercase;font-weight:500}
-.mark-holder{padding:16px 18px 0;position:relative;z-index:2}
+/* Room for the sprout, which reaches above the letters. */
+.mark-holder{padding:30px 18px 0;position:relative;z-index:2}
 
 /* the promise line in the top right of every screen */
 .corner-right{position:absolute;top:15px;right:15px;z-index:1;text-align:right;
@@ -656,7 +657,11 @@ body.locked .bglayer{display:block}
    children or six. */
 .topbar-holder{flex:none;position:relative;z-index:4;background:var(--cream)}
 .topbar-holder:empty{display:none}
-.topbar-holder .topbar{display:flex;align-items:flex-start;gap:10px;padding:16px 22px 0}
+/* The sprout grows up out of the O and reaches well above the letters,
+   which is the whole point of the mark. That means the header needs
+   room for something taller than the words, or the top of the stem
+   gets shaved off by the edge of the screen. */
+.topbar-holder .topbar{display:flex;align-items:flex-start;gap:10px;padding:34px 22px 0}
 .topbar-holder .mark-holder{flex:0 0 auto;max-width:none;margin:0;padding:0 4px 2px}
 /* The front door has no chips and no Me button, so nothing balances the
    wordmark and it has to centre itself. */
@@ -683,7 +688,7 @@ body.locked .topbar-holder{background:transparent}
 /* Below roughly 700px there is no room either side of the wordmark, so
    it takes a row of its own and the chips drop underneath it. */
 @media (max-width:700px){
-  .topbar-holder .topbar{flex-wrap:wrap;padding:12px 14px 0}
+  .topbar-holder .topbar{flex-wrap:wrap;padding:30px 14px 0}
   .topbar-holder .mark-holder{order:-1;flex:1 0 100%;text-align:center}
   .topbar-holder .topbar-kids{flex:1 1 auto}
 }
@@ -837,7 +842,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-14 00:45';
+const BUILD_STAMP = '2026-09-14 15:38';
 
 /* ===== src/theme/theme.js ===== */
 /**
