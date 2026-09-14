@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-14 20:23">
+<meta name="rsg-build" content="2026-09-14 20:42">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -813,7 +813,10 @@ body{
 
 /* The app fills the window the way it fills a phone. */
 .appshell{display:flex;flex-direction:column;height:100%;position:relative;z-index:1}
-.appshell,.scroll,.tabs{background:transparent}
+.appshell,.scroll{background:transparent}
+/* The tab bar is solid, so the field ends on a clean edge rather than
+   with shapes sliced in half behind the tabs. */
+.tabs{background:var(--cream)}
 body.locked .bglayer{display:block}
 /* The wordmark is painted into the fixed background layer at the top of
    the window, so the scrolling content has to start below it or the
@@ -832,7 +835,9 @@ body.locked .bglayer{display:block}
    on the right. Both side groups take an equal share of what is left so
    the wordmark sits on the true centre line whether there are no
    children or six. */
-.topbar-holder{flex:none;position:relative;z-index:4;background:var(--cream)}
+/* Transparent, so the field of shapes runs all the way up behind the
+   wordmark instead of stopping at a solid band across the top. */
+.topbar-holder{flex:none;position:relative;z-index:4;background:transparent}
 .topbar-holder:empty{display:none}
 /* The sprout grows up out of the O and reaches well above the letters,
    which is the whole point of the mark. That means the header needs
@@ -955,6 +960,10 @@ body.locked #willow{display:none}
   .affirm-xwide,.leafart-xwide{display:block!important}
 }
 .leafart-soft{display:none!important}
+/* The middle band, where the cards land. Present, just quieter, so the
+   field runs right across the window without crowding what she reads. */
+.affirm-hush{opacity:.5}
+.leafart-hush{opacity:.42}
 
 /* ---------- THE PROFILE PANEL ---------- */
 /* The front door carries no app chrome. Nothing to profile and nowhere
@@ -1015,7 +1024,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-14 20:23';
+const BUILD_STAMP = '2026-09-14 20:42';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -18369,49 +18378,43 @@ const AFFIRM_TILTS = [-5, 4, -3, 6, -4, 3, -6, 5];
 
 /* THE DECORATIVE FIELD
  *
- * Tidy vertical ribbons rather than a scatter. Up to three columns of
- * shapes down each gutter, evenly spaced so no two shapes ever touch,
- * and the sprouts live in the bare channels BETWEEN those columns
- * rather than on top of them. That separation is the whole thing. A
- * leaf sitting over a shape reads as clutter, a leaf in the gap reads
- * as the mockup.
+ * Columns of shapes right across the window, not only down the sides.
+ * The cards sit on top of the middle ones and hide most of them, and
+ * what shows through the gaps between cards is the point: the page
+ * reads as one continuous field with the app laid over it, rather than
+ * as a white strip with decoration pushed out to the margins.
+ *
+ * Every column is placed as a percentage of the window, so the spacing
+ * opens and closes with the window instead of drifting. Sprouts sit in
+ * the channel immediately to the right of each column, in ground no
+ * shape ever occupies, which is what keeps a leaf off a word.
  *
  * Vertical positions are a share of window height, because the
  * background is pinned to the viewport and has to fill whatever size
- * window is open. The spacing leaves clear air between rows even on a
- * short laptop window.
- *
- * Columns by tier, and each one only appears once its gutter is wide
- * enough to hold it without crowding the reading column:
- *   core   the outer column, hard against the window edge
- *   wide   the inner column, anchored to the reading column with calc
- *   xwide  the middle column, only on a really wide monitor
+ * window is open.
  */
 
-/* Sizes vary a little down each ribbon so it reads as placed by hand
-   rather than stamped, while staying inside the gap between columns so
-   nothing can touch. */
-const AFFIRM_WIDTHS = [124, 138, 130, 142, 132, 136];
-const AFFIRM_HEIGHTS = [98, 104, 100, 96, 104, 100];
-const AFFIRM_ROWS = [3, 17.5, 32, 46.5, 61, 75.5];
-const AFFIRM_ROWS_ALT = [10, 24.5, 39, 53.5, 68, 82.5];
+const AFFIRM_WIDTHS = [118, 128, 122, 126, 120, 124];
+const AFFIRM_HEIGHTS = [92, 100, 96, 104, 94, 98];
+/* Six steps down the window, starting above the top edge so the field
+   runs up behind the wordmark rather than starting under it, and
+   carrying on to the bottom, where the solid tab bar covers whatever
+   reaches it. */
+const AFFIRM_ROWS = [-2, 13, 28, 43, 58, 73];
+const AFFIRM_ROWS_ALT = [5.5, 20.5, 35.5, 50.5, 65.5, 80.5];
 
-function affirmCell(i, side, x, topVh, tier) {
-  return {
-    tier: tier,
-    side: side,
-    x: x,
-    top: 'top:' + topVh + 'vh',
-    w: AFFIRM_WIDTHS[i % AFFIRM_WIDTHS.length],
-    h: AFFIRM_HEIGHTS[i % AFFIRM_HEIGHTS.length],
-    /* Every fourth one carries no shape, just the words, so the field
-       does not read as a grid of identical stamps. */
-    noShape: i % 4 === 3,
-    fill: AFFIRM_FILLS[i % AFFIRM_FILLS.length],
-    tilt: AFFIRM_TILTS[i % AFFIRM_TILTS.length],
-    size: 12.5,
-  };
-}
+/* Four columns across at any desktop width, and four more slotted
+   between them once the window is wide enough that they do not crowd. */
+const AFFIRM_COLS = [
+  { pct: 3,  tier: 'core', rows: AFFIRM_ROWS },
+  { pct: 15, tier: 'wide', rows: AFFIRM_ROWS_ALT },
+  { pct: 27, tier: 'core', rows: AFFIRM_ROWS },
+  { pct: 39, tier: 'wide', rows: AFFIRM_ROWS_ALT },
+  { pct: 51, tier: 'core', rows: AFFIRM_ROWS },
+  { pct: 63, tier: 'wide', rows: AFFIRM_ROWS_ALT },
+  { pct: 75, tier: 'core', rows: AFFIRM_ROWS },
+  { pct: 87, tier: 'wide', rows: AFFIRM_ROWS_ALT },
+];
 
 function buildAffirmSpots() {
   const out = [];
@@ -18424,24 +18427,36 @@ function buildAffirmSpots() {
   out.push({ tier: 'mob', side: 'left', x: '-44px', top: 'top:600px', w: 154, h: 124,
     fill: '#E6EBDC', tilt: -5, size: 12.5, inset: 'inset:10px 10px 10px 50px' });
 
-  /* Each column is one ribbon: where it sits, which rows it uses, and
-     the width it needs before it is allowed to appear. */
-  const columns = [
-    { tier: 'core',  x: '10px',              rows: AFFIRM_ROWS },
-    { tier: 'wide',  x: 'calc(50% - 540px)', rows: AFFIRM_ROWS },
-    { tier: 'xwide', x: '206px',             rows: AFFIRM_ROWS_ALT },
-  ];
-
   let n = 0;
-  ['left', 'right'].forEach((side) => {
-    columns.forEach((col) => {
-      col.rows.forEach((topVh, r) => {
-        /* The promise line owns the top right corner and Willow sits in
-           the bottom right, so the outer right column steps around both. */
-        if (side === 'right' && col.tier === 'core'
-          && (r === 0 || r === col.rows.length - 1)) return;
-        out.push(affirmCell(n++, side, col.x, topVh, col.tier));
+  AFFIRM_COLS.forEach((col) => {
+    col.rows.forEach((topVh, r) => {
+      /* The promise line owns the top right corner and Willow sits in
+         the bottom right, so the last column steps around both. */
+      if (col.pct >= 87 && (r === 0 || r === col.rows.length - 1)) return;
+      /* Nothing behind the wordmark. The sprout growing out of the O is
+         the one thing on the page that has to stay crisp, and since the
+         columns are placed by percentage the clear zone has to be wide
+         enough to hold at every window width. */
+      if (col.pct >= 27 && col.pct <= 63 && topVh < 16) return;
+      out.push({
+        tier: col.tier,
+        /* The band the cards sit over is painted quieter, so the field
+           carries right across the window but never competes with the
+           circles, the headings or anything she has to read. */
+        hush: col.pct >= 27 && col.pct <= 63,
+        side: 'left',
+        x: col.pct + '%',
+        top: 'top:' + topVh + 'vh',
+        w: AFFIRM_WIDTHS[n % AFFIRM_WIDTHS.length],
+        h: AFFIRM_HEIGHTS[n % AFFIRM_HEIGHTS.length],
+        /* Every fourth one carries no shape, just the words, so the
+           field does not read as a grid of identical stamps. */
+        noShape: n % 4 === 3,
+        fill: AFFIRM_FILLS[n % AFFIRM_FILLS.length],
+        tilt: AFFIRM_TILTS[n % AFFIRM_TILTS.length],
+        size: 12.5,
       });
+      n++;
     });
   });
   return out;
@@ -18449,34 +18464,27 @@ function buildAffirmSpots() {
 
 const AFFIRM_SPOTS = buildAffirmSpots();
 
-/* The sprouts. Two narrow channels down each gutter, sitting in the
-   bare ground between the columns of shapes and never over one. */
-const SPRIG_ROWS = [6, 20.5, 35, 49.5, 64, 78.5];
-const SPRIG_ROWS_ALT = [13, 27.5, 42, 56.5, 71, 85.5];
+/* The sprouts. One narrow channel to the right of every column, in the
+   strip of ground no shape reaches, on the rows that column is not
+   using so they never sit level with its words either. */
+const SPRIG_OFFSET = 134;   // px past a column's left edge, clear of its widest shape
+const SPRIG_W = 40;
 
 function sprigField(sprig) {
-  const channels = [
-    /* Between the outer column and the middle one. Only on a monitor
-       wide enough to have a middle column at all. */
-    { cls: 'leafart-xwide', x: '152px', w: 46, rows: SPRIG_ROWS },
-    /* Between the middle column and the inner one, anchored to the
-       reading column so it holds its gap at every width. */
-    { cls: 'leafart-wide', x: 'calc(50% - 604px)', w: 54, rows: SPRIG_ROWS_ALT },
-  ];
-
   let out = '';
   let n = 0;
-  ['left', 'right'].forEach((side) => {
-    channels.forEach((ch) => {
-      ch.rows.forEach((topVh) => {
-        const h = 74;
-        out += `
-        <svg class="leafart ${ch.cls}" style="top:${topVh}vh;${side}:${ch.x};width:${ch.w}px;height:${h}px"
-          viewBox="0 0 ${ch.w} ${h}" aria-hidden="true">
-          ${sprig(ch.w * 0.42, 30, n % 2 ? -16 : 15, .92, .78)}${sprig(ch.w * 0.58, 64, n % 2 ? 13 : -14, .76, .54)}
-        </svg>`;
-        n++;
-      });
+  AFFIRM_COLS.forEach((col) => {
+    const rows = col.rows === AFFIRM_ROWS ? AFFIRM_ROWS_ALT : AFFIRM_ROWS;
+    rows.forEach((topVh) => {
+      const h = 68;
+      const hush = col.pct >= 27 && col.pct <= 63 ? ' leafart-hush' : '';
+      out += `
+      <svg class="leafart leafart-${col.tier}${hush}" aria-hidden="true"
+        style="top:${topVh}vh;left:calc(${col.pct}% + ${SPRIG_OFFSET}px);width:${SPRIG_W}px;height:${h}px"
+        viewBox="0 0 ${SPRIG_W} ${h}">
+        ${sprig(SPRIG_W * 0.4, 27, n % 2 ? -16 : 15, .88, .74)}${sprig(SPRIG_W * 0.6, 58, n % 2 ? 13 : -14, .72, .5)}
+      </svg>`;
+      n++;
     });
   });
   return out;
@@ -18488,7 +18496,7 @@ function desktopHeader(a) {
     box: `${sp.side}:${sp.x};${sp.top};width:${sp.w}px;height:${sp.h}px`,
     fill: sp.fill,
     noShape: sp.noShape,
-    cls: 'affirm-' + sp.tier,
+    cls: 'affirm-' + sp.tier + (sp.hush ? ' affirm-hush' : ''),
     inset: sp.inset,
     text: `font-size:${sp.size}px;transform:rotate(${sp.tilt}deg)`,
   })).join('');
