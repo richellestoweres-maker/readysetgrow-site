@@ -69,7 +69,11 @@ body.locked .bglayer{display:block}
    children or six. */
 .topbar-holder{flex:none;position:relative;z-index:4;background:var(--cream)}
 .topbar-holder:empty{display:none}
-.topbar-holder .topbar{display:flex;align-items:flex-start;gap:10px;padding:16px 22px 0}
+/* The sprout grows up out of the O and reaches well above the letters,
+   which is the whole point of the mark. That means the header needs
+   room for something taller than the words, or the top of the stem
+   gets shaved off by the edge of the screen. */
+.topbar-holder .topbar{display:flex;align-items:flex-start;gap:10px;padding:34px 22px 0}
 .topbar-holder .mark-holder{flex:0 0 auto;max-width:none;margin:0;padding:0 4px 2px}
 /* The front door has no chips and no Me button, so nothing balances the
    wordmark and it has to centre itself. */
@@ -96,7 +100,7 @@ body.locked .topbar-holder{background:transparent}
 /* Below roughly 700px there is no room either side of the wordmark, so
    it takes a row of its own and the chips drop underneath it. */
 @media (max-width:700px){
-  .topbar-holder .topbar{flex-wrap:wrap;padding:12px 14px 0}
+  .topbar-holder .topbar{flex-wrap:wrap;padding:30px 14px 0}
   .topbar-holder .mark-holder{order:-1;flex:1 0 100%;text-align:center}
   .topbar-holder .topbar-kids{flex:1 1 auto}
 }
@@ -121,6 +125,20 @@ body.locked .topbar-holder{background:transparent}
   .tabs{justify-content:center}
   .tab{flex:0 0 128px}
 }
+
+/* Willow, on a window rather than inside a phone frame. Anchored to
+   the viewport, clear of the tab bar, and capped so she never becomes a
+   full screen takeover on a monitor. */
+#willow{position:fixed;inset:0;pointer-events:none;z-index:8}
+#willow > *{pointer-events:auto}
+.willowdot{position:fixed;right:26px;bottom:96px}
+.willowpanel{position:fixed;right:26px;left:auto;bottom:96px;width:min(420px, calc(100vw - 52px));
+  max-height:min(620px, calc(100vh - 150px))}
+@media (max-width:620px){
+  .willowdot{right:14px;bottom:84px}
+  .willowpanel{right:10px;left:10px;bottom:84px;width:auto;max-height:calc(100vh - 140px)}
+}
+body.locked #willow{display:none}
 
 /* ---------- THE READING COLUMN ---------- */
 /* Capped so body copy keeps a comfortable measure, with margin either
@@ -218,6 +236,11 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
      fixed to the viewport, ignores pointer events entirely, and sits
      underneath every piece of chrome. -->
 <div class="bglayer" id="bglayer" aria-hidden="true"></div>
+
+<!-- Willow lives outside the app shell so she is fixed to the window
+     rather than to the scrolling screen, and so closing her never
+     disturbs what somebody was reading. -->
+<div id="willow"></div>
 
 <div class="appshell">
   <div class="topbar-holder" id="topbar"></div>
