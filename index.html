@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-14 20:42">
+<meta name="rsg-build" content="2026-09-14 20:52">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -1024,7 +1024,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-14 20:42';
+const BUILD_STAMP = '2026-09-14 20:52';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -20262,6 +20262,12 @@ function initControls() {
     }
     else if (e.target.matches('[data-postfield]')) {
       postDraft().text = e.target.value;
+      /* No repaint here, or the caret jumps on every keystroke. That
+         means the Post button would keep whatever state it was painted
+         with, so it is switched by hand. Without this, typing a post
+         with no photo leaves Post greyed out and nothing happens. */
+      const saveBtn = document.querySelector('[data-post="save"]');
+      if (saveBtn) saveBtn.disabled = !postHasContent();
       saveStore();
     }
     else if (e.target.matches('[data-cinote]')) {
@@ -20372,6 +20378,11 @@ function initControls() {
   });
 
   document.addEventListener('click', (e) => {
+    /* The "it is on your profile" line lasts until she goes anywhere,
+       which is what a note about something that just happened should do. */
+    if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
+      store.justPosted = false;
+    }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
     const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo]');
@@ -24632,6 +24643,9 @@ function postSave() {
   store.postOpen = false;
   store.photoError = '';
   store.emojiOpen = false;
+  /* Home holds only the box she writes in, so without this she would
+     press Post and watch nothing happen. */
+  store.justPosted = true;
   store.parentUpdatedAt = Date.now();
   flushStore();
   render();
@@ -25622,7 +25636,6 @@ function screenHome(c) {
   const morning = liftMorning();
   const isMorning = hour < 12;
   const learn = parentLearnForDay(l.day);
-  const mine = (store.posts || []).slice(0, 3);
 
   return `
   ${cornerLeaves()}
@@ -25656,13 +25669,12 @@ function screenHome(c) {
       <p class="liftline">${esc(affirmation)}</p>
     </div>
 
-    <p class="sect">Your posts</p>
     ${postComposer()}
-    ${mine.map((p) => postCard(p, true)).join('')}
-    ${(store.posts || []).length > 3 ? `
-    <button class="btn ghost sm" style="width:100%" data-me="1">
-      All ${(store.posts || []).length} posts, on your profile
-    </button>` : ''}
+    ${store.justPosted ? `
+    <p class="tiny" style="text-align:center;padding:2px 0 4px">
+      Posted. It is on your profile.
+      <button class="chip" style="margin-left:6px" data-me="1">See it</button>
+    </p>` : ''}
 
     <button class="bigbtn" data-go="screen" data-id="momnow">
       <span class="bigbtn-ic">${icon('heart', 22, '#fff')}</span>
