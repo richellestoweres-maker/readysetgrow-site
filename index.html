@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-14 18:18">
+<meta name="rsg-build" content="2026-09-14 20:07">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -40,9 +40,13 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 /* an affirmation sitting on its own soft shape */
 .affirm{position:absolute;pointer-events:none}
 .affirm svg{position:absolute;inset:0;width:100%;height:100%}
-.affirm span{position:absolute;font-family:var(--script);color:#A79A86;
-  line-height:1.34;display:block}
-.affirm .heart{position:absolute;color:#C4A79A;font-size:12px}
+.affirm span{font-family:var(--script);color:#A79A86;line-height:1.34;display:block}
+/* The words sit centred in their shape with the heart under them. One
+   box per shape rather than a hand placed offset for each. */
+.affirm .affirm-in{position:absolute;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:5px;text-align:center;padding:9% 11%}
+.affirm .affirm-lines{display:block}
+.affirm .heart{color:#C4A79A;font-size:11px;line-height:1}
 
 /* brand wordmark, drawn rather than an image so it stays crisp */
 .mark{display:flex;flex-direction:column;align-items:center;position:relative;z-index:2}
@@ -987,7 +991,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-14 18:18';
+const BUILD_STAMP = '2026-09-14 20:07';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -11187,6 +11191,27 @@ const MARGIN_LINES = [
   { id: 'mistakes', lines: ['Mistakes help me', 'learn and grow'] },
   { id: 'different', lines: ['Growth looks different', 'for everyone'] },
   { id: 'seeds', lines: ['Planting seeds', 'of love'] },
+  /* Written to fill the margins, September 2026, in the same voice. */
+  { id: 'betterThan', lines: ['You are doing', 'better than', 'you think'] },
+  { id: 'slowMornings', lines: ['Slow mornings', 'still count'] },
+  { id: 'littleHands', lines: ['Little hands,', 'big hearts'] },
+  { id: 'graceOver', lines: ['Grace over', 'perfect'] },
+  { id: 'restIsPart', lines: ['Rest is', 'part of', 'growing'] },
+  { id: 'oneSmall', lines: ['One small thing', 'at a time'] },
+  { id: 'loveFirst', lines: ['Love first,', 'always'] },
+  { id: 'messyDays', lines: ['Messy days', 'make the', 'best memories'] },
+  { id: 'ownSeason', lines: ['Bloom in', 'your own', 'season'] },
+  { id: 'quietMoments', lines: ['Quiet moments', 'grow deep'] },
+  { id: 'beginHere', lines: ['Begin where', 'you are'] },
+  { id: 'softer', lines: ['Softer than', 'yesterday'] },
+  { id: 'keepShowing', lines: ['Keep', 'showing up'] },
+  { id: 'stillForward', lines: ['Tiny steps', 'are still', 'forward'] },
+  { id: 'safePlace', lines: ['You are their', 'safe place'] },
+  { id: 'patienceGrows', lines: ['Patience grows', 'like everything', 'else'] },
+  { id: 'sunAfter', lines: ['Sunshine after', 'the rain'] },
+  { id: 'gentleHands', lines: ['Gentle hands,', 'gentle hearts'] },
+  { id: 'wholeJob', lines: ['Here is the', 'whole job'] },
+  { id: 'roomToBe', lines: ['Room to be', 'exactly', 'who they are'] },
 ];
 
 /* ------------------------------------------------------------------
@@ -18186,12 +18211,11 @@ function wordmark(big = true) {
 /* The data file returns arrays of lines. The web build joins them with
    <br>, the app joins them with a newline. Same source either way. */
 function pickAffirmations(seed) {
-  // Desktop has two wide gutters and room for six. The phone has room
-  // for three. Ask for six either way and let the layout use what fits,
-  // since the picker guarantees they are all different.
-  // Twelve, because a wide window has two columns of gutter each side
-  // and six leaves most of it bare. The layout uses what fits.
-  const picked = pickMarginLines(seed, 16);
+  /* Ask for one line per shape in the field, so a wide window never
+     shows the same words twice down the two gutters. The picker
+     guarantees they are all different, and it stops at however many
+     are written. */
+  const picked = pickMarginLines(seed, AFFIRM_SPOTS.length);
   const html = (m) => m.lines.join('<br>');
   const all = picked.map(html);
   return {
@@ -18210,52 +18234,25 @@ function pickAffirmations(seed) {
  */
 function affirmation(lines, o) {
   o = o || {};
+  /* The words sit in the middle of their shape with the heart under
+     them, rather than being placed by hand per shape. One box, centred,
+     so every bubble reads the same however many lines it holds. */
   return `
   <div class="affirm${o.cls ? ' ' + o.cls : ''}" style="${o.box || ''}">
     ${o.noShape ? '' : `<svg viewBox="0 0 190 150" preserveAspectRatio="none" aria-hidden="true">
       <path d="M22 8 C74 -10 150 2 172 44 C192 82 168 128 118 142 C68 156 8 132 2 88 C-3 52 2 20 22 8 Z"
         fill="${o.fill || '#E9EBDF'}"/></svg>`}
-    <span style="${o.text || ''}">${lines}</span>
-    ${o.heart === false ? '' : `<span class="heart" style="${o.heartPos || ''}">&#9829;</span>`}
+    <span class="affirm-in" style="${o.inset || 'inset:0'};${o.text || ''}">
+      <span class="affirm-lines">${lines}</span>
+      ${o.heart === false ? '' : `<span class="heart">&#9829;</span>`}
+    </span>
   </div>`;
 }
 
 /* Leaf sprigs down both edges, as in every mockup. On desktop they move
    out to the edges of the reading column instead of the phone frame. */
 function sprigsDesktop(sprig) {
-  /* Four narrow columns of sprigs sitting in the gaps the affirmation
-     shapes leave, two down each gutter. Kept narrow and hard against
-     the edges so they read as a frame rather than as clutter. */
-  return `
-  <svg class="leafart" style="top:244px;left:0;width:78px;height:120px" viewBox="0 0 78 120" aria-hidden="true">
-    ${sprig(30, 54, -22, 1.05, .85)}${sprig(14, 114, 10, .88, .65)}
-  </svg>
-  <svg class="leafart" style="top:494px;left:6px;width:78px;height:120px" viewBox="0 0 78 120" aria-hidden="true">
-    ${sprig(24, 48, 14, .98, .8)}${sprig(44, 112, -16, .86, .62)}
-  </svg>
-  <svg class="leafart" style="top:302px;right:2px;width:78px;height:124px" viewBox="0 0 78 124" aria-hidden="true">
-    ${sprig(48, 56, 16, 1.08, .85)}${sprig(28, 118, -12, .9, .66)}
-  </svg>
-  <svg class="leafart" style="top:552px;right:8px;width:78px;height:118px" viewBox="0 0 78 118" aria-hidden="true">
-    ${sprig(52, 52, -18, 1, .8)}${sprig(30, 112, 12, .86, .62)}
-  </svg>
-
-  <svg class="leafart leafart-wide" style="top:378px;left:calc(50% - 620px);width:74px;height:116px"
-    viewBox="0 0 74 116" aria-hidden="true">
-    ${sprig(28, 52, 16, 1, .78)}${sprig(48, 110, -14, .86, .6)}
-  </svg>
-  <svg class="leafart leafart-wide" style="top:604px;left:calc(50% - 600px);width:74px;height:112px"
-    viewBox="0 0 74 112" aria-hidden="true">
-    ${sprig(44, 50, -20, .96, .74)}${sprig(24, 106, 10, .84, .58)}
-  </svg>
-  <svg class="leafart leafart-wide" style="top:288px;right:calc(50% - 616px);width:74px;height:118px"
-    viewBox="0 0 74 118" aria-hidden="true">
-    ${sprig(46, 54, -16, 1.02, .78)}${sprig(26, 112, 14, .86, .6)}
-  </svg>
-  <svg class="leafart leafart-wide" style="top:548px;right:calc(50% - 598px);width:74px;height:114px"
-    viewBox="0 0 74 114" aria-hidden="true">
-    ${sprig(26, 50, 18, .96, .74)}${sprig(46, 108, -12, .84, .58)}
-  </svg>`;
+  return sprigField(sprig);
 }
 
 function sprigs() {
@@ -18287,18 +18284,18 @@ function pageHeader(large) {
   return `
   ${affirmation(a.topLeft, {
     box: 'top:-34px;left:-46px;width:172px;height:138px',
-    text: 'top:50px;left:50px;max-width:92px;font-size:14px;transform:rotate(-6deg)',
-    heartPos: 'top:110px;left:56px',
+    inset: 'inset:38px 10px 8px 52px',
+    text: 'font-size:13.5px;transform:rotate(-6deg)',
   })}
   ${affirmation(a.midLeft, {
     box: 'top:352px;left:-52px;width:146px;height:120px', fill: '#EDEADF',
-    text: 'top:32px;left:64px;max-width:76px;font-size:12.5px;transform:rotate(-7deg)',
-    heartPos: 'top:98px;left:68px',
+    inset: 'inset:10px 10px 10px 58px',
+    text: 'font-size:12.5px;transform:rotate(-7deg)',
   })}
   ${affirmation(a.right, {
     box: 'top:368px;right:4px;width:118px;height:104px', noShape: true,
-    text: 'top:12px;right:8px;max-width:76px;font-size:12.5px;text-align:right;transform:rotate(-6deg)',
-    heartPos: 'top:84px;right:14px',
+    inset: 'inset:8px 6px 8px 6px',
+    text: 'font-size:12.5px;transform:rotate(-6deg)',
   })}
   ${sprigs()}
   <div class="corner-right">Brighter<br>Tomorrows<br>Together<span class="corner-rule"></span></div>
@@ -18325,61 +18322,136 @@ function pageHeader(large) {
  * Fills alternate so the shapes do not read as a repeated stamp, and a
  * few carry no shape at all, which is what stops it looking like a grid.
  */
-const AFFIRM_SPOTS = [
-  // Phone. Three, hanging off the edges behind the content.
-  { tier: 'mob', side: 'left',  x: '-54px', y: '86px',  w: 172, h: 138, fill: '#E9EBDF', tx: 'top:48px;left:60px;max-width:92px;font-size:13.5px;transform:rotate(-6deg)', hp: 'top:106px;left:66px' },
-  { tier: 'mob', side: 'right', x: '-48px', y: '352px', w: 152, h: 124, fill: '#EDEADF', tx: 'top:34px;right:56px;max-width:80px;font-size:12.5px;text-align:right;transform:rotate(5deg)', hp: 'top:94px;right:62px' },
-  { tier: 'mob', side: 'left',  x: '-44px', y: '600px', w: 154, h: 124, fill: '#E6EBDC', tx: 'top:40px;left:54px;max-width:84px;font-size:12.5px;transform:rotate(-5deg)', hp: 'top:98px;left:60px' },
+/* The field of shapes, generated rather than hand placed.
+ *
+ * Two columns of shapes down each side, half a step out of phase with
+ * each other, and a cluster of sprouts in every gap between them. So
+ * going down either gutter you get shape, sprouts, shape, sprouts, and
+ * the two columns interlock rather than lining up in rows.
+ *
+ * Vertical positions are a share of the window height, because the
+ * background is pinned to the viewport and has to fill whatever size
+ * window she has open rather than a fixed page.
+ *
+ * Tiers decide when a column appears as the window narrows:
+ *   mob    no gutter yet, three shapes bleeding off the edges
+ *   core   the outer column, once there is any gutter at all
+ *   extra  the rest of the outer column
+ *   wide   the inner column, anchored to the reading column with calc
+ */
 
-  // Outer column, left. Four down the side.
-  { tier: 'core',  side: 'left', x: '18px', y: '80px',  w: 162, h: 132, fill: '#E9EBDF', tx: 'top:44px;left:42px;max-width:92px;font-size:14px;transform:rotate(-6deg)', hp: 'top:100px;left:48px' },
-  { tier: 'core',  side: 'left', x: '26px', y: '268px', w: 146, h: 120, fill: '#EDEADF', tx: 'top:32px;left:54px;max-width:78px;font-size:12.5px;transform:rotate(-7deg)', hp: 'top:92px;left:58px' },
-  { tier: 'extra', side: 'left', x: '12px', y: '456px', w: 154, h: 124, fill: '#E6EBDC', tx: 'top:38px;left:44px;max-width:86px;font-size:13px;transform:rotate(-4deg)', hp: 'top:96px;left:50px' },
-  { tier: 'extra', side: 'left', x: '24px', y: '632px', w: 148, h: 120, noShape: true, tx: 'top:14px;left:6px;max-width:126px;font-size:13px;transform:rotate(5deg)', hp: 'top:84px;left:12px' },
+const AFFIRM_FILLS = ['#E9EBDF', '#EDEADF', '#E6EBDC', '#EAECE0', '#EBE9DD'];
+const AFFIRM_TILTS = [-6, 5, -4, 7, -5, 4, -7, 6];
 
-  // Outer column, right. The promise line owns the very top corner.
-  { tier: 'core',  side: 'right', x: '18px', y: '168px', w: 148, h: 120, fill: '#EAECE0', tx: 'top:32px;right:22px;max-width:96px;font-size:13px;text-align:right;transform:rotate(5deg)', hp: 'top:90px;right:28px' },
-  { tier: 'extra', side: 'right', x: '22px', y: '352px', w: 142, h: 116, noShape: true, tx: 'top:10px;right:6px;max-width:112px;font-size:13px;text-align:right;transform:rotate(-5deg)', hp: 'top:82px;right:12px' },
-  { tier: 'extra', side: 'right', x: '14px', y: '520px', w: 150, h: 122, fill: '#EDEADF', tx: 'top:36px;right:20px;max-width:94px;font-size:12.5px;text-align:right;transform:rotate(6deg)', hp: 'top:94px;right:26px' },
-  { tier: 'extra', side: 'right', x: '26px', y: '676px', w: 144, h: 116, fill: '#E9EBDF', tx: 'top:34px;right:22px;max-width:90px;font-size:12.5px;text-align:right;transform:rotate(-4deg)', hp: 'top:90px;right:28px' },
+/* Eight steps down the window, and the seven midpoints between them.
+   The outer column takes the steps, the inner column takes the
+   midpoints, so neither ever sits level with the other. */
+const AFFIRM_ROWS = [3, 14.5, 26, 37.5, 49, 60.5, 72, 83.5];
+const AFFIRM_MIDS = [8.75, 20.25, 31.75, 43.25, 54.75, 66.25, 77.75];
 
-  // Inner column, anchored to the reading column.
-  { tier: 'wide', side: 'left', x: 'calc(50% - 566px)', y: '140px', w: 170, h: 136, fill: '#EAECE0', tx: 'top:44px;left:44px;max-width:96px;font-size:13.5px;transform:rotate(-5deg)', hp: 'top:102px;left:50px' },
-  { tier: 'wide', side: 'left', x: 'calc(50% - 550px)', y: '326px', w: 156, h: 124, noShape: true, tx: 'top:14px;left:8px;max-width:130px;font-size:13px;transform:rotate(4deg)', hp: 'top:86px;left:14px' },
-  { tier: 'wide', side: 'left', x: 'calc(50% - 574px)', y: '504px', w: 164, h: 130, fill: '#EDEADF', tx: 'top:42px;left:40px;max-width:96px;font-size:13px;transform:rotate(-7deg)', hp: 'top:100px;left:46px' },
-  { tier: 'wide', side: 'left', x: 'calc(50% - 556px)', y: '672px', w: 150, h: 120, fill: '#E6EBDC', tx: 'top:34px;left:44px;max-width:88px;font-size:12.5px;transform:rotate(6deg)', hp: 'top:92px;left:50px' },
+function affirmCell(i, side, x, topVh, tier, big) {
+  const w = big ? 158 : 138;
+  const h = big ? 128 : 112;
+  return {
+    tier: tier,
+    side: side,
+    x: x,
+    top: 'top:' + topVh + 'vh',
+    w: w,
+    h: h,
+    /* Every third one carries no shape, just the words. That is what
+       keeps it from reading as a row of identical stamps. */
+    noShape: i % 3 === 2,
+    fill: AFFIRM_FILLS[i % AFFIRM_FILLS.length],
+    tilt: AFFIRM_TILTS[i % AFFIRM_TILTS.length],
+    size: big ? 13.5 : 12.5,
+  };
+}
 
-  { tier: 'wide', side: 'right', x: 'calc(50% - 570px)', y: '96px',  w: 166, h: 132, fill: '#E6EBDC', tx: 'top:42px;right:26px;max-width:100px;font-size:13.5px;text-align:right;transform:rotate(6deg)', hp: 'top:100px;right:32px' },
-  { tier: 'wide', side: 'right', x: 'calc(50% - 554px)', y: '284px', w: 158, h: 126, noShape: true, tx: 'top:14px;right:8px;max-width:132px;font-size:13px;text-align:right;transform:rotate(-4deg)', hp: 'top:88px;right:14px' },
-  { tier: 'wide', side: 'right', x: 'calc(50% - 578px)', y: '470px', w: 162, h: 130, fill: '#EAECE0', tx: 'top:42px;right:24px;max-width:98px;font-size:13px;text-align:right;transform:rotate(5deg)', hp: 'top:100px;right:30px' },
-  { tier: 'wide', side: 'right', x: 'calc(50% - 560px)', y: '650px', w: 152, h: 122, fill: '#EDEADF', tx: 'top:36px;right:22px;max-width:92px;font-size:12.5px;text-align:right;transform:rotate(-6deg)', hp: 'top:94px;right:28px' },
-];
+function buildAffirmSpots() {
+  const out = [];
 
-/* The y values in AFFIRM_SPOTS were tuned against a roughly 880px tall
-   window while the background still scrolled with the content. Pinned to
-   the viewport they have to stretch or squash with the window instead,
-   or every spot below the fold would simply never be seen on a laptop.
-   So the px is converted to a share of viewport height against that same
-   reference, which keeps the spacing she approved and makes it fit any
-   window. */
-const AFFIRM_REF_HEIGHT = 880;
+  /* Phone. Three, hanging off the edges behind the content. */
+  out.push({ tier: 'mob', side: 'left', x: '-54px', top: 'top:86px', w: 172, h: 138,
+    fill: '#E9EBDF', tilt: -6, size: 13, inset: 'inset:12px 10px 10px 60px' });
+  out.push({ tier: 'mob', side: 'right', x: '-48px', top: 'top:352px', w: 152, h: 124,
+    fill: '#EDEADF', tilt: 5, size: 12.5, inset: 'inset:10px 56px 10px 10px' });
+  out.push({ tier: 'mob', side: 'left', x: '-44px', top: 'top:600px', w: 154, h: 124,
+    fill: '#E6EBDC', tilt: -5, size: 12.5, inset: 'inset:10px 10px 10px 50px' });
 
-function affirmTop(y) {
-  const px = parseFloat(String(y));
-  if (!isFinite(px)) return `top:${y}`;
-  const vh = (px / AFFIRM_REF_HEIGHT) * 100;
-  return `top:${vh.toFixed(2)}vh`;
+  let n = 0;
+  ['left', 'right'].forEach((side) => {
+    /* The outer column, hard against the window edge. */
+    AFFIRM_ROWS.forEach((topVh, r) => {
+      /* The promise line owns the top right corner and Willow sits in
+         the bottom right, so the outer right column steps around both. */
+      if (side === 'right' && (r <= 1 || r === AFFIRM_ROWS.length - 1)) return;
+      const x = [8, 26, 14, 32, 18, 30, 10, 24][r % 8] + 'px';
+      out.push(affirmCell(n++, side, x, topVh, r < 5 ? 'core' : 'extra', r % 2 === 0));
+    });
+    /* The inner column, anchored to the reading column so it follows
+       the text rather than drifting out to the screen edge. */
+    AFFIRM_MIDS.forEach((topVh, r) => {
+      const x = 'calc(50% - ' + [566, 550, 574, 556, 570, 548, 578][r % 7] + 'px)';
+      out.push(affirmCell(n++, side, x, topVh, 'wide', r % 2 === 1));
+    });
+  });
+  return out;
+}
+
+const AFFIRM_SPOTS = buildAffirmSpots();
+
+/* Sprouts fill every gap the shapes leave. The outer column gets them
+   on the midpoints and the inner column gets them on the steps, which
+   is the opposite of where that column's shapes sit, so the whole
+   gutter ends up covered either way. */
+function sprigField(sprig) {
+  let out = '';
+  let n = 0;
+  ['left', 'right'].forEach((side) => {
+    AFFIRM_MIDS.forEach((topVh, r) => {
+      const x = [92, 118, 78, 126, 86, 112, 96][r % 7];
+      const cls = r < 5 ? 'leafart-soft' : 'leafart-wide';
+      out += `
+      <svg class="leafart ${cls}" style="top:${topVh}vh;${side}:${x}px;width:74px;height:96px"
+        viewBox="0 0 74 96" aria-hidden="true">
+        ${sprig(26 + (n % 3) * 8, 40, n % 2 ? -18 : 16, 1, .8)}${sprig(44 - (n % 3) * 7, 86, n % 2 ? 12 : -14, .84, .6)}
+      </svg>`;
+      n++;
+    });
+    AFFIRM_ROWS.forEach((topVh, r) => {
+      const d = [528, 508, 540, 516, 534, 504, 544, 520][r % 8];
+      out += `
+      <svg class="leafart leafart-wide" style="top:${topVh}vh;${side}:calc(50% - ${d}px);width:70px;height:92px"
+        viewBox="0 0 70 92" aria-hidden="true">
+        ${sprig(24 + (n % 3) * 9, 38, n % 2 ? 15 : -17, .96, .74)}${sprig(42 - (n % 3) * 6, 82, n % 2 ? -13 : 11, .82, .56)}
+      </svg>`;
+      n++;
+    });
+    /* The band between the two columns of shapes, which is the last
+       piece of bare ground on a wide window. */
+    AFFIRM_ROWS.concat(AFFIRM_MIDS).forEach((topVh, r) => {
+      const x = [214, 268, 232, 296, 244, 282, 222, 304, 256, 236, 290, 218, 274, 248, 300][r % 15];
+      out += `
+      <svg class="leafart leafart-wide" style="top:${topVh}vh;${side}:${x}px;width:66px;height:88px"
+        viewBox="0 0 66 88" aria-hidden="true">
+        ${sprig(22 + (n % 4) * 7, 36, n % 2 ? -16 : 14, .92, .7)}${sprig(40 - (n % 3) * 6, 78, n % 2 ? 12 : -15, .78, .52)}
+      </svg>`;
+      n++;
+    });
+  });
+  return out;
 }
 
 function desktopHeader(a) {
   const lines = a.all || [];
   const shapes = AFFIRM_SPOTS.map((sp, i) => affirmation(lines[i % lines.length], {
-    box: `${sp.side}:${sp.x};${affirmTop(sp.y)};width:${sp.w}px;height:${sp.h}px`,
+    box: `${sp.side}:${sp.x};${sp.top};width:${sp.w}px;height:${sp.h}px`,
     fill: sp.fill,
     noShape: sp.noShape,
     cls: 'affirm-' + sp.tier,
-    text: sp.tx,
-    heartPos: sp.hp,
+    inset: sp.inset,
+    text: `font-size:${sp.size}px;transform:rotate(${sp.tilt}deg)`,
   })).join('');
 
   return `
