@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-14 20:52">
+<meta name="rsg-build" content="2026-09-14 21:29">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -75,6 +75,16 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .reactbtn:hover{border-color:var(--leaf)}
 .reactbtn.on{background:var(--leaf2);border-color:var(--leaf)}
 .reactbtn.on .reactn{color:var(--deep)}
+
+/* A day she logged herself, marked apart from the days the app guessed. */
+.cal-d.logged{box-shadow:inset 0 0 0 2px var(--deep);font-weight:700;color:var(--deep)}
+button.cal-d{border:0;font-family:inherit;cursor:pointer;font-size:inherit}
+button.cal-d:hover{box-shadow:inset 0 0 0 2px var(--leaf)}
+.callegend i.k-logged{box-shadow:inset 0 0 0 2px var(--deep);background:transparent}
+.cychist{margin-top:10px;border-top:1px solid var(--line2);padding-top:4px}
+.cychrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line2)}
+.cychrow:last-child{border-bottom:0}
+.cychdate{display:block;font-size:13.5px;font-weight:600;color:var(--ink)}
 
 /* brand wordmark, drawn rather than an image so it stays crisp */
 .mark{display:flex;flex-direction:column;align-items:center;position:relative;z-index:2}
@@ -1024,7 +1034,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-14 20:52';
+const BUILD_STAMP = '2026-09-14 21:29';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -15015,12 +15025,20 @@ function willowSystemPrompt() {
  * question about a friendship problem at school should not be answered
  * out of a reflux entry just because reflux was the closest match.
  */
-function willowPrompt(question, entries, childLine) {
+function willowPrompt(question, entries, childLine, motherLine) {
   const parts = [];
   parts.push(String(question).trim());
   if (childLine) {
     parts.push('');
     parts.push('(Who we are talking about: ' + childLine + ')');
+  }
+  /* Her own body, when the app knows anything about it. Offered the
+     same way the child line is: there so she does not have to repeat
+     herself, ignored when the question is about something else. */
+  if (motherLine) {
+    parts.push('');
+    parts.push('(About the parent herself, from what she logged. Use it only if the question is '
+      + 'about her: ' + motherLine + ')');
   }
   if (entries && entries.length) {
     parts.push('');
@@ -17940,6 +17958,160 @@ function cycleInfo(lastPeriod, ref, cycleLength) {
   };
 }
 
+/* ------------------------------------------------------------------
+ * A HISTORY, NOT ONE DATE
+ *
+ * One date gives an estimate. A list of them gives her something
+ * better: how long her own cycles actually run, whether they hold
+ * steady, and a record she can read back to a provider instead of
+ * trying to remember.
+ *
+ * Stored as the first day of each period, newest first. Nothing here
+ * decides anything. It counts the gaps between the dates she entered
+ * and says what it sees.
+ *
+ * WHERE THE NUMBERS COME FROM
+ * A typical adult cycle runs 21 to 35 days, and ACOG treats a
+ * variation of more than 7 to 9 days between a person's shortest and
+ * longest cycle as irregular and worth raising. Those are the two
+ * thresholds used below, and they are described to her as "worth
+ * mentioning", never as a finding.
+ * ------------------------------------------------------------------ */
+
+/** How many recent cycles the average is taken over. */
+const CYCLE_HISTORY_WINDOW = 6;
+/** Shortest to longest spread that still reads as steady. */
+const CYCLE_STEADY_SPREAD = 7;
+
+/** Clean, de-duplicate and sort a list of period start dates, newest first. */
+function normalizePeriods(list) {
+  const seen = {};
+  const out = [];
+  (Array.isArray(list) ? list : []).forEach((v) => {
+    const p = cycleParts(v);
+    if (!p) return;
+    const s = cycleDateString(cycleDayNumber(p));
+    if (seen[s]) return;
+    seen[s] = 1;
+    out.push(s);
+  });
+  out.sort();
+  out.reverse();
+  return out;
+}
+
+/** The gap in days between each period and the one before it, newest first. */
+function periodGaps(list) {
+  const p = normalizePeriods(list);
+  const out = [];
+  for (let i = 0; i < p.length - 1; i++) {
+    out.push(cycleDayNumber(cycleParts(p[i])) - cycleDayNumber(cycleParts(p[i + 1])));
+  }
+  return out;
+}
+
+/**
+ * What her own history says. Everything is null until there are at
+ * least two dates, because one date is not a cycle.
+ *
+ *   cycles     how many complete cycles she has recorded
+ *   average    her own average, rounded, over the recent window
+ *   shortest / longest / spread
+ *   steady     the spread is inside the range that reads as regular
+ *   outside    any recorded cycle fell outside 21 to 35 days
+ *   note       one plain sentence, or empty when there is nothing to say
+ */
+function cycleStats(list) {
+  const all = periodGaps(list);
+  const gaps = all.slice(0, CYCLE_HISTORY_WINDOW);
+  if (!gaps.length) {
+    return { cycles: 0, average: null, shortest: null, longest: null,
+      spread: null, steady: null, outside: false, note: '' };
+  }
+  const sum = gaps.reduce((a, b) => a + b, 0);
+  const average = Math.round(sum / gaps.length);
+  const shortest = Math.min.apply(null, gaps);
+  const longest = Math.max.apply(null, gaps);
+  const spread = longest - shortest;
+  const steady = spread <= CYCLE_STEADY_SPREAD;
+  const outside = gaps.some((g) => g < CYCLE_NORMAL_RANGE.min || g > CYCLE_NORMAL_RANGE.max);
+
+  let note = '';
+  if (gaps.length === 1) {
+    note = 'One cycle recorded, ' + longest + ' days. A couple more and the app can tell you '
+      + 'whether that is your usual.';
+  } else if (outside) {
+    note = 'Some of these fall outside the usual 21 to 35 days. That happens for all sorts of '
+      + 'ordinary reasons, and it is also the kind of thing worth mentioning at your next visit.';
+  } else if (steady) {
+    note = 'Steady. Your cycles have stayed within ' + spread + ' day' + (spread === 1 ? '' : 's')
+      + ' of each other.';
+  } else {
+    note = 'These vary by ' + spread + ' days between your shortest and longest. More than about a '
+      + 'week of variation is worth mentioning at your next visit, and it is common enough that '
+      + 'nobody will be surprised by it.';
+  }
+
+  return { cycles: gaps.length, average: average, shortest: shortest, longest: longest,
+    spread: spread, steady: steady, outside: outside, note: note };
+}
+
+/** The headline for the widget: "Usually 28 to 30 days" and so on. */
+function cycleLengthLine(stats) {
+  if (!stats || !stats.cycles) return '';
+  if (stats.shortest === stats.longest) return 'Your cycle has been ' + stats.longest + ' days';
+  return 'Usually ' + stats.shortest + ' to ' + stats.longest + ' days, average ' + stats.average;
+}
+
+/** The length to predict with: her own average once there is one. */
+function predictLength(list, fallback) {
+  const st = cycleStats(list);
+  if (st.cycles >= 2) return st.average;
+  if (st.cycles === 1) return st.longest;
+  const n = Number(fallback);
+  return n || CYCLE_AVERAGE_LENGTH;
+}
+
+/** How many days each recorded period lasted, where the next one is known. */
+function periodHistoryRows(list) {
+  const p = normalizePeriods(list);
+  return p.map((date, i) => {
+    const prev = p[i + 1];
+    const gap = prev
+      ? cycleDayNumber(cycleParts(date)) - cycleDayNumber(cycleParts(prev))
+      : null;
+    return { date: date, gap: gap };
+  });
+}
+
+/** What Willow is told, so she can answer a question about it. */
+function cycleForWillow(list, info, stats) {
+  const bits = [];
+  if (info) {
+    bits.push('Day ' + info.dayOfCycle + ' of her cycle.');
+    bits.push('Last period started ' + cycleDateLabelWithYear(info.lastPeriod) + '.');
+    if (info.isLate) bits.push('The estimate for the next one passed ' + info.daysLate + ' days ago.');
+    else bits.push('Next one estimated ' + cycleDateLabel(info.nextPeriod) + '.');
+  }
+  if (stats && stats.cycles) {
+    bits.push('She has recorded ' + stats.cycles + ' complete cycle'
+      + (stats.cycles === 1 ? '' : 's') + ', running '
+      + stats.shortest + ' to ' + stats.longest + ' days, average ' + stats.average + '.');
+    if (stats.outside) bits.push('At least one fell outside 21 to 35 days.');
+    else if (!stats.steady) bits.push('They vary by ' + stats.spread + ' days.');
+    else bits.push('They have been steady.');
+  } else {
+    bits.push('She has not recorded enough periods yet for an average of her own.');
+  }
+  return bits.join(' ');
+}
+
+const CYCLE_WILLOW_BRIEF = 'If she asks about her cycle, use the numbers above rather than '
+  + 'textbook averages, and say they are from what she logged. Never diagnose, never tell her '
+  + 'whether she is pregnant, and never present an estimate as a fact. Bleeding between periods, '
+  + 'pain that stops her day, a cycle shorter than 21 days or longer than 35, or three months with '
+  + 'no period at all are all worth her provider, and say so plainly without alarming her.';
+
 /** One sentence for wherever the cycle card is small. */
 function cycleShortLine(info) {
   if (!info) return '';
@@ -20385,7 +20557,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -20479,6 +20651,18 @@ function initControls() {
       else if (how === 'emojis') { store.emojiOpen = !store.emojiOpen; flushStore(); }
       else if (how === 'emoji') { postEmoji(t.dataset.ch); return; }
       render();
+      return;
+    } else if (t.dataset.cycle) {
+      const how = t.dataset.cycle;
+      if (how === 'edit') { store.cycleEdit = true; flushStore(); }
+      else if (how === 'done') { store.cycleEdit = false; flushStore(); }
+      else if (how === 'history') { store.cycleHistory = !store.cycleHistory; flushStore(); }
+      else if (how === 'today') { periodToggle(ciToday()); return; }
+    } else if (t.dataset.period) {
+      periodToggle(t.dataset.period);
+      return;
+    } else if (t.dataset.periodDel) {
+      periodToggle(t.dataset.periodDel);
       return;
     } else if (t.dataset.sit) {
       sitToggle(t.dataset.sit, t.dataset.id);
@@ -24441,7 +24625,53 @@ function pendingNotices() {
 
 const CYCLE_BLEED_DAYS = 5;
 
-function cycleCalendar(info, monthOffset) {
+/* ---------- HER PERIOD HISTORY ----------
+
+   One date gave an estimate. A list of them gives her her own numbers,
+   and a record she can read back to a provider rather than trying to
+   remember in the room.
+
+   Every date lives on the parent record, so it syncs with everything
+   else. lastPeriod is kept as the newest entry so every existing screen
+   and the pregnancy maths carry on working untouched. */
+
+function periods() {
+  const p = store.parent || {};
+  let list = Array.isArray(p.periods) ? p.periods : [];
+  /* Somebody who used the app before this existed has one date and no
+     list. Carry it in rather than losing it. */
+  if (!list.length && p.lastPeriod) list = [p.lastPeriod];
+  return normalizePeriods(list);
+}
+
+function periodsSet(list) {
+  const clean = normalizePeriods(list);
+  store.parent.periods = clean;
+  store.parent.lastPeriod = clean[0] || '';
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+function periodToggle(date) {
+  const list = periods();
+  const at = list.indexOf(date);
+  if (at === -1) list.push(date);
+  else list.splice(at, 1);
+  periodsSet(list);
+}
+
+/* Her own average once she has two dates, the textbook figure until
+   then, so the calendar is never drawing nothing. */
+function cycleLen() {
+  return predictLength(periods(), store.parent.cycleLength);
+}
+
+function cycleInfoNow(ref) {
+  return cycleInfo(store.parent.lastPeriod, ref, cycleLen());
+}
+
+function cycleCalendar(info, monthOffset, editing) {
   if (!info) return '';
   const today = ciToday();
   const parts = today.split('-');
@@ -24459,7 +24689,10 @@ function cycleCalendar(info, monthOffset) {
      us, so the month either side reads correctly too. */
   const start = info.lastPeriod;
   const len = info.cycleLength;
+  const logged = periods();
   const marks = {};
+  /* The estimate first, projected forward and back so the months either
+     side read correctly. */
   for (let c = -2; c <= 3; c++) {
     const s0 = ciDayBefore(start, -c * len);
     for (let i = 0; i < CYCLE_BLEED_DAYS; i++) marks[ciDayBefore(s0, -i)] = 'bleed';
@@ -24470,6 +24703,13 @@ function cycleCalendar(info, monthOffset) {
     }
     marks[ov] = 'ovul';
   }
+  /* Then anything she actually logged, painted over the top, because a
+     day she recorded beats a day the app guessed. */
+  const starts = {};
+  logged.forEach((d0) => {
+    starts[d0] = 1;
+    for (let i = 0; i < CYCLE_BLEED_DAYS; i++) marks[ciDayBefore(d0, -i)] = 'bleed';
+  });
 
   const cells = [];
   for (let i = 0; i < lead; i++) cells.push('<span class="cal-pad"></span>');
@@ -24477,7 +24717,15 @@ function cycleCalendar(info, monthOffset) {
     const k = key(d);
     const mark = marks[k] || '';
     const isToday = k === today;
-    cells.push(`<span class="cal-d ${mark}${isToday ? ' today' : ''}">${d}</span>`);
+    const isStart = !!starts[k];
+    const cls = `cal-d ${mark}${isToday ? ' today' : ''}${isStart ? ' logged' : ''}`;
+    if (editing) {
+      cells.push(`<button class="${cls}" data-period="${esc(k)}"
+        aria-label="${esc(cycleDateLabelWithYear(k))}${isStart ? ', logged, tap to remove' : ', tap to log a period start'}"
+        aria-pressed="${isStart ? 'true' : 'false'}">${d}</button>`);
+    } else {
+      cells.push(`<span class="${cls}">${d}</span>`);
+    }
   }
 
   return `
@@ -24495,7 +24743,10 @@ function cycleCalendar(info, monthOffset) {
       <span><i class="k-bleed"></i> Period</span>
       <span><i class="k-fertile"></i> Fertile window</span>
       <span><i class="k-ovul"></i> Ovulation</span>
+      <span><i class="k-logged"></i> You logged it</span>
     </div>
+    ${editing ? `<p class="tiny" style="margin-top:7px;text-align:center">
+      Tap the day a period started. Tap it again to take it off.</p>` : ''}
   </div>`;
 }
 
@@ -24504,9 +24755,11 @@ function cycleCalendar(info, monthOffset) {
 function cycleWidget() {
   const p = store.parent;
   const mode = cycleMode(situation());
+  const list = periods();
+  const stats = cycleStats(list);
 
   if (mode === 'pregnant') {
-    const info = cycleInfo(p.lastPeriod, null, p.cycleLength);
+    const info = cycleInfoNow();
     return `
     <div class="card">
       <p class="eyebrow">${icon('heart', 11, 'var(--sage)')} Your pregnancy</p>
@@ -24515,24 +24768,32 @@ function cycleWidget() {
         <p class="tiny" style="margin-top:4px">Due ${esc(cycleDateLabelWithYear(info.dueDate))}, counted from your last period.
         A dating scan beats this and always wins.</p>
       ` : `
-        <p class="bodytext" style="margin-top:5px">Add the first day of your last period in Settings
-        and the app can work out how far along you are.</p>`}
+        <p class="bodytext" style="margin-top:5px">Log the first day of your last period below and
+        the app can work out how far along you are.</p>
+        <button class="btn ghost sm" style="width:100%;margin-top:10px" data-cycle="edit">Log a period</button>`}
     </div>`;
   }
 
-  const info = cycleInfo(p.lastPeriod, null, p.cycleLength);
+  const info = cycleInfoNow();
+  const editing = !!store.cycleEdit;
+
+  /* Nothing logged yet. One button, and it opens the calendar she is
+     going to use every month anyway rather than sending her to
+     Settings to type a date. */
   if (!info) {
     return `
-    <button class="lrow" data-tab="settings" style="align-items:flex-start">
-      <span class="licon">${icon('calendar', 18)}</span>
-      <span class="grow">
-        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Track your cycle</span>
-        <span class="tiny" style="display:block;margin-top:2px">
-          Add the first day of your last period in Settings and the calendar fills itself in
-        </span>
-      </span>
-      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-    </button>`;
+    <div class="card">
+      <p class="eyebrow">${icon('calendar', 11, 'var(--sage)')} Your cycle</p>
+      <p class="bodytext" style="margin-top:5px">
+        Tap the day your last period started and this fills itself in. Log each one as it comes and
+        the app works out your own average rather than assuming twenty eight days.
+      </p>
+      ${editing ? cycleCalendar(
+        { lastPeriod: ciToday(), cycleLength: CYCLE_AVERAGE_LENGTH }, store.calMonth || 0, true) : ''}
+      <button class="btn${editing ? ' ghost' : ''}" style="width:100%;margin-top:11px" data-cycle="${editing ? 'done' : 'edit'}">
+        ${editing ? 'Done' : 'Log a period'}
+      </button>
+    </div>`;
   }
 
   const lead = info.isLate
@@ -24540,6 +24801,8 @@ function cycleWidget() {
     : info.daysToNext === 0 ? 'The estimate lands today'
     : info.inFertileWindow ? 'Inside the estimated fertile window'
     : 'About ' + info.daysToNext + ' day' + (info.daysToNext === 1 ? '' : 's') + ' to the next one';
+
+  const rows = periodHistoryRows(list);
 
   return `
   <div class="card">
@@ -24551,12 +24814,48 @@ function cycleWidget() {
       <span class="grow">
         <span class="eyebrow" style="display:block">Your cycle</span>
         <span style="display:block;font-size:14px;font-weight:600;color:var(--ink);margin-top:2px">${esc(lead)}</span>
+        <span class="tiny" style="display:block;margin-top:3px">
+          ${stats.cycles
+            ? esc(cycleLengthLine(stats))
+            : 'Counting from the one date so far. Log the next one and this becomes your own average.'}
+        </span>
         ${mode === 'trying' ? `<span class="tiny" style="display:block;margin-top:3px">
           Fertile window ${esc(cycleDateLabel(info.fertileStart))} to ${esc(cycleDateLabel(info.fertileEnd))}</span>` : ''}
       </span>
     </div>
-    ${cycleCalendar(info, store.calMonth || 0)}
-    <p class="tiny" style="margin-top:9px">Estimates from one date, not a test and not birth control.</p>
+
+    ${cycleCalendar(info, store.calMonth || 0, editing)}
+
+    <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+      <button class="chip${editing ? ' on' : ''}" data-cycle="${editing ? 'done' : 'edit'}"
+        ${editing ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}>
+        ${icon(editing ? 'check' : 'calendar', 12, 'var(--deep)')} ${editing ? 'Done logging' : 'Log a period'}
+      </button>
+      <button class="chip" data-cycle="today">Started today</button>
+      ${rows.length ? `<button class="chip" data-cycle="history">
+        ${store.cycleHistory ? 'Hide' : 'All ' + rows.length + ' logged'}
+      </button>` : ''}
+    </div>
+
+    ${stats.note ? `
+    <p class="tiny" style="margin-top:9px">${icon('chart', 10, 'var(--sage)')} ${esc(stats.note)}</p>` : ''}
+
+    ${store.cycleHistory && rows.length ? `
+    <div class="cychist">
+      ${rows.map((r) => `
+        <div class="cychrow">
+          <span class="grow">
+            <span class="cychdate">${esc(cycleDateLabelWithYear(r.date))}</span>
+            <span class="tiny">${r.gap
+              ? esc(r.gap + ' days after the one before')
+              : 'The earliest one you have logged'}</span>
+          </span>
+          <button class="chip" data-period-del="${esc(r.date)}" aria-label="Remove ${esc(cycleDateLabel(r.date))}">Remove</button>
+        </div>`).join('')}
+    </div>` : ''}
+
+    <p class="tiny" style="margin-top:9px">Estimates from the dates you logged, not a test and not
+    birth control.</p>
   </div>`;
 }
 
@@ -27719,6 +28018,18 @@ function willowChildLine(c) {
   return bits.join(', ');
 }
 
+/* Her cycle, in a sentence, so a question such as "is it normal that my
+   period was late this month" is answered from her own logged dates
+   rather than from a textbook average. Nothing is sent when she has not
+   logged anything. */
+function willowMotherLine() {
+  const list = periods();
+  if (!list.length) return '';
+  const info = cycleInfoNow();
+  if (!info) return '';
+  return cycleForWillow(list, info, cycleStats(list)) + ' ' + CYCLE_WILLOW_BRIEF;
+}
+
 function willowSay(who, text, sources, kind, key) {
   willowThread(key).push({ who: who, text: text, sources: sources || [], kind: kind || '' });
 }
@@ -27768,7 +28079,7 @@ async function willowAsk(question) {
        say "what about at naps?" and be understood. */
     const history = willowHistory(willowThread(key).slice(0, -1), 10);
     const chat = model.startChat({ history: history });
-    const res = await chat.sendMessage(willowPrompt(q, hits.slice(0, 4), willowChildLine(c)));
+    const res = await chat.sendMessage(willowPrompt(q, hits.slice(0, 4), willowChildLine(c), willowMotherLine()));
     const raw = res && res.response && typeof res.response.text === 'function'
       ? res.response.text() : String(res || '');
     const split = willowSplitSources(raw);
