@@ -558,6 +558,214 @@ function readPhotoFile(file, done) {
   viaImage();
 }
 
+/* -----------------------------------------------------------------
+   CROPPING
+
+   A square circle is a brutal thing to do to a photo somebody chose.
+   Centre cropping puts the middle of the picture in the circle, and
+   the middle of a photo of a child is very often their chest.
+
+   So: pick, then move and zoom it until the face is where you want it,
+   then use it. The original never leaves the browser and never gets
+   saved anywhere. Only the finished 256 square does.
+
+   The drag deliberately does NOT go through render. Repainting the
+   whole screen on every pointermove would be unusable on a phone, and
+   would also throw away the image element mid gesture. It moves the
+   element directly and only writes the result down when the finger
+   lifts. */
+
+const crop = {
+  on: false,
+  target: '',
+  src: '',      // an object URL for the chosen file, revoked when we are done
+  w: 0,
+  h: 0,
+  scale: 1,
+  x: 0,
+  y: 0,
+  wired: false,
+};
+
+const CROP_VIEW = 264;   // the square she is looking at, in CSS pixels
+
+function cropBase() {
+  if (!crop.w || !crop.h) return 1;
+  return CROP_VIEW / Math.min(crop.w, crop.h);
+}
+
+/* The image must always cover the square, so it can never be dragged
+   far enough to show a gap at the edge. */
+function cropClamp() {
+  const f = cropBase() * crop.scale;
+  const dw = crop.w * f;
+  const dh = crop.h * f;
+  crop.x = Math.min(0, Math.max(CROP_VIEW - dw, crop.x));
+  crop.y = Math.min(0, Math.max(CROP_VIEW - dh, crop.y));
+}
+
+function cropOpen(file, target) {
+  if (!file || !/^image\//.test(file.type || '')) {
+    store.photoError = 'That file is not a photo. A jpg, png or heic from your camera roll works.';
+    render();
+    return;
+  }
+  cropClose(true);
+  let url = '';
+  try { url = URL.createObjectURL(file); } catch (err) {
+    store.photoError = 'That photo could not be opened.';
+    render();
+    return;
+  }
+  const img = new Image();
+  img.onload = () => {
+    crop.on = true;
+    crop.target = target;
+    crop.src = url;
+    crop.w = img.naturalWidth || img.width;
+    crop.h = img.naturalHeight || img.height;
+    crop.scale = 1;
+    const f = cropBase();
+    /* Start centred, which is the same place the old automatic crop
+       used, so doing nothing gives the old behaviour. */
+    crop.x = (CROP_VIEW - crop.w * f) / 2;
+    crop.y = (CROP_VIEW - crop.h * f) / 2;
+    crop.wired = false;
+    store.photoBusy = false;
+    store.photoError = '';
+    render();
+  };
+  img.onerror = () => {
+    try { URL.revokeObjectURL(url); } catch (e) {}
+    store.photoBusy = false;
+    store.photoError = 'That photo could not be opened. If it came from a text message, try saving it first.';
+    render();
+  };
+  img.src = url;
+}
+
+function cropClose(quiet) {
+  if (crop.src) { try { URL.revokeObjectURL(crop.src); } catch (e) {} }
+  crop.on = false;
+  crop.src = '';
+  crop.target = '';
+  crop.wired = false;
+  if (!quiet) render();
+}
+
+/* What she is looking at, turned into the 256 square that gets saved. */
+function cropConfirm() {
+  if (!crop.on) return;
+  const target = crop.target;
+  const img = document.getElementById('cropImg');
+  if (!img) { cropClose(); return; }
+  cropClamp();
+  const f = cropBase() * crop.scale;
+  const side = CROP_VIEW / f;
+  const sx = (0 - crop.x) / f;
+  const sy = (0 - crop.y) / f;
+  let out = '';
+  try {
+    const S = 256;
+    const cv = document.createElement('canvas');
+    cv.width = S; cv.height = S;
+    const cx = cv.getContext('2d');
+    cx.drawImage(img, sx, sy, side, side, 0, 0, S, S);
+    out = cv.toDataURL('image/jpeg', 0.82);
+  } catch (err) { out = ''; }
+  cropClose(true);
+  if (out) applyFaceValue(target, out);
+  else { store.photoError = 'That photo could not be saved. A smaller one usually works.'; render(); }
+}
+
+function cropCard() {
+  if (!crop.on) return '';
+  const f = cropBase() * crop.scale;
+  return `
+  <div class="card cropcard">
+    <p class="eyebrow">${icon('camera', 11, 'var(--sage)')} Move it where you want it</p>
+    <div class="cropstage" id="cropStage">
+      <img id="cropImg" src="${esc(crop.src)}" alt="" draggable="false"
+        style="width:${Math.round(crop.w * f)}px;height:${Math.round(crop.h * f)}px;
+               transform:translate(${Math.round(crop.x)}px,${Math.round(crop.y)}px)" />
+      <span class="cropring"></span>
+    </div>
+    <div class="croprow">
+      <span class="tiny">Zoom</span>
+      <input class="cropzoom" id="cropZoom" type="range" min="100" max="320" value="${Math.round(crop.scale * 100)}" />
+    </div>
+    <p class="tiny" style="margin-top:6px">Drag the photo to move it. Only the part inside the circle is saved.</p>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;justify-content:flex-end">
+      <button class="chip" data-crop="cancel">Cancel</button>
+      <button class="chip" data-crop="another">Choose another</button>
+      <button class="btn" data-crop="use" style="width:auto;flex:none;padding:10px 20px">
+        ${icon('check', 15, '#fff')} Use this photo
+      </button>
+    </div>
+  </div>`;
+}
+
+/* Wired after the markup exists, and only once per appearance. The
+   gesture moves the element itself rather than asking for a repaint,
+   because a repaint mid drag would destroy the thing being dragged. */
+function cropWire() {
+  const stage = document.getElementById('cropStage');
+  const img = document.getElementById('cropImg');
+  if (!stage || !img || crop.wired) return;
+  crop.wired = true;
+
+  const apply = () => {
+    cropClamp();
+    img.style.transform = 'translate(' + Math.round(crop.x) + 'px,' + Math.round(crop.y) + 'px)';
+  };
+
+  let dragging = false;
+  let sx = 0;
+  let sy = 0;
+  let ox = 0;
+  let oy = 0;
+
+  stage.addEventListener('pointerdown', (e) => {
+    dragging = true;
+    sx = e.clientX; sy = e.clientY; ox = crop.x; oy = crop.y;
+    try { stage.setPointerCapture(e.pointerId); } catch (err) {}
+    e.preventDefault();
+  });
+  stage.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    crop.x = ox + (e.clientX - sx);
+    crop.y = oy + (e.clientY - sy);
+    apply();
+    e.preventDefault();
+  });
+  const stop = (e) => {
+    if (!dragging) return;
+    dragging = false;
+    try { stage.releasePointerCapture(e.pointerId); } catch (err) {}
+  };
+  stage.addEventListener('pointerup', stop);
+  stage.addEventListener('pointercancel', stop);
+
+  const zoom = document.getElementById('cropZoom');
+  if (zoom) {
+    zoom.addEventListener('input', () => {
+      const next = Math.max(1, Number(zoom.value) / 100);
+      /* Zoom toward the middle of the square rather than the top left,
+         which is what it feels like it should do. */
+      const before = cropBase() * crop.scale;
+      const after = cropBase() * next;
+      const cx = CROP_VIEW / 2;
+      crop.x = cx - ((cx - crop.x) / before) * after;
+      crop.y = cx - ((cx - crop.y) / before) * after;
+      crop.scale = next;
+      const f = after;
+      img.style.width = Math.round(crop.w * f) + 'px';
+      img.style.height = Math.round(crop.h * f) + 'px';
+      apply();
+    });
+  }
+}
+
 /* ONE file input, for the whole app, living outside the screen.
 
    This is the bug she hit. The input used to sit inside the picker,
@@ -592,12 +800,9 @@ function ensurePhotoInput() {
     store.photoBusy = true;
     store.photoError = '';
     render();
-    readPhotoFile(file, (url, err) => {
-      store.photoBusy = false;
-      store.photoError = err || '';
-      if (url) applyFaceValue(target, url);
-      else render();
-    });
+    /* Straight to the cropper rather than straight to saved, so she
+       decides what ends up in the circle. */
+    cropOpen(file, target);
   });
   document.body.appendChild(el);
   photoInput = el;
@@ -842,6 +1047,11 @@ function flushStore() {
       birthdaySeen: store.birthdaySeen,
       msEdit: store.msEdit,
       ciEdit: store.ciEdit,
+      /* Persisted, same as the other two drafts. It used to be memory
+         only, which meant a photo she had picked but not yet saved
+         disappeared the moment anything reloaded. That is how Stetson's
+         photo went missing while hers stayed. */
+      profileEdit: store.profileEdit,
       hadSession: store.hadSession,
       guest: store.guest,
       deletedChildIds: store.deletedChildIds,
@@ -870,6 +1080,27 @@ if (typeof document !== 'undefined' && document.addEventListener) {
     else if (typeof checkForUpdate === 'function') checkForUpdate(false);
   });
   window.addEventListener('pagehide', flushStore);
+
+  /* Two tabs of the app used to quietly overwrite each other. Each one
+     holds the whole store in memory and writes all of it on every
+     change, so a tab left open on an old screen would eventually flush
+     its stale copy straight over whatever the other tab had just
+     saved. That is how a photo can be in storage one minute and gone
+     the next through no fault of the person who uploaded it.
+
+     A storage event only fires in the OTHER tabs, which is exactly what
+     is wanted: whoever just wrote keeps what they wrote, and everybody
+     else picks it up. A tab with an edit open is left alone rather than
+     having it yanked out from under her. */
+  window.addEventListener('storage', (e) => {
+    if (e.key !== STORE_KEY || !e.newValue) return;
+    if (store.profileEdit || store.msEdit || store.ciEdit) return;
+    try {
+      if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+      loadStore();
+      render();
+    } catch (err) { /* Better a stale tab than a broken one. */ }
+  });
 }
 
 /* A date the old native input let through. Typing a year into one of
@@ -901,9 +1132,8 @@ function loadStore() {
     store.parentUpdatedAt = Number(saved.parentUpdatedAt) || 0;
     store.birthdaySeen = (saved.birthdaySeen && typeof saved.birthdaySeen === 'object')
       ? saved.birthdaySeen : {};
-    /* A half typed edit never survives a reload. Closing the tab is the
-       same as pressing Cancel, which is what she would expect. */
-    store.profileEdit = null;
+    store.profileEdit = (saved.profileEdit && typeof saved.profileEdit === 'object'
+      && saved.profileEdit.who && saved.profileEdit.values) ? saved.profileEdit : null;
     store.msEdit = (saved.msEdit && typeof saved.msEdit === 'object' && saved.msEdit.childId)
       ? saved.msEdit : null;
     store.ciEdit = (saved.ciEdit && typeof saved.ciEdit === 'object' && saved.ciEdit.childId)
@@ -1689,6 +1919,8 @@ function render() {
      confetti starts here rather than inside the function that writes the
      markup. It leaves itself alone if it is already running. */
   if (bday) bdayStartArt(); else bdayStopArt();
+  /* The cropper has to exist before its gesture can be attached. */
+  if (crop.on) cropWire();
   /* Computed after every redirect above has had its say, so the key
      describes the screen that was actually painted. */
   const nowRoute = routeKey();
@@ -1903,7 +2135,7 @@ function initControls() {
   });
 
   document.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop]');
     if (!t) return;
 
     if (t.dataset.auth) {
@@ -1947,6 +2179,12 @@ function initControls() {
       if (how === 'save') editSave();
       else if (how === 'cancel') editCancel();
       else editStart(how);
+    } else if (t.dataset.crop) {
+      const how = t.dataset.crop;
+      if (how === 'use') cropConfirm();
+      else if (how === 'another') { const tg = crop.target; cropClose(true); pickPhoto(tg); }
+      else cropClose();
+      return;
     } else if (t.dataset.photopick) {
       pickPhoto(t.dataset.photopick);
       return;
@@ -6413,6 +6651,31 @@ function editSave() {
   flushStore();
 }
 
+/* Nothing on this screen is saved until Save is pressed, and a picked
+   photo appearing in the big circle above makes it look as though it
+   already is. Say so plainly, in the one place she is looking. */
+function editUnsavedNote() {
+  return `
+  <p class="tiny" style="margin:-4px 0 12px;color:#B0873F;font-weight:600">
+    ${icon('clock', 11, '#B0873F')} Nothing here is saved until you press Save.
+  </p>`;
+}
+
+/* And a bar that follows her down the screen, so Save is never
+   somewhere she has to scroll back up to find. */
+function editSaveBar() {
+  if (!store.profileEdit) return '';
+  return `
+  <div class="savebar">
+    <span class="grow">
+      <span class="savebar-t">Not saved yet</span>
+      <span class="savebar-s">Your changes are held here until you save them</span>
+    </span>
+    <button class="chip" data-edit="cancel">Cancel</button>
+    <button class="btn" data-edit="save">${icon('check', 15, '#fff')} Save</button>
+  </div>`;
+}
+
 /* Read mode shows a value, not an input. It is the clearest possible
    signal that nothing here is going to move while you look at it. */
 function readRow(label, value, empty) {
@@ -6428,6 +6691,7 @@ function readRow(label, value, empty) {
    is an edit like any other. */
 function facePicker(target, current) {
   const val = String(current || '');
+  if (crop.on && crop.target === target) return cropCard();
   return `
   <div class="facepick">
     <div class="facepick-now">${faceHTML(val, 72, target === 'me' ? 'me' : 2)}</div>
@@ -6512,6 +6776,7 @@ function screenMyProfile() {
     </div>
 
     ${editing ? facePicker('me', v.photo) : ''}
+    ${editing ? editUnsavedNote() : ''}
 
     <p class="sect">About you</p>
     ${editing ? `
@@ -6569,6 +6834,7 @@ function screenMyProfile() {
         your username. None of this is attached to any child, and none of it is shared with anyone.
       </p>
     </div>
+    ${editing ? editSaveBar() : ''}
   </div>`;
 }
 
@@ -6601,6 +6867,7 @@ function screenChild(c) {
 
     ${editing ? `
       ${facePicker(kid.id, v.photo)}
+      ${editUnsavedNote()}
       <div class="card flat" style="margin-bottom:8px">
         <p class="eyebrow">Their name</p>
         <input class="inp" type="text" data-editname="1" id="ce_name" value="${esc(v.name || '')}"
@@ -6725,6 +6992,7 @@ function screenChild(c) {
       are reordering what surfaces first. Nothing is hidden, everything is still here.</p>
     </div>` : ''}
     <p class="disclaimer">${esc(CONTENT_DISCLAIMER)}</p>
+    ${editing ? editSaveBar() : ''}
   </div>`;
 }
 

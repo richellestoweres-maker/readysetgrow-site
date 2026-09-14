@@ -446,6 +446,30 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .avdot.on{border-color:var(--deep);box-shadow:0 0 0 2px var(--cream) inset}
 .photobtn{cursor:pointer;display:inline-flex;align-items:center;gap:5px}
 
+/* THE CROPPER.
+   The ring shows exactly what is going to be kept, because a square
+   preview of something that ends up circular is a small lie. */
+.cropcard{border:1px solid var(--line)}
+.cropstage{
+  position:relative;width:264px;height:264px;max-width:100%;
+  margin:11px auto 0;border-radius:14px;overflow:hidden;
+  background:var(--leaf3);cursor:grab;touch-action:none;
+  user-select:none;-webkit-user-select:none;
+}
+.cropstage:active{cursor:grabbing}
+.cropstage img{
+  position:absolute;top:0;left:0;transform-origin:0 0;
+  display:block;pointer-events:none;-webkit-user-drag:none;
+}
+.cropring{
+  position:absolute;inset:0;pointer-events:none;
+  box-shadow:0 0 0 999px rgba(250,249,245,.72);
+  border-radius:50%;border:2px solid rgba(255,255,255,.9);
+}
+.croprow{display:flex;align-items:center;gap:10px;margin-top:12px}
+.cropzoom{flex:1;min-width:0;accent-color:var(--deep);height:22px}
+@media (max-width:330px){ .cropstage{width:100%;height:auto;aspect-ratio:1} }
+
 /* THE DATE DROPDOWNS. */
 .daterow{display:flex;gap:7px;margin-top:7px;flex-wrap:wrap}
 .dsel{
