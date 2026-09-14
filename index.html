@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-14 21:29">
+<meta name="rsg-build" content="2026-09-14 22:49">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -1034,7 +1034,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-14 21:29';
+const BUILD_STAMP = '2026-09-14 22:49';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -20272,7 +20272,16 @@ function render() {
   // Inputs inside the screen are destroyed by this swap, so remember where
   // the caret was and put it back, or typing loses focus every keystroke.
   const act = document.activeElement;
-  const keepId = act && screen.contains(act) && act.id ? act.id : null;
+  /* Willow and the top bar live outside the screen but are rewritten by
+     this same repaint, so anything focused in them has to be put back
+     too. Without this, a repaint while she is mid sentence to Willow
+     throws her out of the box and sends the caret to the start. */
+  const willowSlotNow = document.getElementById('willow');
+  const barSlotNow = document.getElementById('topbar');
+  const inRewritten = !!act && (screen.contains(act)
+    || (willowSlotNow && willowSlotNow.contains(act))
+    || (barSlotNow && barSlotNow.contains(act)));
+  const keepId = act && inRewritten && act.id ? act.id : null;
   // Some input types report selectionStart as null. Falling back to the
   // end of the value keeps typing in order instead of reversing it.
   let keepStart = null;
@@ -20307,7 +20316,11 @@ function render() {
   const pendingSave = !!(v && v.type === 'screen' && v.id === 'milestones'
     && !willow.open && msChangeCount());
   if (willowSlot) {
-    willowSlot.innerHTML = bday || (pendingSave ? '' : willowBubble() + willowPanel());
+    /* Only rewritten when it actually differs. Replacing the markup
+       destroys the input she is typing in, so the cheapest fix is not
+       to replace it when nothing has changed. */
+    const willowHTML = bday || (pendingSave ? '' : willowBubble() + willowPanel());
+    if (willowSlot.innerHTML !== willowHTML) willowSlot.innerHTML = willowHTML;
   }
   /* The canvas has to exist before anything can draw on it, so the
      confetti starts here rather than inside the function that writes the
