@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-14 15:38">
+<meta name="rsg-build" content="2026-09-14 16:06">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -205,6 +205,145 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
   display:grid;place-items:center;flex:none;
 }
 .cireply .grow{flex:1;min-width:0}
+
+/* THE CORNER MENU.
+   Whoever is open, and what is waiting. */
+.me-slot{position:relative}
+.backchip{
+  display:inline-flex;align-items:center;gap:5px;cursor:pointer;font:inherit;
+  font-size:12.5px;font-weight:600;color:var(--deep);
+  background:var(--surface2);border:1px solid var(--line2);border-radius:999px;
+  padding:7px 13px 7px 10px;
+}
+.cmenu{
+  position:absolute;right:0;top:calc(100% + 8px);z-index:30;
+  width:264px;max-width:calc(100vw - 28px);
+  background:var(--card,#fff);border:1px solid var(--line);border-radius:15px;
+  box-shadow:0 14px 34px rgba(45,62,40,.2);padding:8px;
+  max-height:min(70vh,520px);overflow-y:auto;text-align:left;
+}
+.cmenu-h{
+  font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);padding:7px 9px 5px;margin:0;
+}
+.cmenu-empty{font-size:12.5px;color:var(--faint);padding:2px 9px 8px;margin:0;line-height:1.4}
+.cmenu-row{
+  display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+  border:0;background:none;font:inherit;cursor:pointer;
+  padding:8px 9px;border-radius:11px;
+}
+.cmenu-row:hover{background:var(--leaf3)}
+.cmenu-row.on{background:var(--leaf2)}
+.cmenu-ic{
+  width:28px;height:28px;border-radius:50%;background:var(--leaf3);
+  display:grid;place-items:center;flex:none;
+}
+.cmenu-t{display:block;font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.3}
+.cmenu-s{display:block;font-size:11.5px;color:var(--muted);margin-top:1px;line-height:1.3}
+.cmenu-rule{height:1px;background:rgba(0,0,0,.07);margin:6px 4px}
+
+/* TICK BOXES.
+   A list you read, not a form you fill in. */
+.tick{
+  display:flex;align-items:flex-start;gap:11px;width:100%;text-align:left;
+  border:0;background:none;font:inherit;cursor:pointer;
+  padding:9px 2px;border-top:1px solid rgba(0,0,0,.055);
+}
+.tick:first-child{border-top:0;padding-top:2px}
+.tickbox{
+  width:21px;height:21px;border-radius:6px;flex:none;margin-top:1px;
+  border:1.6px solid var(--line2);background:var(--surface);
+  display:grid;place-items:center;
+}
+.tick.on .tickbox{background:var(--deep);border-color:var(--deep)}
+.tick-l{display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.35}
+.tick.on .tick-l{color:var(--deep)}
+.tick-h{display:block;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4}
+
+/* THE CYCLE CALENDAR. */
+.calwrap{margin-top:13px;border-top:1px solid rgba(0,0,0,.06);padding-top:11px}
+.calhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+.calmonth{font-size:13.5px;font-weight:600;color:var(--ink)}
+.calnav{
+  width:30px;height:30px;border-radius:50%;flex:none;cursor:pointer;
+  background:var(--surface2);border:1px solid var(--line2);
+  display:grid;place-items:center;
+}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-w{
+  font-size:10px;color:var(--muted);text-align:center;padding:2px 0 4px;
+  letter-spacing:.04em;
+}
+.cal-pad{aspect-ratio:1}
+.cal-d{
+  aspect-ratio:1;display:grid;place-items:center;border-radius:9px;
+  font-size:12px;color:var(--body);
+  font-variant-numeric:tabular-nums;
+}
+.cal-d.bleed{background:#F0D3CB;color:#8C4A38;font-weight:600}
+.cal-d.fertile{background:#E4EDDC;color:#4F6B3E}
+.cal-d.ovul{background:#C9DDB6;color:#3E5730;font-weight:700}
+.cal-d.today{box-shadow:0 0 0 2px var(--deep) inset;font-weight:700}
+.callegend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--muted)}
+.callegend span{display:inline-flex;align-items:center;gap:5px}
+.callegend i{width:11px;height:11px;border-radius:4px;display:block}
+.k-bleed{background:#F0D3CB}
+.k-fertile{background:#E4EDDC}
+.k-ovul{background:#C9DDB6}
+
+/* LEARNING CARD. */
+.learncard{
+  display:block;width:100%;text-align:left;cursor:pointer;
+  border:1px solid var(--line);font:inherit;
+}
+
+/* POSTS. */
+.composer{display:block;width:100%}
+.composer.shut{
+  display:flex;align-items:center;gap:11px;text-align:left;cursor:pointer;
+  background:var(--card,#fff);border:1px solid var(--line);border-radius:16px;
+  padding:11px 13px;font:inherit;margin-bottom:10px;
+}
+.composer-hint{flex:1;min-width:0;font-size:14px;color:var(--faint)}
+.composer-cam{
+  width:34px;height:34px;border-radius:50%;background:var(--leaf3);
+  display:grid;place-items:center;flex:none;
+}
+.composer-in{
+  flex:1;min-width:0;resize:vertical;min-height:70px;line-height:1.5;
+  font-family:inherit;
+}
+.composer-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.vispick{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+
+.postcard{margin-bottom:10px}
+.post-who{display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3}
+.post-when{display:block;font-size:11.5px;color:var(--muted);margin-top:1px}
+.post-vis{
+  display:inline-flex;align-items:center;gap:4px;flex:none;
+  font-size:11px;font-weight:600;color:var(--muted);
+  background:var(--surface2);border-radius:999px;padding:4px 9px;
+}
+.post-vis.pub{color:#6E8B54;background:#EEF2E7}
+
+.postpics{display:grid;gap:5px;margin-top:10px;grid-template-columns:1fr}
+.postpics.n2,.postpics.n4{grid-template-columns:1fr 1fr}
+.postpics.n3{grid-template-columns:1fr 1fr}
+.postpics.draft{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
+.postpic{position:relative;display:block;border-radius:12px;overflow:hidden;background:var(--leaf3)}
+.postpic img{width:100%;height:100%;object-fit:cover;display:block;max-height:340px}
+.postpics.draft .postpic img{aspect-ratio:1;max-height:none}
+.postpic-x{
+  position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;
+  background:rgba(0,0,0,.55);border:0;cursor:pointer;display:grid;place-items:center;
+  transform:rotate(45deg);
+}
+
+.profstats{
+  display:flex;gap:18px;justify-content:center;flex-wrap:wrap;
+  margin:-2px 0 14px;font-size:12.5px;color:var(--muted);
+}
+.profstats b{color:var(--ink);font-size:15px}
 
 /* THE DAILY CHECK IN. */
 .cicard{border:1px solid var(--line)}
@@ -842,7 +981,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-14 15:38';
+const BUILD_STAMP = '2026-09-14 16:06';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -16663,6 +16802,415 @@ function liftPrompt(kind, context) {
    she actually opened is meant to have. */
 const LIFT_DAILY_LIMIT = 12;
 
+/* ===== src/data/situation.js ===== */
+/**
+ * Ready Set Grow: What The App Knows About Her Situation
+ * ------------------------------------------------------------------
+ * She said it plainly: none of the postpartum content applies to her
+ * any more, and the app was showing it anyway. To give good guidance
+ * it has to know where somebody actually is.
+ *
+ * THE RULE THIS FILE EXISTS TO ENFORCE
+ * Nothing here is a profile of her. It is a set of switches that decide
+ * which parts of the app are worth showing. Ticking "breastfeeding"
+ * brings pumping and supply to the front. Leaving it unticked puts it
+ * away. That is the whole job.
+ *
+ * WHY EVERY ONE IS OPTIONAL AND WHY NONE OF IT IS REQUIRED
+ * Some of these are private in a way that matters, such as how
+ * somebody is trying to conceive, or that they lost a pregnancy. The
+ * app never requires an answer, never asks twice, and never puts any
+ * of it in front of anybody else. Skipping the whole section leaves an
+ * app that works exactly as it does today.
+ *
+ * ADOPTION, FOSTERING AND STEP PARENTING
+ * She asked for this specifically. A child who arrived at four does
+ * not have a newborn history in this house, and an app that opens on
+ * "your birth story" is telling that family it was not built for them.
+ * The switch changes the framing, never the developmental content,
+ * because a four year old is a four year old however they got here.
+ */
+
+const SITUATION_INTRO =
+  'None of this is required, and none of it is ever shown to anybody else. It only decides which '
+  + 'parts of the app are worth your time. Leave anything blank and nothing is missing.';
+
+const SITUATION_PRIVACY =
+  'This stays on your account. The community only ever sees your username, never any of this.';
+
+/* ------------------------------------------------------------------
+ * WHERE SHE IS RIGHT NOW
+ * ------------------------------------------------------------------ */
+
+const PARENT_STAGES = [
+  { id: 'expecting', label: 'Expecting',
+    help: 'Pregnancy week by week, what to ask at appointments, and getting ready.' },
+  { id: 'trying', label: 'Trying to conceive',
+    help: 'Cycle tracking comes forward, with the fertile window and what actually affects it.' },
+  { id: 'postpartum', label: 'In the first year after birth',
+    help: 'Recovery, the fourth trimester, and how you are actually doing.' },
+  { id: 'breastfeeding', label: 'Breastfeeding',
+    help: 'Latch, supply, and what to do when it hurts.' },
+  { id: 'pumping', label: 'Pumping',
+    help: 'Flange fitting, schedules, storage, and why frozen milk tastes like soap.' },
+  { id: 'formula', label: 'Formula feeding or combination feeding',
+    help: 'How much, how often, and mixing safely. Fed is fed.' },
+];
+
+/* Only asked once Expecting or Trying is ticked, and it is the most
+   private question in the app, so it says so and offers a way out. */
+const CONCEIVE_PATHS = [
+  { id: 'natural', label: 'On our own' },
+  { id: 'tracking', label: 'Tracking and timing' },
+  { id: 'meds', label: 'With medication' },
+  { id: 'iui', label: 'IUI' },
+  { id: 'ivf', label: 'IVF' },
+  { id: 'donor', label: 'With a donor' },
+  { id: 'surrogacy', label: 'Surrogacy' },
+  { id: 'private', label: 'Rather not say' },
+];
+
+const CONCEIVE_NOTE =
+  'This only changes which appointments, timelines and terms the app uses, so it is talking about '
+  + 'your actual situation rather than a generic one. Rather not say is a complete answer.';
+
+/* ------------------------------------------------------------------
+ * HOW SHE PARENTS
+ * ------------------------------------------------------------------ */
+
+const PARENT_ROLES = [
+  { id: 'birth', label: 'Birth parent' },
+  { id: 'adoptive', label: 'Adoptive parent' },
+  { id: 'foster', label: 'Foster parent' },
+  { id: 'step', label: 'Step parent' },
+  { id: 'kinship', label: 'Grandparent or kinship carer' },
+  { id: 'guardian', label: 'Guardian' },
+];
+
+const SUPPORT_SHAPE = [
+  { id: 'solo', label: 'Doing this on my own' },
+  { id: 'partner', label: 'With a partner' },
+  { id: 'coparent', label: 'Co-parenting across two homes' },
+  { id: 'family', label: 'With family close by' },
+];
+
+/* ------------------------------------------------------------------
+ * PER CHILD
+ * A child can have arrived in a way that changes the framing without
+ * changing a single thing about their development.
+ * ------------------------------------------------------------------ */
+
+const CHILD_ARRIVAL = [
+  { id: 'adopted', label: 'Adopted' },
+  { id: 'fostered', label: 'In foster care with us' },
+  { id: 'step', label: 'My step child' },
+  { id: 'kinship', label: 'In our care through family' },
+  { id: 'early', label: 'Born early' },
+];
+
+const CHILD_ARRIVAL_NOTE =
+  'This changes how the app talks about their early days, never what it says about their '
+  + 'development. A four year old is a four year old however they got here.';
+
+/* ------------------------------------------------------------------
+ * WHAT THE SWITCHES ACTUALLY DO
+ *
+ * One place, so no screen has to work it out for itself and no screen
+ * can disagree with another about whether something is relevant.
+ * ------------------------------------------------------------------ */
+
+function hasStage(situation, id) {
+  const s = (situation && situation.stages) || [];
+  return s.indexOf(id) !== -1;
+}
+
+/* Age in months of the youngest child, or null. Used so the app can be
+   right about somebody who has not ticked anything at all. */
+function youngestMonths(ages) {
+  const list = (ages || []).filter((m) => typeof m === 'number' && m >= 0);
+  if (!list.length) return null;
+  return Math.min.apply(null, list);
+}
+
+function showsPostpartum(situation, ages) {
+  if (hasStage(situation, 'postpartum')) return true;
+  if (hasStage(situation, 'expecting')) return true;
+  const y = youngestMonths(ages);
+  return y != null && y < 12;
+}
+
+function showsFeeding(situation, ages) {
+  if (hasStage(situation, 'breastfeeding') || hasStage(situation, 'pumping')
+    || hasStage(situation, 'formula')) return true;
+  const y = youngestMonths(ages);
+  return y != null && y < 24;
+}
+
+function showsPregnancy(situation, ages) {
+  if (hasStage(situation, 'expecting')) return true;
+  const y = youngestMonths(ages);
+  return y != null && y < 0;
+}
+
+function showsTrying(situation) {
+  return hasStage(situation, 'trying');
+}
+
+/* The cycle card is the odd one out. Somebody who is expecting does not
+   want a fertile window, she wants how far along she is. */
+function cycleMode(situation) {
+  if (hasStage(situation, 'expecting')) return 'pregnant';
+  if (hasStage(situation, 'trying')) return 'trying';
+  return 'cycle';
+}
+
+/* Said on her profile when nothing is ticked, so the section reads as
+   an invitation rather than an empty box. */
+const SITUATION_EMPTY =
+  'The app is guessing from your children’s ages at the moment. Tell it where you actually are '
+  + 'and it will stop showing you things that finished a while ago.';
+
+/* ===== src/data/parentLearn.js ===== */
+/**
+ * Ready Set Grow: Learning For Her
+ * ------------------------------------------------------------------
+ * She asked for educational content on Home that is about HER: her own
+ * mental health, and how to be the parent she wants to be. Not about a
+ * child. Each child's profile carries their own material already.
+ *
+ * WHAT THESE ARE
+ * Short. One idea each, the kind that changes something that same
+ * afternoon rather than the kind you need a quiet hour for. Written for
+ * somebody reading on a phone with a child in the room.
+ *
+ * THE TONE RULE
+ * Never a lecture and never a wellness poster. A parent can tell within
+ * one sentence whether something was written by somebody who has been
+ * in the room, and if it reads like advice from the outside she will
+ * close it and not come back.
+ *
+ * THE SAFETY RULE
+ * These touch mental health, so: nothing here diagnoses anything,
+ * nothing here is therapy, and anything that describes a pattern worth
+ * real help says so and points at a person rather than at more reading.
+ */
+
+const PARENT_LEARN = [
+  {
+    id: 'repair',
+    kind: 'Being their person',
+    title: 'The repair matters more than the rupture',
+    blurb: 'Losing your patience is not the damaging part. What happens next is.',
+    body: [
+      'Every parent snaps. The research that gets quoted about this is not about parents who never '
+      + 'lose it, because those parents do not exist. It is about what happens in the twenty minutes '
+      + 'afterwards.',
+      'Going back and saying "I shouted, that was me, not you, I am sorry" does something specific. '
+      + 'It teaches a child that a relationship can bend without breaking, and that the person who '
+      + 'hurt them can come back. That is a thing they will need for the rest of their life, and '
+      + 'they can only learn it from somebody who got it wrong first.',
+      'It does not need to be a speech. Sitting down next to them counts.',
+    ],
+    tryThis: 'Next time it goes wrong, go back within the hour. Name what you did, not what they did.',
+  },
+  {
+    id: 'bar',
+    kind: 'Looking after yourself',
+    title: 'Lower the bar on purpose, not by accident',
+    blurb: 'There is a difference between choosing to do less and feeling like you failed at more.',
+    body: [
+      'On a hard week most parents keep the same list and simply fail at more of it, which costs the '
+      + 'energy of doing the thing and the energy of feeling bad about not doing it.',
+      'Deciding in advance which things are not happening this week is a different experience '
+      + 'entirely. Cereal for dinner chosen on Monday is a plan. Cereal for dinner at six on Thursday '
+      + 'because nothing else happened is a failure, and it is the same cereal.',
+      'Pick the two that matter and say out loud that the rest are off.',
+    ],
+    tryThis: 'Name two things that must happen today. Everything else is officially optional.',
+  },
+  {
+    id: 'anger',
+    kind: 'Looking after yourself',
+    title: 'Parental rage is common and almost nobody says so',
+    blurb: 'The intensity of it frightens people into silence, which makes it worse.',
+    body: [
+      'A lot of parents are shocked by how angry they can get at a very small person, and then '
+      + 'frightened by the shock, and then silent about all of it. The silence is the problem, '
+      + 'because it convinces each person they are the only one.',
+      'It is extremely common. It usually sits on top of something else, most often exhaustion, '
+      + 'hunger, noise, or having had nothing that was yours for a long time. Anger is the smoke.',
+      'What helps is boring and works: eat something, get the noise down, and get ten minutes '
+      + 'where nobody needs you, before you need them rather than after.',
+      'If the anger is frightening you, or you are worried about what you might do, that is worth '
+      + 'saying out loud to your doctor or a therapist. Not because something is wrong with you, '
+      + 'but because you should not be carrying it by yourself.',
+    ],
+    tryThis: 'Notice what was true in the hour before, not just the moment itself.',
+  },
+  {
+    id: 'comparison',
+    kind: 'Looking after yourself',
+    title: 'You are comparing your inside to their outside',
+    blurb: 'Nobody posts the bit where it all fell apart at the shops.',
+    body: [
+      'The parent whose life looks effortless online had a morning you did not see. This is not a '
+      + 'comforting platitude, it is a description of what a feed is: the small number of moments '
+      + 'somebody chose to show.',
+      'It matters because comparison changes behaviour. Parents who feel behind push harder at the '
+      + 'wrong things, usually the visible ones, and have less left for the invisible ones that '
+      + 'actually build a child.',
+      'Nobody photographs the repair after the shouting, and that is the part that counts.',
+    ],
+    tryThis: 'Mute two accounts that make you feel behind. You can follow them again in a month.',
+  },
+  {
+    id: 'connection',
+    kind: 'Being their person',
+    title: 'Connection before correction',
+    blurb: 'A child in a state cannot hear a lesson. Get them back first, teach second.',
+    body: [
+      'When a child is genuinely dysregulated, the part of the brain that takes in instructions is '
+      + 'not the part that is running. Explaining why we do not hit, mid meltdown, is talking to a '
+      + 'room nobody is in.',
+      'Get low, get close, say almost nothing. "I am here" is usually enough. The teaching happens '
+      + 'afterwards, when they are back, and it lands in about a tenth of the words.',
+      'This is not letting them get away with it. It is doing the discipline at the only moment it '
+      + 'can work.',
+    ],
+    tryThis: 'Next meltdown, say nothing for the first sixty seconds. Just be near.',
+  },
+  {
+    id: 'ownstuff',
+    kind: 'Looking after yourself',
+    title: 'The things that set you off are worth knowing',
+    blurb: 'Most parents have two or three specific triggers, and they are usually old.',
+    body: [
+      'Almost every parent has a handful of things that produce a reaction out of proportion to what '
+      + 'happened. Whining. Being ignored. Mess. Somebody laughing at them.',
+      'These are worth knowing by name, because a trigger you have named is a trigger you get about '
+      + 'two seconds of warning on, and two seconds is the whole difference.',
+      'Quite often they come from how you were parented, which is uncomfortable and also useful. '
+      + 'You are allowed to decide that a thing which was done to you stops here.',
+    ],
+    tryThis: 'Name your top one. Just knowing it buys you a moment next time.',
+  },
+  {
+    id: 'sleepdebt',
+    kind: 'Looking after yourself',
+    title: 'Broken sleep is an injury, not a character flaw',
+    blurb: 'You are not worse at this. You are concussed.',
+    body: [
+      'Sustained broken sleep measurably reduces patience, working memory and emotional control. '
+      + 'Every single thing about parenting that is hard gets harder, and it is not a failure of '
+      + 'effort or attitude.',
+      'The useful response is not to try harder. It is to lower everything else while it lasts, and '
+      + 'to take sleep wherever it is available even when it is at the wrong time of day and even '
+      + 'when the house is a state.',
+      'It is temporary. It does not feel temporary from inside it, which is exactly why somebody '
+      + 'should tell you.',
+    ],
+    tryThis: 'Sleep when you can, not when it makes sense. The kitchen will keep.',
+  },
+  {
+    id: 'yourown',
+    kind: 'Looking after yourself',
+    title: 'You are allowed to need things',
+    blurb: 'Looking after yourself is not taken from them.',
+    body: [
+      'A lot of parents treat their own needs as the thing to cut first, because it is the only cut '
+      + 'nobody else complains about. It works for a while and then it does not.',
+      'What children actually need is a parent with something left. Not a perfect one, not an '
+      + 'endlessly available one. One who is still in there.',
+      'Asking for help before you are desperate is not weakness, it is planning, and it is much '
+      + 'easier to ask at a six than at a ten.',
+    ],
+    tryThis: 'Ask for one specific piece of help this week, before you need it.',
+  },
+  {
+    id: 'twoyes',
+    kind: 'Being their person',
+    title: 'Say what they can do, not what they cannot',
+    blurb: 'A no with nowhere to go usually becomes a fight.',
+    body: [
+      'Children hear the instruction at the end of the sentence. "Do not run" and "walking feet" '
+      + 'take the same breath and land completely differently.',
+      'The same works for bigger refusals. "No, we are not staying" is a wall. "We are going now, '
+      + 'and you can choose the song in the car" is a door.',
+      'Two acceptable options beats one demand almost every time, and the choice does not have to '
+      + 'be a real concession.',
+    ],
+    tryThis: 'Turn your next no into two yeses that both suit you.',
+  },
+  {
+    id: 'whoyouwere',
+    kind: 'Looking after yourself',
+    title: 'You are allowed to miss who you were',
+    blurb: 'Grieving the old life is not ingratitude.',
+    body: [
+      'Plenty of parents feel a genuine loss for the person they were before, and then feel guilty '
+      + 'for feeling it, as though missing your own life means you do not want your child.',
+      'Both are true at once. You can be glad they exist and miss sleeping in, having a Saturday, '
+      + 'being somebody nobody needed.',
+      'The parts of you that got put down are usually still there. They come back in smaller and '
+      + 'stranger shapes, and they come back sooner if you keep one of them alive on purpose.',
+    ],
+    tryThis: 'Keep one thing that is only yours. An hour a week counts.',
+  },
+  {
+    id: 'thewatch',
+    kind: 'Looking after yourself',
+    title: 'When it is more than a hard week',
+    blurb: 'There is a line between exhausted and something that needs help.',
+    body: [
+      'Hard days, short temper and crying in the car are all within the range of ordinary parenting '
+      + 'and do not mean anything is wrong.',
+      'Some things are worth taking to a person rather than reading about. Feeling flat or hopeless '
+      + 'most days for more than two weeks. Not being able to enjoy anything. Frightening thoughts '
+      + 'that will not leave. Feeling disconnected from your child. Not sleeping even when you have '
+      + 'the chance.',
+      'None of those mean you are failing and none of them are rare. They are the ones where a GP, '
+      + 'a midwife, a health visitor or a therapist changes things faster than any app can.',
+      'If you are ever thinking about hurting yourself, that is the moment to talk to somebody '
+      + 'today rather than sit with it.',
+    ],
+    tryThis: 'If more than one of those has been true for a fortnight, book the appointment this week.',
+    weight: 'careful',
+  },
+  {
+    id: 'goodenough',
+    kind: 'Being their person',
+    title: 'Good enough is the actual target',
+    blurb: 'Children do not need a perfect parent. The research is quite specific about this.',
+    body: [
+      'The phrase comes from a paediatrician who noticed that children of extremely attentive '
+      + 'parents did not do better than children of ordinary ones. What mattered was being reliable '
+      + 'enough, often enough.',
+      'Getting it right about a third of the time, and repairing when you do not, is the shape of a '
+      + 'secure attachment. Not perfection. Not even close to perfection.',
+      'This is not permission to coast. It is permission to stop treating every ordinary mistake as '
+      + 'evidence.',
+    ],
+    tryThis: 'Count the times today you got it right rather than the times you did not.',
+  },
+];
+
+function parentLearnById(id) {
+  return PARENT_LEARN.filter((p) => p.id === id)[0] || null;
+}
+
+/* One a day, held still by the date so it does not change while she is
+   halfway through reading it. */
+function parentLearnForDay(dayKey) {
+  const s = String(dayKey || '');
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return PARENT_LEARN[h % PARENT_LEARN.length];
+}
+
+const PARENT_LEARN_DISCLAIMER =
+  'General information written for parents, not therapy and not a diagnosis. If something here '
+  + 'describes you and it has been going on, a GP or a therapist is the right next step.';
+
 /* ===== src/data/cycle.js ===== */
 /**
  * Ready Set Grow: Cycle And Dates
@@ -17548,6 +18096,10 @@ const crop = {
   on: false,
   target: '',
   src: '',      // an object URL for the chosen file, revoked when we are done
+  /* The decoded photo itself. A post photo never draws a cropper on
+     screen, so there is no #cropImg to read back from, and this is
+     what the canvas copies from instead. */
+  img: null,
   w: 0,
   h: 0,
   scale: 1,
@@ -17591,6 +18143,7 @@ function cropOpen(file, target) {
     crop.on = true;
     crop.target = target;
     crop.src = url;
+    crop.img = img;
     crop.w = img.naturalWidth || img.width;
     crop.h = img.naturalHeight || img.height;
     crop.scale = 1;
@@ -17602,6 +18155,8 @@ function cropOpen(file, target) {
     crop.wired = false;
     store.photoBusy = false;
     store.photoError = '';
+    /* A post photo goes straight in. There is nothing to frame. */
+    if (target === 'post') { cropConfirm(); return; }
     render();
   };
   img.onerror = () => {
@@ -17617,6 +18172,7 @@ function cropClose(quiet) {
   if (crop.src) { try { URL.revokeObjectURL(crop.src); } catch (e) {} }
   crop.on = false;
   crop.src = '';
+  crop.img = null;
   crop.target = '';
   crop.wired = false;
   if (!quiet) render();
@@ -17626,6 +18182,29 @@ function cropClose(quiet) {
 function cropConfirm() {
   if (!crop.on) return;
   const target = crop.target;
+  /* A post photo keeps its shape and its detail. Cropping it to a 256
+     circle would be pointless, since the whole reason for putting it in
+     a post is looking at it. */
+  if (target === 'post') {
+    const imgEl = crop.img || document.getElementById('cropImg');
+    let out = '';
+    try {
+      if (!imgEl) throw new Error('no image');
+      const MAX = 1100;
+      const w = crop.w;
+      const h = crop.h;
+      const f = Math.min(1, MAX / Math.max(w, h));
+      const cv = document.createElement('canvas');
+      cv.width = Math.round(w * f);
+      cv.height = Math.round(h * f);
+      cv.getContext('2d').drawImage(imgEl, 0, 0, cv.width, cv.height);
+      out = cv.toDataURL('image/jpeg', 0.82);
+    } catch (err) { out = ''; }
+    cropClose(true);
+    if (out) postPhotoAdd(out);
+    else { store.photoError = 'That photo could not be added. A smaller one usually works.'; render(); }
+    return;
+  }
   const img = document.getElementById('cropImg');
   if (!img) { cropClose(); return; }
   cropClamp();
@@ -17649,6 +18228,7 @@ function cropConfirm() {
 
 function cropCard() {
   if (!crop.on) return '';
+  if (crop.target === 'post') return '';
   const f = cropBase() * crop.scale;
   return `
   <div class="card cropcard">
@@ -17828,6 +18408,9 @@ function newChildRecord(name, birthday) {
     milestonesUpdatedAt: '',
     /* One entry per day, keyed YYYY-MM-DD. See src/data/checkins.js. */
     checkins: {},
+    /* How they arrived. Changes the framing of their early days, never
+       anything about their development. See src/data/situation.js. */
+    arrival: [],
     wakeTime: '06:30',
     napOverride: null,
     routineInclude: [],
@@ -17842,7 +18425,23 @@ const store = {
   /* The parent's own account. Password is deliberately absent. A real
      account needs a server, and storing one in a browser would be worse
      than not having one at all. The profile screen says so out loud. */
-  parent: { name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '' },
+  parent: { name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '',
+    photo: '',
+    /* Where she actually is, so the app stops showing her things that
+       finished a while ago. See src/data/situation.js. */
+    situation: { stages: [], path: '', roles: [], support: [] } },
+
+  /* Posts. Hers, private unless she deliberately shares one. */
+  posts: [],
+  postDraft: null,
+  postOpen: false,
+
+  /* The corner menu. Never persisted: a menu left open across a reload
+     would be a small haunting. */
+  menuOpen: false,
+
+  /* Which month the cycle calendar is showing, 0 being this one. */
+  calMonth: 0,
   children: [],
   activeChildId: null,
 
@@ -17984,7 +18583,8 @@ const state = {};
   });
 });
 
-['parent', 'children', 'activeChildId', 'bagChecked', 'birthdaySeen', 'profileWho',
+['parent', 'children', 'activeChildId', 'bagChecked', 'birthdaySeen', 'profileWho', 'posts', 'postDraft',
+ 'postOpen', 'menuOpen', 'calMonth',
  'profileEdit', 'msEdit', 'ciEdit', 'ciOpen', 'photoBusy', 'photoError',
  'liftUsed', 'liftDate', 'pumpTab', 'pumpGoal',
  'pumpProblem', 'flangeMm', 'ppTab', 'ppStage', 'askQuery', 'askAsked',
@@ -18014,6 +18614,8 @@ function flushStore() {
       activeChildId: store.activeChildId,
       bagChecked: store.bagChecked,
       birthdaySeen: store.birthdaySeen,
+      posts: store.posts,
+      postDraft: store.postDraft,
       msEdit: store.msEdit,
       ciEdit: store.ciEdit,
       /* Persisted, same as the other two drafts. It used to be memory
@@ -18107,12 +18709,15 @@ function loadStore() {
       ? saved.msEdit : null;
     store.ciEdit = (saved.ciEdit && typeof saved.ciEdit === 'object' && saved.ciEdit.childId)
       ? saved.ciEdit : null;
+    store.posts = Array.isArray(saved.posts) ? saved.posts : [];
+    store.postDraft = (saved.postDraft && typeof saved.postDraft === 'object') ? saved.postDraft : null;
   }
 
   if (saved && Array.isArray(saved.children) && saved.children.length) {
-    store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '' }, saved.parent || {});
+    store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '', photo: '', situation: { stages: [], path: '', roles: [], support: [] } }, saved.parent || {});
     store.parent.birthday = sanitizeStoredDate(store.parent.birthday, 0);
     store.parent.lastPeriod = sanitizeStoredDate(store.parent.lastPeriod, 0);
+    store.parent.situation = normalizeSituation(store.parent.situation);
     // Fill in any field an older saved record is missing, so a profile
     // written by a previous version cannot crash a newer screen.
     store.children = saved.children.map((k) => Object.assign(normalizeChild(k), {
@@ -18810,6 +19415,8 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'pumping') html = screenPumping();
   else if (v && v.type === 'screen' && v.id === 'postpartum') html = screenPostpartum(c);
   else if (v && v.type === 'screen' && v.id === 'pregHealth') html = screenPregHealth();
+  else if (v && v.type === 'learn') html = viewLearn(v.id);
+  else if (v && v.type === 'screen' && v.id === 'learnall') html = screenLearnAll();
   else if (v && v.type === 'screen' && v.id === 'checkins') html = screenCheckins(c);
   else if (v && v.type === 'screen' && v.id === 'addchild') html = screenAddChild();
   /* Every old link that said "profile" meant her own, so it still lands
@@ -18991,6 +19598,13 @@ function initControls() {
     else if (e.target.matches('[data-editname]')) {
       if (store.profileEdit) store.profileEdit.values.name = e.target.value;
     }
+    else if (e.target.matches('[data-pw]')) {
+      pw[e.target.dataset.pw] = e.target.value;
+    }
+    else if (e.target.matches('[data-postfield]')) {
+      postDraft().text = e.target.value;
+      saveStore();
+    }
     else if (e.target.matches('[data-cinote]')) {
       const d = ciEnsureDraft();
       if (d) { d.note = e.target.value; saveStore(); }
@@ -19045,6 +19659,11 @@ function initControls() {
   let bdayTimer = null;
 
   document.addEventListener('change', (e) => {
+    if (e.target.matches('[data-postchild]')) {
+      postDraft().childId = e.target.value;
+      flushStore();
+      return;
+    }
     if (e.target.matches('[data-datepart]')) {
       readDateRow(e.target.closest('[data-datefield]'));
     } else if (e.target.matches('[data-childbday]')) {
@@ -19094,7 +19713,23 @@ function initControls() {
   });
 
   document.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop]');
+    /* Work out what was clicked first, because the menu closing must
+       never eat the tap that was meant to do something. */
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo]');
+    if (store.menuOpen && !e.target.closest('[data-menu]')) {
+      /* Anything that actually goes somewhere closes the menu on the
+         way through, including the rows inside the menu itself. Dead
+         space inside the menu, such as the little headings, leaves it
+         open, because nobody means to close a menu by tapping a label. */
+      const inMenu = !!e.target.closest('.cmenu');
+      if (t || !inMenu) {
+        store.menuOpen = false;
+        if (!t) {
+          render();
+          return;
+        }
+      }
+    }
     if (!t) return;
 
     if (t.dataset.auth) {
@@ -19143,6 +19778,43 @@ function initControls() {
       if (how === 'use') cropConfirm();
       else if (how === 'another') { const tg = crop.target; cropClose(true); pickPhoto(tg); }
       else cropClose();
+      return;
+    } else if (t.dataset.pwdo) {
+      const how = t.dataset.pwdo;
+      if (how === 'open') { pw.open = true; pw.note = ''; }
+      else if (how === 'close') { pw.open = false; pw.current = ''; pw.next = ''; pw.note = ''; }
+      else if (how === 'save') { pwChange(); return; }
+      else if (how === 'reset') { pwReset(); return; }
+      render();
+      return;
+    } else if (t.dataset.cal) {
+      store.calMonth = (store.calMonth || 0) + Number(t.dataset.cal);
+      if (store.calMonth < -12) store.calMonth = -12;
+      if (store.calMonth > 12) store.calMonth = 12;
+      render();
+      return;
+    } else if (t.dataset.menu) {
+      store.menuOpen = !store.menuOpen;
+      render();
+      return;
+    } else if (t.dataset.post) {
+      const how = t.dataset.post;
+      if (how === 'open') { store.postOpen = true; postDraft(); }
+      else if (how === 'save') postSave();
+      else if (how === 'discard') { store.postDraft = null; store.postOpen = false; store.photoError = ''; flushStore(); }
+      else if (how === 'unpic') postPhotoRemove(t.dataset.i);
+      else if (how === 'vis') { postSetVisibility(t.dataset.id || 'draft', t.dataset.vis); return; }
+      else if (how === 'del') { postDelete(t.dataset.id); return; }
+      render();
+      return;
+    } else if (t.dataset.sit) {
+      sitToggle(t.dataset.sit, t.dataset.id);
+      return;
+    } else if (t.dataset.sitpath) {
+      sitSetPath(t.dataset.sitpath);
+      return;
+    } else if (t.dataset.arrival) {
+      childArrivalToggle(t.dataset.arrivalfor, t.dataset.arrival);
       return;
     } else if (t.dataset.photopick) {
       pickPhoto(t.dataset.photopick);
@@ -22228,14 +22900,88 @@ function screenSettings() {
   const kids = store.children;
   const st = cloudStatusLine();
   const border = st.tone === 'good' ? 'var(--sage)' : st.tone === 'warn' ? 'var(--attention)' : 'var(--line)';
+  const p = store.parent || {};
+  const editing = editingWho() === 'me';
+  const v = editing ? store.profileEdit.values : p;
+
+  const textField = (label, key, type, placeholder, help) => `
+    <div class="card flat" style="margin-bottom:8px">
+      <p class="eyebrow">${esc(label)}</p>
+      <input class="inp" type="${type}" data-parentfield="${esc(key)}" id="pf_${esc(key)}"
+        value="${esc(v[key] || '')}" placeholder="${esc(placeholder)}" autocomplete="off"
+        style="margin-top:7px;width:100%" />
+      ${help ? `<p class="tiny" style="margin-top:6px">${esc(help)}</p>` : ''}
+    </div>`;
+
+  const dateField = (label, key, help, back, ahead) => `
+    <div class="card flat" style="margin-bottom:8px">
+      <p class="eyebrow">${esc(label)}</p>
+      ${dateSelects('parent:' + key, v[key] || '', back, ahead)}
+      ${help ? `<p class="tiny" style="margin-top:6px">${esc(help)}</p>` : ''}
+    </div>`;
 
   return `
   ${cornerLeaves()}
   <div class="sc-head">
     <h1 class="title">Settings</h1>
-    <p class="sub">Your account, your children's records, and this copy of the app.</p>
+    <p class="sub">Your details, your situation, and this copy of the app.</p>
   </div>
   <div class="sc">
+
+    <p class="sect">Your details</p>
+    <div class="editbar">
+      ${editing ? `
+        <button class="btn" data-edit="save">${icon('check', 15, '#fff')} Save</button>
+        <button class="btn ghost" data-edit="cancel">Cancel</button>
+      ` : `
+        <button class="btn ghost" data-edit="me">${icon('star', 14, 'var(--deep)')} Edit</button>
+      `}
+    </div>
+
+    ${editing ? `
+      ${facePicker('me', v.photo)}
+      ${editUnsavedNote()}
+      ${textField('Your name', 'name', 'text', 'Richelle', '')}
+      ${textField('Username', 'username', 'text', 'richelle_s', 'This is what other parents see in the community, not your real name.')}
+      ${textField('Email', 'email', 'email', 'you@example.com', '')}
+      ${dateField('Your birthday', 'birthday',
+        'So the app can say it back to you on the day, the same as it does for the children.', 100, 0)}
+      ${dateField('First day of your last period', 'lastPeriod',
+        'Day one is the first day of real bleeding, not spotting the day before. Only you ever see this.', 2, 0)}
+    ` : `
+      <div class="card">
+        ${readRow('Name', p.name, 'Add your name so the app knows who it is talking to')}
+        ${readRow('Username', p.username, 'Not set, so the community will ask for one')}
+        ${readRow('Email', p.email)}
+        ${readRow('Birthday', p.birthday ? cycleDateLabelWithYear(p.birthday) : '')}
+        ${readRow('Last period began', p.lastPeriod ? cycleDateLabel(p.lastPeriod) : '', 'Add it and the calendar fills itself in')}
+      </div>
+    `}
+
+    <p class="sect">Password</p>
+    ${passwordBlock()}
+
+    ${situationBlock()}
+
+    ${(() => {
+      /* Only offered once there is somebody to offer it about, and it
+         sits with the rest of what the app is allowed to know. */
+      if (!kids.length) return '';
+      return `
+      <p class="sect">How each of them arrived</p>
+      <p class="tiny" style="margin:-4px 0 10px">${esc(CHILD_ARRIVAL_NOTE)}</p>
+      ${kids.map((k) => `
+        <div class="card" style="margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:10px">
+            ${childFace(k, 34)}
+            <span style="font-size:14px;font-weight:600;color:var(--ink)">${esc(k.name || 'Unnamed')}</span>
+          </div>
+          <div style="margin-top:8px">
+            ${CHILD_ARRIVAL.map((a) => tickRow((k.arrival || []).indexOf(a.id) !== -1, a.label, '',
+              'data-arrival="' + esc(a.id) + '" data-arrivalfor="' + esc(k.id) + '"')).join('')}
+          </div>
+        </div>`).join('')}`;
+    })()}
 
     <p class="sect">Your account</p>
     <div class="card" style="border-left:3px solid ${border}">
@@ -22243,12 +22989,6 @@ function screenSettings() {
       <p class="bodytext" style="margin-top:5px">${esc(st.text)}</p>
       ${st.action ? `<button class="btn" style="margin-top:12px" data-auth="account">${esc(st.action)}</button>` : ''}
     </div>
-
-    ${childRow('user', 'Your profile',
-      store.parent.name
-        ? esc(store.parent.name) + (store.parent.email ? ', ' + esc(store.parent.email) : '')
-        : 'Add your name so the app knows who it is talking to',
-      'data-me="1"')}
 
     <button class="lrow" data-auth="signout" style="align-items:center">
       <span class="licon">${icon('back', 17, 'var(--deep)')}</span>
@@ -22294,7 +23034,103 @@ function screenSettings() {
         another parent, never part of the community, and never carried into a post.
       </p>
     </div>
+    ${editing ? editSaveBar() : ''}
   </div>`;
+}
+
+/* -----------------------------------------------------------------
+   PASSWORD
+
+   Two different jobs. Changing it needs the current one, which is
+   Firebase being careful rather than the app being awkward: without it
+   anybody who found an unlocked phone could lock the owner out of their
+   own account. Forgetting it sends a link to the email on the account,
+   which is the only way that can safely work.
+   ----------------------------------------------------------------- */
+
+const pw = { current: '', next: '', busy: false, note: '', tone: '', open: false };
+
+function passwordBlock() {
+  if (!auth.user) {
+    return `
+    <div class="card flat">
+      <p class="bodytext">You are looking around without an account, so there is no password yet.
+      Creating one keeps everything safe and carries it to your other devices.</p>
+      <button class="btn" style="margin-top:12px" data-auth="account">Create an account</button>
+    </div>`;
+  }
+
+  return `
+  <div class="card">
+    ${pw.open ? `
+      <p class="eyebrow">Change your password</p>
+      <input class="inp" type="password" id="pwCur" data-pw="current" value="${esc(pw.current)}"
+        placeholder="Your current password" autocomplete="current-password"
+        style="margin-top:8px;width:100%" />
+      <input class="inp" type="password" id="pwNew" data-pw="next" value="${esc(pw.next)}"
+        placeholder="New password, at least six characters" autocomplete="new-password"
+        style="margin-top:8px;width:100%" />
+      <div style="display:flex;gap:8px;margin-top:11px;justify-content:flex-end;flex-wrap:wrap">
+        <button class="chip" data-pwdo="close">Cancel</button>
+        <button class="btn" data-pwdo="save" ${pw.busy ? 'disabled' : ''}
+          style="width:auto;flex:none;padding:10px 18px">${pw.busy ? 'Changing' : 'Change it'}</button>
+      </div>
+    ` : `
+      <p class="bodytext">Signed in as ${esc(auth.user.email || 'your account')}.</p>
+      <div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap">
+        <button class="chip" data-pwdo="open">Change password</button>
+        <button class="chip" data-pwdo="reset" ${pw.busy ? 'disabled' : ''}>
+          ${pw.busy ? 'Sending' : 'Email me a reset link'}
+        </button>
+      </div>
+    `}
+    ${pw.note ? `<p class="tiny" style="margin-top:9px;color:${pw.tone === 'bad' ? '#A85A44' : 'var(--deep)'};font-weight:600">${esc(pw.note)}</p>` : ''}
+  </div>`;
+}
+
+async function pwChange() {
+  if (pw.busy) return;
+  if (!pw.current || !pw.next) { pw.note = 'Both boxes need filling in.'; pw.tone = 'bad'; render(); return; }
+  if (String(pw.next).length < 6) { pw.note = 'A new password needs at least six characters.'; pw.tone = 'bad'; render(); return; }
+  pw.busy = true; pw.note = ''; render();
+  try {
+    const { fbAuth, authMod } = await loadFirebase();
+    const user = fbAuth.currentUser;
+    const cred = authMod.EmailAuthProvider.credential(user.email, pw.current);
+    await authMod.reauthenticateWithCredential(user, cred);
+    await authMod.updatePassword(user, pw.next);
+    pw.note = 'Password changed.';
+    pw.tone = 'good';
+    pw.current = ''; pw.next = ''; pw.open = false;
+  } catch (err) {
+    const code = String((err && err.code) || '');
+    pw.note = /wrong-password|invalid-credential/.test(code)
+      ? 'That current password is not right.'
+      : /weak-password/.test(code) ? 'That new password is too easy to guess.'
+      : /requires-recent-login/.test(code) ? 'Sign out and back in, then try again.'
+      : 'That did not work. Try the reset link instead.';
+    pw.tone = 'bad';
+  }
+  pw.busy = false;
+  render();
+}
+
+async function pwReset() {
+  if (pw.busy) return;
+  const email = (auth.user && auth.user.email) || store.parent.email;
+  if (!email) { pw.note = 'There is no email on this account to send it to.'; pw.tone = 'bad'; render(); return; }
+  pw.busy = true; pw.note = ''; render();
+  try {
+    const { fbAuth, authMod } = await loadFirebase();
+    await authMod.sendPasswordResetEmail(fbAuth, email);
+    pw.note = 'Link sent to ' + email + '. Check your junk folder if it is not there.';
+    pw.tone = 'good';
+  } catch (err) {
+    pw.note = 'That did not send. Check the email on your account is right.';
+    pw.tone = 'bad';
+  }
+  pw.busy = false;
+  render();
 }
 
 function screenAddChild() {
@@ -22588,7 +23424,9 @@ async function doSignOut() {
        them, so this is a clear rather than a loss. */
     store.children = [];
     store.activeChildId = null;
-    store.parent = { name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '' };
+    store.parent = { name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '', photo: '', situation: { stages: [], path: '', roles: [], support: [] } };
+    store.posts = [];
+    store.postDraft = null;
     store.birthdaySeen = {};
     store.bagChecked = [];
     store.deletedChildIds = [];
@@ -22786,23 +23624,610 @@ function chipGrowthOrder(k) {
    is the wordmark and her own face. Hers is a way back to herself from
    anywhere in the app, including from the middle of a child's profile,
    which is the thing the old chip row never quite did. */
+/* Whoever is open, shown in the corner. She asked for this: open
+   Stetson and the corner says Stetson, so there is never a moment of
+   wondering whose screen you are looking at. */
+function whoIsOpen() {
+  const who = store.profileWho || 'me';
+  if (state.tab === 'profile' && who !== 'me') {
+    const k = store.children.filter((x) => x.id === who)[0];
+    if (k) {
+      return { id: k.id, name: (k.name || 'Unnamed').split(/\s+/)[0], face: childFace(k, 26), child: true };
+    }
+  }
+  return {
+    id: 'me',
+    name: (store.parent.name || '').trim().split(/\s+/)[0] || 'Me',
+    face: parentFace(26),
+    child: false,
+  };
+}
+
 function topBar(markOnly) {
-  const meOn = state.tab === 'profile' && store.profileWho === 'me' && !state.view;
   const mark = IS_DESKTOP ? `<div class="mark-holder">${wordmark(false)}</div>` : '';
   if (markOnly) return updateBar() + `<div class="topbar mark-only">${mark}</div>`;
-  const first = (store.parent.name || '').trim().split(/\s+/)[0];
+  const who = whoIsOpen();
+  const deep = !!state.view;
   return updateBar() + `
   <div class="topbar">
-    <div class="topbar-left"></div>
+    <div class="topbar-left">
+      ${deep ? `<button class="backchip" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>` : ''}
+    </div>
     ${mark}
     <div class="me-slot">
-      <button class="mebtn${meOn ? ' on' : ''}" data-me="1" aria-label="Your profile">
-        ${parentFace(26)}<span>${esc(first || 'Me')}</span>
+      <button class="mebtn${store.menuOpen ? ' on' : ''}" data-menu="toggle" aria-label="${esc(who.name)}, open menu">
+        ${who.face}<span>${esc(who.name)}</span>
+        ${icon('chevdown', 13, store.menuOpen ? '#fff' : 'var(--deep)')}
       </button>
+      ${store.menuOpen ? cornerMenu(who) : ''}
     </div>
   </div>`;
 }
 
+/* The drop down. Notifications first because that is the part that
+   changes, then the family to switch between, then the settings and
+   the way out. */
+function cornerMenu(who) {
+  const notes = pendingNotices();
+  return `
+  <div class="cmenu">
+    <p class="cmenu-h">${notes.length ? notes.length + ' waiting on you' : 'Nothing waiting'}</p>
+    ${notes.length ? notes.map((n) => `
+      <button class="cmenu-row" ${n.attrs}>
+        <span class="cmenu-ic">${icon(n.icon, 15, 'var(--deep)')}</span>
+        <span class="grow">
+          <span class="cmenu-t">${esc(n.title)}</span>
+          <span class="cmenu-s">${esc(n.sub)}</span>
+        </span>
+      </button>`).join('') : `
+      <p class="cmenu-empty">Check ins done, nothing needs you right now.</p>`}
+
+    <div class="cmenu-rule"></div>
+    <p class="cmenu-h">Switch to</p>
+    <button class="cmenu-row${who.id === 'me' ? ' on' : ''}" data-me="1">
+      ${parentFace(26)}
+      <span class="grow"><span class="cmenu-t">${esc(store.parent.name || 'You')}</span>
+      <span class="cmenu-s">Your profile</span></span>
+    </button>
+    ${store.children.map((k) => `
+      <button class="cmenu-row${who.id === k.id ? ' on' : ''}" data-child="${esc(k.id)}">
+        ${childFace(k, 26)}
+        <span class="grow"><span class="cmenu-t">${esc(k.name || 'Unnamed')}</span>
+        <span class="cmenu-s">${esc(childAgeLabel(k))}</span></span>
+      </button>`).join('')}
+
+    <div class="cmenu-rule"></div>
+    <button class="cmenu-row" data-tab="settings">
+      <span class="cmenu-ic">${icon('gear', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">Settings</span></span>
+    </button>
+    <button class="cmenu-row" data-auth="signout">
+      <span class="cmenu-ic">${icon('back', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">Sign out</span></span>
+    </button>
+  </div>`;
+}
+
+/* What is actually waiting. Real things only, never a made up badge,
+   because a notification that means nothing teaches somebody to ignore
+   all of them. */
+function pendingNotices() {
+  const out = [];
+  store.children.filter((k) => !isExampleChild(k)).forEach((k) => {
+    if (!ciSavedFor(k)) {
+      out.push({
+        icon: 'sun',
+        title: 'How ' + ((k.name || 'they').split(/\s+/)[0]) + ' is doing today',
+        sub: 'Thirty seconds, on their profile',
+        attrs: 'data-child="' + esc(k.id) + '"',
+      });
+    }
+  });
+  if (msChangeCount()) {
+    out.push({
+      icon: 'chart',
+      title: msChangeCount() + ' milestone' + (msChangeCount() === 1 ? '' : 's') + ' not saved',
+      sub: 'Marked but waiting for Save',
+      attrs: 'data-go="screen" data-id="milestones"',
+    });
+  }
+  if (store.profileEdit) {
+    out.push({
+      icon: 'star',
+      title: 'A profile is part way edited',
+      sub: 'Your changes are held until you save them',
+      attrs: 'data-me="1"',
+    });
+  }
+  if (update.available) {
+    out.push({
+      icon: 'info', title: 'A newer version is ready', sub: 'Tap to load it',
+      attrs: 'data-update="go"',
+    });
+  }
+  return out;
+}
+
+
+/* -----------------------------------------------------------------
+   THE CYCLE CALENDAR
+
+   She asked for something like the widget in Flo: a month you can look
+   at rather than a list of dates you have to hold in your head. Period
+   days, the fertile window and the estimated ovulation day, all on one
+   grid.
+
+   Everything drawn here is an estimate from one date, and the card says
+   so, because a calendar looks authoritative in a way a sentence does
+   not and that is exactly the risk.
+   ----------------------------------------------------------------- */
+
+const CYCLE_BLEED_DAYS = 5;
+
+function cycleCalendar(info, monthOffset) {
+  if (!info) return '';
+  const today = ciToday();
+  const parts = today.split('-');
+  const base = new Date(Number(parts[0]), Number(parts[1]) - 1 + (monthOffset || 0), 1);
+  const y = base.getFullYear();
+  const m = base.getMonth();
+  const monthName = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+    'August', 'September', 'October', 'November', 'December'][m];
+
+  const key = (d) => y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+  const days = new Date(y, m + 1, 0).getDate();
+  const lead = new Date(y, m, 1).getDay();
+
+  /* The windows, projected forward and back from the one date she gave
+     us, so the month either side reads correctly too. */
+  const start = info.lastPeriod;
+  const len = info.cycleLength;
+  const marks = {};
+  for (let c = -2; c <= 3; c++) {
+    const s0 = ciDayBefore(start, -c * len);
+    for (let i = 0; i < CYCLE_BLEED_DAYS; i++) marks[ciDayBefore(s0, -i)] = 'bleed';
+    const ov = ciDayBefore(s0, -(len - CYCLE_LUTEAL_DAYS));
+    for (let i = 0; i <= 5; i++) {
+      const d = ciDayBefore(ov, i);
+      if (!marks[d]) marks[d] = 'fertile';
+    }
+    marks[ov] = 'ovul';
+  }
+
+  const cells = [];
+  for (let i = 0; i < lead; i++) cells.push('<span class="cal-pad"></span>');
+  for (let d = 1; d <= days; d++) {
+    const k = key(d);
+    const mark = marks[k] || '';
+    const isToday = k === today;
+    cells.push(`<span class="cal-d ${mark}${isToday ? ' today' : ''}">${d}</span>`);
+  }
+
+  return `
+  <div class="calwrap">
+    <div class="calhead">
+      <button class="calnav" data-cal="-1" aria-label="Previous month">${icon('back', 14, 'var(--deep)')}</button>
+      <span class="calmonth">${esc(monthName)} ${y}</span>
+      <button class="calnav" data-cal="1" aria-label="Next month">${icon('chev', 14, 'var(--deep)')}</button>
+    </div>
+    <div class="calgrid">
+      ${['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d) => `<span class="cal-w">${d}</span>`).join('')}
+      ${cells.join('')}
+    </div>
+    <div class="callegend">
+      <span><i class="k-bleed"></i> Period</span>
+      <span><i class="k-fertile"></i> Fertile window</span>
+      <span><i class="k-ovul"></i> Ovulation</span>
+    </div>
+  </div>`;
+}
+
+/* The Home version. A glance, a calendar, and the standing reminder
+   that all of it is estimated. */
+function cycleWidget() {
+  const p = store.parent;
+  const mode = cycleMode(situation());
+
+  if (mode === 'pregnant') {
+    const info = cycleInfo(p.lastPeriod, null, p.cycleLength);
+    return `
+    <div class="card">
+      <p class="eyebrow">${icon('heart', 11, 'var(--sage)')} Your pregnancy</p>
+      ${info ? `
+        <p class="liftline" style="font-size:17px">${esc(info.pregnancyLabel)}</p>
+        <p class="tiny" style="margin-top:4px">Due ${esc(cycleDateLabelWithYear(info.dueDate))}, counted from your last period.
+        A dating scan beats this and always wins.</p>
+      ` : `
+        <p class="bodytext" style="margin-top:5px">Add the first day of your last period in Settings
+        and the app can work out how far along you are.</p>`}
+    </div>`;
+  }
+
+  const info = cycleInfo(p.lastPeriod, null, p.cycleLength);
+  if (!info) {
+    return `
+    <button class="lrow" data-tab="settings" style="align-items:flex-start">
+      <span class="licon">${icon('calendar', 18)}</span>
+      <span class="grow">
+        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Track your cycle</span>
+        <span class="tiny" style="display:block;margin-top:2px">
+          Add the first day of your last period in Settings and the calendar fills itself in
+        </span>
+      </span>
+      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+    </button>`;
+  }
+
+  const lead = info.isLate
+    ? info.daysLate + ' day' + (info.daysLate === 1 ? '' : 's') + ' past the estimate'
+    : info.daysToNext === 0 ? 'The estimate lands today'
+    : info.inFertileWindow ? 'Inside the estimated fertile window'
+    : 'About ' + info.daysToNext + ' day' + (info.daysToNext === 1 ? '' : 's') + ' to the next one';
+
+  return `
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="cycday">
+        <span class="cycday-n">${info.dayOfCycle}</span>
+        <span class="cycday-l">day</span>
+      </span>
+      <span class="grow">
+        <span class="eyebrow" style="display:block">Your cycle</span>
+        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink);margin-top:2px">${esc(lead)}</span>
+        ${mode === 'trying' ? `<span class="tiny" style="display:block;margin-top:3px">
+          Fertile window ${esc(cycleDateLabel(info.fertileStart))} to ${esc(cycleDateLabel(info.fertileEnd))}</span>` : ''}
+      </span>
+    </div>
+    ${cycleCalendar(info, store.calMonth || 0)}
+    <p class="tiny" style="margin-top:9px">Estimates from one date, not a test and not birth control.</p>
+  </div>`;
+}
+
+/* -----------------------------------------------------------------
+   POSTS
+
+   Somewhere to write things down and keep photos, the way anybody
+   already knows how to use.
+
+   THE RULE SHE SET, AND IT IS THE IMPORTANT ONE
+   Private is the default and every post is a deliberate choice. A
+   child's profile is never public. It is a place for a parent or a
+   carer to document, and nothing in it is ever shared. Only a post can
+   be public, and only because she pressed the button that says so.
+
+   A post carrying a photo says out loud what sharing it means, every
+   time, because that is the one that cannot be taken back.
+   ----------------------------------------------------------------- */
+
+const POST_VISIBILITY = [
+  { id: 'private', label: 'Just me', help: 'Nobody else ever sees this.' },
+  { id: 'public', label: 'Share to Community', help: 'Other parents see this under your username.' },
+];
+
+function postDraft() {
+  if (!store.postDraft || typeof store.postDraft !== 'object') {
+    store.postDraft = { text: '', photos: [], visibility: 'private', childId: '' };
+  }
+  if (!Array.isArray(store.postDraft.photos)) store.postDraft.photos = [];
+  return store.postDraft;
+}
+
+function postHasContent() {
+  const d = postDraft();
+  return !!(String(d.text || '').trim() || d.photos.length);
+}
+
+function postSave() {
+  const d = postDraft();
+  const text = String(d.text || '').trim();
+  if (!text && !d.photos.length) return;
+  store.posts = Array.isArray(store.posts) ? store.posts : [];
+  store.posts.unshift({
+    id: 'p' + Date.now() + Math.floor(Math.random() * 1000),
+    text: text,
+    photos: d.photos.slice(0, 4),
+    visibility: d.visibility === 'public' ? 'public' : 'private',
+    childId: d.childId || '',
+    at: Date.now(),
+  });
+  /* Kept to a sensible number so the account record cannot grow without
+     limit. Photos are the heavy part. */
+  if (store.posts.length > 200) store.posts.length = 200;
+  store.postDraft = null;
+  /* The box folds back up once it is posted. Leaving it open with an
+     empty draft under the thing she just wrote looks like it did not
+     go through. */
+  store.postOpen = false;
+  store.photoError = '';
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+function postDelete(id) {
+  store.posts = (store.posts || []).filter((p) => p.id !== id);
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+function postSetVisibility(id, vis) {
+  if (id === 'draft') { postDraft().visibility = vis; flushStore(); render(); return; }
+  const p = (store.posts || []).filter((x) => x.id === id)[0];
+  if (!p) return;
+  p.visibility = vis;
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+/* Posts get a bigger picture than a profile circle does, because the
+   point of them is looking at the picture. */
+function postPhotoAdd(url) {
+  const d = postDraft();
+  if (d.photos.length >= 4) return;
+  d.photos.push(url);
+  flushStore();
+  render();
+}
+
+function postPhotoRemove(i) {
+  const d = postDraft();
+  d.photos.splice(Number(i), 1);
+  flushStore();
+  render();
+}
+
+function postWhen(at) {
+  const d = new Date(Number(at) || 0);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  if (sameDay) {
+    let h = d.getHours();
+    const m = String(d.getMinutes()).padStart(2, '0');
+    const ap = h < 12 ? 'am' : 'pm';
+    h = h % 12 || 12;
+    return 'Today at ' + h + ':' + m + ap;
+  }
+  return cycleDateLabelWithYear(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+    + '-' + String(d.getDate()).padStart(2, '0'));
+}
+
+function postComposer() {
+  const d = postDraft();
+  const open = postHasContent() || store.postOpen;
+  const first = (store.parent.name || '').trim().split(/\s+/)[0];
+
+  if (!open) {
+    return `
+    <button class="composer shut" data-post="open">
+      ${parentFace(38)}
+      <span class="composer-hint">What is on your mind${first ? ', ' + esc(first) : ''}?</span>
+      <span class="composer-cam">${icon('camera', 17, 'var(--deep)')}</span>
+    </button>`;
+  }
+
+  const vis = d.visibility === 'public' ? 'public' : 'private';
+  return `
+  <div class="card composer">
+    <div style="display:flex;gap:10px;align-items:flex-start">
+      ${parentFace(38)}
+      <textarea class="inp composer-in" id="postIn" data-postfield="text" rows="3"
+        placeholder="What is on your mind${first ? ', ' + esc(first) : ''}?">${esc(d.text || '')}</textarea>
+    </div>
+
+    ${d.photos.length ? `
+    <div class="postpics draft">
+      ${d.photos.map((p, i) => `
+        <span class="postpic">
+          <img src="${esc(p)}" alt="" />
+          <button class="postpic-x" data-post="unpic" data-i="${i}" aria-label="Remove">
+            ${icon('plus', 14, '#fff')}
+          </button>
+        </span>`).join('')}
+    </div>` : ''}
+
+    <div class="composer-bar">
+      <button class="chip" data-photopick="post" ${d.photos.length >= 4 || store.photoBusy ? 'disabled' : ''}>
+        ${icon('camera', 13, 'var(--deep)')} ${store.photoBusy ? 'Working on it' : 'Photo'}
+      </button>
+      ${store.children.length ? `
+        <select class="dsel" data-postchild style="flex:0 1 auto;max-width:150px">
+          <option value="">Not about anyone</option>
+          ${store.children.map((k) => `
+            <option value="${esc(k.id)}"${d.childId === k.id ? ' selected' : ''}>${esc(k.name || 'Unnamed')}</option>`).join('')}
+        </select>` : ''}
+    </div>
+
+    <div class="vispick">
+      ${POST_VISIBILITY.map((v) => `
+        <button class="chip${vis === v.id ? ' on' : ''}" data-post="vis" data-vis="${v.id}"
+          ${vis === v.id ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
+          >${v.id === 'private' ? icon('shield', 12, 'var(--deep)') : icon('people', 12, 'var(--deep)')} ${esc(v.label)}</button>`).join('')}
+    </div>
+    <p class="tiny" style="margin-top:6px">
+      ${esc((POST_VISIBILITY.filter((v) => v.id === vis)[0] || {}).help || '')}
+      ${vis === 'public' && d.photos.length
+        ? ' This post has a photo in it. Once it is out there you cannot take it back.' : ''}
+    </p>
+    ${store.photoError ? `<p class="tiny" style="margin-top:6px;color:#A85A44">${esc(store.photoError)}</p>` : ''}
+
+    <div style="display:flex;gap:8px;margin-top:11px;justify-content:flex-end;flex-wrap:wrap">
+      <button class="chip" data-post="discard">Discard</button>
+      <button class="btn" data-post="save" ${postHasContent() ? '' : 'disabled'}
+        style="width:auto;flex:none;padding:10px 20px">Post</button>
+    </div>
+  </div>`;
+}
+
+function postCard(p, own) {
+  const kid = p.childId ? store.children.filter((k) => k.id === p.childId)[0] : null;
+  return `
+  <div class="card postcard">
+    <div style="display:flex;gap:10px;align-items:center">
+      ${parentFace(36)}
+      <span class="grow">
+        <span class="post-who">${esc(store.parent.name || 'You')}</span>
+        <span class="post-when">${esc(postWhen(p.at))}${kid ? ' &middot; with ' + esc((kid.name || '').split(/\s+/)[0]) : ''}</span>
+      </span>
+      <span class="post-vis${p.visibility === 'public' ? ' pub' : ''}">
+        ${p.visibility === 'public' ? icon('people', 11, '#6E8B54') : icon('shield', 11, 'var(--muted)')}
+        ${p.visibility === 'public' ? 'Shared' : 'Just me'}
+      </span>
+    </div>
+
+    ${p.text ? `<p class="bodytext" style="margin-top:9px;white-space:pre-wrap">${esc(p.text)}</p>` : ''}
+
+    ${(p.photos || []).length ? `
+    <div class="postpics n${Math.min(4, p.photos.length)}">
+      ${p.photos.map((src) => `<span class="postpic"><img src="${esc(src)}" alt="" /></span>`).join('')}
+    </div>` : ''}
+
+    ${own ? `
+    <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+      ${p.visibility === 'public'
+        ? `<button class="chip" data-post="vis" data-id="${esc(p.id)}" data-vis="private">Make it private</button>`
+        : `<button class="chip" data-post="vis" data-id="${esc(p.id)}" data-vis="public">Share it</button>`}
+      <button class="chip" data-post="del" data-id="${esc(p.id)}">Delete</button>
+    </div>` : ''}
+  </div>`;
+}
+
+/* -----------------------------------------------------------------
+   HER SITUATION
+
+   The switches that decide which parts of the app are worth showing
+   her. She said it plainly: none of the postpartum content applies to
+   her any more, and it was showing anyway.
+   ----------------------------------------------------------------- */
+
+function normalizeSituation(sit) {
+  const s = (sit && typeof sit === 'object') ? sit : {};
+  return {
+    stages: Array.isArray(s.stages) ? s.stages : [],
+    path: typeof s.path === 'string' ? s.path : '',
+    roles: Array.isArray(s.roles) ? s.roles : [],
+    support: Array.isArray(s.support) ? s.support : [],
+  };
+}
+
+function situation() {
+  store.parent.situation = normalizeSituation(store.parent.situation);
+  return store.parent.situation;
+}
+
+/* Every child's age in months, so the switches can be right about
+   somebody who has told the app nothing at all. */
+function childAges() {
+  return store.children.filter((k) => !isExampleChild(k)).map((k) => {
+    const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+    return sum && sum.age ? sum.age.totalMonths : null;
+  }).filter((m) => m != null);
+}
+
+function sitShows(what) {
+  const sit = situation();
+  const ages = childAges();
+  if (what === 'postpartum') return showsPostpartum(sit, ages);
+  if (what === 'feeding') return showsFeeding(sit, ages);
+  if (what === 'pregnancy') return showsPregnancy(sit, ages);
+  if (what === 'trying') return showsTrying(sit);
+  return false;
+}
+
+/* Toggling a switch. Ticking Expecting untucks Trying, because they
+   are not both true, and the app should not have to ask. */
+function sitToggle(field, id) {
+  const sit = situation();
+  const list = sit[field] || [];
+  const i = list.indexOf(id);
+  if (i === -1) {
+    list.push(id);
+    if (field === 'stages' && id === 'expecting') {
+      const t = list.indexOf('trying');
+      if (t !== -1) list.splice(t, 1);
+    }
+    if (field === 'stages' && id === 'trying') {
+      const e = list.indexOf('expecting');
+      if (e !== -1) list.splice(e, 1);
+    }
+  } else list.splice(i, 1);
+  sit[field] = list;
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+function sitSetPath(id) {
+  const sit = situation();
+  sit.path = sit.path === id ? '' : id;
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+function childArrivalToggle(childId, id) {
+  const k = store.children.filter((x) => x.id === childId)[0];
+  if (!k) return;
+  if (!Array.isArray(k.arrival)) k.arrival = [];
+  const i = k.arrival.indexOf(id);
+  if (i === -1) k.arrival.push(id); else k.arrival.splice(i, 1);
+  k.updatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+/* A row of tick boxes that reads as a list rather than a form. */
+function tickRow(on, label, help, attrs) {
+  return `
+  <button class="tick${on ? ' on' : ''}" ${attrs}>
+    <span class="tickbox">${on ? icon('check', 13, '#fff') : ''}</span>
+    <span class="grow">
+      <span class="tick-l">${esc(label)}</span>
+      ${help ? `<span class="tick-h">${esc(help)}</span>` : ''}
+    </span>
+  </button>`;
+}
+
+function situationBlock() {
+  const sit = situation();
+  const showPath = hasStage(sit, 'expecting') || hasStage(sit, 'trying');
+  const nothing = !sit.stages.length && !sit.roles.length && !sit.support.length;
+
+  return `
+  <p class="sect">Where you are right now</p>
+  <p class="tiny" style="margin:-4px 0 10px">${esc(SITUATION_INTRO)}</p>
+  ${nothing ? `<p class="tiny" style="margin:-4px 0 10px;color:var(--taupe)">${esc(SITUATION_EMPTY)}</p>` : ''}
+
+  <div class="card" style="margin-bottom:10px">
+    ${PARENT_STAGES.map((st) => tickRow(hasStage(sit, st.id), st.label, st.help,
+      `data-sit="stages" data-id="${esc(st.id)}"`)).join('')}
+  </div>
+
+  ${showPath ? `
+  <div class="card" style="margin-bottom:10px">
+    <p class="eyebrow">How you are going about it</p>
+    <p class="tiny" style="margin:5px 0 9px">${esc(CONCEIVE_NOTE)}</p>
+    <div class="chips">
+      ${CONCEIVE_PATHS.map((p) => `
+        <button class="chip${sit.path === p.id ? ' on' : ''}" data-sitpath="${esc(p.id)}"
+          ${sit.path === p.id ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
+          >${esc(p.label)}</button>`).join('')}
+    </div>
+  </div>` : ''}
+
+  <p class="sect">How you parent</p>
+  <div class="card" style="margin-bottom:10px">
+    ${PARENT_ROLES.map((r) => tickRow(sit.roles.indexOf(r.id) !== -1, r.label, '',
+      `data-sit="roles" data-id="${esc(r.id)}"`)).join('')}
+  </div>
+  <div class="card" style="margin-bottom:10px">
+    ${SUPPORT_SHAPE.map((r) => tickRow(sit.support.indexOf(r.id) !== -1, r.label, '',
+      `data-sit="support" data-id="${esc(r.id)}"`)).join('')}
+  </div>
+
+  <p class="tiny" style="margin-top:2px">${icon('shield', 11, 'var(--sage)')} ${esc(SITUATION_PRIVACY)}</p>`;
+}
 
 /* -----------------------------------------------------------------
    THE LIFT
@@ -23401,6 +24826,8 @@ function screenHome(c) {
   const affirmation = liftAffirmation();
   const morning = liftMorning();
   const isMorning = hour < 12;
+  const learn = parentLearnForDay(l.day);
+  const mine = (store.posts || []).slice(0, 3);
 
   return `
   ${cornerLeaves()}
@@ -23451,27 +24878,31 @@ function screenHome(c) {
       ${icon('chev', 17, 'rgba(255,255,255,.8)')}
     </button>
 
-    ${(() => {
-      /* The one thing on Home that is about a child rather than about
-         her. It stays because burying the choking page two taps inside
-         a profile would be the wrong call, and because it is the same
-         page whichever child it turns out to be about. */
-      const waiting = kids.filter((k) => !isExampleChild(k) && !ciSavedFor(k));
-      if (!waiting.length) return '';
-      return `
-      <p class="sect">Waiting on you</p>
-      ${waiting.map((k) => `
-        <button class="lrow" data-child="${esc(k.id)}" style="align-items:center">
-          <span class="licon">${icon('sun', 17)}</span>
-          <span class="grow">
-            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">
-              How ${esc((k.name || 'they').split(/\s+/)[0])} is doing today
-            </span>
-            <span class="tiny" style="display:block;margin-top:2px">Thirty seconds, on their profile</span>
-          </span>
-          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-        </button>`).join('')}`;
-    })()}
+    <p class="sect">Your cycle</p>
+    ${cycleWidget()}
+
+    <p class="sect">For you</p>
+    <button class="card learncard" data-go="learn" data-id="${esc(learn.id)}">
+      <p class="eyebrow">${icon('bulb', 11, 'var(--sage)')} ${esc(learn.kind)}</p>
+      <h3 class="h3" style="font-size:16.5px;margin-top:5px">${esc(learn.title)}</h3>
+      <p class="bodytext" style="margin-top:4px">${esc(learn.blurb)}</p>
+      <span class="chip" style="margin-top:10px">Read this ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>
+    <button class="btn ghost sm" style="width:100%;margin-top:2px" data-go="screen" data-id="learnall">
+      Everything written for you
+    </button>
+
+    <p class="sect">Your posts</p>
+    ${postComposer()}
+    ${mine.length ? mine.map((p) => postCard(p, true)).join('') : `
+    <div class="card flat">
+      <p class="bodytext">Nothing here yet. Write something down, on its own or with a photo. It stays
+      private unless you say otherwise.</p>
+    </div>`}
+    ${(store.posts || []).length > 3 ? `
+    <button class="btn ghost sm" style="width:100%" data-me="1">
+      All ${(store.posts || []).length} posts, on your profile
+    </button>` : ''}
 
     ${duplicateCard()}
 
@@ -23483,6 +24914,61 @@ function screenHome(c) {
       </p>
       <button class="btn" style="margin-top:12px" data-go="screen" data-id="addchild">Add your child</button>
     </div>` : ''}
+  </div>`;
+}
+
+/* -----------------------------------------------------------------
+   LEARNING, FOR HER
+   ----------------------------------------------------------------- */
+
+function screenLearnAll() {
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title" style="margin-top:6px">For you</h1>
+    <p class="sub">Your own head, and the kind of parent you want to be.</p>
+  </div>
+  <div class="sc">
+    ${['Looking after yourself', 'Being their person'].map((kind) => `
+      <p class="sect">${esc(kind)}</p>
+      ${PARENT_LEARN.filter((p) => p.kind === kind).map((p) => `
+        <button class="lrow" data-go="learn" data-id="${esc(p.id)}" style="align-items:flex-start">
+          <span class="licon">${icon(p.weight === 'careful' ? 'heart' : 'bulb', 18)}</span>
+          <span class="grow">
+            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3">${esc(p.title)}</span>
+            <span class="tiny" style="display:block;margin-top:2px">${esc(p.blurb)}</span>
+          </span>
+          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+        </button>`).join('')}`).join('')}
+    <p class="disclaimer">${esc(PARENT_LEARN_DISCLAIMER)}</p>
+  </div>`;
+}
+
+function viewLearn(id) {
+  const p = parentLearnById(id);
+  if (!p) return emptyScreen('That could not be found.');
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="learnall">${icon('back', 15, 'var(--deep)')} Back</button>
+    <p class="eyebrow" style="margin-top:6px">${esc(p.kind)}</p>
+    <h1 class="title sm">${esc(p.title)}</h1>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="bodytext" style="font-size:15px">${esc(p.blurb)}</p>
+    </div>
+    ${p.body.map((para) => `<p class="bodytext" style="margin-top:12px">${esc(para)}</p>`).join('')}
+    ${p.tryThis ? `
+    <div class="card" style="margin-top:16px">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Try this</p>
+      <p class="bodytext" style="margin-top:5px">${esc(p.tryThis)}</p>
+    </div>` : ''}
+    <button class="btn ghost sm" style="width:100%;margin-top:12px" data-willow="open">
+      Talk to Willow about this
+    </button>
+    <p class="disclaimer">${esc(PARENT_LEARN_DISCLAIMER)}</p>
   </div>`;
 }
 
@@ -23698,101 +25184,56 @@ function screenMyProfile() {
   const p = store.parent || {};
   const editing = editingWho() === 'me';
   const v = editing ? store.profileEdit.values : p;
-  const cyc = cycleInfo(v.lastPeriod, null, p.cycleLength);
-
-  const textField = (label, key, type, placeholder, help) => `
-    <div class="card flat" style="margin-bottom:8px">
-      <p class="eyebrow">${esc(label)}</p>
-      <input class="inp" type="${type}" data-parentfield="${esc(key)}" id="pf_${esc(key)}"
-        value="${esc(v[key] || '')}" placeholder="${esc(placeholder)}" autocomplete="off"
-        style="margin-top:7px;width:100%" />
-      ${help ? `<p class="tiny" style="margin-top:6px">${esc(help)}</p>` : ''}
-    </div>`;
-
-  const dateField = (label, key, help, back, ahead) => `
-    <div class="card flat" style="margin-bottom:8px">
-      <p class="eyebrow">${esc(label)}</p>
-      ${dateSelects('parent:' + key, v[key] || '', back, ahead)}
-      ${help ? `<p class="tiny" style="margin-top:6px">${esc(help)}</p>` : ''}
-    </div>`;
+  const posts = store.posts || [];
+  const shared = posts.filter((x) => x.visibility === 'public').length;
 
   return `
   ${cornerLeaves()}
   <div class="sc-head">
-    <div class="bigface">${faceHTML(v.photo, 84, 'me')}</div>
+    <div class="bigface">${faceHTML(v.photo, 96, 'me')}</div>
     <h1 class="title" style="margin-top:8px">${esc(p.name || 'Your profile')}</h1>
-    <p class="sub">Everything here is yours, and none of it is on any child.</p>
+    <p class="sub">${p.username ? '@' + esc(p.username) : 'Add a username in Settings'}</p>
   </div>
   <div class="sc">
+
+    <div class="profstats">
+      <span><b>${posts.length}</b> post${posts.length === 1 ? '' : 's'}</span>
+      <span><b>${shared}</b> shared</span>
+      <span><b>${store.children.length}</b> ${store.children.length === 1 ? 'child' : 'children'}</span>
+    </div>
 
     <div class="editbar">
       ${editing ? `
         <button class="btn" data-edit="save">${icon('check', 15, '#fff')} Save</button>
         <button class="btn ghost" data-edit="cancel">Cancel</button>
       ` : `
-        <button class="btn ghost" data-edit="me">${icon('star', 14, 'var(--deep)')} Edit</button>
+        <button class="btn ghost" data-edit="me">${icon('camera', 14, 'var(--deep)')} Change photo</button>
+        <button class="btn ghost" data-tab="settings">${icon('gear', 14, 'var(--deep)')} Edit details</button>
       `}
     </div>
 
     ${editing ? facePicker('me', v.photo) : ''}
     ${editing ? editUnsavedNote() : ''}
 
-    <p class="sect">About you</p>
-    ${editing ? `
-      ${textField('Your name', 'name', 'text', 'Richelle', '')}
-      ${textField('Username', 'username', 'text', 'richelle_s', 'This is what other parents see in the community, not your real name.')}
-      ${textField('Email', 'email', 'email', 'you@example.com', '')}
-      ${dateField('Your birthday', 'birthday',
-        'So the app can say it back to you on the day, the same as it does for the children.', 100, 0)}
-      ${dateField('First day of your last period', 'lastPeriod',
-        'Day one is the first day of real bleeding, not spotting the day before. Only you ever see this.', 2, 0)}
-    ` : `
-      <div class="card">
-        ${readRow('Name', p.name, 'Add your name so the app knows who it is talking to')}
-        ${readRow('Username', p.username, 'Not set, so the community will ask for one')}
-        ${readRow('Email', p.email)}
-        ${readRow('Birthday', p.birthday ? cycleDateLabelWithYear(p.birthday) : '')}
-        ${readRow('Last period began', p.lastPeriod ? cycleDateLabel(p.lastPeriod) : '', 'Add it and the app works out the rest')}
-      </div>
-    `}
+    ${postComposer()}
 
-    ${cyc ? cycleCard(cyc) : `
+    ${posts.length ? posts.map((x) => postCard(x, true)).join('') : `
     <div class="card flat">
-      <p class="bodytext">Add the first day of your last period above and the app works out the rest,
-      the day of your cycle, roughly when the next one is due, and a due date if you are pregnant.</p>
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} This is what other parents would see</p>
+      <p class="bodytext" style="margin-top:5px">
+        Your name, your photo and anything you have chosen to share. Nothing else. Your children's
+        profiles, their notes, your dates and everything in Settings stay private to you, always.
+      </p>
     </div>`}
 
-    <p class="sect">Your body and your recovery</p>
-    <p class="tiny" style="margin:-4px 0 10px">
-      This part is about you, not about any of them, and it does not disappear when you open a child.
-    </p>
-    ${childRow('heart', 'The fourth trimester',
-      'Your recovery week by week, and how you are actually doing',
-      'data-go="screen" data-id="postpartum"')}
-    ${childRow('drop', 'Pumping and breastfeeding',
-      'Flange fitting, schedules, storage, and why frozen milk tastes like soap',
-      'data-go="screen" data-id="pumping"')}
-    ${childRow('bag', 'Hospital bag',
-      (() => { const bag = getBagProgress(store.bagChecked);
-        return bag.done === 0 ? 'A checklist, plus the things people actually forget'
-          : esc(bag.done + ' of ' + bag.total + ' packed'); })(),
-      'data-go="screen" data-id="bag"')}
-    ${childRow('shield', 'Looking after yourself in pregnancy',
-      'CMV first, plus vaccines and the one about not stopping a medication',
-      'data-go="screen" data-id="pregHealth"')}
-
-    <p class="sect">Other parents</p>
-    ${childRow('people', 'Community',
-      'Rooms for parents, under your name rather than your child\'s',
-      'data-tab="community"')}
-
     <div class="card flat" style="margin-top:6px">
-      <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} Who sees this</p>
+      <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} What is private</p>
       <p class="bodytext" style="margin-top:5px">
-        Your dates, your photo and your real name are yours alone. The community only ever shows
-        your username. None of this is attached to any child, and none of it is shared with anyone.
+        Every profile you keep for a child is yours alone. It is a place to document, never a place
+        anybody else can look. Only a post can be shared, and only when you choose it on that post.
       </p>
     </div>
+
     ${editing ? editSaveBar() : ''}
   </div>`;
 }
@@ -24534,6 +25975,7 @@ function childPayload(k) {
   out.statuses = src.statuses || {};
   out.statusDates = src.statusDates || {};
   out.checkins = src.checkins || {};
+  out.arrival = src.arrival || [];
   out.photo = src.photo || '';
   out.wakeTime = src.wakeTime || '06:30';
   out.napOverride = src.napOverride == null ? null : src.napOverride;
@@ -24556,6 +25998,7 @@ function normalizeChild(k) {
     statuses: k.statuses && typeof k.statuses === 'object' ? k.statuses : {},
     statusDates: k.statusDates && typeof k.statusDates === 'object' ? k.statusDates : {},
     checkins: k.checkins && typeof k.checkins === 'object' ? k.checkins : {},
+    arrival: Array.isArray(k.arrival) ? k.arrival : [],
     photo: k.photo || '',
     routineInclude: Array.isArray(k.routineInclude) ? k.routineInclude : [],
     logs: Array.isArray(k.logs) ? k.logs : [],
@@ -24570,6 +26013,7 @@ function parentPayload() {
     /* Carried so the greeting that already appeared on her phone does
        not appear again on the laptop the same afternoon. */
     birthdaySeen: store.birthdaySeen || {},
+    posts: store.posts || [],
     deletedChildIds: store.deletedChildIds || [],
     notDuplicates: store.notDuplicates || [],
     updatedAt: store.parentUpdatedAt || 0,
@@ -24738,9 +26182,11 @@ async function cloudFirstSync() {
   const localPt = Number(store.parentUpdatedAt) || 0;
   const remotePt = Number(remoteUser && remoteUser.updatedAt) || 0;
   if (remoteUser && remotePt > localPt) {
-    store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '' }, remoteUser.parent || {});
+    store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '', photo: '', situation: { stages: [], path: '', roles: [], support: [] } }, remoteUser.parent || {});
     store.parent.birthday = sanitizeStoredDate(store.parent.birthday, 0);
     store.parent.lastPeriod = sanitizeStoredDate(store.parent.lastPeriod, 0);
+    store.parent.situation = normalizeSituation(store.parent.situation);
+    store.posts = Array.isArray(remoteUser.posts) ? remoteUser.posts : (store.posts || []);
     store.bagChecked = Array.isArray(remoteUser.bagChecked) ? remoteUser.bagChecked : [];
     store.birthdaySeen = (remoteUser.birthdaySeen && typeof remoteUser.birthdaySeen === 'object')
       ? remoteUser.birthdaySeen : {};
