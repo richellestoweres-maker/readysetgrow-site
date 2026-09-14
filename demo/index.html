@@ -141,7 +141,8 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .mark-o-wrap svg{position:absolute;left:0;bottom:0}
 .mark-tag{letter-spacing:.19em;line-height:1.6;text-align:center;color:#8D9682;
   margin-top:7px;text-transform:uppercase;font-weight:500}
-.mark-holder{padding:16px 18px 0;position:relative;z-index:2}
+/* Room for the sprout, which reaches above the letters. */
+.mark-holder{padding:30px 18px 0;position:relative;z-index:2}
 
 /* the promise line in the top right of every screen */
 .corner-right{position:absolute;top:15px;right:15px;z-index:1;text-align:right;
@@ -729,7 +730,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-14 00:45';
+const BUILD_STAMP = '2026-09-14 15:38';
 
 /* ===== src/theme/theme.js ===== */
 /**
