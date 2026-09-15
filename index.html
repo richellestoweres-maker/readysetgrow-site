@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-15 21:32">
+<meta name="rsg-build" content="2026-09-15 21:44">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -736,6 +736,43 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 .willowdot-name{font-size:14px;font-weight:600;letter-spacing:.01em}
 .willowdot:active{transform:translateY(1px)}
 
+/* WILLOW SPEAKING UP.
+   Sits directly above her pill so it is plainly her talking, not a
+   system message. It goes away on its own, and there is an x for
+   somebody who is in the middle of something. */
+.wnudge{
+  position:absolute;right:14px;bottom:calc(100% + 66px);z-index:8;
+  width:min(300px, calc(100vw - 34px));
+  background:#F1F4EB;border:1px solid var(--line2);
+  border-radius:18px 18px 4px 18px;
+  box-shadow:0 10px 28px -8px rgba(45,62,40,.3);
+  animation:wnudgein .28s ease-out both;
+}
+@keyframes wnudgein{
+  from{opacity:0;transform:translateY(8px) scale(.97)}
+  to{opacity:1;transform:none}
+}
+@media (prefers-reduced-motion:reduce){ .wnudge{animation:none} }
+.wnudge-x{
+  position:absolute;top:5px;right:7px;z-index:2;
+  width:24px;height:24px;border-radius:50%;border:0;background:none;
+  color:var(--muted);font-size:17px;line-height:1;cursor:pointer;
+  display:grid;place-items:center;
+}
+.wnudge-body{
+  display:block;width:100%;text-align:left;cursor:pointer;
+  border:0;background:none;font:inherit;padding:11px 30px 11px 13px;
+}
+.wnudge-t{
+  display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--sage);font-weight:600;
+}
+.wnudge-l{display:block;font-size:13.5px;line-height:1.5;color:var(--body);margin-top:4px}
+.wnudge-go{
+  display:inline-flex;align-items:center;gap:4px;margin-top:8px;
+  font-size:12px;font-weight:600;color:var(--deep);
+}
+
 .willowpanel{
   position:absolute;right:10px;left:10px;bottom:calc(100% + 10px);z-index:9;
   max-height:min(560px, 78vh);display:flex;flex-direction:column;
@@ -985,10 +1022,15 @@ body.locked .topbar-holder{background:transparent}
 #willow{position:fixed;inset:0;pointer-events:none;z-index:8}
 #willow > *{pointer-events:auto}
 .willowdot{position:fixed;right:26px;bottom:96px}
+/* Sits directly on top of her pill. On a phone the slot is the frame
+   and percentages work, on a window the slot is the whole viewport, so
+   this has to be pinned to the same edge she is. */
+.wnudge{position:fixed;right:26px;bottom:154px;left:auto}
 .willowpanel{position:fixed;right:26px;left:auto;bottom:96px;width:min(420px, calc(100vw - 52px));
   max-height:min(620px, calc(100vh - 150px))}
 @media (max-width:620px){
   .willowdot{right:14px;bottom:84px}
+  .wnudge{right:14px;bottom:142px}
   .willowpanel{right:10px;left:10px;bottom:84px;width:auto;max-height:calc(100vh - 140px)}
 }
 body.locked #willow{display:none}
@@ -1107,7 +1149,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-15 21:32';
+const BUILD_STAMP = '2026-09-15 21:44';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -16967,6 +17009,12 @@ function liftPrompt(kind, context) {
     return onboardPrompt(c);
   }
 
+  /* Willow speaking up after a log. The written line in nudges.js is
+     already on screen, so an answer that never arrives costs nothing. */
+  if (String(kind).indexOf('nudge:') === 0) {
+    return nudgePrompt(c.reason, c);
+  }
+
   if (kind === 'checkin') {
     return [
       'A parent has just recorded how today went for one of her children. Respond to her, briefly.',
@@ -19282,6 +19330,231 @@ function onboardIndex(step) {
   return i === -1 ? 0 : i;
 }
 
+/* ===== src/data/nudges.js ===== */
+/**
+ * Ready Set Grow: Willow Speaking Up
+ * ------------------------------------------------------------------
+ * She asked for this: "maybe she can pop up sometimes with a message
+ * after something is logged".
+ *
+ * THE WORD THAT DOES ALL THE WORK IS "SOMETIMES".
+ * An assistant who says something every single time you touch anything
+ * is not a friend, it is a notification. Within a week you stop reading
+ * her, and the one time she has something worth saying it goes past you
+ * with everything else.
+ *
+ * So the default is silence. Every log still gets its quiet line of
+ * encouragement on the Logs screen, which is the card that was already
+ * there. Willow herself only surfaces when one of the reasons below is
+ * actually true, and even then not more than a few times a day and not
+ * twice in a row within a few hours.
+ *
+ * WHAT COUNTS AS WORTH SAYING
+ * Something changed, something started, something has been going for a
+ * while, or somebody is up at three in the morning. Those are the
+ * moments a friend would notice. Everything else is just Tuesday.
+ *
+ * THE RULE INHERITED FROM encourage.js, RESTATED HERE BECAUSE THIS IS
+ * ALSO A PLACE THAT COULD GET IT WRONG: nothing in here praises a
+ * number for moving, in either direction, and nothing comments on
+ * weight, size or food.
+ */
+
+/* How long Willow stays quiet after speaking up, and how many times in
+   one day she is allowed to at all. Deliberately low. */
+const NUDGE_QUIET_MINUTES = 200;
+const NUDGE_DAILY_MAX = 3;
+
+/* How long her bubble sits there before it gives up and goes away on
+   its own. Long enough to notice, short enough that it is not still
+   there when you come back from the school run. */
+const NUDGE_LIFE_MINUTES = 12;
+
+/* Nothing is said about a first log for these, because "you logged a
+   diaper for the first time" is not an observation, it is a receipt. */
+const NUDGE_NO_FIRST = ['diaper', 'feed', 'bottle', 'nurse', 'mom-pump', 'mom-nurse'];
+
+/* A mood worth checking in on. Not a diagnosis and never treated as
+   one, just the difference between "all right" and somebody telling
+   you plainly that today was bad. */
+const NUDGE_LOW_MOODS = ['Flat', 'Anxious', 'Angry', 'Very low'];
+
+/* ------------------------------------------------------------------
+ * THE REASONS, AND WHAT SHE SAYS WHEN SHE HAS NO MODEL TO WRITE WITH
+ *
+ * Every one of these ships written. Willow rewrites it when she can
+ * reach the model, and the written one is what is on screen the whole
+ * time she is trying. Same rule as dailyLift.js and onboarding.js.
+ * ------------------------------------------------------------------ */
+
+const NUDGE_REASONS = {
+  night: {
+    id: 'night',
+    /* The one that matters most. Somebody logging a feed at 3am is
+       awake and alone, and that is the single moment this whole app
+       exists for. */
+    lines: [
+      'You are up in the middle of the night again. I am here if you want company while you wait '
+      + 'for them to go back down.',
+      'Three in the morning is its own kind of lonely. I am awake too, if you want to talk about '
+      + 'anything at all.',
+    ],
+    ask: 'A parent has just logged something in the middle of the night, so they are awake and '
+      + 'probably alone with a baby. Say one warm thing and offer to keep them company. Do not '
+      + 'give sleep advice and do not tell them to rest.',
+  },
+  first: {
+    id: 'first',
+    lines: [
+      'That is the first time you have kept track of that. Do it a few more times and I can start '
+      + 'showing you what it usually looks like for you.',
+      'First one of those. They only really start to mean something once there are a few, so I '
+      + 'will keep them together for you.',
+    ],
+    ask: 'A parent has just used a particular log for the very first time. Say one line about what '
+      + 'keeping track of it will show them over time. Do not congratulate them and do not mention '
+      + 'any number.',
+  },
+  run: {
+    id: 'run',
+    lines: [
+      'That is a few days in a row now of doing something that was for you. I noticed, in case '
+      + 'nobody else did.',
+      'You have kept something for yourself going for a few days. That is harder than it sounds '
+      + 'with everything else you are carrying.',
+    ],
+    ask: 'A parent has kept up something for themselves several days running, such as moving, '
+      + 'getting outdoors, or reading. Say one line noticing it. Do not use the word streak, do '
+      + 'not tell them to keep it up, and do not mention any number.',
+  },
+  /* A run of hard days is not a diagnosis and this line is careful not
+     to make it one. It says that support exists and that plenty of
+     people use it, and it stops there. The number is the one the app
+     already carries in careTopics.js and postpartum.js, so a parent
+     is never handed a number the rest of the app does not stand behind.
+
+     Why it exists: a parent recording "very low" three times in a
+     fortnight is the exact person this app was built for, and saying
+     nothing at all would be its own kind of answer. */
+  lowrun: {
+    id: 'lowrun',
+    lines: [
+      'That is a few hard days close together now. Nothing about that means anything is wrong with '
+      + 'you, and it is also the kind of thing worth saying out loud to somebody. I am here, and so '
+      + 'is the National Maternal Mental Health Hotline on 1-833-852-6262, free, day or night.',
+      'You have put down several hard days recently. I am not going to read anything into that, but '
+      + 'I do want you to know that talking to somebody about it is ordinary and it helps. The '
+      + 'National Maternal Mental Health Hotline is 1-833-852-6262, free and confidential.',
+    ],
+    /* Deliberately not sent to the model. This is the one line in the
+       app where the exact wording and the exact number matter more than
+       it sounding fresh, so Willow reads it as written. */
+    fixed: true,
+  },
+  low: {
+    id: 'low',
+    lines: [
+      'You put down that today has been hard. I am not going to try to fix it, but I am here if '
+      + 'you want to say more about it.',
+      'Thank you for being honest about today rather than writing something easier. Talk to me if '
+      + 'you want to.',
+    ],
+    ask: 'A parent has just recorded honestly that they are having a hard day. Say one line back. '
+      + 'Acknowledge it plainly rather than brightening it, and offer to listen. Do not suggest a '
+      + 'cause, do not name any condition, do not give advice, and do not ask them a question.',
+  },
+  back: {
+    id: 'back',
+    lines: [
+      'It has been a little while. Nothing here expired and nothing is behind, it all just waited '
+      + 'for you.',
+      'Good to see you. Nothing was lost while you were away, it is all still where you left it.',
+    ],
+    ask: 'A parent has logged something after not opening the app for a while. Say one warm line. '
+      + 'Make clear that nothing is behind and nothing was lost. Do not say welcome back and do '
+      + 'not mention how long it has been.',
+  },
+};
+
+/* ------------------------------------------------------------------
+ * THE DECISION, KEPT PURE SO IT CAN BE TESTED WITHOUT A BROWSER
+ *
+ * facts is everything the app already knows, gathered by the caller:
+ *   typeId       what was just logged
+ *   hour         hour of the day, 0 to 23
+ *   isFirst      no earlier log of this type exists
+ *   selfRun      how many self care logs in the last week
+ *   mood         the mood value, if this was a mood log
+ *   lowCount     how many hard days recorded in the last fortnight
+ *   daysAway     days since the log before this one
+ *   lastAt       when Willow last spoke up, in ms
+ *   todayCount   how many times she has spoken up today
+ *   now          ms
+ * ------------------------------------------------------------------ */
+function nudgeReason(facts) {
+  const f = facts || {};
+  const now = Number(f.now) || 0;
+
+  /* The two limits come first, so a day full of logging cannot turn her
+     into a notification. */
+  if ((f.todayCount || 0) >= NUDGE_DAILY_MAX) return null;
+  if (f.lastAt && now - f.lastAt < NUDGE_QUIET_MINUTES * 60 * 1000) return null;
+
+  /* Ordered by how much the moment actually deserves interrupting for. */
+  const hour = Number(f.hour);
+  if (hour >= 0 && hour < 5) return 'night';
+
+  if (f.mood && NUDGE_LOW_MOODS.indexOf(f.mood) !== -1) {
+    return (f.lowCount || 0) >= 3 ? 'lowrun' : 'low';
+  }
+
+  if ((f.daysAway || 0) >= 5) return 'back';
+
+  if ((f.selfRun || 0) >= 3) return 'run';
+
+  if (f.isFirst && NUDGE_NO_FIRST.indexOf(f.typeId) === -1) return 'first';
+
+  return null;
+}
+
+/* Which of the written lines, so the same one does not come back every
+   time the same reason does. Seeded rather than random so a repaint
+   cannot swap the words out from under somebody mid sentence. */
+function nudgeWritten(reasonId, seed) {
+  const r = NUDGE_REASONS[reasonId];
+  if (!r) return '';
+  const n = String(seed || '').split('').reduce((a, ch) => a + ch.charCodeAt(0), 0);
+  return r.lines[n % r.lines.length];
+}
+
+function nudgePrompt(reasonId, context) {
+  const r = NUDGE_REASONS[reasonId];
+  if (!r) return '';
+  const c = context || {};
+  return [
+    r.ask,
+    c.parentName ? 'Their name is ' + c.parentName + '.' : '',
+    c.label ? 'What they just logged: ' + c.label + '.' : '',
+    '',
+    'Two sentences at most, thirty five words maximum.',
+    'Speak to them, not about them. No exclamation marks, no emoji, nothing bubbly.',
+    'Never comment on a number, on a number going up or down, on weight, on size, or on food.',
+    'Never diagnose anything and never suggest a condition.',
+    'Return the line only.',
+  ].filter(Boolean).join('\n');
+}
+
+/* What the tap on her bubble turns into, so it becomes a conversation
+   rather than a message that vanishes. */
+const NUDGE_OPENERS = {
+  night: 'I am up with them again.',
+  lowrun: 'Can we talk about how I have been feeling?',
+  first: 'What will this log show me?',
+  run: 'Thanks for noticing.',
+  low: 'Today has been hard.',
+  back: 'I have been away a while.',
+};
+
 /* ===== src/data/cycle.js ===== */
 /**
  * Ready Set Grow: Cycle And Dates
@@ -20737,6 +21010,11 @@ const store = {
      builds it for why that distinction matters. */
   onboard: { open: false, done: false, step: 'hello', line: '', lineFrom: '' },
 
+  /* The last time Willow decided something was worth speaking up about,
+     and how many times she has today. Persisted so closing the app does
+     not reset her restraint. */
+  nudge: {},
+
   /* The day the "a year ago today" card was waved away, so it stays
      away until tomorrow rather than coming back on the next reload. */
   memDayHidden: '',
@@ -20929,6 +21207,7 @@ function flushStore() {
       memories: store.memories,
       memDayHidden: store.memDayHidden,
       onboard: store.onboard,
+      nudge: store.nudge,
       deletedMemoryIds: store.deletedMemoryIds,
       postDraft: store.postDraft,
       msEdit: store.msEdit,
@@ -21030,6 +21309,7 @@ function loadStore() {
     store.deletedMemoryIds = Array.isArray(saved.deletedMemoryIds) ? saved.deletedMemoryIds : [];
     store.onboard = (saved.onboard && typeof saved.onboard === 'object')
       ? saved.onboard : { open: false, done: false, step: 'hello', line: '', lineFrom: '' };
+    store.nudge = (saved.nudge && typeof saved.nudge === 'object') ? saved.nudge : {};
     store.postDraft = (saved.postDraft && typeof saved.postDraft === 'object') ? saved.postDraft : null;
   }
 
@@ -21841,7 +22121,7 @@ function render() {
     /* Only rewritten when it actually differs. Replacing the markup
        destroys the input she is typing in, so the cheapest fix is not
        to replace it when nothing has changed. */
-    const willowHTML = bday || (pendingSave ? '' : willowBubble() + willowPanel());
+    const willowHTML = bday || (pendingSave ? '' : nudgeBubble() + willowBubble() + willowPanel());
     if (willowSlot.innerHTML !== willowHTML) willowSlot.innerHTML = willowHTML;
   }
   /* The canvas has to exist before anything can draw on it, so the
@@ -22144,7 +22424,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -22273,6 +22553,9 @@ function initControls() {
     } else if (t.dataset.memall !== undefined) {
       store.memAll = t.dataset.memall || null;
       flushStore();
+    } else if (t.dataset.nudge) {
+      if (t.dataset.nudge === 'open') nudgeTake(); else nudgeDismiss();
+      return;
     } else if (t.dataset.ob) {
       const a = t.dataset.ob;
       if (a === 'restart') { onboardStart(); render(); }
@@ -26136,6 +26419,7 @@ function saveLog(typeId) {
   });
   if (k.logs.length > 500) k.logs.length = 500;
   notedSet(typeId);
+  nudgeMaybe(typeId, values);
   store.logDraft = { typeId: null, values: {} };
   if (store.logFrom) {
     state.tab = store.logFrom.tab;
@@ -28924,6 +29208,7 @@ function momLogSave(typeId) {
   store.logDraft = { typeId: null, values: {} };
   store.parentUpdatedAt = Date.now();
   notedSet(typeId);
+  nudgeMaybe(typeId, values);
   /* Back to where she can see it, rather than to a dead end. */
   store.logWho = 'me';
   store.logDay = ciToday();
@@ -29069,6 +29354,156 @@ function notedSet(typeId) {
       });
     }
   } catch (err) { /* the written line is already on screen */ }
+}
+
+/* =================================================================
+   WILLOW SPEAKING UP
+
+   She asked for Willow to pop up sometimes with a message after
+   something is logged. The whole design is in src/data/nudges.js and
+   the short version is that "sometimes" is the requirement, not a
+   softening of it. Every log still gets its quiet line on the Logs
+   screen. Willow herself only surfaces when there is genuinely
+   something a friend would have noticed.
+   ================================================================= */
+
+/* How many hard days she has actually put down lately. Counted from
+   what she wrote, never inferred from anything else, and used for one
+   thing only: deciding whether Willow mentions that support exists. */
+function momLowDays(days) {
+  const since = Date.now() - 1000 * 60 * 60 * 24 * (Number(days) || 14);
+  return momLogs().filter((l) => l.typeId === 'mom-mood'
+    && new Date(l.at).getTime() >= since
+    && NUDGE_LOW_MOODS.indexOf(String((l.values || {}).mood || '')) !== -1).length;
+}
+
+function nudgeState() {
+  if (!store.nudge || typeof store.nudge !== 'object') store.nudge = {};
+  return store.nudge;
+}
+
+function nudgeCountToday() {
+  const n = nudgeState();
+  const day = ciToday();
+  if (n.day !== day) { n.day = day; n.count = 0; }
+  return n.count || 0;
+}
+
+/* Everything the decision needs, gathered from what the app already
+   knows. Kept apart from the decision itself so the rules can be
+   tested without a browser. */
+function nudgeFacts(typeId, values) {
+  const mine = isMomLog(typeId);
+  const list = mine ? momLogs() : (activeChild() ? (activeChild().logs || []) : []);
+  /* The log that was just saved is already in the list, so "first"
+     means exactly one of them, and the gap is measured to the one
+     before it rather than to itself. */
+  const same = list.filter((l) => l.typeId === typeId);
+  const others = list.filter((l) => l.id !== (same[0] || {}).id);
+  const prevAt = others.length ? new Date(others[0].at).getTime() : 0;
+  const n = nudgeState();
+
+  return {
+    typeId: typeId,
+    hour: new Date().getHours(),
+    isFirst: same.length <= 1,
+    selfRun: SELFCARE_TYPES.indexOf(typeId) !== -1 ? selfCareRun('self') : 0,
+    mood: (values && values.mood) ? String(values.mood) : '',
+    lowCount: momLowDays(14),
+    daysAway: prevAt ? Math.floor((Date.now() - prevAt) / (1000 * 60 * 60 * 24)) : 0,
+    lastAt: Number(n.lastAt) || 0,
+    todayCount: nudgeCountToday(),
+    now: Date.now(),
+  };
+}
+
+/* Decides, and if the answer is yes, puts her bubble on screen. The
+   written line is there immediately and Willow rewrites it if she can,
+   the same way everything else she writes works. */
+function nudgeMaybe(typeId, values) {
+  let reason = null;
+  try { reason = nudgeReason(nudgeFacts(typeId, values)); } catch (err) { reason = null; }
+  if (!reason) return;
+
+  const n = nudgeState();
+  const t = anyLogType(typeId);
+  const label = t ? t.label : '';
+  n.lastAt = Date.now();
+  n.count = nudgeCountToday() + 1;
+  n.at = Date.now();
+  n.reason = reason;
+  n.text = nudgeWritten(reason, ciToday() + typeId);
+  n.from = 'written';
+  n.opener = NUDGE_OPENERS[reason] || '';
+
+  /* Some lines are written once and read as written. See the note on
+     lowrun in nudges.js for why. */
+  if ((NUDGE_REASONS[reason] || {}).fixed) { flushStore(); return; }
+
+  try {
+    if (typeof liftWrite === 'function') {
+      liftWrite('nudge:' + reason + ':' + Date.now(), {
+        reason: reason,
+        label: label,
+        parentName: (store.parent.name || '').trim().split(/\s+/)[0] || '',
+      }, (text) => {
+        const line = String(text || '').trim().replace(/^["']|["']$/g, '');
+        if (!line || line.length > 200) return;
+        const cur = nudgeState();
+        /* She may have moved on, or a newer one may have replaced this.
+           Either way the old answer is no longer wanted. */
+        if (cur.reason !== reason) return;
+        cur.text = line;
+        cur.from = 'willow';
+      });
+    }
+  } catch (err) { /* the written line is already on screen */ }
+}
+
+function nudgeLive() {
+  const n = store.nudge;
+  if (!n || !n.text || n.gone) return null;
+  if (Date.now() - (n.at || 0) > NUDGE_LIFE_MINUTES * 60 * 1000) return null;
+  return n;
+}
+
+function nudgeDismiss() {
+  const n = nudgeState();
+  n.gone = true;
+  flushStore();
+  render();
+}
+
+/* Tapping her opens the panel and puts the conversation in motion, so
+   she is somebody who said something rather than a message that
+   disappears. */
+function nudgeTake() {
+  const n = nudgeLive();
+  if (!n) return;
+  const key = willowThreadKey();
+  willowSay('willow', n.text, [], '', key);
+  if (n.opener) willow.input = n.opener;
+  nudgeState().gone = true;
+  willow.open = true;
+  flushStore();
+  render();
+}
+
+/* Her bubble, peeking out above her pill in the corner. Drawn beside
+   the pill rather than instead of it, so the thing she is attached to
+   is still visibly her. */
+function nudgeBubble() {
+  const n = nudgeLive();
+  if (!n || willow.open) return '';
+  return `
+  <div class="wnudge">
+    <button class="wnudge-x" data-nudge="no" aria-label="Not now">&times;</button>
+    <button class="wnudge-body" data-nudge="open">
+      <span class="wnudge-t">${esc(WILLOW.name)}</span>
+      <span class="wnudge-l">${esc(n.text)}</span>
+      ${n.opener ? `<span class="wnudge-go">${esc(n.opener)} ${icon('chev', 11, 'var(--deep)')}</span>` : ''}
+    </button>
+  </div>`;
 }
 
 /* Shown once, on the screen she lands on, then cleared by the next
