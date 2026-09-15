@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-15 19:03">
+<meta name="rsg-build" content="2026-09-15 21:07">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -102,6 +102,21 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 .dayrow-l{display:block;font-size:13.5px;font-weight:600;color:var(--ink)}
 .spark{width:100%;height:44px;margin-top:10px;display:block}
 .notedcard{border-left:3px solid var(--leaf);background:var(--leaf2)}
+.durrow{display:flex;gap:10px;margin-top:7px}
+.durbit{flex:1;display:flex;flex-direction:column;gap:3px}
+.durbit .inp{width:100%}
+.durbit .tiny{text-align:center}
+/* memories */
+.memcard .memdate{display:block;font-size:13.5px;font-weight:600;color:var(--ink)}
+.memfiles{display:grid;gap:6px;margin-top:10px;grid-template-columns:1fr}
+.memfiles.n2,.memfiles.n3,.memfiles.n4{grid-template-columns:1fr 1fr}
+.memfile{position:relative;display:block;border-radius:12px;overflow:hidden;background:var(--paper2)}
+.memfile img,.memfile video{width:100%;display:block;max-height:340px;object-fit:cover}
+.memfile.audio{display:flex;align-items:center;gap:9px;padding:10px 12px}
+.memfile.audio audio{flex:1;min-width:0}
+.memup .bar{height:6px;border-radius:99px;background:var(--line2);overflow:hidden}
+.memup .bar i{display:block;height:100%;background:var(--leaf);border-radius:99px;transition:width .2s}
+.memday{border-left:3px solid var(--leaf)}
 
 /* brand wordmark, drawn rather than an image so it stays crisp */
 .mark{display:flex;flex-direction:column;align-items:center;position:relative;z-index:2}
@@ -1051,7 +1066,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-15 19:03';
+const BUILD_STAMP = '2026-09-15 21:07';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -17055,8 +17070,15 @@ const CHILD_ARRIVAL = [
   { id: 'fostered', label: 'In foster care with us' },
   { id: 'step', label: 'My step child' },
   { id: 'kinship', label: 'In our care through family' },
+  { id: 'exchange', label: 'Here as an exchange student' },
   { id: 'early', label: 'Born early' },
 ];
+
+/* Set per child rather than per family on purpose. Plenty of houses
+   hold a child somebody gave birth to and a child who arrived another
+   way, and an app that asks the question once, at the family level,
+   tells half of those children they are the exception. */
+const ARRIVAL_IS_PER_CHILD = true;
 
 const CHILD_ARRIVAL_NOTE =
   'This changes how the app talks about their early days, never what it says about their '
@@ -18486,6 +18508,58 @@ const CARETAKER_ENTRIES = [
   },
 
   {
+    id: 'mixed',
+    role: 'mixed',
+    kind: 'Families put together more than one way',
+    title: 'When your children came to you differently',
+    blurb: 'One you gave birth to, one you did not, and the questions that follow',
+    body:
+      'Plenty of houses hold a child somebody gave birth to and a child who arrived another way, '
+      + 'through adoption, through fostering, through a marriage, or through family. The children '
+      + 'notice. They notice earlier than adults expect and they ask about it in the car, at bedtime, '
+      + 'and in front of people you would rather they had not.\n\n'
+      + 'The pressure people describe is a double one. Treat them identically and you are ignoring '
+      + 'that one of them has a history the other does not. Treat them differently and you are '
+      + 'confirming the thing they are worried about. The honest answer is that fairness is not '
+      + 'sameness, and children work that out sooner than they are given credit for.',
+    helps: [
+      'Same rules and same consequences for everybody. That is the part that has to be identical.',
+      'Different needs are allowed to get different responses, and saying so out loud beats pretending.',
+      'A child\'s own story belongs to them. They decide who hears it, including which relatives.',
+      'Head off the real brother question before somebody else asks it in front of them.',
+      'Relatives who treat them differently is a conversation with the relative, not with the child.',
+    ],
+    getHelp: 'A therapist who works with adoption or foster care specifically, if the sibling '
+      + 'relationship is genuinely painful rather than ordinarily annoying. General family therapy '
+      + 'often misses what is actually going on here.',
+  },
+
+  {
+    id: 'exchange',
+    role: 'exchange',
+    kind: 'Hosting an exchange student',
+    title: 'Somebody else\'s teenager, in your house, for a year',
+    blurb: 'Parenting without being their parent, in a language that is not theirs',
+    body:
+      'Hosting is a strange middle. You are responsible for them and you are not their parent, they '
+      + 'are a guest and also a member of the household, and the whole thing has an end date that '
+      + 'everybody can see coming.\n\n'
+      + 'Homesickness usually lands around weeks four to eight, well after the excitement wears off '
+      + 'and well before they feel at home. It often looks like withdrawal or rudeness rather than '
+      + 'tears. Operating all day in a second language is also genuinely exhausting in a way that is '
+      + 'easy to read as sullenness.',
+    helps: [
+      'Say the house rules out loud and early. What is obvious to you is not obvious across cultures.',
+      'Let them keep their own food, their own faith, and their own way of doing things.',
+      'Protect the calls home rather than worrying they stop them settling. They do not.',
+      'Ask what they call the adults where they are from. Getting that wrong is a small daily friction.',
+      'Plan the goodbye. An ending nobody prepared for is the part people still regret years later.',
+    ],
+    getHelp: 'Your placement organisation has a local coordinator whose whole job is this. Use them '
+      + 'early rather than once something has gone wrong.',
+  },
+
+  {
     id: 'solo',
     role: 'solo',
     kind: 'Doing this on your own',
@@ -18558,6 +18632,14 @@ function caretakerEntriesFor(shape) {
     }
     if (e.id === 'guardian') {
       if (roles.indexOf('kinship') !== -1 || roles.indexOf('guardian') !== -1) out.push(e);
+      return;
+    }
+    if (e.id === 'mixed') {
+      if (s.mixedArrivals) out.push(e);
+      return;
+    }
+    if (e.id === 'exchange') {
+      if (s.hasExchange) out.push(e);
       return;
     }
     if (e.id === 'partner') {
@@ -18781,6 +18863,192 @@ function encouragePrompt(typeId, label, context) {
     + (context ? '\n\nRecently: ' + context : '')
     + '\n\nWrite the one line.';
 }
+
+/* ===== src/data/memories.js ===== */
+/**
+ * Ready Set Grow: Memories
+ * ------------------------------------------------------------------
+ * The keepsake half of the app. A photo, a video, a voice memo, or
+ * just the thing they said in the back of the car that you will have
+ * forgotten by Thursday.
+ *
+ * THE TWO RULES SHE SET, AND THEY ARE THE WHOLE DESIGN
+ *
+ * 1. A child's memories live on that child's profile and nowhere else.
+ *    Not on Home, not on a public profile, not in a post. A child's
+ *    profile is somewhere to document, never somewhere to share, and
+ *    that has been true since the first week of this app. A memory
+ *    attached to a child is private, always, with no switch to make it
+ *    public, because the switch is the thing that gets pressed by
+ *    accident at eleven at night.
+ *
+ * 2. Nothing is ever removed unless she removes it. No expiry, no
+ *    tidying up, no dropping the oldest when the list gets long. The
+ *    whole point of a keepsake is that it is still there in nine
+ *    years. Logs trim themselves. Memories never do.
+ *
+ * HERS ARE DIFFERENT, DELIBERATELY
+ * A memory on her own profile can be private or public, the same way a
+ * post can, because it is hers to decide. They are kept separate from
+ * posts rather than mixed in, which is what she asked for: posts are
+ * for saying something now, memories are for keeping something.
+ *
+ * COMING BACK AROUND
+ * A year later, or two, or five, it reappears on Home. That is the
+ * feature people actually stay for, and it costs nothing but a date
+ * comparison.
+ */
+
+const MEMORY_KINDS = [
+  { id: 'photo', label: 'Photo', icon: 'camera', accept: 'image/*',
+    maxBytes: 12 * 1024 * 1024 },
+  { id: 'video', label: 'Video', icon: 'play', accept: 'video/*',
+    maxBytes: 100 * 1024 * 1024,
+    note: 'Up to about two minutes. Longer ones fail on a phone connection more often than they work.' },
+  { id: 'audio', label: 'Voice memo', icon: 'mic', accept: 'audio/*',
+    maxBytes: 25 * 1024 * 1024,
+    note: 'Their voice at this age is the thing you will want back most.' },
+  { id: 'words', label: 'Something they said', icon: 'quote', accept: '',
+    maxBytes: 0 },
+];
+
+function memoryKind(id) {
+  return MEMORY_KINDS.filter((k) => k.id === id)[0] || null;
+}
+
+/* What a memory looks like on the record.
+ *
+ *   id        stable, never reused
+ *   who       'me' or a child id. Decides where it shows and nothing else
+ *   kind      photo | video | audio | words
+ *   text      what she wrote, which is the only required part
+ *   files     [{ path, url, kind, w, h, bytes }] in Storage, never inline
+ *   at        when it HAPPENED, which she can change. Not when it was typed
+ *   madeAt    when it was typed, never shown, used to break ties
+ *   visibility  private | public. Always private when who is a child
+ */
+function newMemory(who, kind) {
+  return {
+    id: 'mem' + Date.now() + Math.floor(Math.random() * 1000),
+    who: who || 'me',
+    kind: kind || 'words',
+    text: '',
+    files: [],
+    at: null,
+    madeAt: Date.now(),
+    visibility: 'private',
+  };
+}
+
+/** A child's memories are private. There is no argument with this one. */
+function memoryVisibility(mem) {
+  if (!mem) return 'private';
+  if (mem.who && mem.who !== 'me') return 'private';
+  return mem.visibility === 'public' ? 'public' : 'private';
+}
+
+function canBePublic(who) {
+  return who === 'me';
+}
+
+/* ------------------------------------------------------------------
+ * COMING BACK AROUND
+ * ------------------------------------------------------------------ */
+
+function memParts(value) {
+  const m = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return null;
+  return { y: Number(m[1]), m: Number(m[2]), d: Number(m[3]) };
+}
+
+/**
+ * Anything that happened on this day in an earlier year.
+ * today is a YYYY-MM-DD string.
+ */
+function onThisDay(memories, today) {
+  const t = memParts(today);
+  if (!t) return [];
+  return (memories || []).filter((mem) => {
+    const d = memParts(mem.at || '');
+    if (!d) return false;
+    return d.m === t.m && d.d === t.d && d.y < t.y;
+  }).map((mem) => {
+    const d = memParts(mem.at);
+    return Object.assign({}, mem, { yearsAgo: t.y - d.y });
+  }).sort((a, b) => a.yearsAgo - b.yearsAgo);
+}
+
+function yearsAgoLine(n) {
+  if (n === 1) return 'A year ago today';
+  return n + ' years ago today';
+}
+
+/* ------------------------------------------------------------------
+ * SORTING AND GROUPING
+ * ------------------------------------------------------------------ */
+
+function sortMemories(list) {
+  return (list || []).slice().sort((a, b) => {
+    const at = String(a.at || '');
+    const bt = String(b.at || '');
+    if (at !== bt) return at < bt ? 1 : -1;
+    return (b.madeAt || 0) - (a.madeAt || 0);
+  });
+}
+
+function memoriesFor(list, who) {
+  return sortMemories((list || []).filter((m) => (m.who || 'me') === who));
+}
+
+/** Grouped by the year it happened, newest first, for the long view. */
+function memoriesByYear(list) {
+  const out = [];
+  sortMemories(list).forEach((m) => {
+    const p = memParts(m.at || '');
+    const y = p ? p.y : 'Undated';
+    const bucket = out.filter((b) => b.year === y)[0];
+    if (bucket) bucket.items.push(m);
+    else out.push({ year: y, items: [m] });
+  });
+  return out;
+}
+
+/* ------------------------------------------------------------------
+ * LIMITS, SAID OUT LOUD RATHER THAN DISCOVERED
+ * ------------------------------------------------------------------ */
+
+const MEMORY_MAX_FILES = 6;
+
+function sizeLabel(bytes) {
+  const n = Number(bytes) || 0;
+  if (n < 1024) return n + ' B';
+  if (n < 1024 * 1024) return Math.round(n / 1024) + ' KB';
+  return (n / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function tooBigMessage(kind, bytes) {
+  const k = memoryKind(kind);
+  if (!k || !k.maxBytes) return '';
+  if (bytes <= k.maxBytes) return '';
+  return 'That ' + k.label.toLowerCase() + ' is ' + sizeLabel(bytes) + ', and the limit is '
+    + sizeLabel(k.maxBytes) + '. '
+    + (kind === 'video'
+      ? 'A shorter clip, or trimming it in your phone first, is the usual fix.'
+      : 'A smaller file is the usual fix.');
+}
+
+const MEMORY_PRIVACY_CHILD = 'Memories on a child\'s profile are private, always. There is '
+  + 'no way to make one public, because a page you keep about a child is for documenting them, '
+  + 'never for sharing them.';
+
+const MEMORY_PRIVACY_MINE = 'Yours can be private or shared, the same as a post. Private is '
+  + 'the default and sharing is always something you press.';
+
+const MEMORY_KEEP_NOTE = 'Kept until you delete it. Nothing here expires, tidies itself up, '
+  + 'or drops the oldest when the list gets long.';
+
+const MEMORY_EMPTY_CHILD = 'The things you will forget otherwise. What they said, how they '
+  + 'said it, the face they pulled. A year from now this comes back to you.';
 
 /* ===== src/data/cycle.js ===== */
 /**
@@ -20226,6 +20494,19 @@ const store = {
   postDraft: null,
   postOpen: false,
 
+  /* Memories. Photos, videos, voice memos and little things said, kept
+     for every child and for her. Nothing here ever expires on its own,
+     so this list only ever shrinks when somebody deletes something. */
+  memories: [],
+  memDraft: null,
+  /* The day the "a year ago today" card was waved away, so it stays
+     away until tomorrow rather than coming back on the next reload. */
+  memDayHidden: '',
+  /* Memories that were deliberately deleted. Without this, the other
+     device would push its old copy straight back and the thing she
+     removed would reappear. */
+  deletedMemoryIds: [],
+
   /* The corner menu. Never persisted: a menu left open across a reload
      would be a small haunting. */
   menuOpen: false,
@@ -20405,6 +20686,11 @@ function flushStore() {
       bagChecked: store.bagChecked,
       birthdaySeen: store.birthdaySeen,
       posts: store.posts,
+      /* Memories live here too, or a voice memo saved this morning
+         would be gone by the afternoon. */
+      memories: store.memories,
+      memDayHidden: store.memDayHidden,
+      deletedMemoryIds: store.deletedMemoryIds,
       postDraft: store.postDraft,
       msEdit: store.msEdit,
       ciEdit: store.ciEdit,
@@ -20500,6 +20786,9 @@ function loadStore() {
     store.ciEdit = (saved.ciEdit && typeof saved.ciEdit === 'object' && saved.ciEdit.childId)
       ? saved.ciEdit : null;
     store.posts = Array.isArray(saved.posts) ? saved.posts : [];
+    store.memories = Array.isArray(saved.memories) ? saved.memories : [];
+    store.memDayHidden = typeof saved.memDayHidden === 'string' ? saved.memDayHidden : '';
+    store.deletedMemoryIds = Array.isArray(saved.deletedMemoryIds) ? saved.deletedMemoryIds : [];
     store.postDraft = (saved.postDraft && typeof saved.postDraft === 'object') ? saved.postDraft : null;
   }
 
@@ -21427,6 +21716,34 @@ function initControls() {
       if (saveBtn) saveBtn.disabled = !postHasContent();
       saveStore();
     }
+    else if (e.target.matches('[data-memfield]')) {
+      memDraft().text = e.target.value;
+      saveStore();
+      const b = document.querySelector('[data-memsave]');
+      if (b) b.disabled = !!store.memBusy;
+    }
+    else if (e.target.matches('[data-durfield]')) {
+      const id = e.target.dataset.durfield;
+      const row = e.target.closest('.durrow');
+      const get = (part) => {
+        const box = row && row.querySelector('[data-durpart="' + part + '"]');
+        return box ? Number(box.value) || 0 : 0;
+      };
+      const total = get('h') * 60 + get('m');
+      const d = state.logDraft && state.logDraft.typeId ? state.logDraft : ensureDraft();
+      if (d) {
+        if (!d.values) d.values = {};
+        d.values[id] = total ? String(total) : '';
+        store.logDraft = d;
+        saveStore();
+      }
+      /* Same reason the post button needed this: no repaint while she
+         types, so anything depending on the value is switched by hand. */
+      const saveBtn = document.querySelector('[data-logsave]');
+      if (saveBtn && saveBtn.dataset.logsave && isMomLog(saveBtn.dataset.logsave)) {
+        saveBtn.disabled = false;
+      }
+    }
     else if (e.target.matches('[data-momcinote]')) {
       momCiDraft().note = e.target.value;
       saveStore();
@@ -21551,7 +21868,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -21646,6 +21963,39 @@ function initControls() {
       else if (how === 'emoji') { postEmoji(t.dataset.ch); return; }
       render();
       return;
+    } else if (t.dataset.memopen !== undefined && t.dataset.memopen) {
+      memOpen(t.dataset.memopen, 'words');
+      return;
+    } else if (t.dataset.memclose) {
+      memClose();
+      return;
+    } else if (t.dataset.memkind) {
+      memSetKind(t.dataset.memkind);
+      return;
+    } else if (t.dataset.mempick) {
+      memPick();
+      return;
+    } else if (t.dataset.memsave) {
+      memSave();
+      return;
+    } else if (t.dataset.memdel) {
+      memDelete(t.dataset.memdel);
+      return;
+    } else if (t.dataset.memvis) {
+      memSetVisibilityOn(t.dataset.memvis, t.dataset.vis);
+      return;
+    } else if (t.dataset.memvisdraft) {
+      memSetVisibility(t.dataset.memvisdraft);
+      return;
+    } else if (t.dataset.memdrop !== undefined) {
+      memDropFile(t.dataset.memdrop);
+      return;
+    } else if (t.dataset.memall !== undefined) {
+      store.memAll = t.dataset.memall || null;
+      flushStore();
+    } else if (t.dataset.memhide) {
+      store.memDayHidden = ciToday();
+      flushStore();
     } else if (t.dataset.logwho) {
       store.logWho = t.dataset.logwho;
       /* Also the way in from Home, so this has to land on the tab and
@@ -24683,6 +25033,10 @@ function applyDateField(target, iso) {
     k.updatedAt = Date.now();
   } else if (parts[0] === 'draft') {
     store.draftChildBday = iso;
+  } else if (parts[0] === 'memory') {
+    /* When the memory HAPPENED, which is not the same as when she got
+       round to typing it, and is the date it comes back on. */
+    memDraft().at = iso;
   }
   flushStore();
   render();
@@ -27027,6 +27381,8 @@ function screenHome(c) {
     <p class="sect">Your cycle</p>
     ${cycleWidget()}
 
+    ${memOnThisDay()}
+
     ${caretakerCards()}
 
     <p class="sect">For you</p>
@@ -27348,11 +27704,20 @@ function momShape() {
 /* Whoever is holding the phone, in the shape caretakers.js wants. */
 function caretakerShape() {
   const sit = situation();
+  const kids = store.children.filter((k) => !isExampleChild(k));
+  /* How each child arrived is recorded per child, so a house holding
+     one somebody gave birth to and one who came another way is a shape
+     the app can actually see rather than a special case. */
+  const otherWays = ['adopted', 'fostered', 'step', 'kinship', 'exchange'];
+  const arrived = kids.filter((k) => (k.arrival || []).some((a) => otherWays.indexOf(a) !== -1));
   return {
     roles: sit.roles || [],
     support: sit.support || [],
     gaveBirth: gaveBirthRecently(),
-    hasChildren: store.children.filter((k) => !isExampleChild(k)).length > 0,
+    hasChildren: kids.length > 0,
+    /* Some arrived one way and some another, which is its own thing. */
+    mixedArrivals: arrived.length > 0 && arrived.length < kids.length,
+    hasExchange: kids.some((k) => (k.arrival || []).indexOf('exchange') !== -1),
   };
 }
 
@@ -27861,6 +28226,8 @@ function screenMyProfile() {
 
     ${posts.map((x) => postCard(x, true)).join('')}
 
+    ${memSection('me')}
+
     <p class="tiny" style="margin-top:10px;text-align:center">
       ${icon('shield', 10, 'var(--muted)')} Only posts can be shared, and only the ones you choose.
       Everything else stays yours.
@@ -27960,6 +28327,8 @@ function screenChild(c) {
       </div>`;
     })()}
 
+    ${kid ? memSection(kid.id) : ''}
+
     <p class="sect">Where they are now</p>
     ${childRow('chart', 'Milestones',
       msChangeCount()
@@ -28047,6 +28416,136 @@ const LOG_ICON = {
   thermometer: 'pill', users: 'people',
 };
 function logIcon(name) { return LOG_ICON[name] || 'note'; }
+
+/* =================================================================
+   FILES, IN STORAGE RATHER THAN IN THE RECORD
+
+   Everything used to be stored as a data URL inside the account
+   record itself. That works for a 256 pixel avatar and falls over at
+   about seven real photos, because Firestore caps one record at a
+   megabyte and a phone photo is roughly 125 KB once encoded. Video was
+   never possible at all.
+
+   So files now go to Cloud Storage under the account's own id, and the
+   record keeps a path and a URL. The rules on the bucket say the id in
+   the path has to match the id of whoever is asking, which is the
+   whole security model.
+
+   WHAT HAPPENS WHEN STORAGE IS NOT REACHABLE
+   The upload fails and says so, in words, with the file still sitting
+   in the composer. It does not silently drop it and it does not fall
+   back to stuffing it in the record, because that is how the ceiling
+   got hit in the first place.
+   ================================================================= */
+
+let storagePromise = null;
+
+function loadStorage() {
+  if (storagePromise) return storagePromise;
+  storagePromise = (async () => {
+    const v = FIREBASE_SDK_VERSION;
+    const { app } = await loadFirebase();
+    const mod = await import(`https://www.gstatic.com/firebasejs/${v}/firebase-storage.js`);
+    return { mod: mod, storage: mod.getStorage(app) };
+  })().catch((err) => {
+    storagePromise = null;
+    throw err;
+  });
+  return storagePromise;
+}
+
+/* Photos are shrunk before they go up. A 4000 pixel phone photo is
+   four megabytes of detail nobody looks at on a 400 pixel screen, and
+   the smaller it is the faster it comes back on her mother's wifi. */
+function shrinkImage(file, maxEdge) {
+  return new Promise((resolve) => {
+    const done = (blob) => resolve(blob || file);
+    const edge = maxEdge || 1600;
+    const draw = (src, w, h) => {
+      try {
+        const f = Math.min(1, edge / Math.max(w, h));
+        if (f >= 1 && file.size < 900 * 1024) { done(null); return; }
+        const cv = document.createElement('canvas');
+        cv.width = Math.round(w * f);
+        cv.height = Math.round(h * f);
+        cv.getContext('2d').drawImage(src, 0, 0, cv.width, cv.height);
+        cv.toBlob((b) => done(b), 'image/jpeg', 0.84);
+      } catch (err) { done(null); }
+    };
+    if (typeof createImageBitmap === 'function') {
+      createImageBitmap(file, { imageOrientation: 'from-image' })
+        .then((bmp) => { draw(bmp, bmp.width, bmp.height); try { bmp.close(); } catch (e) {} })
+        .catch(() => done(null));
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { draw(img, img.naturalWidth, img.naturalHeight); try { URL.revokeObjectURL(url); } catch (e) {} };
+    img.onerror = () => { try { URL.revokeObjectURL(url); } catch (e) {} done(null); };
+    img.src = url;
+  });
+}
+
+function storageFolder(kind) {
+  if (kind === 'video') return 'video';
+  if (kind === 'audio') return 'audio';
+  return 'photos';
+}
+
+/**
+ * Put one file in Storage and hand back what the record should keep.
+ * onProgress gets 0 to 100 so a slow upload never looks like a hang.
+ */
+async function uploadFile(file, kind, onProgress) {
+  const uid = auth && auth.uid;
+  if (!uid) throw new Error('not signed in');
+  const { mod, storage } = await loadStorage();
+
+  let body = file;
+  if (kind === 'photo') body = await shrinkImage(file, 1600);
+
+  const clean = String(file.name || 'file').replace(/[^\w.-]+/g, '-').slice(-60);
+  const path = 'users/' + uid + '/' + storageFolder(kind) + '/'
+    + Date.now() + '-' + Math.floor(Math.random() * 1000) + '-' + clean;
+
+  const ref = mod.ref(storage, path);
+  const task = mod.uploadBytesResumable(ref, body, {
+    contentType: body.type || file.type || 'application/octet-stream',
+  });
+
+  await new Promise((resolve, reject) => {
+    task.on('state_changed',
+      (snap) => {
+        if (onProgress && snap.totalBytes) {
+          onProgress(Math.round((snap.bytesTransferred / snap.totalBytes) * 100));
+        }
+      },
+      reject,
+      resolve);
+  });
+
+  const url = await mod.getDownloadURL(ref);
+  return { path: path, url: url, kind: kind, bytes: body.size || file.size || 0,
+    name: file.name || '' };
+}
+
+/* Taking a memory away takes its files with it. A file left in the
+   bucket after its memory is gone is something she is paying for and
+   cannot see. */
+async function deleteStoredFiles(files) {
+  if (!files || !files.length) return;
+  try {
+    const { mod, storage } = await loadStorage();
+    await Promise.all(files.map((f) => {
+      if (!f || !f.path) return null;
+      return mod.deleteObject(mod.ref(storage, f.path)).catch(() => null);
+    }));
+  } catch (err) {
+    /* The memory still goes. An orphaned file is better than a delete
+       that appears not to work. */
+  }
+}
+
 
 /* =================================================================
    HER OWN LOGS
@@ -28268,6 +28767,360 @@ function notedCard() {
     <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(logWhoName('me'))}</p>
     <p class="bodytext" style="margin-top:4px">${esc(n.text)}</p>
     ${n.run ? `<p class="tiny" style="margin-top:7px">${icon('star', 10, 'var(--sage)')} ${esc(n.run)}</p>` : ''}
+  </div>`;
+}
+
+/* =================================================================
+   MEMORIES
+
+   Kept forever, on the profile they belong to, and nowhere else.
+   ================================================================= */
+
+function memories() {
+  if (!Array.isArray(store.memories)) store.memories = [];
+  return store.memories;
+}
+
+function memDraft() {
+  if (!store.memDraft || typeof store.memDraft !== 'object') {
+    store.memDraft = newMemory(store.memWho || 'me', 'words');
+    store.memDraft.at = ciToday();
+  }
+  return store.memDraft;
+}
+
+function memOpen(who, kind) {
+  store.memWho = who;
+  store.memDraft = newMemory(who, kind || 'words');
+  store.memDraft.at = ciToday();
+  store.memOpen = true;
+  store.memError = '';
+  flushStore();
+  render();
+}
+
+function memClose() {
+  store.memDraft = null;
+  store.memOpen = false;
+  store.memError = '';
+  store.memBusy = 0;
+  flushStore();
+  render();
+}
+
+function memSetKind(kind) {
+  const d = memDraft();
+  d.kind = kind;
+  flushStore();
+  render();
+}
+
+function memSetVisibility(vis) {
+  const d = memDraft();
+  if (!canBePublic(d.who)) return;
+  d.visibility = vis;
+  flushStore();
+  render();
+}
+
+function memSave() {
+  const d = memDraft();
+  const text = String(d.text || '').trim();
+  if (!text && !d.files.length) return;
+  if (store.memBusy) return;
+  const mem = Object.assign({}, d, {
+    text: text,
+    at: d.at || ciToday(),
+    visibility: memoryVisibility(d),
+  });
+  memories().unshift(mem);
+  store.memDraft = null;
+  store.memOpen = false;
+  store.memError = '';
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+function memDelete(id) {
+  const mem = memories().filter((m) => m.id === id)[0];
+  if (!mem) return;
+  store.memories = memories().filter((m) => m.id !== id);
+  if (!Array.isArray(store.deletedMemoryIds)) store.deletedMemoryIds = [];
+  if (store.deletedMemoryIds.indexOf(id) === -1) store.deletedMemoryIds.push(id);
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+  /* The files go after the record, so the screen never waits on the
+     network to show that something was removed. */
+  deleteStoredFiles(mem.files);
+}
+
+function memSetVisibilityOn(id, vis) {
+  const mem = memories().filter((m) => m.id === id)[0];
+  if (!mem || !canBePublic(mem.who)) return;
+  mem.visibility = vis;
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+/* Picking a file for a memory. Separate from the profile photo picker
+   because this one accepts video and audio and does not crop. */
+let memInput = null;
+
+function ensureMemInput() {
+  if (memInput && memInput.isConnected) return memInput;
+  const el = document.createElement('input');
+  el.type = 'file';
+  el.id = 'rsgMemIn';
+  el.style.position = 'fixed';
+  el.style.left = '-9999px';
+  el.setAttribute('aria-hidden', 'true');
+  el.addEventListener('change', () => {
+    const file = el.files && el.files[0];
+    el.value = '';
+    if (!file) return;
+    memTakeFile(file);
+  });
+  document.body.appendChild(el);
+  memInput = el;
+  return el;
+}
+
+function memPick() {
+  const d = memDraft();
+  const k = memoryKind(d.kind);
+  if (!k || !k.accept) return;
+  if (d.files.length >= MEMORY_MAX_FILES) {
+    store.memError = 'That is ' + MEMORY_MAX_FILES + ' already, which is the limit for one memory.';
+    render();
+    return;
+  }
+  const el = ensureMemInput();
+  el.accept = k.accept;
+  store.memError = '';
+  try { el.click(); } catch (err) {
+    store.memError = 'This browser would not open the picker.';
+    render();
+  }
+}
+
+async function memTakeFile(file) {
+  const d = memDraft();
+  const big = tooBigMessage(d.kind, file.size || 0);
+  if (big) { store.memError = big; render(); return; }
+
+  store.memBusy = 1;
+  store.memError = '';
+  render();
+
+  try {
+    const saved = await uploadFile(file, d.kind, (pct) => {
+      store.memBusy = Math.max(1, pct);
+      render();
+    });
+    const cur = memDraft();
+    cur.files.push(saved);
+    store.memBusy = 0;
+    flushStore();
+    render();
+  } catch (err) {
+    store.memBusy = 0;
+    /* Said in words, with the file still in her hand rather than gone. */
+    store.memError = 'That did not upload. ' + (navigator.onLine === false
+      ? 'You are offline at the moment, so it is worth trying again when you are back.'
+      : 'Worth trying again, and if it keeps failing tell me and I will look at it.');
+    render();
+  }
+}
+
+function memDropFile(i) {
+  const d = memDraft();
+  const gone = d.files.splice(Number(i), 1);
+  flushStore();
+  render();
+  deleteStoredFiles(gone);
+}
+
+/* ---------- WHAT ONE LOOKS LIKE ---------- */
+
+function memFileBlock(f, i, editing) {
+  if (!f) return '';
+  if (f.kind === 'video') {
+    return `
+    <span class="memfile">
+      <video src="${esc(f.url)}" controls preload="metadata" playsinline></video>
+      ${editing ? `<button class="postpic-x" data-memdrop="${i}" aria-label="Remove">${icon('plus', 14, '#fff')}</button>` : ''}
+    </span>`;
+  }
+  if (f.kind === 'audio') {
+    return `
+    <span class="memfile audio">
+      ${icon('mic', 18, 'var(--deep)')}
+      <audio src="${esc(f.url)}" controls preload="metadata"></audio>
+      ${editing ? `<button class="postpic-x" data-memdrop="${i}" aria-label="Remove">${icon('plus', 14, '#fff')}</button>` : ''}
+    </span>`;
+  }
+  return `
+  <span class="memfile">
+    <img src="${esc(f.url)}" alt="" loading="lazy" />
+    ${editing ? `<button class="postpic-x" data-memdrop="${i}" aria-label="Remove">${icon('plus', 14, '#fff')}</button>` : ''}
+  </span>`;
+}
+
+function memCard(mem, opts) {
+  const o = opts || {};
+  const vis = memoryVisibility(mem);
+  const mine = (mem.who || 'me') === 'me';
+  return `
+  <div class="card memcard">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="grow">
+        <span class="memdate">${esc(mem.at ? cycleDateLabelWithYear(mem.at) : 'No date')}</span>
+        ${o.yearsAgo ? `<span class="tiny" style="display:block">${esc(yearsAgoLine(o.yearsAgo))}</span>` : ''}
+      </span>
+      ${mine ? `
+      <span class="post-vis${vis === 'public' ? ' pub' : ''}">
+        ${vis === 'public' ? icon('people', 11, '#6E8B54') : icon('shield', 11, 'var(--muted)')}
+        ${vis === 'public' ? 'Shared' : 'Just me'}
+      </span>` : `
+      <span class="post-vis">${icon('shield', 11, 'var(--muted)')} Private</span>`}
+    </div>
+
+    ${mem.text ? `<p class="bodytext" style="margin-top:8px;white-space:pre-wrap">${esc(mem.text)}</p>` : ''}
+
+    ${(mem.files || []).length ? `
+    <div class="memfiles n${Math.min(4, mem.files.length)}">
+      ${mem.files.map((f, i) => memFileBlock(f, i, false)).join('')}
+    </div>` : ''}
+
+    ${o.actions === false ? '' : `
+    <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+      ${mine ? (vis === 'public'
+        ? `<button class="chip" data-memvis="${esc(mem.id)}" data-vis="private">Make it private</button>`
+        : `<button class="chip" data-memvis="${esc(mem.id)}" data-vis="public">Share it</button>`) : ''}
+      <button class="chip" data-memdel="${esc(mem.id)}">Delete</button>
+    </div>`}
+  </div>`;
+}
+
+/* ---------- THE COMPOSER ---------- */
+
+function memComposer(who) {
+  if (!store.memOpen || store.memWho !== who) {
+    return `
+    <button class="composer shut" data-memopen="${esc(who)}">
+      ${icon('star', 17, 'var(--deep)')}
+      <span class="composer-hint">Keep something${who === 'me' ? '' : ' about ' + esc(logWhoName(who))}</span>
+      <span class="composer-cam">${icon('camera', 17, 'var(--deep)')}</span>
+    </button>`;
+  }
+
+  const d = memDraft();
+  const k = memoryKind(d.kind) || MEMORY_KINDS[3];
+  const busy = store.memBusy;
+
+  return `
+  <div class="card composer">
+    <div class="chips" style="margin-bottom:9px">
+      ${MEMORY_KINDS.map((x) => `
+        <button class="chip${d.kind === x.id ? ' on' : ''}" data-memkind="${esc(x.id)}"
+          ${d.kind === x.id ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
+          >${icon(x.icon, 12, 'var(--deep)')} ${esc(x.label)}</button>`).join('')}
+    </div>
+
+    <textarea class="inp composer-in" id="memIn" data-memfield="text" rows="3"
+      placeholder="${esc(d.kind === 'words'
+        ? 'What did they say? Write it the way they said it.'
+        : 'What is this, and what do you want to remember about it?')}">${esc(d.text || '')}</textarea>
+
+    ${k.note ? `<p class="tiny" style="margin-top:7px">${esc(k.note)}</p>` : ''}
+
+    ${d.files.length ? `
+    <div class="memfiles draft n${Math.min(4, d.files.length)}">
+      ${d.files.map((f, i) => memFileBlock(f, i, true)).join('')}
+    </div>` : ''}
+
+    ${busy ? `
+    <div class="memup">
+      <div class="bar"><i style="width:${Math.max(4, busy)}%"></i></div>
+      <p class="tiny" style="margin-top:6px">Uploading, ${busy}%. It is safe to wait here.</p>
+    </div>` : ''}
+
+    ${store.memError ? `<p class="tiny" style="margin-top:8px;color:#A85A44">${esc(store.memError)}</p>` : ''}
+
+    <div class="composer-bar">
+      ${k.accept ? `
+      <button class="chip" data-mempick="1" ${busy || d.files.length >= MEMORY_MAX_FILES ? 'disabled' : ''}>
+        ${icon(k.icon, 13, 'var(--deep)')} Add ${esc(k.label.toLowerCase())}
+      </button>` : ''}
+      <span class="tiny" style="align-self:center">When did it happen</span>
+    </div>
+    <div style="margin-top:7px">${dateSelects('memory', d.at || ciToday(), 20, 0)}</div>
+
+    ${canBePublic(who) ? `
+    <div class="vispick" style="margin-top:10px">
+      ${POST_VISIBILITY.map((v) => `
+        <button class="chip${(d.visibility === v.id || (v.id === 'private' && d.visibility !== 'public')) ? ' on' : ''}"
+          data-memvisdraft="${esc(v.id)}"
+          ${(d.visibility === v.id || (v.id === 'private' && d.visibility !== 'public'))
+            ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
+          >${v.id === 'private' ? icon('shield', 12, 'var(--deep)') : icon('people', 12, 'var(--deep)')} ${esc(v.label)}</button>`).join('')}
+    </div>` : `
+    <p class="tiny" style="margin-top:10px">${icon('shield', 10, 'var(--sage)')} ${esc(MEMORY_PRIVACY_CHILD)}</p>`}
+
+    <div style="display:flex;gap:8px;margin-top:11px;justify-content:flex-end;flex-wrap:wrap">
+      <button class="chip" data-memclose="1">Cancel</button>
+      <button class="btn" data-memsave="1" ${busy ? 'disabled' : ''}
+        style="width:auto;flex:none;padding:10px 20px">Keep it</button>
+    </div>
+  </div>`;
+}
+
+/* ---------- THE SECTION ON A PROFILE ---------- */
+
+function memSection(who) {
+  const list = memoriesFor(memories(), who);
+  const show = store.memAll === who ? list : list.slice(0, 4);
+
+  return `
+  <p class="sect">Memories</p>
+  ${memComposer(who)}
+  ${show.map((m) => memCard(m)).join('')}
+  ${list.length > 4 ? `
+  <button class="btn ghost sm" style="width:100%" data-memall="${esc(store.memAll === who ? '' : who)}">
+    ${store.memAll === who ? 'Show fewer' : 'All ' + list.length + ', by year'}
+  </button>` : ''}
+  ${!list.length ? `
+  <p class="tiny" style="margin-top:2px">${esc(who === 'me' ? MEMORY_PRIVACY_MINE : MEMORY_EMPTY_CHILD)}</p>` : `
+  <p class="tiny" style="margin-top:2px">${esc(MEMORY_KEEP_NOTE)}</p>`}`;
+}
+
+/* ---------- A YEAR AGO TODAY, ON HOME ---------- */
+
+function memOnThisDay() {
+  const hits = onThisDay(memories(), ciToday());
+  if (!hits.length) return '';
+  if (store.memDayHidden === ciToday()) return '';
+  const m = hits[0];
+  const whoName = (m.who || 'me') === 'me' ? '' : logWhoName(m.who);
+
+  return `
+  <div class="card memday">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="grow">
+        <span class="eyebrow">${icon('star', 11, 'var(--sage)')} ${esc(yearsAgoLine(m.yearsAgo))}</span>
+        ${whoName ? `<span class="tiny" style="display:block;margin-top:2px">${esc(whoName)}</span>` : ''}
+      </span>
+      <button class="chip" data-memhide="1" aria-label="Hide for today"
+        style="min-height:28px;padding:4px 10px">Not now</button>
+    </div>
+    ${m.text ? `<p class="bodytext" style="margin-top:8px;white-space:pre-wrap">${esc(m.text)}</p>` : ''}
+    ${(m.files || []).length ? `
+    <div class="memfiles n1">${memFileBlock(m.files[0], 0, false)}</div>` : ''}
+    ${hits.length > 1 ? `
+    <p class="tiny" style="margin-top:8px">${hits.length - 1} more from this day.</p>` : ''}
   </div>`;
 }
 
@@ -28687,7 +29540,35 @@ function viewLog(c, typeId) {
         </div>
       </div>`;
     }
-    const inputType = f.type === 'number' || f.type === 'duration' ? 'number' : f.type === 'time' ? 'time' : 'text';
+    /* A duration asks for hours AND minutes. It used to be one box in
+       minutes, which is fine for a feed and ridiculous for a night's
+       sleep: nobody wants to type 600. Stored as total minutes either
+       way, so everything that reads it back is untouched. */
+    if (f.type === 'duration') {
+      const total = Number(val) || 0;
+      const hrs = Math.floor(total / 60);
+      const mins = total % 60;
+      return `
+      <div class="card flat" style="margin-bottom:8px">
+        <p class="eyebrow">${esc(f.label)}</p>
+        <div class="durrow">
+          <span class="durbit">
+            <input class="inp" type="number" min="0" inputmode="numeric"
+              data-durfield="${esc(f.id)}" data-durpart="h"
+              value="${total ? hrs : ''}" placeholder="0" />
+            <span class="tiny">hours</span>
+          </span>
+          <span class="durbit">
+            <input class="inp" type="number" min="0" max="59" inputmode="numeric"
+              data-durfield="${esc(f.id)}" data-durpart="m"
+              value="${total ? mins : ''}" placeholder="0" />
+            <span class="tiny">minutes</span>
+          </span>
+        </div>
+        ${f.hint ? `<p class="tiny" style="margin-top:8px">${esc(f.hint)}</p>` : ''}
+      </div>`;
+    }
+    const inputType = f.type === 'number' ? 'number' : f.type === 'time' ? 'time' : 'text';
     return `
     <div class="card flat" style="margin-bottom:8px">
       <p class="eyebrow">${esc(f.label)}${f.unit ? ' <span style="opacity:.6">' + esc(f.unit) + '</span>' : ''}${f.type === 'duration' ? ' <span style="opacity:.6">minutes</span>' : ''}</p>
@@ -29115,6 +29996,11 @@ function parentPayload() {
        not appear again on the laptop the same afternoon. */
     birthdaySeen: store.birthdaySeen || {},
     posts: store.posts || [],
+    /* Memories sync the same way posts do, so a photo added on the
+       phone is there on the laptop. The files themselves live in
+       Storage, this only carries the links and the words. */
+    memories: store.memories || [],
+    deletedMemoryIds: store.deletedMemoryIds || [],
     deletedChildIds: store.deletedChildIds || [],
     notDuplicates: store.notDuplicates || [],
     updatedAt: store.parentUpdatedAt || 0,
@@ -29147,6 +30033,45 @@ function isUntouchedSeed(k) {
     && (!k.lenses || !k.lenses.length)
     && (!k.logs || !k.logs.length)
     && (!k.routineInclude || !k.routineInclude.length);
+}
+
+/* Memories never lose to a stamp. A photo added on the phone while the
+   laptop was open has to survive, so the two lists are joined rather
+   than one replacing the other, and only something deliberately deleted
+   on either device stays gone. */
+function mergeMemories(local, remote, deletedIds) {
+  const dead = {};
+  (deletedIds || []).forEach((id) => { dead[id] = true; });
+  const out = [];
+  const seen = {};
+  const take = (list) => {
+    (list || []).forEach((m) => {
+      if (!m || !m.id) return;
+      if (dead[m.id]) return;
+      if (seen[m.id]) return;
+      seen[m.id] = true;
+      out.push(m);
+    });
+  };
+  take(local);
+  take(remote);
+  return sortMemories(out);
+}
+
+/* Both devices' tombstones, joined, so a delete on either one holds. */
+function mergeDeletedIds(local, remote) {
+  const out = [];
+  const seen = {};
+  const take = (list) => {
+    (list || []).forEach((id) => {
+      if (!id || seen[id]) return;
+      seen[id] = true;
+      out.push(id);
+    });
+  };
+  take(local);
+  take(remote);
+  return out;
 }
 
 /* THE MERGE, kept pure so it can be tested without a network.
@@ -29292,6 +30217,21 @@ async function cloudFirstSync() {
     store.birthdaySeen = (remoteUser.birthdaySeen && typeof remoteUser.birthdaySeen === 'object')
       ? remoteUser.birthdaySeen : {};
     store.parentUpdatedAt = remotePt;
+  }
+
+  /* Memories are handled outside the stamp comparison on purpose. They
+     are the one thing in here that cannot be recreated, so both sides
+     are kept and only a real delete removes anything. */
+  if (remoteUser) {
+    store.deletedMemoryIds = mergeDeletedIds(
+      store.deletedMemoryIds,
+      Array.isArray(remoteUser.deletedMemoryIds) ? remoteUser.deletedMemoryIds : []
+    );
+    store.memories = mergeMemories(
+      store.memories,
+      Array.isArray(remoteUser.memories) ? remoteUser.memories : [],
+      store.deletedMemoryIds
+    );
   }
 
   remoteKids.forEach((k) => { cloud.known[k.id] = contentKey(k); });
