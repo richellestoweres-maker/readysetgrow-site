@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-14 22:49">
+<meta name="rsg-build" content="2026-09-15 16:45">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -1034,7 +1034,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-14 22:49';
+const BUILD_STAMP = '2026-09-15 16:45';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -11628,7 +11628,11 @@ const LOG_TYPES = [
     label: 'Milestone',
     group: 'development',
     icon: 'star',
-    minMonths: 0, maxMonths: 240,
+    /* Milestone tracking runs to five years, so offering a milestone log
+       to somebody with a twelve year old was offering a thing that no
+       longer exists. Six years leaves a year of flex past the last
+       checkpoint. */
+    minMonths: 0, maxMonths: 72,
     summaryTemplate: '{what}',
     fields: [
       { id: 'what', label: 'What they did', type: 'text', required: true },
@@ -11741,8 +11745,15 @@ function getTimerLogTypes(months) {
  * A one line summary of a saved log, for the recent list.
  * Fills the type's template and quietly drops anything not filled in.
  */
-function summarizeLog(log) {
-  const type = getLogType(log && log.typeId);
+/**
+ * The one line a log reads as in a list.
+ *
+ * Takes an optional type, because the parent's own logs live in
+ * momLogs.js and this is the only thing here that needed to know they
+ * exist. Called without one it behaves exactly as it always did.
+ */
+function summarizeLog(log, knownType) {
+  const type = knownType || getLogType(log && log.typeId);
   if (!type) return '';
   const values = (log && log.values) || {};
   if (!type.summaryTemplate) return type.label;
@@ -16939,6 +16950,27 @@ const PARENT_STAGES = [
     help: 'How much, how often, and mixing safely. Fed is fed.' },
 ];
 
+/* Things she lives with that change what the app should offer her.
+   Ticking one turns on a log she would otherwise never be shown, and
+   nothing here is ever presented as a diagnosis or shared anywhere. */
+const PARENT_CONDITIONS = [
+  { id: 'diabetes', label: 'Diabetes',
+    help: 'Turns on a blood sugar log. The app never sets a target, your provider does.' },
+  { id: 'gestational', label: 'Gestational diabetes',
+    help: 'The same log, for the version that arrives with a pregnancy and usually leaves after it.' },
+  { id: 'bloodPressure', label: 'High blood pressure, or I have been asked to watch it',
+    help: 'Keeps the blood pressure log to hand rather than buried.' },
+  { id: 'thyroid', label: 'A thyroid condition',
+    help: 'Common after birth and easy to mistake for ordinary exhaustion.' },
+  { id: 'anemia', label: 'Low iron or anemia',
+    help: 'Also easy to mistake for ordinary exhaustion, and worth tracking alongside how you feel.' },
+];
+
+function hasCondition(sit, id) {
+  const s = sit || {};
+  return Array.isArray(s.conditions) && s.conditions.indexOf(id) !== -1;
+}
+
 /* Only asked once Expecting or Trying is ticked, and it is the most
    private question in the app, so it says so and offers a way out. */
 const CONCEIVE_PATHS = [
@@ -17817,6 +17849,407 @@ const MOM_NOW_DISCLAIMER =
   'Written to help you decide whether to call, not to tell you what is wrong. Nobody here is your ' +
   'doctor or your midwife, and calling them when it turns out to be nothing is exactly what they ' +
   'would rather you did.';
+
+/* ===== src/data/momLogs.js ===== */
+/**
+ * Ready Set Grow: Her Own Logs
+ * ------------------------------------------------------------------
+ * Everything in logTypes.js records something about a child. This file
+ * records something about HER, and it exists because she said the app
+ * was watching everybody in the house except the person holding it.
+ *
+ * THE SAME SHAPE, ON PURPOSE
+ * These use the field types from logTypes.js, so the same form code
+ * draws them and the same list code reads them back. A new log here is
+ * data, never new screens.
+ *
+ * WHAT DECIDES WHETHER SHE SEES ONE
+ * Child logs are gated by the child's age. Hers are gated by where she
+ * is, which is a different question: how long since she gave birth,
+ * whether she is feeding, whether she is expecting, and what she has
+ * told Settings she lives with. Somebody whose youngest is four should
+ * never be offered a bleeding log, and somebody who has never had
+ * diabetes should never be shown a blood sugar field.
+ *
+ * WHERE THE LINE IS
+ * The same line the rest of the app holds. These record what happened
+ * and when. They do not set targets, they do not interpret a number
+ * back at her, and they do not tell her whether something is wrong.
+ * Where a number has a widely used threshold worth knowing, such as
+ * 100.4 for a fever, it is written as a hint next to the field and
+ * attributed to what providers ask people to watch for, never
+ * presented as this app's finding.
+ */
+
+const MOM_LOG_GROUPS = {
+  feeding: { id: 'feeding', label: 'Feeding' },
+  health: { id: 'health', label: 'Your health' },
+  recovery: { id: 'recovery', label: 'After the birth' },
+  pregnancy: { id: 'pregnancy', label: 'Pregnancy' },
+};
+
+const MOM_LOG_TYPES = [
+
+  /* ---------------- FEEDING ---------------- */
+  {
+    id: 'mom-breastfeeding',
+    label: 'Breastfeeding',
+    group: 'feeding',
+    icon: 'heart',
+    shows: 'feeding',
+    hasTimer: true,
+    timerLabel: 'Feed timer',
+    summaryTemplate: '{side} for {duration}',
+    /* The thing nobody remembers at four in the morning, which is the
+       whole reason this log is worth opening. */
+    tracksAlternating: 'side',
+    fields: [
+      { id: 'side', label: 'Which side', type: 'choice', options: ['Left', 'Right', 'Both'], required: true },
+      { id: 'duration', label: 'How long', type: 'duration' },
+      { id: 'notes', label: 'Notes', type: 'text' },
+    ],
+  },
+  {
+    id: 'mom-pumping',
+    label: 'Pumping',
+    group: 'feeding',
+    icon: 'droplet',
+    shows: 'feeding',
+    hasTimer: true,
+    timerLabel: 'Pump timer',
+    summaryTemplate: '{amount} from {side}',
+    tracksAlternating: 'side',
+    fields: [
+      { id: 'side', label: 'Which side', type: 'choice', options: ['Left', 'Right', 'Both'] },
+      { id: 'amount', label: 'How much', type: 'number', unit: 'oz', step: 0.5 },
+      { id: 'duration', label: 'How long', type: 'duration' },
+      { id: 'notes', label: 'Notes', type: 'text' },
+    ],
+  },
+  {
+    id: 'mom-bottle',
+    label: 'Bottle given',
+    group: 'feeding',
+    icon: 'coffee',
+    shows: 'feeding',
+    summaryTemplate: '{amount} of {contents}',
+    fields: [
+      { id: 'amount', label: 'How much', type: 'number', unit: 'oz', step: 0.5 },
+      { id: 'contents', label: 'What was in it', type: 'choice',
+        options: ['Breast milk', 'Formula', 'Mixed'], required: true },
+      { id: 'notes', label: 'Notes', type: 'text' },
+    ],
+  },
+  {
+    id: 'mom-stash',
+    label: 'Milk put away',
+    group: 'feeding',
+    icon: 'award',
+    shows: 'feeding',
+    summaryTemplate: '{amount} to the {where}',
+    fields: [
+      { id: 'amount', label: 'How much', type: 'number', unit: 'oz', step: 0.5, required: true },
+      { id: 'where', label: 'Where it went', type: 'choice', options: ['Fridge', 'Freezer', 'Deep freezer'],
+        hint: 'Fresh milk keeps about four days in the fridge, and roughly six months in a freezer, '
+          + 'longer in a deep freezer. Label it with today so the oldest gets used first.' },
+      { id: 'notes', label: 'Notes', type: 'text' },
+    ],
+  },
+
+  /* ---------------- HER HEALTH ---------------- */
+  {
+    id: 'mom-mood',
+    label: 'How you are',
+    group: 'health',
+    icon: 'leaf',
+    shows: 'always',
+    summaryTemplate: '{mood}',
+    fields: [
+      { id: 'mood', label: 'Today, honestly', type: 'choice',
+        options: ['Good', 'All right', 'Flat', 'Anxious', 'Angry', 'Very low'], required: true },
+      { id: 'sleptWell', label: 'Did you get any real sleep', type: 'toggle' },
+      { id: 'notes', label: 'Anything you want to put down', type: 'text' },
+    ],
+  },
+  {
+    id: 'mom-bp',
+    label: 'Blood pressure',
+    group: 'health',
+    icon: 'activity',
+    shows: 'always',
+    summaryTemplate: '{systolic} over {diastolic}',
+    fields: [
+      { id: 'systolic', label: 'Top number', type: 'number', required: true },
+      { id: 'diastolic', label: 'Bottom number', type: 'number', required: true,
+        hint: 'Sitting down, feet flat, arm at heart height. After a birth, providers ask people to '
+          + 'call for 140 over 90 or higher twice twenty minutes apart, and to go in for 160 over 110.' },
+      { id: 'pulse', label: 'Pulse', type: 'number' },
+      { id: 'notes', label: 'Notes', type: 'text' },
+    ],
+  },
+  {
+    id: 'mom-sugar',
+    label: 'Blood sugar',
+    group: 'health',
+    icon: 'droplet',
+    shows: 'diabetes',
+    summaryTemplate: '{reading} {when}',
+    fields: [
+      { id: 'reading', label: 'Reading', type: 'number', unit: 'mg/dL', required: true },
+      { id: 'when', label: 'When you took it', type: 'choice',
+        options: ['Fasting', 'Before a meal', 'One hour after', 'Two hours after', 'Bedtime', 'Felt low'],
+        required: true,
+        hint: 'The app does not set a target. Your own numbers come from your provider, and they are '
+          + 'different in pregnancy than outside it.' },
+      { id: 'notes', label: 'What you ate, or anything else', type: 'text' },
+    ],
+  },
+  {
+    id: 'mom-medication',
+    label: 'Medication',
+    group: 'health',
+    icon: 'thermometer',
+    shows: 'always',
+    summaryTemplate: '{name} {dose}',
+    tracksInterval: true,
+    fields: [
+      { id: 'name', label: 'Which medicine', type: 'text', required: true,
+        hint: 'Use the same name each time and the app can tell you when you last took it.' },
+      { id: 'dose', label: 'How much you took', type: 'text' },
+      { id: 'reason', label: 'Why', type: 'choice',
+        options: ['Pain', 'Prescription', 'Iron', 'Prenatal or vitamin', 'Blood pressure', 'Other'] },
+      { id: 'notes', label: 'Notes', type: 'text' },
+    ],
+  },
+  {
+    id: 'mom-sleep',
+    label: 'Your sleep',
+    group: 'health',
+    icon: 'moon',
+    shows: 'always',
+    summaryTemplate: '{hours} hours, {quality}',
+    fields: [
+      { id: 'hours', label: 'Roughly how many hours', type: 'number', unit: 'hrs', step: 0.5 },
+      { id: 'quality', label: 'How was it', type: 'choice',
+        options: ['Solid', 'Broken', 'Barely any', 'None'] },
+      { id: 'notes', label: 'Notes', type: 'text' },
+    ],
+  },
+  {
+    id: 'mom-weight',
+    label: 'Weight',
+    group: 'health',
+    icon: 'chart',
+    shows: 'always',
+    summaryTemplate: '{weight}',
+    /* Deliberately bare. A number, a date, nothing else. No target, no
+       BMI, no chart implying a direction, and nothing anywhere that
+       comments on it. She asked for it quietly and that is how it
+       stays. */
+    fields: [
+      { id: 'weight', label: 'Weight', type: 'number', unit: 'lb', step: 0.1, required: true },
+      { id: 'notes', label: 'Notes', type: 'text' },
+    ],
+  },
+
+  /* ---------------- AFTER THE BIRTH ---------------- */
+  {
+    id: 'mom-bleeding',
+    label: 'Bleeding',
+    group: 'recovery',
+    icon: 'heart',
+    shows: 'postpartum',
+    summaryTemplate: '{how}',
+    fields: [
+      { id: 'how', label: 'How heavy', type: 'choice',
+        options: ['Spotting', 'Light', 'Moderate', 'Heavy', 'Soaked a pad in an hour'], required: true,
+        hint: 'Soaking a pad in an hour or less, or clots bigger than an egg, is the one to ring about '
+          + 'straight away rather than watch. It is not only a first week problem.' },
+      { id: 'clots', label: 'Any clots', type: 'choice', options: ['None', 'Small', 'Big'] },
+      { id: 'color', label: 'Colour', type: 'choice', options: ['Bright red', 'Pink', 'Brown'],
+        hint: 'Going back to bright red after it had slowed is worth mentioning.' },
+      { id: 'notes', label: 'Notes', type: 'text' },
+    ],
+  },
+  {
+    id: 'mom-pain',
+    label: 'Pain',
+    group: 'recovery',
+    icon: 'activity',
+    shows: 'postpartum',
+    summaryTemplate: '{where}, {level}',
+    fields: [
+      { id: 'where', label: 'Where', type: 'multi',
+        options: ['Cramping', 'Stitches or tear', 'Cesarean incision', 'Back', 'Chest or breast',
+          'Head', 'One leg'] },
+      { id: 'level', label: 'How bad', type: 'choice',
+        options: ['Background', 'Noticeable', 'Hard to ignore', 'Stopping my day'] },
+      { id: 'notes', label: 'Notes', type: 'text' },
+    ],
+  },
+  {
+    id: 'mom-incision',
+    label: 'Stitches or incision',
+    group: 'recovery',
+    icon: 'shield',
+    shows: 'postpartum',
+    summaryTemplate: '{look}',
+    fields: [
+      { id: 'look', label: 'How it looks today', type: 'choice',
+        options: ['Better than yesterday', 'The same', 'Worse'], required: true },
+      { id: 'signs', label: 'Anything from this list', type: 'multi',
+        options: ['Spreading redness', 'Hot to touch', 'Opening', 'Pus or a smell', 'More painful'],
+        hint: 'Any of these is a call today, not a wait and see.' },
+      { id: 'notes', label: 'Notes', type: 'text' },
+    ],
+  },
+  {
+    id: 'mom-temp',
+    label: 'Your temperature',
+    group: 'recovery',
+    icon: 'thermometer',
+    shows: 'year-one',
+    summaryTemplate: '{temp}',
+    fields: [
+      { id: 'temp', label: 'Temperature', type: 'number', unit: 'F', step: 0.1, required: true,
+        hint: 'After a birth, 100.4 or higher is treated as an infection until something else explains '
+          + 'it, and it is always worth a call.' },
+      { id: 'chills', label: 'Chills or body aches', type: 'toggle' },
+      { id: 'notes', label: 'Notes', type: 'text' },
+    ],
+  },
+
+  /* ---------------- PREGNANCY ---------------- */
+  {
+    id: 'mom-kicks',
+    label: 'Kick count',
+    group: 'pregnancy',
+    icon: 'star',
+    shows: 'pregnant',
+    hasTimer: true,
+    timerLabel: 'Kick count timer',
+    summaryTemplate: '{count} in {minutes} minutes',
+    fields: [
+      { id: 'count', label: 'Movements you counted', type: 'number', required: true },
+      { id: 'minutes', label: 'Over how long', type: 'duration',
+        hint: 'A common way providers suggest doing this is to lie on your side after a meal and count '
+          + 'to ten. Most people reach ten well inside two hours. What matters more than the number is '
+          + 'a change from what is normal for your baby, and that is always worth ringing about.' },
+      { id: 'notes', label: 'Notes', type: 'text' },
+    ],
+  },
+  {
+    id: 'mom-contraction',
+    label: 'Contraction',
+    group: 'pregnancy',
+    icon: 'clock',
+    shows: 'pregnant',
+    hasTimer: true,
+    timerLabel: 'Contraction timer',
+    summaryTemplate: 'Lasted {seconds}s',
+    fields: [
+      { id: 'seconds', label: 'How long it lasted', type: 'number', unit: 'seconds', required: true },
+      { id: 'strength', label: 'How strong', type: 'choice',
+        options: ['Mild', 'Moderate', 'Strong', 'Could not talk through it'] },
+      { id: 'notes', label: 'Notes', type: 'text' },
+    ],
+  },
+  {
+    id: 'mom-appointment',
+    label: 'Appointment',
+    group: 'pregnancy',
+    icon: 'calendar',
+    shows: 'pregnant',
+    summaryTemplate: '{what}',
+    fields: [
+      { id: 'what', label: 'What they said', type: 'text', required: true },
+      { id: 'bp', label: 'Blood pressure they took', type: 'text' },
+      { id: 'weight', label: 'Weight they took', type: 'text' },
+      { id: 'next', label: 'Next one', type: 'text' },
+      { id: 'ask', label: 'To ask next time', type: 'text',
+        hint: 'The questions you think of at two in the morning and forget in the room.' },
+    ],
+  },
+];
+
+/* ------------------------------------------------------------------
+ * HER OWN CHECK IN
+ *
+ * The children each get one. She did not have one, which said
+ * something the app did not mean to say.
+ *
+ * Same rule as theirs: every question is about the DAY, not about her.
+ * It is not a symptom tracker and it never scores her.
+ * ------------------------------------------------------------------ */
+
+const MOM_CHECKIN = {
+  id: 'mom',
+  title: 'How today went for you',
+  intro: 'Thirty seconds, about the day rather than about you.',
+  rows: [
+    { id: 'day', label: 'How was today', options: [
+      { id: 'good', label: 'Good' },
+      { id: 'mixed', label: 'A bit of both' },
+      { id: 'hard', label: 'Hard' },
+    ] },
+    { id: 'self', label: 'Did you get anything that was just yours', options: [
+      { id: 'good', label: 'Yes' },
+      { id: 'mixed', label: 'A few minutes' },
+      { id: 'hard', label: 'None' },
+    ] },
+    { id: 'help', label: 'Did you have help', options: [
+      { id: 'good', label: 'Plenty' },
+      { id: 'mixed', label: 'Some' },
+      { id: 'hard', label: 'None' },
+    ] },
+  ],
+  note: 'Anything you want to remember about today',
+};
+
+/* ------------------------------------------------------------------
+ * WHAT SHE SEES
+ * ------------------------------------------------------------------ */
+
+/**
+ * shape describes where she is:
+ *   { monthsSinceBirth, feeding, pregnant, conditions: [] }
+ */
+function momLogShows(shows, shape) {
+  const s = shape || {};
+  const m = s.monthsSinceBirth;
+  const cond = Array.isArray(s.conditions) ? s.conditions : [];
+  if (shows === 'always') return true;
+  if (shows === 'feeding') return !!s.feeding;
+  if (shows === 'pregnant') return !!s.pregnant;
+  if (shows === 'postpartum') return m != null && m < 3;
+  if (shows === 'year-one') return m != null && m < 12;
+  if (shows === 'diabetes') {
+    return cond.indexOf('diabetes') !== -1 || cond.indexOf('gestational') !== -1;
+  }
+  return false;
+}
+
+function getMomLogTypes(shape) {
+  return MOM_LOG_TYPES.filter((t) => momLogShows(t.shows, shape));
+}
+
+function getMomLogType(id) {
+  return MOM_LOG_TYPES.filter((t) => t.id === id)[0] || null;
+}
+
+function getMomLogGroups(shape) {
+  const out = [];
+  Object.keys(MOM_LOG_GROUPS).forEach((g) => {
+    const items = getMomLogTypes(shape).filter((t) => t.group === g);
+    if (items.length) out.push({ id: g, label: MOM_LOG_GROUPS[g].label, items: items });
+  });
+  return out;
+}
+
+const MOM_LOG_IDS = MOM_LOG_TYPES.map((t) => t.id);
+
+const MOM_LOG_NOTE = 'Yours, and only yours. Nothing here is ever part of a post, a profile '
+  + 'anybody else can see, or a child record.';
 
 /* ===== src/data/cycle.js ===== */
 /**
@@ -20257,6 +20690,7 @@ function render() {
   else if (v && v.type === 'infection') html = viewInfection(v.id);
   else if (v && v.type === 'screen' && v.id === 'now') html = screenNow(c);
   else if (v && v.type === 'screen' && v.id === 'momnow') html = screenMomNow();
+  else if (v && v.type === 'screen' && v.id === 'momlogs') html = screenMomLogs();
   else if (v && v.type === 'momnow') html = screenMomNowOne(v.id);
   else if (state.tab === 'welcome') html = screenWelcome(c);
   else if (state.tab === 'settings') html = screenSettings();
@@ -20455,6 +20889,10 @@ function initControls() {
       if (saveBtn) saveBtn.disabled = !postHasContent();
       saveStore();
     }
+    else if (e.target.matches('[data-momcinote]')) {
+      momCiDraft().note = e.target.value;
+      saveStore();
+    }
     else if (e.target.matches('[data-cinote]')) {
       const d = ciEnsureDraft();
       if (d) { d.note = e.target.value; saveStore(); }
@@ -20570,7 +21008,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -20664,6 +21102,18 @@ function initControls() {
       else if (how === 'emojis') { store.emojiOpen = !store.emojiOpen; flushStore(); }
       else if (how === 'emoji') { postEmoji(t.dataset.ch); return; }
       render();
+      return;
+    } else if (t.dataset.momci) {
+      const how = t.dataset.momci;
+      if (how === 'open') { store.momCiOpen = true; momCiDraft(); flushStore(); }
+      else if (how === 'set') { momCiSet(t.dataset.row, t.dataset.val); return; }
+      else if (how === 'save') { momCiSave(); return; }
+      else if (how === 'cancel') { store.momCi = null; store.momCiOpen = false; flushStore(); }
+    } else if (t.dataset.delmomlog) {
+      momLogDelete(t.dataset.delmomlog);
+      return;
+    } else if (t.dataset.momexport) {
+      momExport();
       return;
     } else if (t.dataset.cycle) {
       const how = t.dataset.cycle;
@@ -20779,6 +21229,7 @@ function initControls() {
       if (i === -1) arr.push(t.dataset.val); else arr.splice(i, 1);
       d.values[f] = arr;
     } else if (t.dataset.logsave) {
+      if (isMomLog(t.dataset.logsave)) { momLogSave(t.dataset.logsave); return; }
       saveLog(t.dataset.logsave);
     } else if (t.dataset.dellog) {
       const k = activeChild();
@@ -25231,6 +25682,7 @@ function normalizeSituation(sit) {
     path: typeof s.path === 'string' ? s.path : '',
     roles: Array.isArray(s.roles) ? s.roles : [],
     support: Array.isArray(s.support) ? s.support : [],
+    conditions: Array.isArray(s.conditions) ? s.conditions : [],
   };
 }
 
@@ -25347,6 +25799,15 @@ function situationBlock() {
   <div class="card" style="margin-bottom:10px">
     ${SUPPORT_SHAPE.map((r) => tickRow(sit.support.indexOf(r.id) !== -1, r.label, '',
       `data-sit="support" data-id="${esc(r.id)}"`)).join('')}
+  </div>
+
+  <p class="sect">Anything you live with</p>
+  <p class="tiny" style="margin:-2px 0 8px">Ticking one turns on a log you would otherwise never be
+  shown. None of it is a diagnosis and none of it goes anywhere.</p>
+  <div class="card" style="margin-bottom:10px">
+    ${PARENT_CONDITIONS.map((r) => tickRow(
+      (sit.conditions || []).indexOf(r.id) !== -1, r.label, r.help,
+      `data-sit="conditions" data-id="${esc(r.id)}"`)).join('')}
   </div>
 
   <p class="tiny" style="margin-top:2px">${icon('shield', 11, 'var(--sage)')} ${esc(SITUATION_PRIVACY)}</p>`;
@@ -25997,6 +26458,10 @@ function screenHome(c) {
       ${icon('chev', 17, 'rgba(255,255,255,.8)')}
     </button>
 
+    <p class="sect">Logs for you</p>
+    ${momCheckinCard()}
+    ${momLogCard()}
+
     <p class="sect">Your cycle</p>
     ${cycleWidget()}
 
@@ -26031,6 +26496,279 @@ function screenHome(c) {
     </div>` : ''}
   </div>`;
 }
+
+/* ---------- HER OWN CHECK IN ----------
+
+   Each child had one. She did not, which said something the app did
+   not mean to say. Same shape as theirs, same rule: every question is
+   about the DAY rather than about her, and it never scores her. */
+
+function momCheckins() {
+  if (!store.parent.checkins || typeof store.parent.checkins !== 'object') store.parent.checkins = {};
+  return store.parent.checkins;
+}
+
+function momCiSaved(day) {
+  return momCheckins()[day || ciToday()] || null;
+}
+
+function momCiDraft() {
+  if (!store.momCi || typeof store.momCi !== 'object') {
+    const saved = momCiSaved();
+    store.momCi = saved ? JSON.parse(JSON.stringify(saved)) : {};
+  }
+  return store.momCi;
+}
+
+function momCiSet(rowId, val) {
+  const d = momCiDraft();
+  d[rowId] = d[rowId] === val ? '' : val;
+  flushStore();
+  render();
+}
+
+function momCiSave() {
+  const d = momCiDraft();
+  const any = MOM_CHECKIN.rows.some((r) => d[r.id]);
+  if (!any) return;
+  momCheckins()[ciToday()] = JSON.parse(JSON.stringify(d));
+  /* Kept to half a year, the same as the children's, so the record
+     stays useful without growing forever. */
+  const keys = Object.keys(momCheckins()).sort().reverse();
+  keys.slice(CHECKIN_KEEP_DAYS).forEach((k) => { delete store.parent.checkins[k]; });
+  store.momCi = null;
+  store.momCiOpen = false;
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+/* How the last stretch of days has gone, for the gentle line. */
+function momCiRun() {
+  const all = momCheckins();
+  const days = Object.keys(all).sort().reverse().slice(0, 3);
+  if (days.length < 3) return null;
+  const hard = days.every((d) => {
+    const v = all[d] || {};
+    const vals = MOM_CHECKIN.rows.map((r) => v[r.id]).filter(Boolean);
+    return vals.length && vals.filter((x) => x === 'hard').length >= Math.ceil(vals.length / 2);
+  });
+  return hard ? 'hard' : null;
+}
+
+function momCheckinCard() {
+  const saved = momCiSaved();
+  const open = store.momCiOpen && !saved;
+  const run = momCiRun();
+
+  if (saved && !store.momCiOpen) {
+    const said = MOM_CHECKIN.rows.map((r) => {
+      const v = saved[r.id];
+      if (!v) return null;
+      const opt = r.options.filter((o) => o.id === v)[0];
+      return opt ? opt.label : null;
+    }).filter(Boolean);
+    return `
+    <div class="card">
+      <p class="eyebrow">${icon('check', 11, 'var(--sage)')} You checked in today</p>
+      <p class="bodytext" style="margin-top:5px">${esc(said.join(', '))}</p>
+      ${run === 'hard' ? `
+      <p class="tiny" style="margin-top:8px">${icon('leaf', 10, 'var(--sage)')}
+        That is a few hard days close together. Nothing about that is a verdict on you, and it is the
+        kind of thing worth saying out loud to somebody, whether that is your provider or a person who
+        loves you.</p>` : ''}
+    </div>`;
+  }
+
+  if (!open) {
+    return `
+    <button class="lrow" data-momci="open">
+      <span class="licon">${icon('leaf', 18)}</span>
+      <span class="grow">
+        <span style="display:block;font-size:14.5px;font-weight:600;color:var(--ink)">${esc(MOM_CHECKIN.title)}</span>
+        <span class="tiny" style="display:block;margin-top:2px">${esc(MOM_CHECKIN.intro)}</span>
+      </span>
+      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+    </button>`;
+  }
+
+  const d = momCiDraft();
+  return `
+  <div class="card">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(MOM_CHECKIN.title)}</p>
+    ${MOM_CHECKIN.rows.map((r) => `
+      <div class="cirow">
+        <p class="cirow-q">${esc(r.label)}</p>
+        <div class="chips" style="margin-top:7px">
+          ${r.options.map((o) => `
+            <button class="chip${d[r.id] === o.id ? ' on' : ''}" data-momci="set"
+              data-row="${esc(r.id)}" data-val="${esc(o.id)}"
+              ${d[r.id] === o.id ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
+              aria-pressed="${d[r.id] === o.id}">${esc(o.label)}</button>`).join('')}
+        </div>
+      </div>`).join('')}
+    <div class="cirow">
+      <p class="cirow-q">${esc(MOM_CHECKIN.note)}</p>
+      <input class="inp" type="text" data-momcinote="1" id="momCiNote"
+        value="${esc(d.note || '')}" autocomplete="off" style="margin-top:7px;width:100%" />
+    </div>
+    <div style="display:flex;gap:8px;margin-top:11px">
+      <button class="btn" data-momci="save">${icon('check', 15, '#fff')} Save</button>
+      <button class="btn ghost" data-momci="cancel">Cancel</button>
+    </div>
+  </div>`;
+}
+
+
+/* The card on Home, and the screen behind it. */
+function momLogCard() {
+  const shape = momLogShape();
+  const groups = getMomLogGroups(shape);
+  if (!groups.length) return '';
+  const today = ciToday();
+  const todays = momLogs().filter((l) => String(l.at).slice(0, 10) === today);
+  const feedLast = lastSide('mom-breastfeeding') || lastSide('mom-pumping');
+
+  /* The four most useful for where she is, flattened out of the groups
+     so the common ones are one tap rather than two. */
+  const quick = groups.reduce((all, g) => all.concat(g.items), []).slice(0, 4);
+
+  return `
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="grow">
+        <span class="eyebrow" style="display:block">${icon('leaf', 11, 'var(--sage)')} For you</span>
+        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink);margin-top:2px">
+          ${todays.length
+            ? esc(todays.length + ' thing' + (todays.length === 1 ? '' : 's') + ' logged today')
+            : 'Nothing logged today'}
+        </span>
+      </span>
+    </div>
+
+    ${feedLast ? `
+    <p class="tiny" style="margin-top:7px">
+      ${icon('clock', 10, 'var(--sage)')} Last side was <strong style="color:var(--ink)">${esc(feedLast.side)}</strong>,
+      at ${esc(clockOf(feedLast.at))}.
+    </p>` : ''}
+
+    <div class="chips" style="margin-top:10px">
+      ${quick.map((t) => `
+        <button class="chip" data-go="log" data-id="${esc(t.id)}">
+          ${icon(t.icon, 12, 'var(--deep)')} ${esc(t.label)}
+        </button>`).join('')}
+    </div>
+    <button class="btn ghost sm" style="width:100%;margin-top:9px" data-go="screen" data-id="momlogs">
+      Everything you can log
+    </button>
+  </div>`;
+}
+
+function screenMomLogs() {
+  const shape = momLogShape();
+  const groups = getMomLogGroups(shape);
+  const logs = momLogs();
+  const byDay = {};
+  logs.forEach((l) => {
+    const d = String(l.at).slice(0, 10);
+    if (!byDay[d]) byDay[d] = [];
+    byDay[d].push(l);
+  });
+  const days = Object.keys(byDay).sort().reverse().slice(0, 30);
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title" style="margin-top:6px">Your logs</h1>
+    <p class="sub">${esc(MOM_LOG_NOTE)}</p>
+  </div>
+  <div class="sc">
+
+    ${groups.map((g) => `
+      <p class="sect">${esc(g.label)}</p>
+      ${g.items.map((t) => `
+        <button class="lrow" data-go="log" data-id="${esc(t.id)}">
+          <span class="licon">${icon(t.icon, 18)}</span>
+          <span class="grow">
+            <span style="display:block;font-size:14.5px;font-weight:600;color:var(--ink)">${esc(t.label)}</span>
+            ${t.tracksAlternating && lastSide(t.id) ? `
+              <span class="tiny" style="display:block;margin-top:2px">
+                Last was ${esc(lastSide(t.id).side)}, ${esc(clockOf(lastSide(t.id).at))}</span>` : ''}
+          </span>
+          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+        </button>`).join('')}
+    `).join('')}
+
+    ${days.length ? `
+    <p class="sect">What you have logged</p>
+    ${days.map((d) => `
+      <p class="eyebrow" style="margin:12px 0 6px">${esc(cycleDateLabelWithYear(d))}</p>
+      ${byDay[d].map((l) => {
+        const t = anyLogType(l.typeId);
+        return `
+        <div class="card flat" style="display:flex;gap:10px;align-items:center;margin-bottom:7px">
+          <span class="grow">
+            <span style="display:block;font-size:13.5px;font-weight:600;color:var(--ink)">${esc(t ? t.label : 'Log')}</span>
+            <span class="tiny" style="display:block;margin-top:2px">${esc(clockOf(l.at))}${summarizeLog(l, t) ? ' &middot; ' + esc(summarizeLog(l, t)) : ''}</span>
+            ${l.values && l.values.notes ? `<span class="tiny" style="display:block;margin-top:3px">${esc(l.values.notes)}</span>` : ''}
+          </span>
+          <button class="chip" data-delmomlog="${esc(l.id)}" style="min-height:30px;padding:5px 10px">Remove</button>
+        </div>`;
+      }).join('')}
+    `).join('')}
+
+    <p class="sect">For your provider</p>
+    <div class="card">
+      <p class="bodytext">A plain list of everything above with dates and times, as a text file you can
+      print, email, or read off your phone in the room. A blood pressure trend or a record of bleeding
+      is exactly what gets asked for and never remembered.</p>
+      <button class="btn ghost sm" style="width:100%;margin-top:11px" data-momexport="1">
+        ${icon('export', 14, 'var(--deep)')} Save it as a file
+      </button>
+    </div>` : `
+    <p class="tiny" style="text-align:center;padding:10px 0">Nothing logged yet.</p>`}
+  </div>`;
+}
+
+/* The same plain text export the children have, for her. */
+function momExport() {
+  const lines = [];
+  lines.push('Logs for ' + (store.parent.name || 'me'));
+  lines.push('Exported ' + cycleDateLabelWithYear(ciToday()));
+  lines.push('');
+  momLogs().slice().forEach((l) => {
+    const t = anyLogType(l.typeId);
+    const d = new Date(l.at);
+    const day = isNaN(d.getTime()) ? String(l.at).slice(0, 10) : d.toISOString().slice(0, 10);
+    const bits = [];
+    Object.keys(l.values || {}).forEach((k) => {
+      const v = l.values[k];
+      if (v == null || v === '' || (Array.isArray(v) && !v.length)) return;
+      bits.push(k + ': ' + (Array.isArray(v) ? v.join(', ') : v));
+    });
+    lines.push(day + '  ' + clockOf(l.at) + '  ' + (t ? t.label : l.typeId)
+      + (summarizeLog(l, t) ? ' - ' + summarizeLog(l, t) : ''));
+    if (bits.length) lines.push('    ' + bits.join('  |  '));
+  });
+  lines.push('');
+  lines.push('Recorded in Ready Set Grow by the person it is about. Nothing in it was reviewed');
+  lines.push('by a clinician and nothing in it is a diagnosis.');
+  try {
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (store.parent.name || 'my').replace(/[^\w-]+/g, '-').toLowerCase() + '-logs.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  } catch (err) {
+    /* A blocked download is not worth taking the screen down for. */
+  }
+}
+
 
 /* =================================================================
    RIGHT NOW, FOR HER
@@ -26701,6 +27439,93 @@ const LOG_ICON = {
 };
 function logIcon(name) { return LOG_ICON[name] || 'note'; }
 
+/* =================================================================
+   HER OWN LOGS
+
+   The same machinery as the child logs, pointed at her record instead
+   of a child's. What she is offered is decided by where she is rather
+   than by anybody's age, which is what momShape() already works out
+   for the mother facing Right Now.
+   ================================================================= */
+
+function momLogShape() {
+  const sit = situation();
+  return Object.assign(momShape(), { conditions: sit.conditions || [] });
+}
+
+function momLogs() {
+  if (!Array.isArray(store.parent.logs)) store.parent.logs = [];
+  return store.parent.logs;
+}
+
+/* One lookup for both sets, so the form and the list do not each need
+   to know whose log they are drawing. */
+function anyLogType(id) {
+  return getMomLogType(id) || getLogType(id);
+}
+
+function isMomLog(id) {
+  return !!getMomLogType(id);
+}
+
+/* The last side she fed or pumped from, which is the question the
+   whole feeding log exists to answer at four in the morning. */
+function lastSide(typeId) {
+  const rows = momLogs().filter((l) => l.typeId === typeId && l.values && l.values.side);
+  if (!rows.length) return null;
+  const v = rows[0];
+  return { side: v.values.side, at: v.at };
+}
+
+function momLogSave(typeId) {
+  const t = getMomLogType(typeId);
+  if (!t) return;
+  const d = state.logDraft && state.logDraft.typeId === typeId ? state.logDraft : null;
+  const values = Object.assign({}, (d && d.values) || {});
+  const filled = Object.keys(values).some((key) => {
+    const v = values[key];
+    return Array.isArray(v) ? v.length > 0 : v !== '' && v != null;
+  });
+  if (!filled) return;
+
+  const logs = momLogs();
+  logs.unshift({
+    id: 'm' + Date.now() + Math.floor(Math.random() * 1000),
+    typeId: typeId,
+    at: new Date().toISOString(),
+    values: values,
+  });
+  if (logs.length > 500) logs.length = 500;
+  state.logDraft = { typeId: null, values: {} };
+  store.logDraft = { typeId: null, values: {} };
+  store.parentUpdatedAt = Date.now();
+  state.view = { type: 'screen', id: 'momlogs' };
+  flushStore();
+  render();
+}
+
+function momLogDelete(id) {
+  store.parent.logs = momLogs().filter((l) => l.id !== id);
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+/* When she last took the same medicine. Timing only, never dose. */
+function momMedLine(name) {
+  const n = String(name || '').trim().toLowerCase();
+  if (!n) return null;
+  const last = momLogs().filter((l) => l.typeId === 'mom-medication'
+    && String((l.values || {}).name || '').trim().toLowerCase() === n)[0];
+  if (!last) return null;
+  const mins = Math.round((Date.now() - new Date(last.at).getTime()) / 60000);
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  const ago = h ? h + ' hour' + (h === 1 ? '' : 's') + (m ? ' and ' + m + ' minutes' : '') : m + ' minutes';
+  return { text: 'You last took ' + String(last.values.name) + ' ' + ago + ' ago, at ' + clockOf(last.at) + '.',
+    note: 'Timing only. How much to take is on the label or from whoever prescribed it.' };
+}
+
 function childLogs() {
   const k = activeChild();
   if (!k) return [];
@@ -26837,11 +27662,14 @@ function screenLogs(c) {
 }
 
 function viewLog(c, typeId) {
-  const t = getLogType(typeId);
+  const t = anyLogType(typeId);
   if (!t) return emptyScreen('That log could not be found.');
+  const mine = isMomLog(typeId);
   const d = state.logDraft && state.logDraft.typeId === typeId ? state.logDraft : { typeId: typeId, values: {} };
   const v = d.values || {};
-  const med = typeId === 'medication' ? medDueLine(v.name || '') : null;
+  const med = typeId === 'medication' ? medDueLine(v.name || '')
+    : typeId === 'mom-medication' ? momMedLine(v.name || '') : null;
+  const last = mine && t.tracksAlternating ? lastSide(typeId) : null;
 
   const field = (f) => {
     const id = 'lf_' + esc(f.id);
@@ -26894,15 +27722,25 @@ function viewLog(c, typeId) {
 
   return `
   <div class="sc-head">
-    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
-    <p class="eyebrow" style="margin-top:6px">New log</p>
+    <button class="back" data-back="${mine ? 'momlogs' : '1'}">${icon('back', 15, 'var(--deep)')} Back</button>
+    <p class="eyebrow" style="margin-top:6px">${mine ? 'For you' : 'New log'}</p>
     <h1 class="title sm">${esc(t.label)}</h1>
   </div>
   <div class="sc">
 
+    ${last ? `
+    <div class="card" style="border-left:3px solid var(--sage)">
+      <p class="eyebrow">${icon('clock', 11, 'var(--sage)')} Last time</p>
+      <p class="bodytext" style="margin-top:5px">
+        <strong style="color:var(--ink)">${esc(last.side)}</strong>, at ${esc(clockOf(last.at))}.
+        ${last.side === 'Left' ? 'So this one is the right.'
+          : last.side === 'Right' ? 'So this one is the left.' : ''}
+      </p>
+    </div>` : ''}
+
     ${med ? `
-    <div class="card" style="border-left:3px solid ${med.due ? 'var(--sage)' : 'var(--attention)'}">
-      <p class="eyebrow">${esc(med.label)} timing</p>
+    <div class="card" style="border-left:3px solid ${med.due === false ? 'var(--attention)' : 'var(--sage)'}">
+      <p class="eyebrow">${esc(med.label || 'Medication')} timing</p>
       <p class="bodytext" style="margin-top:5px">${esc(med.text)}</p>
       <p class="tiny" style="margin-top:8px">${esc(med.note)}</p>
     </div>` : ''}
@@ -26919,7 +27757,9 @@ function viewLog(c, typeId) {
       Save this log
     </button>
     <p class="tiny" style="text-align:center;margin-top:9px">
-      Saved with the time right now. It stays on this device, under ${esc(state.name || 'this child')}.
+      ${mine
+        ? esc(MOM_LOG_NOTE)
+        : 'Saved with the time right now. It stays on this device, under ' + esc(state.name || 'this child') + '.'}
     </p>
   </div>`;
 }
