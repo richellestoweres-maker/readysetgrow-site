@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-15 16:45">
+<meta name="rsg-build" content="2026-09-15 17:32">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -85,6 +85,22 @@ button.cal-d:hover{box-shadow:inset 0 0 0 2px var(--leaf)}
 .cychrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line2)}
 .cychrow:last-child{border-bottom:0}
 .cychdate{display:block;font-size:13.5px;font-weight:600;color:var(--ink)}
+
+/* Looking back: a month with weight on the busy days, one day's rows,
+   and a plain line for a number that repeats. */
+.cal-d.has1{background:#EDF0E6}
+.cal-d.has2{background:#DCE5CE}
+.cal-d.has3{background:#C7D6B4}
+.cal-d.picked{box-shadow:inset 0 0 0 2px var(--deep);font-weight:700}
+button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:inherit}
+.callegend i.k-has1{background:#EDF0E6}
+.callegend i.k-has2{background:#DCE5CE}
+.callegend i.k-has3{background:#C7D6B4}
+.dayrow{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line2)}
+.dayrow:last-child{border-bottom:0}
+.dayrow-t{flex:0 0 62px;font-size:11.5px;color:var(--muted);padding-top:2px}
+.dayrow-l{display:block;font-size:13.5px;font-weight:600;color:var(--ink)}
+.spark{width:100%;height:44px;margin-top:10px;display:block}
 
 /* brand wordmark, drawn rather than an image so it stays crisp */
 .mark{display:flex;flex-direction:column;align-items:center;position:relative;z-index:2}
@@ -1034,7 +1050,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-15 16:45';
+const BUILD_STAMP = '2026-09-15 17:32';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -17882,6 +17898,7 @@ const MOM_NOW_DISCLAIMER =
  */
 
 const MOM_LOG_GROUPS = {
+  yourself: { id: 'yourself', label: 'For you' },
   feeding: { id: 'feeding', label: 'Feeding' },
   health: { id: 'health', label: 'Your health' },
   recovery: { id: 'recovery', label: 'After the birth' },
@@ -17889,6 +17906,74 @@ const MOM_LOG_GROUPS = {
 };
 
 const MOM_LOG_TYPES = [
+
+  /* ---------------- FOR YOU ----------------
+     Not health tracking. These are the things that get dropped first
+     when somebody is looking after everybody else, and the only reason
+     to record them is so she can look back and see that she did get
+     outside, or read something, or have twenty minutes that were hers.
+     Nothing here has a target and nothing here is ever counted against
+     her for missing a day. */
+  {
+    id: 'mom-moved',
+    label: 'Moved your body',
+    group: 'yourself',
+    icon: 'activity',
+    shows: 'always',
+    summaryTemplate: '{what}, {minutes}',
+    fields: [
+      { id: 'what', label: 'What you did', type: 'choice',
+        options: ['A walk', 'A workout', 'Stretching or yoga', 'Dancing about the kitchen',
+          'Carrying a child up a hill', 'Something else'], required: true,
+        hint: 'Pushing a stroller round the block counts. It was never about the gym.' },
+      { id: 'minutes', label: 'Roughly how long', type: 'duration' },
+      { id: 'notes', label: 'Notes', type: 'text' },
+    ],
+  },
+  {
+    id: 'mom-outside',
+    label: 'Got outside',
+    group: 'yourself',
+    icon: 'leaf',
+    shows: 'always',
+    summaryTemplate: '{where}, {minutes}',
+    fields: [
+      { id: 'where', label: 'Where', type: 'choice',
+        options: ['The garden or yard', 'A walk', 'A park', 'Water', 'Just the doorstep'], required: true },
+      { id: 'minutes', label: 'Roughly how long', type: 'duration' },
+      { id: 'withKids', label: 'With the children', type: 'toggle' },
+      { id: 'notes', label: 'Notes', type: 'text' },
+    ],
+  },
+  {
+    id: 'mom-read',
+    label: 'Read something',
+    group: 'yourself',
+    icon: 'book',
+    shows: 'always',
+    summaryTemplate: '{what}',
+    fields: [
+      { id: 'what', label: 'What you read', type: 'text', required: true,
+        placeholder: 'A book, an article, two pages before you fell asleep' },
+      { id: 'minutes', label: 'Roughly how long', type: 'duration' },
+      { id: 'notes', label: 'Notes', type: 'text' },
+    ],
+  },
+  {
+    id: 'mom-forme',
+    label: 'Something for you',
+    group: 'yourself',
+    icon: 'star',
+    shows: 'always',
+    summaryTemplate: '{what}',
+    fields: [
+      { id: 'what', label: 'What it was', type: 'choice',
+        options: ['A shower on my own', 'Saw a friend', 'A hobby', 'Rested', 'Ate a proper meal',
+          'A hot drink while it was still hot', 'Something else'], required: true },
+      { id: 'minutes', label: 'Roughly how long', type: 'duration' },
+      { id: 'notes', label: 'Notes', type: 'text' },
+    ],
+  },
 
   /* ---------------- FEEDING ---------------- */
   {
@@ -20698,7 +20783,7 @@ function render() {
      her here, a child's circle on Home puts them here. */
   else if (state.tab === 'profile') html = screenProfileTab(c);
   else if (state.tab === 'community') html = screenCommunity(c);
-  else if (state.tab === 'logs') html = activeChild() ? screenLogs(c) : screenPickChild('Logs');
+  else if (state.tab === 'logs') html = screenLogsHub(c);
   /* Home is hers and never asks which child you mean, which is the whole
      point of it being the middle tab. */
   else html = screenHome(c);
@@ -21008,7 +21093,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -21103,6 +21188,20 @@ function initControls() {
       else if (how === 'emoji') { postEmoji(t.dataset.ch); return; }
       render();
       return;
+    } else if (t.dataset.logwho) {
+      store.logWho = t.dataset.logwho;
+      /* Opening somebody's logs makes them the one the rest of the app
+         is talking about, so a tap on a log lands on the right record. */
+      if (t.dataset.logwho !== 'me') selectChild(t.dataset.logwho);
+      store.logDay = null;
+      store.logCal = 0;
+      flushStore();
+    } else if (t.dataset.logday) {
+      store.logDay = t.dataset.logday;
+      flushStore();
+    } else if (t.dataset.logcal) {
+      store.logCal = (store.logCal || 0) + Number(t.dataset.logcal);
+      flushStore();
     } else if (t.dataset.momci) {
       const how = t.dataset.momci;
       if (how === 'open') { store.momCiOpen = true; momCiDraft(); flushStore(); }
@@ -27499,7 +27598,12 @@ function momLogSave(typeId) {
   state.logDraft = { typeId: null, values: {} };
   store.logDraft = { typeId: null, values: {} };
   store.parentUpdatedAt = Date.now();
-  state.view = { type: 'screen', id: 'momlogs' };
+  /* Back to where she can see it, rather than to a dead end. */
+  store.logWho = 'me';
+  store.logDay = ciToday();
+  store.logCal = 0;
+  state.view = null;
+  state.tab = 'logs';
   flushStore();
   render();
 }
@@ -27592,6 +27696,305 @@ function medDueLine(name) {
     note: info.note + (count >= info.maxPer24h ? ' That is ' + count + ' in the last 24 hours, which is at or over the usual cap.' : ''),
     due: ok,
   };
+}
+
+/* =================================================================
+   LOOKING BACK
+
+   Logging is only half of it. She said she could log things and then
+   not see where they went, which is fair: her own logs lived behind a
+   button on Home and the Logs tab only ever showed a child.
+
+   So Logs now covers everybody in the house. Pick a person, pick a
+   day off the calendar, and see what that day held. Numbers that
+   repeat, such as weight or blood pressure, get a line showing where
+   they have moved rather than a list she has to read backwards.
+   ================================================================= */
+
+/* Whose logs are on screen. Follows whoever's profile she was last on,
+   so opening Logs from a child shows that child. */
+function logWho() {
+  const w = store.logWho || store.profileWho || 'me';
+  if (w === 'me') return 'me';
+  return store.children.some((k) => k.id === w) ? w : 'me';
+}
+
+function logsOf(who) {
+  if (who === 'me') return momLogs();
+  const k = store.children.filter((x) => x.id === who)[0];
+  if (!k) return [];
+  if (!Array.isArray(k.logs)) k.logs = [];
+  return k.logs;
+}
+
+function logTypesOf(who) {
+  if (who === 'me') return getMomLogTypes(momLogShape());
+  const k = store.children.filter((x) => x.id === who)[0];
+  if (!k) return [];
+  const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+  const months = sum && sum.age ? sum.age.totalMonths : null;
+  return months == null ? [] : getLogTypesForAge(months);
+}
+
+function logWhoName(who) {
+  if (who === 'me') return (store.parent.name || 'You').split(/\s+/)[0];
+  const k = store.children.filter((x) => x.id === who)[0];
+  return k ? (k.name || 'Unnamed').split(/\s+/)[0] : 'You';
+}
+
+/* ---------- THE CALENDAR ---------- */
+
+function logDayKey(l) {
+  return String(l.at).slice(0, 10);
+}
+
+function logCalendar(who, monthOffset) {
+  const logs = logsOf(who);
+  const counts = {};
+  logs.forEach((l) => {
+    const d = logDayKey(l);
+    counts[d] = (counts[d] || 0) + 1;
+  });
+
+  const today = ciToday();
+  const parts = today.split('-');
+  const base = new Date(Number(parts[0]), Number(parts[1]) - 1 + (monthOffset || 0), 1);
+  const y = base.getFullYear();
+  const m = base.getMonth();
+  const monthName = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+    'August', 'September', 'October', 'November', 'December'][m];
+  const key = (d) => y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+  const days = new Date(y, m + 1, 0).getDate();
+  const lead = new Date(y, m, 1).getDay();
+  const picked = store.logDay || today;
+
+  const cells = [];
+  for (let i = 0; i < lead; i++) cells.push('<span class="cal-pad"></span>');
+  for (let d = 1; d <= days; d++) {
+    const k = key(d);
+    const n = counts[k] || 0;
+    /* Three weights rather than a number in every square, so a month
+       reads as a shape at a glance and a busy day still stands out. */
+    const band = n === 0 ? '' : n < 3 ? ' has1' : n < 7 ? ' has2' : ' has3';
+    cells.push(`<button class="cal-d${band}${k === today ? ' today' : ''}${k === picked ? ' picked' : ''}"
+      data-logday="${esc(k)}" aria-label="${esc(cycleDateLabelWithYear(k))}, ${n} logged"
+      aria-pressed="${k === picked}">${d}</button>`);
+  }
+
+  return `
+  <div class="calwrap">
+    <div class="calhead">
+      <button class="calnav" data-logcal="-1" aria-label="Previous month">${icon('back', 14, 'var(--deep)')}</button>
+      <span class="calmonth">${esc(monthName)} ${y}</span>
+      <button class="calnav" data-logcal="1" aria-label="Next month">${icon('chev', 14, 'var(--deep)')}</button>
+    </div>
+    <div class="calgrid">
+      ${['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d) => `<span class="cal-w">${d}</span>`).join('')}
+      ${cells.join('')}
+    </div>
+    <div class="callegend">
+      <span><i class="k-has1"></i> A little</span>
+      <span><i class="k-has2"></i> A fair bit</span>
+      <span><i class="k-has3"></i> A lot</span>
+    </div>
+  </div>`;
+}
+
+/* ---------- ONE DAY ---------- */
+
+function logDayCard(who) {
+  const day = store.logDay || ciToday();
+  const rows = logsOf(who).filter((l) => logDayKey(l) === day);
+  const isToday = day === ciToday();
+
+  return `
+  <div class="card">
+    <p class="eyebrow">${icon('calendar', 11, 'var(--sage)')}
+      ${isToday ? 'Today' : esc(cycleDateLabelWithYear(day))}</p>
+    ${rows.length ? `
+      <p style="font-size:14px;font-weight:600;color:var(--ink);margin:4px 0 9px">
+        ${esc(rows.length + ' thing' + (rows.length === 1 ? '' : 's') + ' logged')}
+      </p>
+      ${rows.map((l) => {
+        const t = anyLogType(l.typeId);
+        return `
+        <div class="dayrow">
+          <span class="dayrow-t">${esc(clockOf(l.at))}</span>
+          <span class="grow">
+            <span class="dayrow-l">${esc(t ? t.label : 'Log')}</span>
+            ${summarizeLog(l, t) ? `<span class="tiny" style="display:block">${esc(summarizeLog(l, t))}</span>` : ''}
+            ${l.values && l.values.notes ? `<span class="tiny" style="display:block;margin-top:2px">${esc(l.values.notes)}</span>` : ''}
+          </span>
+          ${who === 'me' ? `<button class="chip" data-delmomlog="${esc(l.id)}"
+            style="min-height:28px;padding:4px 9px">Remove</button>` : ''}
+        </div>`;
+      }).join('')}
+    ` : `
+      <p class="bodytext" style="margin-top:4px">
+        ${isToday ? 'Nothing logged yet today.' : 'Nothing was logged that day.'}
+      </p>`}
+  </div>`;
+}
+
+/* ---------- WHERE A NUMBER HAS MOVED ----------
+
+   Only for the logs that record the same number over and over, and
+   only once there are two of them. It says what the numbers are and
+   how they have moved. It does not say whether that is good. */
+
+const LOG_TRENDS = [
+  { typeId: 'mom-weight', field: 'weight', label: 'Weight', unit: 'lb' },
+  { typeId: 'mom-bp', field: 'systolic', label: 'Blood pressure', unit: '',
+    pair: 'diastolic', join: ' over ' },
+  { typeId: 'mom-sleep', field: 'hours', label: 'Your sleep', unit: 'hrs' },
+  { typeId: 'mom-sugar', field: 'reading', label: 'Blood sugar', unit: 'mg/dL' },
+];
+
+function trendRows(who, spec) {
+  return logsOf(who)
+    .filter((l) => l.typeId === spec.typeId)
+    .map((l) => ({
+      at: l.at,
+      n: Number((l.values || {})[spec.field]),
+      pair: spec.pair ? (l.values || {})[spec.pair] : null,
+    }))
+    .filter((r) => isFinite(r.n))
+    .slice(0, 30);
+}
+
+/* A plain line, drawn from the points themselves so it needs no
+   library and no axis nobody reads. */
+function sparkline(values) {
+  if (values.length < 2) return '';
+  const w = 240;
+  const h = 44;
+  const min = Math.min.apply(null, values);
+  const max = Math.max.apply(null, values);
+  const span = max - min || 1;
+  const step = w / (values.length - 1);
+  const pts = values.map((v, i) => {
+    const x = i * step;
+    const y = h - 4 - ((v - min) / span) * (h - 10);
+    return x.toFixed(1) + ',' + y.toFixed(1);
+  });
+  return `
+  <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" class="spark" aria-hidden="true">
+    <polyline points="${pts.join(' ')}" fill="none" stroke="var(--leaf)" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="${(values.length - 1) * step}" cy="${(h - 4 - ((values[values.length - 1] - min) / span) * (h - 10)).toFixed(1)}"
+      r="3.5" fill="var(--deep)" />
+  </svg>`;
+}
+
+function trendCard(who, spec) {
+  const rows = trendRows(who, spec);
+  if (rows.length < 2) return '';
+  /* Oldest first for the drawing, newest first is how they are stored. */
+  const chron = rows.slice().reverse();
+  const newest = rows[0];
+  const oldest = rows[rows.length - 1];
+  const diff = newest.n - oldest.n;
+  const moved = Math.abs(Math.round(diff * 10) / 10);
+  const dir = diff === 0 ? 'the same as' : diff > 0 ? 'up ' + moved + ' from' : 'down ' + moved + ' from';
+
+  const show = (r) => (spec.pair && r.pair ? r.n + spec.join + r.pair : r.n + (spec.unit ? ' ' + spec.unit : ''));
+
+  return `
+  <div class="card">
+    <p class="eyebrow">${icon('chart', 11, 'var(--sage)')} ${esc(spec.label)}</p>
+    <p class="liftline" style="font-size:19px;margin-top:3px">${esc(show(newest))}</p>
+    <p class="tiny" style="margin-top:2px">
+      ${esc(cycleDateLabel(logDayKey({ at: newest.at })))}, and ${esc(dir)}
+      ${esc(show(oldest))} on ${esc(cycleDateLabel(logDayKey({ at: oldest.at })))}.
+      ${rows.length} recorded.
+    </p>
+    ${sparkline(chron.map((r) => r.n))}
+  </div>`;
+}
+
+function trendsFor(who) {
+  if (who !== 'me') return '';
+  const cards = LOG_TRENDS.map((sp) => trendCard(who, sp)).filter(Boolean).join('');
+  if (!cards) return '';
+  return `<p class="sect">How it has moved</p>${cards}`;
+}
+
+/* ---------- THE PEOPLE STRIP ---------- */
+
+function logWhoStrip(who) {
+  const people = [{ id: 'me', name: logWhoName('me') }]
+    .concat(store.children.filter((k) => !isExampleChild(k)).map((k) => ({ id: k.id, name: logWhoName(k.id) })));
+  if (people.length < 2) return '';
+  return `
+  <div class="chips" style="margin-bottom:10px">
+    ${people.map((p) => `
+      <button class="chip${who === p.id ? ' on' : ''}" data-logwho="${esc(p.id)}"
+        ${who === p.id ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
+        >${esc(p.name)}</button>`).join('')}
+  </div>`;
+}
+
+/* The Logs tab. Everybody in the house, a month at a time. */
+function screenLogsHub(c) {
+  const who = logWho();
+  const types = logTypesOf(who);
+  const name = logWhoName(who);
+  const mine = who === 'me';
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <h1 class="title">Logs</h1>
+    <p class="sub">${mine
+      ? 'Everything you have put down, and where the numbers have moved.'
+      : 'What you have tracked for ' + esc(name) + ', and the version you can hand your pediatrician.'}</p>
+  </div>
+  <div class="sc">
+
+    ${logWhoStrip(who)}
+
+    <p class="sect">Log something</p>
+    ${types.length ? `
+    <div class="qgrid">
+      ${types.map((t) => `
+        <button class="q" data-go="log" data-id="${esc(t.id)}">
+          <span class="qi">${icon(logIcon(t.icon), 17)}</span>
+          <span class="qt">${esc(t.label)}</span>
+          ${mine ? '' : `<span class="qs">${esc(lastLogLine(t.id))}</span>`}
+        </button>`).join('')}
+    </div>` : `
+    <p class="tiny" style="text-align:center;padding:8px 0">
+      ${mine ? 'Tell Settings where you are and the right logs appear.'
+        : 'Add a birthday and the right logs appear for that age.'}
+    </p>`}
+
+    <p class="sect">Look back</p>
+    ${logCalendar(who, store.logCal || 0)}
+    ${logDayCard(who)}
+
+    ${trendsFor(who)}
+
+    ${mine ? `
+    <p class="sect">For your provider</p>
+    <div class="card">
+      <p class="bodytext">A plain list of everything above with dates and times, as a text file you can
+      print, email, or read off your phone in the room. A blood pressure trend or a record of bleeding
+      is exactly what gets asked for and never remembered.</p>
+      <button class="btn ghost sm" style="width:100%;margin-top:11px" data-momexport="1">
+        ${icon('export', 14, 'var(--deep)')} Save it as a file
+      </button>
+    </div>
+    <p class="tiny" style="margin-top:10px">${icon('shield', 10, 'var(--sage)')} ${esc(MOM_LOG_NOTE)}</p>
+    ` : `
+    ${childLogs().length ? `
+    <p class="sect">For your pediatrician</p>
+    <div class="card">
+      <p class="bodytext">A plain list with dates and times, as a text file you can print or email.</p>
+      <button class="btn ghost sm" style="width:100%;margin-top:11px" data-export="logs">
+        ${icon('export', 14, 'var(--deep)')} Save it as a file
+      </button>
+    </div>` : ''}`}
+  </div>`;
 }
 
 function screenLogs(c) {
