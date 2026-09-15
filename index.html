@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-15 21:07">
+<meta name="rsg-build" content="2026-09-15 21:32">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -370,6 +370,47 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 .k-bleed{background:#F0D3CB}
 .k-fertile{background:#E4EDDC}
 .k-ovul{background:#C9DDB6}
+
+/* WILLOW'S WALKTHROUGH.
+   Her bubble is drawn the same way her chat bubbles are, so she reads
+   as the same person here as she does in the corner of every screen. */
+.obtop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.obdots{display:flex;gap:6px;margin-top:12px}
+.obdot{
+  width:7px;height:7px;border-radius:50%;flex:none;
+  background:var(--line2);transition:background .2s,width .2s;
+}
+.obdot.done{background:var(--leaf2,#C9DDB6)}
+.obdot.on{background:var(--deep);width:20px;border-radius:4px}
+
+.obsay{display:flex;gap:11px;align-items:flex-start;margin-top:14px}
+.obsay-face{
+  width:30px;height:30px;border-radius:50%;flex:none;margin-top:2px;
+  background:var(--deep);display:grid;place-items:center;
+}
+.obsay-body{
+  /* Opaque on purpose. The affirmations in the background layer read
+     straight through anything translucent, and Willow talking over the
+     top of other words is exactly the mess she asked me to fix once
+     already. */
+  flex:1;min-width:0;background:#F1F4EB;
+  border:1px solid rgba(0,0,0,.05);
+  border-radius:4px 16px 16px 16px;padding:12px 14px;
+}
+.obsay-body p{
+  margin:0;font-size:14.5px;line-height:1.55;color:var(--body);
+}
+.obsay-body p + p{margin-top:9px}
+
+.obwhat{display:flex;gap:11px;align-items:flex-start;padding:9px 2px}
+.obwhat.sep{border-top:1px solid rgba(0,0,0,.055)}
+.obwhat:first-child{padding-top:2px}
+.obwhat-ic{
+  width:26px;height:26px;border-radius:8px;flex:none;margin-top:1px;
+  background:#F1F4EB;display:grid;place-items:center;
+}
+.obwhat-t{display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.35}
+.obwhat-b{display:block;font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45}
 
 /* LEARNING CARD. */
 .learncard{
@@ -1066,7 +1107,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-15 21:07';
+const BUILD_STAMP = '2026-09-15 21:32';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -16919,6 +16960,13 @@ function liftPrompt(kind, context) {
     ].filter(Boolean).join('\n');
   }
 
+  /* The closing line of Willow's walkthrough. The written version in
+     onboarding.js is already on screen when this runs, so an answer
+     that never arrives costs nothing. */
+  if (kind === 'onboard') {
+    return onboardPrompt(c);
+  }
+
   if (kind === 'checkin') {
     return [
       'A parent has just recorded how today went for one of her children. Respond to her, briefly.',
@@ -19050,6 +19098,190 @@ const MEMORY_KEEP_NOTE = 'Kept until you delete it. Nothing here expires, tidies
 const MEMORY_EMPTY_CHILD = 'The things you will forget otherwise. What they said, how they '
   + 'said it, the face they pulled. A year from now this comes back to you.';
 
+/* ===== src/data/onboarding.js ===== */
+/**
+ * Ready Set Grow: Willow Walking Somebody In The Door
+ * ------------------------------------------------------------------
+ * She asked for this in her own words: Willow should pop up once people
+ * sign up and help walk them through setting up their profile, what
+ * this app does, what it is useful for, and how to use it.
+ *
+ * WHY IT IS WILLOW AND NOT A FORM
+ * A brand new account lands on a screen full of empty cards asking for
+ * things, and an empty app looks like work. Willow asking four short
+ * questions is the same four answers, given to somebody rather than
+ * typed into a form, and it is the first time a parent meets the thing
+ * that is meant to be their best friend at two in the morning.
+ *
+ * THE RULES THIS FILE HOLDS TO
+ * 1. Every step is skippable, and skipping loses nothing. Everything
+ *    asked here can also be set later from a profile or from settings.
+ * 2. Nothing is required. A parent who taps straight through ends up
+ *    with a working app, just a less tailored one.
+ * 3. Every line has a WRITTEN version here and that is what ships.
+ *    Willow may rewrite the closing line once she knows their name and
+ *    their child. She never gets to leave a blank space where the kind
+ *    thing was. Same rule as dailyLift.js.
+ * 4. Nothing said here is ever shown to anybody else.
+ */
+
+const ONBOARD_STEPS = ['hello', 'you', 'where', 'child', 'ready'];
+
+/* The very first thing a new parent reads. Written, never generated,
+   because waiting on a model for the opening line of the app would mean
+   a blank screen at exactly the wrong moment. */
+const ONBOARD_HELLO = [
+  'I am here to help you with whatever this stage of parenting is throwing at you. '
+  + 'I am not a doctor or a therapist, but I can talk things through with you, help you '
+  + 'work out what is going on, and point you somewhere real when you need it.',
+  'Let me show you around. It takes about a minute, and you can stop at any point.',
+].join('\n\n');
+
+/* What the app is actually for, in plain statements rather than
+   marketing. Four, because five starts to read as a list of features. */
+const ONBOARD_WHAT = [
+  { icon: 'leaf', title: 'It follows your child, not a calendar',
+    body: 'Everything reshapes around how old they actually are, from sleep windows to what to '
+      + 'say when bedtime falls apart. It keeps up as they grow, all the way through school.' },
+  { icon: 'heart', title: 'It is for you as much as for them',
+    body: 'Your recovery, your feeding, your mood, your cycle, your appointments. A parent who '
+      + 'is running on empty cannot pour, and most apps forget that entirely.' },
+  { icon: 'bulb', title: 'Ask me anything, any hour',
+    body: 'Witching hour, a rash you cannot place, a teenager who has stopped speaking to you. '
+      + 'Ask in your own words. I will not hand you a search box.' },
+  { icon: 'shield', title: 'What you write here is yours',
+    body: 'Your children, your logs and your memories belong to your account alone. Nothing '
+      + 'becomes public unless you deliberately share it.' },
+];
+
+/* What Willow says at the top of each step. Short, because the step
+   itself is the content and she is only introducing it. */
+const ONBOARD_LINES = {
+  you: 'First, what should I call you? This is just so I am not talking to a stranger.',
+  where: 'Now the part that does the most work. Tick anything that is true for you today, '
+    + 'and I will bring those parts of the app forward and put the rest away. Nothing here '
+    + 'is required and none of it is ever shown to anybody else.',
+  child: 'Who are we growing? A name and a birthday is genuinely all I need. Everything else '
+    + 'follows from it.',
+  ready: 'That is everything I need. You can change any of it later, and I will be in the '
+    + 'corner of every screen whenever you want me.',
+};
+
+const ONBOARD_TITLES = {
+  hello: 'Hi, I am Willow',
+  you: 'What should I call you?',
+  where: 'Where are you right now?',
+  child: 'Who are we growing?',
+  ready: 'You are all set',
+};
+
+/* The skip wording matters. "Skip" sounds like you are missing out.
+   These say plainly that nothing is lost, because nothing is. */
+const ONBOARD_SKIP = 'I will do this later';
+const ONBOARD_SKIP_NOTE =
+  'Nothing is lost by skipping. Everything here can be set later from your profile.';
+
+const ONBOARD_NAME_NOTE =
+  'Your username is the only thing other parents ever see, and only if you post.';
+
+const ONBOARD_CHILD_NOTE =
+  'Expecting? Put the due date in and the app follows the pregnancy instead.';
+
+const ONBOARD_CHILD_SKIP =
+  'You can add children later, and you can add as many as you like. Each one keeps their '
+  + 'own notes, milestones and memories, kept separate from the others.';
+
+/* The closing screen. Three things worth doing first, so nobody lands
+   on a full app with no idea where to start. Each one points at
+   something that already exists. */
+const ONBOARD_FIRST_THINGS = [
+  { id: 'willow', label: 'Ask me something',
+    body: 'Tap the leaf in the corner. Anything at all, in your own words.' },
+  { id: 'logs', label: 'Log one thing today',
+    body: 'A feed, a nap, how you slept. One is enough to start seeing your own patterns.' },
+  { id: 'memory', label: 'Save one memory',
+    body: 'A photo, a voice memo, or something funny they said. It never expires, and it '
+      + 'comes back to you a year from now.' },
+];
+
+/* The written closing line, used as it is unless Willow rewrites it.
+   Takes what they just told us so it is specific even before the model
+   is involved. */
+function onboardClosing(ctx) {
+  const c = ctx || {};
+  const name = (c.parentName || '').trim();
+  const kid = (c.childName || '').trim();
+  const hi = name ? name + ', ' : '';
+
+  if (kid) {
+    return hi.charAt(0).toUpperCase() + hi.slice(1)
+      + 'the app is set up around ' + kid + ' now. What you see changes as they grow, so you '
+      + 'will not have to come back and reorganize anything. I am in the corner whenever you '
+      + 'want me.';
+  }
+  return (hi ? hi.charAt(0).toUpperCase() + hi.slice(1) : '')
+    + 'you are set up. Add a child whenever you are ready and everything reshapes around them. '
+    + 'I am in the corner whenever you want me.';
+}
+
+/* Willow may rewrite the closing line, and only that line. Everything
+   before it has to appear instantly. */
+function onboardPrompt(ctx) {
+  const c = ctx || {};
+  return [
+    'A parent has just finished setting up their account in a parenting app. Say one warm '
+    + 'closing thing to them.',
+    c.parentName ? 'Their name is ' + c.parentName + '.' : '',
+    c.childName ? 'Their child: ' + c.childName + (c.childAge ? ', ' + c.childAge : '') + '.' : '',
+    c.situation ? 'What they told you about where they are: ' + c.situation : '',
+    '',
+    'Two sentences at most, forty words maximum.',
+    'Speak to them, not about them. Refer to what they actually told you.',
+    'Do not list features, do not welcome them to anything, do not use the word journey.',
+    'No exclamation marks, no advice, no questions.',
+    'Return the line only.',
+  ].filter(Boolean).join('\n');
+}
+
+/* A short readable line describing what they ticked, for the prompt
+   above and for nothing else. */
+function onboardSituationLine(sit, stageLabels, roleLabels) {
+  const s = sit || {};
+  const parts = [];
+  (s.stages || []).forEach((id) => { if (stageLabels[id]) parts.push(stageLabels[id]); });
+  (s.roles || []).forEach((id) => { if (roleLabels[id]) parts.push(roleLabels[id]); });
+  return parts.join(', ');
+}
+
+/* WHO SEES THIS AND WHEN.
+
+   Only an account that was created in this session, or a guest who has
+   just chosen to look around. Never somebody signing in on a second
+   device, whose children are still on their way down from the cloud and
+   whose app would otherwise ask them to set up everything they already
+   have. That race is the reason this is a deliberate flag rather than a
+   guess based on an empty account. */
+function onboardShouldOpen(ob) {
+  return !!(ob && ob.open && !ob.done);
+}
+
+function onboardNext(step) {
+  const i = ONBOARD_STEPS.indexOf(step);
+  if (i === -1 || i === ONBOARD_STEPS.length - 1) return null;
+  return ONBOARD_STEPS[i + 1];
+}
+
+function onboardBack(step) {
+  const i = ONBOARD_STEPS.indexOf(step);
+  if (i <= 0) return null;
+  return ONBOARD_STEPS[i - 1];
+}
+
+function onboardIndex(step) {
+  const i = ONBOARD_STEPS.indexOf(step);
+  return i === -1 ? 0 : i;
+}
+
 /* ===== src/data/cycle.js ===== */
 /**
  * Ready Set Grow: Cycle And Dates
@@ -20499,6 +20731,12 @@ const store = {
      so this list only ever shrinks when somebody deletes something. */
   memories: [],
   memDraft: null,
+
+  /* Willow's walkthrough. Only ever opened by a deliberate flag, never
+     by the app deciding an account looks empty. See the section that
+     builds it for why that distinction matters. */
+  onboard: { open: false, done: false, step: 'hello', line: '', lineFrom: '' },
+
   /* The day the "a year ago today" card was waved away, so it stays
      away until tomorrow rather than coming back on the next reload. */
   memDayHidden: '',
@@ -20690,6 +20928,7 @@ function flushStore() {
          would be gone by the afternoon. */
       memories: store.memories,
       memDayHidden: store.memDayHidden,
+      onboard: store.onboard,
       deletedMemoryIds: store.deletedMemoryIds,
       postDraft: store.postDraft,
       msEdit: store.msEdit,
@@ -20789,6 +21028,8 @@ function loadStore() {
     store.memories = Array.isArray(saved.memories) ? saved.memories : [];
     store.memDayHidden = typeof saved.memDayHidden === 'string' ? saved.memDayHidden : '';
     store.deletedMemoryIds = Array.isArray(saved.deletedMemoryIds) ? saved.deletedMemoryIds : [];
+    store.onboard = (saved.onboard && typeof saved.onboard === 'object')
+      ? saved.onboard : { open: false, done: false, step: 'hello', line: '', lineFrom: '' };
     store.postDraft = (saved.postDraft && typeof saved.postDraft === 'object') ? saved.postDraft : null;
   }
 
@@ -21467,6 +21708,26 @@ function render() {
   }
   document.body.classList.remove('locked');
   paintBackground();
+
+  /* Willow's walkthrough takes the whole window. The tabs come off for
+     the duration, because a guided flow you can wander out of halfway
+     is not a guided flow, and every step carries its own way out. */
+  if (onboardShouldOpen(onboard())) {
+    const obHtml = screenOnboard();
+    /* The wordmark only. The corner chip opens a menu that leads out of
+       the flow, and every step already carries its own way out. */
+    const obBar = document.getElementById('topbar');
+    if (obBar) { obBar.innerHTML = topBar(true); screen.innerHTML = obHtml; }
+    else screen.innerHTML = topBar(true) + obHtml;
+    const obTabs = document.getElementById('tabs');
+    if (obTabs) obTabs.innerHTML = '';
+    const obW = document.getElementById('willow');
+    if (obW) obW.innerHTML = '';
+    restoreFocus();
+    saveStore();
+    return;
+  }
+
   /* Screens that only make sense inside one child. Reaching one with no
      child open sends you to the picker rather than to an empty screen. */
   const CHILD_SCOPED = ['milestones', 'activities', 'topics', 'understand', 'feeding',
@@ -21716,6 +21977,21 @@ function initControls() {
       if (saveBtn) saveBtn.disabled = !postHasContent();
       saveStore();
     }
+    else if (e.target.matches('[data-obfield]')) {
+      const f = e.target.dataset.obfield;
+      const v = e.target.value;
+      /* No repaint while she types, so the Add button on the child step
+         is switched by hand. Third time this pattern has been needed. */
+      if (f === 'child') {
+        store.draftChildName = v;
+        const b = document.querySelector('[data-ob="addchild"]');
+        if (b) b.disabled = !(v.trim() || store.draftChildBday);
+      } else {
+        store.parent[f] = v;
+        store.parentUpdatedAt = Date.now();
+      }
+      saveStore();
+    }
     else if (e.target.matches('[data-memfield]')) {
       memDraft().text = e.target.value;
       saveStore();
@@ -21868,7 +22144,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -21901,6 +22177,10 @@ function initControls() {
       else if (a === 'guest') {
         auth.guest = true;
         store.guest = true;
+        /* Somebody looking around without an account is also seeing this
+           for the first time, and they are the ones most likely to give
+           up on an empty screen. */
+        if (!onboard().done) onboardStart();
         flushStore();
         state.tab = IS_DESKTOP ? 'home' : 'welcome';
       }
@@ -21993,6 +22273,29 @@ function initControls() {
     } else if (t.dataset.memall !== undefined) {
       store.memAll = t.dataset.memall || null;
       flushStore();
+    } else if (t.dataset.ob) {
+      const a = t.dataset.ob;
+      if (a === 'restart') { onboardStart(); render(); }
+      else if (a === 'next') onboardGo(onboardNext(onboard().step));
+      else if (a === 'back') onboardGo(onboardBack(onboard().step));
+      else if (a === 'skip') onboardSkip();
+      else if (a === 'done') onboardFinish();
+      else if (a === 'addchild') {
+        const nm = (store.draftChildName || '').trim();
+        const bd = store.draftChildBday || '';
+        if (nm || bd) {
+          const kid = newChildRecord(nm, bd || null);
+          store.children.push(kid);
+          store.draftChildName = '';
+          store.draftChildBday = '';
+          selectChild(kid.id);
+          /* Stays on this step rather than jumping to their profile,
+             because the walkthrough is not finished yet. */
+          flushStore();
+          render();
+        }
+      }
+      return;
     } else if (t.dataset.memhide) {
       store.memDayHidden = ciToday();
       flushStore();
@@ -25202,6 +25505,15 @@ function screenSettings() {
     <p class="sect">Password</p>
     ${passwordBlock()}
 
+    <p class="sect">Willow</p>
+    <button class="card learncard" data-ob="restart" style="width:100%;text-align:left">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Show me around again</p>
+      <p class="bodytext" style="margin-top:5px">
+        Willow walks you through what the app does and what it can hold for you. Nothing you have
+        already set is changed by running it again.
+      </p>
+    </button>
+
     ${situationBlock()}
 
     ${(() => {
@@ -25621,6 +25933,10 @@ async function doSignUp() {
       store.parent.name = auth.form.name.trim();
     }
     store.parent.email = auth.form.email.trim();
+    /* A brand new account is the one moment we KNOW somebody has never
+       seen this app before, so it is the only place the walkthrough is
+       opened automatically. */
+    onboardStart();
     flushStore();
     auth.form.password = '';
   } catch (err) {
@@ -29125,6 +29441,266 @@ function memOnThisDay() {
 }
 
 /* =================================================================
+   WILLOW WALKING SOMEBODY IN THE DOOR
+
+   She asked for this directly: Willow should pop up once people sign
+   up and help walk them through setting up their profile, and explain
+   what the app does and what it is useful for.
+
+   The problem it solves is that a brand new account lands on a Home
+   screen full of empty cards asking for things, and an empty app looks
+   like homework. The same four answers, asked by Willow one at a time,
+   feel like being shown around instead.
+
+   IT ONLY EVER OPENS ON A DELIBERATE FLAG.
+   Not on "this account looks empty". Somebody signing in on a second
+   device has an empty account for the two seconds before the cloud
+   answers, and asking them to set up everything they already have
+   would be the worst possible first impression of a sync feature.
+   So doSignUp sets the flag, and choosing to look around sets the
+   flag, and nothing else does.
+   ================================================================= */
+
+function onboard() {
+  if (!store.onboard || typeof store.onboard !== 'object') {
+    store.onboard = { open: false, done: false, step: 'hello', line: '', lineFrom: '' };
+  }
+  const ob = store.onboard;
+  if (ONBOARD_STEPS.indexOf(ob.step) === -1) ob.step = 'hello';
+  return ob;
+}
+
+/* Called from the two places somebody genuinely arrives for the first
+   time, and from the button in Settings for anybody who wants it again. */
+function onboardStart() {
+  store.onboard = { open: true, done: false, step: 'hello', line: '', lineFrom: '' };
+  flushStore();
+}
+
+function onboardGo(step) {
+  const ob = onboard();
+  if (!step) return;
+  ob.step = step;
+  /* The closing line is written the moment that step is reached, so it
+     has something specific to say about what they just told us. */
+  if (step === 'ready') onboardLine();
+  flushStore();
+  render();
+}
+
+function onboardFinish() {
+  const ob = onboard();
+  ob.open = false;
+  ob.done = true;
+  store.parentUpdatedAt = Date.now();
+  state.view = null;
+  state.tab = 'home';
+  flushStore();
+  render();
+}
+
+/* Skipping and finishing land in the same place on purpose. Somebody
+   who taps out on step two has still made an account, and dropping
+   them somewhere different would read as a punishment. */
+function onboardSkip() {
+  onboardFinish();
+}
+
+/* THE CLOSING LINE. Written first, Willow's if she answers, and the
+   written one stays on screen the whole time. Exactly the pattern in
+   liftAffirmation, and for the same reason: the app must never show a
+   blank space where the kind thing was meant to be. */
+function onboardLine() {
+  const ob = onboard();
+  const kid = onboardFirstChild();
+  const sum = kid && kid.birthday ? getAgeSummary({ name: kid.name, birthday: kid.birthday }) : null;
+  const ctxLine = {
+    parentName: (store.parent.name || '').trim().split(/\s+/)[0] || '',
+    childName: kid ? (kid.name || '') : '',
+    childAge: sum && sum.shortLabel ? sum.shortLabel : '',
+  };
+  if (!ob.line) {
+    ob.line = onboardClosing(ctxLine);
+    ob.lineFrom = 'written';
+  }
+  const stageLabels = {};
+  PARENT_STAGES.forEach((st) => { stageLabels[st.id] = st.label; });
+  const roleLabels = {};
+  PARENT_ROLES.forEach((r) => { roleLabels[r.id] = r.label; });
+  liftWrite('onboard', Object.assign({}, ctxLine, {
+    situation: onboardSituationLine(situation(), stageLabels, roleLabels),
+  }), (text) => {
+    const cur = onboard();
+    /* A long answer is a sign the model ignored the brief, and a wall
+       of text on the last screen would undo the whole tone. */
+    if (text.length > 260) return;
+    cur.line = text;
+    cur.lineFrom = 'willow';
+  });
+  return ob.line;
+}
+
+/* The child this walkthrough is about, which is the one they just
+   added if they added one. */
+function onboardFirstChild() {
+  const real = store.children.filter((k) => !isExampleChild(k));
+  return real.length ? real[real.length - 1] : null;
+}
+
+function onboardDots(step) {
+  const here = onboardIndex(step);
+  return `
+  <div class="obdots" aria-hidden="true">
+    ${ONBOARD_STEPS.map((_, i) =>
+      `<span class="obdot${i === here ? ' on' : ''}${i < here ? ' done' : ''}"></span>`).join('')}
+  </div>`;
+}
+
+/* Willow saying something, drawn the same way her chat bubbles are so
+   she reads as the same person here as she does in the corner. */
+function onboardSays(text) {
+  return `
+  <div class="obsay">
+    <span class="obsay-face">${icon('leaf', 15, '#fff')}</span>
+    <div class="obsay-body">
+      ${String(text).split('\n\n').map((p) => `<p>${esc(p)}</p>`).join('')}
+    </div>
+  </div>`;
+}
+
+function screenOnboard() {
+  const ob = onboard();
+  const step = ob.step;
+  const next = onboardNext(step);
+  const back = onboardBack(step);
+
+  let body = '';
+
+  if (step === 'hello') {
+    body = `
+    ${onboardSays(ONBOARD_HELLO)}
+    <div class="card" style="margin-top:12px">
+      ${ONBOARD_WHAT.map((w, i) => `
+      <div class="obwhat${i ? ' sep' : ''}">
+        <span class="obwhat-ic">${icon(w.icon, 15, 'var(--sage)')}</span>
+        <span class="grow">
+          <span class="obwhat-t">${esc(w.title)}</span>
+          <span class="obwhat-b">${esc(w.body)}</span>
+        </span>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  if (step === 'you') {
+    body = `
+    ${onboardSays(ONBOARD_LINES.you)}
+    <div class="card" style="margin-top:12px">
+      <p class="eyebrow">Your name</p>
+      <input class="inp" type="text" id="obName" data-obfield="name"
+        value="${esc(store.parent.name || '')}" placeholder="Your first name"
+        autocomplete="given-name" style="margin-top:8px;width:100%" />
+      <p class="eyebrow" style="margin-top:14px">A username</p>
+      <input class="inp" type="text" id="obUser" data-obfield="username"
+        value="${esc(store.parent.username || '')}" placeholder="Optional"
+        autocomplete="off" style="margin-top:8px;width:100%" />
+      <p class="tiny" style="margin-top:9px">${esc(ONBOARD_NAME_NOTE)}</p>
+    </div>`;
+  }
+
+  if (step === 'where') {
+    const sit = situation();
+    body = `
+    ${onboardSays(ONBOARD_LINES.where)}
+    <div class="card" style="margin-top:12px">
+      ${PARENT_STAGES.map((st) => tickRow(hasStage(sit, st.id), st.label, st.help,
+        `data-sit="stages" data-id="${esc(st.id)}"`)).join('')}
+    </div>
+    <p class="sect" style="margin-top:14px">How you parent</p>
+    <div class="card">
+      ${PARENT_ROLES.map((r) => tickRow((sit.roles || []).indexOf(r.id) !== -1, r.label, '',
+        `data-sit="roles" data-id="${esc(r.id)}"`)).join('')}
+    </div>
+    <p class="tiny" style="margin-top:10px">${esc(SITUATION_PRIVACY)}</p>`;
+  }
+
+  if (step === 'child') {
+    const kid = onboardFirstChild();
+    body = `
+    ${onboardSays(ONBOARD_LINES.child)}
+    ${kid ? `
+    <div class="card" style="margin-top:12px">
+      <p class="eyebrow">${icon('check', 11, 'var(--sage)')} Added</p>
+      <p style="font-size:17px;color:var(--ink);margin:6px 0 0">${esc(kid.name || 'Your child')}</p>
+      ${kid.birthday ? `<p class="tiny" style="margin-top:4px">
+        That makes them ${esc((getAgeSummary({ name: kid.name, birthday: kid.birthday }) || {}).label || '')}.
+      </p>` : ''}
+    </div>
+    <p class="sect" style="margin-top:14px">How they came to you</p>
+    <p class="tiny" style="margin:-4px 0 10px">${esc(CHILD_ARRIVAL_NOTE)}</p>
+    <div class="card">
+      ${CHILD_ARRIVAL.map((a) => tickRow((kid.arrival || []).indexOf(a.id) !== -1, a.label, '',
+        `data-arrival="${esc(a.id)}" data-arrivalfor="${esc(kid.id)}"`)).join('')}
+    </div>` : `
+    <div class="card" style="margin-top:12px">
+      <p class="eyebrow">Their name</p>
+      <input class="inp" type="text" id="obKid" data-obfield="child"
+        value="${esc(store.draftChildName || '')}" placeholder="Their name or nickname"
+        autocomplete="off" style="margin-top:8px;width:100%" />
+      <p class="eyebrow" style="margin-top:14px">Their birthday</p>
+      <div style="margin-top:7px">${dateSelects('draft', store.draftChildBday || '', 25, 1)}</div>
+      <p class="tiny" style="margin-top:9px">${esc(ONBOARD_CHILD_NOTE)}</p>
+      <button class="btn" data-ob="addchild" style="margin-top:14px;width:100%"
+        ${(store.draftChildName || '').trim() || store.draftChildBday ? '' : 'disabled'}>Add them</button>
+    </div>
+    <p class="tiny" style="margin-top:10px">${esc(ONBOARD_CHILD_SKIP)}</p>`}`;
+  }
+
+  if (step === 'ready') {
+    body = `
+    ${onboardSays(onboardLine())}
+    <p class="sect" style="margin-top:14px">Three things worth doing first</p>
+    <div class="card">
+      ${ONBOARD_FIRST_THINGS.map((f, i) => `
+      <div class="obwhat${i ? ' sep' : ''}">
+        <span class="obwhat-ic">${icon('leaf', 14, 'var(--sage)')}</span>
+        <span class="grow">
+          <span class="obwhat-t">${esc(f.label)}</span>
+          <span class="obwhat-b">${esc(f.body)}</span>
+        </span>
+      </div>`).join('')}
+    </div>
+    <div class="card leafy" style="margin-top:12px">
+      <p class="bodytext">Ready Set Grow is educational information, not medical advice. It cannot
+      examine your child. Your pediatrician can, and they want you to call.</p>
+    </div>`;
+  }
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <div class="obtop">
+      ${back ? `<button class="back" data-ob="back">${icon('back', 15, 'var(--deep)')} Back</button>`
+        : '<span></span>'}
+      <button class="chip" data-ob="skip">${esc(ONBOARD_SKIP)}</button>
+    </div>
+    ${onboardDots(step)}
+    <h1 class="title" style="margin-top:8px">${esc(ONBOARD_TITLES[step] || '')}</h1>
+  </div>
+  <div class="sc">
+    ${body}
+    ${next ? `
+    <button class="btn" data-ob="next" style="margin-top:16px;width:100%">
+      ${step === 'hello' ? 'Show me' : 'Next'} ${icon('chev', 15, '#fff')}
+    </button>` : `
+    <button class="btn" data-ob="done" style="margin-top:16px;width:100%">
+      Take me in ${icon('chev', 15, '#fff')}
+    </button>`}
+    ${step === 'hello' ? '' : `
+    <p class="tiny" style="text-align:center;margin-top:10px">${esc(ONBOARD_SKIP_NOTE)}</p>`}
+  </div>`;
+}
+
+/* =================================================================
    LOOKING BACK
 
    Logging is only half of it. She said she could log things and then
@@ -30001,6 +30577,9 @@ function parentPayload() {
        Storage, this only carries the links and the words. */
     memories: store.memories || [],
     deletedMemoryIds: store.deletedMemoryIds || [],
+    /* Carried so the walkthrough she already sat through on her phone
+       does not run again on her laptop. */
+    onboardDone: !!(store.onboard && store.onboard.done),
     deletedChildIds: store.deletedChildIds || [],
     notDuplicates: store.notDuplicates || [],
     updatedAt: store.parentUpdatedAt || 0,
@@ -30222,6 +30801,14 @@ async function cloudFirstSync() {
   /* Memories are handled outside the stamp comparison on purpose. They
      are the one thing in here that cannot be recreated, so both sides
      are kept and only a real delete removes anything. */
+  /* If this account has already been shown around on another device,
+     never show it again here. */
+  if (remoteUser && remoteUser.onboardDone) {
+    const ob = onboard();
+    ob.open = false;
+    ob.done = true;
+  }
+
   if (remoteUser) {
     store.deletedMemoryIds = mergeDeletedIds(
       store.deletedMemoryIds,
