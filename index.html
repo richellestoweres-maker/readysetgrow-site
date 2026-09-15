@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-15 18:38">
+<meta name="rsg-build" content="2026-09-15 19:03">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -101,6 +101,7 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 .dayrow-t{flex:0 0 62px;font-size:11.5px;color:var(--muted);padding-top:2px}
 .dayrow-l{display:block;font-size:13.5px;font-weight:600;color:var(--ink)}
 .spark{width:100%;height:44px;margin-top:10px;display:block}
+.notedcard{border-left:3px solid var(--leaf);background:var(--leaf2)}
 
 /* brand wordmark, drawn rather than an image so it stays crisp */
 .mark{display:flex;flex-direction:column;align-items:center;position:relative;z-index:2}
@@ -1050,7 +1051,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-15 18:38';
+const BUILD_STAMP = '2026-09-15 19:03';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -16876,6 +16877,22 @@ function liftPrompt(kind, context) {
     ].filter(Boolean).join('\n');
   }
 
+  /* One line after something is logged. The rule that matters is in
+     encourage.js and it is repeated here because this is the prompt
+     that actually reaches the model: praise the showing up, never a
+     number and never the direction one moved. */
+  if (String(kind).indexOf('noted') === 0) {
+    return [
+      'A parent has just recorded something in their own log: ' + (c.label || 'something') + '.',
+      who,
+      'Write one warm line back, two sentences at most, thirty words maximum.',
+      'Praise the fact that they did it or kept track of it.',
+      'Never comment on a number, on a number going up or down, on weight, on size, or on food.',
+      'No exclamation marks, nothing bubbly, no advice, no diagnosis.',
+      'Return the line only.',
+    ].filter(Boolean).join('\n');
+  }
+
   if (kind === 'morning') {
     return [
       'Suggest one small thing she could do this morning, for herself, before or around everyone else waking.',
@@ -17010,6 +17027,9 @@ const CONCEIVE_NOTE =
 
 const PARENT_ROLES = [
   { id: 'birth', label: 'Birth parent' },
+  /* Added because the app had no way at all to say this, which meant
+     every non birth parent was either mistaken for one or invisible. */
+  { id: 'partner', label: 'My partner gave birth' },
   { id: 'adoptive', label: 'Adoptive parent' },
   { id: 'foster', label: 'Foster parent' },
   { id: 'step', label: 'Step parent' },
@@ -18335,6 +18355,432 @@ const MOM_LOG_IDS = MOM_LOG_TYPES.map((t) => t.id);
 
 const MOM_LOG_NOTE = 'Yours, and only yours. Nothing here is ever part of a post, a profile '
   + 'anybody else can see, or a child record.';
+
+/* ===== src/data/caretakers.js ===== */
+/**
+ * Ready Set Grow: Whoever Is Actually Holding The Phone
+ * ------------------------------------------------------------------
+ * The app collected who somebody is to their child and then did
+ * nothing with it. Six roles sat in Settings being ignored while every
+ * screen quietly addressed a woman who had recently given birth.
+ *
+ * That is wrong twice over. It is wrong for the adoptive father shown
+ * a bleeding log, and it is wrong for the grandmother raising a four
+ * year old who never gets a word written for her.
+ *
+ * WHAT THIS FILE HOLDS
+ * Guidance for each route into parenting, written the way the rest of
+ * the app is written: what nobody tells you, what actually helps, and
+ * the honest line about when something needs more than an app.
+ *
+ * THE RULE THAT GOVERNS ALL OF IT
+ * Nothing here ranks these. There is no real parent and no second best
+ * version. An adoptive parent is a parent, a step parent who does the
+ * school run is doing the job, and a grandmother raising a child is
+ * raising a child. The content says so by never implying otherwise,
+ * not by announcing it.
+ *
+ * ON THE BODY CONTENT
+ * Bleeding, stitches, blood pressure after birth: that is gated on
+ * having given birth, not on having a baby. Everything else in the app
+ * is for everybody.
+ */
+
+const CARETAKER_ENTRIES = [
+
+  {
+    id: 'adoptive',
+    role: 'adoptive',
+    kind: 'Adoptive parents',
+    title: 'The bit nobody warns adoptive parents about',
+    blurb: 'Post adoption depression is real, and almost nobody mentions it',
+    body:
+      'A wait that took years ends, the child is finally home, and a good number of adoptive '
+      + 'parents feel flat, panicked or numb instead of the joy everybody is waiting to see on their '
+      + 'face. It has a name, post adoption depression, and studies put it somewhere around one in '
+      + 'five. Nobody warns people about it because the story says this is the happy ending.\n\n'
+      + 'The guilt on top of it is the heavy part. You fought to get here, so feeling anything other '
+      + 'than grateful feels like proof you were wrong to want it. It is not. It is a major life '
+      + 'change, sleep loss, and a relationship being built from nothing, and those hit a nervous '
+      + 'system the same way whoever carried the pregnancy.',
+    helps: [
+      'Say it out loud to one person who will not panic. The first telling is the hard one.',
+      'Attachment is built rather than switched on. Weeks and months, not a moment.',
+      'Find other adoptive parents. General parenting groups will not have language for this.',
+      'The same treatments that work for postpartum depression work here, and you qualify for them.',
+    ],
+    getHelp: 'More than two weeks of it, or feeling disconnected from your child, is worth a call. '
+      + 'Say the words post adoption depression. Providers who have not heard it before will look it up.',
+  },
+
+  {
+    id: 'partner',
+    role: 'partner',
+    kind: 'Fathers and non birth partners',
+    title: 'You can get postpartum depression too',
+    blurb: 'Around one in ten fathers, and almost nobody screens for it',
+    body:
+      'Paternal postnatal depression is well documented and sits at roughly one in ten, higher when '
+      + 'the birth parent is also struggling. Nobody screens for it. The health visitor is watching '
+      + 'the person who gave birth, and everyone else asks how she is doing.\n\n'
+      + 'It also tends to look different. Less crying, more irritability, working late, drinking '
+      + 'more, feeling shut out, or going quiet and functional while something drains away '
+      + 'underneath. That mismatch is exactly why it gets missed for months, including by the person '
+      + 'it is happening to.',
+    helps: [
+      'Get hands on early. Bathing, settling, the night shift. Competence and closeness build together.',
+      'The feeling of being surplus when a baby is feeding constantly is common and it passes.',
+      'Tell one friend the true version rather than the fine thanks version.',
+      'Ask your own doctor, not hers. You are allowed to be the patient.',
+    ],
+    getHelp: 'Two weeks or more of low mood, anger you did not have before, or pulling away from '
+      + 'your family. The National Maternal Mental Health Hotline takes calls from partners too.',
+  },
+
+  {
+    id: 'foster',
+    role: 'foster',
+    kind: 'Foster and kinship carers',
+    title: 'Loving a child you might not keep',
+    blurb: 'Holding on properly while knowing it may end',
+    body:
+      'The instruction to not get too attached is impossible and also bad advice. A child placed '
+      + 'with you needs somebody who is fully in, and being fully in is what makes it hurt if they '
+      + 'leave. Both of those are true at once and there is no arrangement of them that makes it '
+      + 'comfortable.\n\n'
+      + 'Kinship carers carry a second weight on top. The child arrived through a crisis in your own '
+      + 'family, so you are grieving somebody while raising their child, often with less support and '
+      + 'less money than a stranger placement would bring, and sometimes with the rest of the family '
+      + 'having opinions about it.',
+    helps: [
+      'Behaviour that looks like defiance is usually a nervous system that learned adults are not safe yet.',
+      'Predictability does more than warmth alone. Same order, same words, same time.',
+      'Keep a record of what you see. It matters at reviews and in court, and memory will not hold it.',
+      'Kinship carers are often entitled to support they were never told about. It is worth asking twice.',
+    ],
+    getHelp: 'Trauma informed therapy for the child, and support for you. Carer burnout is the most '
+      + 'common reason placements break down, and it is preventable when somebody notices in time.',
+  },
+
+  {
+    id: 'step',
+    role: 'step',
+    kind: 'Step parents',
+    title: 'You are not their parent and you are not nothing',
+    blurb: 'The role with no script and no name',
+    body:
+      'Step parenting has the least clear job description in the house. Push too hard and you are '
+      + 'overstepping. Stay back and you are not pulling your weight. The child may be grieving a '
+      + 'family that ended, and some of that lands on you for no reason except that you are here.\n\n'
+      + 'What the research consistently finds is that the friend route works better than the '
+      + 'authority route, particularly with older children. Warmth first, discipline through their '
+      + 'parent, for a good while longer than feels natural.',
+    helps: [
+      'Let their parent hold the discipline early on. You are building the relationship that makes it possible later.',
+      'Do not compete with the parent they already have, including the one who is not there.',
+      'One thing that is just yours and theirs. A game, a walk, a Saturday breakfast.',
+      'Years, not months. That is not failure, it is the normal timescale.',
+    ],
+    getHelp: 'If the household is in constant conflict, family therapy with a step family '
+      + 'specialist is a different thing from general couples counselling and it works.',
+  },
+
+  {
+    id: 'solo',
+    role: 'solo',
+    kind: 'Doing this on your own',
+    title: 'There is nobody to tap out to',
+    blurb: 'What changes when every decision is yours',
+    body:
+      'Solo parenting is not partnered parenting with one person missing. The difference is that '
+      + 'there is no handover. No one to take the 3am shift so you get four unbroken hours, no one '
+      + 'to disagree with about whether this is normal, and nobody who saw what you just dealt with.\n\n'
+      + 'The decision fatigue is the part people underestimate. Every choice, small and large, lands '
+      + 'on the same person all day, and that runs a specific kind of tank dry.',
+    helps: [
+      'Build the rota before you need it. Asking in a crisis is much harder than asking on a Tuesday.',
+      'Be specific when you ask. Wednesday from six to eight gets said yes to, more support does not.',
+      'Lower the bar on the days that need it. Safe and fed is a complete day.',
+      'Other solo parents understand the shape of it in a way that partnered friends cannot.',
+    ],
+    getHelp: 'If you have nobody at all, that is worth saying to a provider or a health visitor '
+      + 'plainly. Practical support exists and it is generally allocated to the people who ask.',
+  },
+
+  {
+    id: 'guardian',
+    role: 'guardian',
+    kind: 'Grandparents and guardians',
+    title: 'Raising a child the second time round',
+    blurb: 'Doing it again, with a different body and a different world',
+    body:
+      'Grandparents raising grandchildren are doing the job at a stage of life planned for something '
+      + 'else, usually after something went wrong for the child\'s parents. The grief for your own '
+      + 'child sits underneath the daily work of raising theirs, and there is rarely anywhere to put it.\n\n'
+      + 'On top of that the advice has changed since last time, sometimes for good reasons and '
+      + 'sometimes not, and being told you are doing it wrong by somebody half your age who has '
+      + 'raised no one is its own particular experience.',
+    helps: [
+      'What has genuinely changed: safe sleep, car seats and feeding guidance. Those are worth updating.',
+      'What has not: children need somebody steady who keeps showing up. You already know how to do that.',
+      'Legal standing matters for school and medical decisions, and it is worth sorting early.',
+      'Kinship carer support groups exist and are full of people in exactly this position.',
+    ],
+    getHelp: 'Your own health is part of the child\'s plan now. Appointments you are putting off '
+      + 'are part of the job, not time taken from it.',
+  },
+];
+
+/* ------------------------------------------------------------------
+ * WHAT APPLIES TO WHOM
+ * ------------------------------------------------------------------ */
+
+/**
+ * shape: { roles: [], support: [], gaveBirth, hasChildren }
+ * Nothing is inferred beyond what somebody actually ticked, apart from
+ * the partner entry, which is offered to anybody who has a child and
+ * has not said they gave birth to them.
+ */
+function caretakerEntriesFor(shape) {
+  const s = shape || {};
+  const roles = Array.isArray(s.roles) ? s.roles : [];
+  const support = Array.isArray(s.support) ? s.support : [];
+  const out = [];
+
+  CARETAKER_ENTRIES.forEach((e) => {
+    if (e.id === 'solo') {
+      if (support.indexOf('solo') !== -1) out.push(e);
+      return;
+    }
+    if (e.id === 'foster') {
+      if (roles.indexOf('foster') !== -1 || roles.indexOf('kinship') !== -1) out.push(e);
+      return;
+    }
+    if (e.id === 'guardian') {
+      if (roles.indexOf('kinship') !== -1 || roles.indexOf('guardian') !== -1) out.push(e);
+      return;
+    }
+    if (e.id === 'partner') {
+      /* Said outright, or implied by having a child and a partner while
+         not being the one who gave birth. A grandmother raising a
+         grandchild is neither, and was getting this by accident. */
+      const said = roles.indexOf('partner') !== -1;
+      const elsewhere = ['foster', 'kinship', 'guardian', 'birth']
+        .some((r) => roles.indexOf(r) !== -1);
+      const implied = s.hasChildren && !s.gaveBirth && !roles.length
+        && support.indexOf('partner') !== -1;
+      if (said || (implied && !elsewhere)) out.push(e);
+      return;
+    }
+    if (roles.indexOf(e.role) !== -1) out.push(e);
+  });
+  return out;
+}
+
+function caretakerEntry(id) {
+  return CARETAKER_ENTRIES.filter((e) => e.id === id)[0] || null;
+}
+
+const CARETAKER_IDS = CARETAKER_ENTRIES.map((e) => e.id);
+
+const CARETAKER_NOTE = 'Written for the route you actually took. Nothing in this app ranks '
+  + 'these, and nothing in it treats one of them as the real version.';
+
+/* ===== src/data/encourage.js ===== */
+/**
+ * Ready Set Grow: A Word After You Log Something
+ * ------------------------------------------------------------------
+ * She asked for encouragement to appear after logging, different on
+ * different days. This is that.
+ *
+ * THE LINE THAT MATTERS MOST IN THIS FILE
+ * Nothing here praises a number for moving. Not weight, not blood
+ * pressure, not sleep hours, not blood sugar. A postpartum body being
+ * told well done for going down is how an app starts quietly running
+ * somebody's relationship with food, and that is not what this is for.
+ *
+ * What gets praised is the showing up. Recording it, going outside,
+ * reading two pages, taking the medicine, having twenty minutes that
+ * were hers. Those are things she did. A number on a scale is not.
+ *
+ * So the weight lines below acknowledge the act of keeping track and
+ * say nothing whatsoever about the direction, and there is no version
+ * of them that does.
+ *
+ * HOW A DAY PICKS ITS LINE
+ * Seeded on the date and the log type, so the same log on the same day
+ * gives the same words rather than reshuffling under her, and tomorrow
+ * gives different ones.
+ */
+
+const ENCOURAGE = {
+
+  /* ---- looking after herself ---- */
+  'mom-moved': [
+    'That counted. All of it counts.',
+    'Your body did something for you today rather than for everybody else.',
+    'Movement on a day like this is not a small thing.',
+    'Whatever that was, it was more than nothing, and nothing was very much on the table.',
+  ],
+  'mom-outside': [
+    'Daylight does something no amount of trying harder does.',
+    'Out of the house counts as a win. It is allowed to be the whole win.',
+    'Fresh air, and you made it happen on a day with a lot in it.',
+    'The doorstep counts. It always counted.',
+  ],
+  'mom-read': [
+    'Two pages is still reading. You kept a bit of your own head today.',
+    'Something that was not about anybody else. Good.',
+    'That is you staying a person as well as a parent.',
+  ],
+  'mom-forme': [
+    'Twenty minutes that were yours. That is not selfish, it is maintenance.',
+    'You are allowed to need care as well as give it.',
+    'Noted. This is the thing that runs out first and it just got topped up.',
+  ],
+
+  /* ---- her health ---- */
+  /* Every one of these has to survive being read on a weight card by
+     somebody watching for a verdict. No direction words at all, and
+     that includes ones that only mean direction by accident: "down
+     here whenever you want it" reads as the weight going down. */
+  'mom-weight': [
+    'Recorded. Nothing else, and no comment on the number.',
+    'Kept for you, and it will never have an opinion about it.',
+    'Logged. That is all this does.',
+    'Recorded with the date, which is the only thing this is for.',
+  ],
+  'mom-bp': [
+    'Kept. A run of these is exactly what a provider wants to see.',
+    'Worth having written down rather than remembered.',
+    'Recorded, with the date, which is the part memory loses.',
+  ],
+  'mom-sugar': [
+    'Recorded. Your numbers are between you and your provider.',
+    'Kept with the time, which is the bit that makes a pattern readable later.',
+  ],
+  'mom-sleep': [
+    'Broken sleep is a physical injury, not a character flaw. Lower every other bar today.',
+    'Written down. On the thin nights, please know the standard drops with the sleep.',
+    'That is going to show up in your patience later, and it will not be your fault.',
+  ],
+  'mom-mood': [
+    'Thank you for being honest with it. That is harder than it looks.',
+    'Said out loud, even just here. That is how it stops being only yours.',
+    'Noticing how you are is the first half of doing anything about it.',
+  ],
+  'mom-medication': [
+    'Timed and kept, so you are not doing that arithmetic while exhausted.',
+    'Recorded, which is the whole point on the days that blur.',
+  ],
+
+  /* ---- feeding ---- */
+  'mom-breastfeeding': [
+    'Down. Next time the app remembers the side so you do not have to.',
+    'That is another one done, at whatever hour it was.',
+    'Fed is fed, and you did it again.',
+  ],
+  'mom-pumping': [
+    'That is work, and it is rarely counted as work. It is counted here.',
+    'Kept. Every one of those took time you did not really have.',
+  ],
+  'mom-bottle': [
+    'Fed is fed. It was always fed is fed.',
+    'Down and noted.',
+  ],
+  'mom-stash': [
+    'Future you is going to be glad that is in the freezer.',
+    'Labelled and logged, so the oldest gets used first.',
+  ],
+
+  /* ---- after the birth ---- */
+  'mom-bleeding': [
+    'Kept, with the date. If it changes direction you will be able to see it rather than guess.',
+    'Written down, which is what makes the phone call easy if you need to make one.',
+  ],
+  'mom-pain': [
+    'Recorded. Pain that is getting worse rather than better is worth saying out loud.',
+    'Noted. You are not making a fuss by writing it down.',
+  ],
+  'mom-incision': [
+    'Kept. Comparing day to day is far more useful than trying to remember.',
+    'Written down, and worth a photo in good light alongside it.',
+  ],
+  'mom-temp': [
+    'Recorded, with the time.',
+    'Kept. If it climbs you will have the run of numbers to hand.',
+  ],
+
+  /* ---- pregnancy ---- */
+  'mom-kicks': [
+    'Counted and kept. Knowing their normal is the whole value of this.',
+    'Down, with the time it took.',
+  ],
+  'mom-contraction': [
+    'Timed. Keep going and the pattern will show itself.',
+    'Recorded, which beats counting in your head through one.',
+  ],
+  'mom-appointment': [
+    'Written down while it is fresh, including the thing you will otherwise forget to ask.',
+    'Kept. The questions at 2am are the ones that vanish in the room.',
+  ],
+};
+
+/* Used when a log type has no lines of its own, including every child
+   log, so nothing ever saves in silence. */
+const ENCOURAGE_ANY = [
+  'Down. You are keeping track of a lot.',
+  'Noted, with the time on it.',
+  'Kept. Small records add up to something useful later.',
+  'That is one more thing you will not have to hold in your head.',
+];
+
+/* A run of self care in one week, which is worth saying out loud
+   because it is the thing people never notice themselves doing. */
+const ENCOURAGE_RUNS = {
+  self: 'That is {n} times this week you have done something for yourself. That is a pattern, '
+    + 'and it is a good one.',
+  outside: 'You have been outside {n} times this week.',
+  moved: 'That is {n} times moving this week.',
+};
+
+/* Which log types count toward the run lines. */
+const SELFCARE_TYPES = ['mom-moved', 'mom-outside', 'mom-read', 'mom-forme'];
+
+/**
+ * One line, chosen by the day so it is steady within a day and
+ * different tomorrow.
+ */
+function encourageFor(typeId, seed) {
+  const list = ENCOURAGE[typeId] || ENCOURAGE_ANY;
+  const s = String(seed || '');
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  for (let i = 0; i < String(typeId || '').length; i++) {
+    h = (h * 31 + String(typeId).charCodeAt(i)) >>> 0;
+  }
+  return list[h % list.length];
+}
+
+function runLine(kind, n) {
+  const t = ENCOURAGE_RUNS[kind];
+  if (!t || n < 2) return '';
+  return t.replace('{n}', n);
+}
+
+/* What Willow is asked for when she is available to write it instead. */
+const ENCOURAGE_SYSTEM =
+  'You are Willow, writing one short warm line to a parent who has just recorded something in '
+  + 'their own log. One or two sentences, plain, never bubbly, never an exclamation mark. Praise '
+  + 'the fact they showed up or kept track, never a number and never a direction a number moved. '
+  + 'Say nothing at all about weight going up or down, about size, or about food. Do not give '
+  + 'advice unless it is the obvious kind comfort. Never diagnose. Return the line and nothing else.';
+
+function encouragePrompt(typeId, label, context) {
+  return 'They just logged: ' + label + '.'
+    + (context ? '\n\nRecently: ' + context : '')
+    + '\n\nWrite the one line.';
+}
 
 /* ===== src/data/cycle.js ===== */
 /**
@@ -20779,6 +21225,7 @@ function render() {
      Home. Two screens doing one job is how somebody logs a thing and
      lands somewhere that is not where they started, so the old one now
      simply hands over to the Logs tab. */
+  else if (v && v.type === 'caretaker') html = viewCaretaker(v.id);
   else if (v && v.type === 'screen' && v.id === 'momlogs') {
     state.view = null; state.tab = 'logs'; store.logWho = 'me'; html = screenLogsHub(c);
   }
@@ -21092,6 +21539,11 @@ function initControls() {
   });
 
   document.addEventListener('click', (e) => {
+    /* A word about something she just logged clears as soon as she does
+       the next thing, the same as the posted note. */
+    if (store.noted && e.target.closest('[data-tab],[data-go],[data-back],[data-logwho],[data-me],[data-child]')) {
+      store.noted = null;
+    }
     /* The "it is on your profile" line lasts until she goes anywhere,
        which is what a note about something that just happened should do. */
     if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
@@ -25013,6 +25465,7 @@ function saveLog(typeId) {
     values: values,
   });
   if (k.logs.length > 500) k.logs.length = 500;
+  notedSet(typeId);
   store.logDraft = { typeId: null, values: {} };
   if (store.logFrom) {
     state.tab = store.logFrom.tab;
@@ -26574,6 +27027,8 @@ function screenHome(c) {
     <p class="sect">Your cycle</p>
     ${cycleWidget()}
 
+    ${caretakerCards()}
+
     <p class="sect">For you</p>
     <button class="card learncard" data-go="learn" data-id="${esc(learn.id)}">
       <p class="eyebrow">${icon('bulb', 11, 'var(--sage)')} ${esc(learn.kind)}</p>
@@ -26831,15 +27286,127 @@ const MOM_URG_COLOR = {
 
 /* Where she is today, worked out rather than asked. The youngest
    child's age is what puts her in or out of the postpartum window. */
+/* Which child is the youngest, and how they arrived. The arrival is
+   the part that matters: a one month old who was adopted did not
+   arrive through the body of the person holding the phone. */
+function youngestChild() {
+  const real = store.children.filter((k) => !isExampleChild(k) && k.birthday);
+  if (!real.length) return null;
+  let best = null;
+  let bestMonths = null;
+  real.forEach((k) => {
+    const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+    const m = sum && sum.age ? sum.age.totalMonths : null;
+    if (m == null) return;
+    if (bestMonths == null || m < bestMonths) { bestMonths = m; best = k; }
+  });
+  return best ? { child: best, months: bestMonths } : null;
+}
+
+/* Did THIS person give birth recently.
+ *
+ * The app used to answer this with the youngest child's age alone,
+ * which quietly assumed whoever is holding the phone gave birth to
+ * them. An adoptive father with a one month old was being shown
+ * bleeding and stitches. He was not.
+ *
+ * Two things say otherwise, and either is enough: the child is marked
+ * as having arrived another way, or the person has told Settings they
+ * are an adoptive, foster, step, kinship or guardian carer and not a
+ * birth parent. With nothing said either way the app keeps the old
+ * behaviour, because withholding hemorrhage warnings from somebody who
+ * simply has not filled in Settings is the worse mistake of the two.
+ */
+function gaveBirthRecently() {
+  const y = youngestChild();
+  if (!y) return false;
+  const arrival = Array.isArray(y.child.arrival) ? y.child.arrival : [];
+  const notMine = ['adopted', 'fostered', 'step', 'kinship']
+    .some((id) => arrival.indexOf(id) !== -1);
+  if (notMine) return false;
+  const roles = situation().roles || [];
+  if (roles.length && roles.indexOf('birth') === -1) return false;
+  return true;
+}
+
 function momShape() {
-  const ages = childAges();
-  const youngest = ages.length ? Math.min.apply(null, ages) : null;
+  const y = youngestChild();
   const sit = situation();
   return {
-    monthsSinceBirth: youngest,
+    /* Null for anybody who did not give birth, which is what turns the
+       recovery content off rather than hiding it screen by screen. */
+    monthsSinceBirth: gaveBirthRecently() && y ? y.months : null,
+    /* Feeding is a separate question. Plenty of people who did not give
+       birth feed a baby, by bottle or by inducing lactation. */
     feeding: sitShows('feeding'),
     pregnant: hasStage(sit, 'expecting'),
+    youngestMonths: y ? y.months : null,
+    roles: sit.roles || [],
   };
+}
+
+/* Whoever is holding the phone, in the shape caretakers.js wants. */
+function caretakerShape() {
+  const sit = situation();
+  return {
+    roles: sit.roles || [],
+    support: sit.support || [],
+    gaveBirth: gaveBirthRecently(),
+    hasChildren: store.children.filter((k) => !isExampleChild(k)).length > 0,
+  };
+}
+
+function caretakerCards() {
+  const list = caretakerEntriesFor(caretakerShape());
+  if (!list.length) return '';
+  return `
+  <p class="sect">Written for you</p>
+  ${list.map((e) => `
+    <button class="card learncard" data-go="caretaker" data-id="${esc(e.id)}">
+      <p class="eyebrow">${icon('people', 11, 'var(--sage)')} ${esc(e.kind)}</p>
+      <h3 class="h3" style="font-size:16.5px;margin-top:5px">${esc(e.title)}</h3>
+      <p class="bodytext" style="margin-top:4px">${esc(e.blurb)}</p>
+      <span class="chip" style="margin-top:10px">Read this ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>`).join('')}
+  <p class="tiny" style="margin-top:2px">${esc(CARETAKER_NOTE)}</p>`;
+}
+
+function viewCaretaker(id) {
+  const e = caretakerEntry(id);
+  if (!e) return emptyScreen('That one is not here', 'Go back and pick again.');
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <p class="eyebrow" style="margin-top:6px">${esc(e.kind)}</p>
+    <h1 class="title" style="margin-top:3px">${esc(e.title)}</h1>
+  </div>
+  <div class="sc">
+    <div class="card flat">
+      ${String(e.body).split('\n\n').map((para) => `<p class="bodytext" style="margin-bottom:9px">${esc(para)}</p>`).join('')}
+    </div>
+
+    <p class="sect">What helps</p>
+    <div class="card">
+      <ul class="dlist">${e.helps.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+    </div>
+
+    <p class="sect">When it needs more than an app</p>
+    <div class="card flat" style="border-left:3px solid var(--attention)">
+      <p class="bodytext">${esc(e.getHelp)}</p>
+    </div>
+
+    <p class="sect">Somebody to talk to</p>
+    ${MATERNAL_SUPPORT_LINES.map((l) => `
+      <div class="card flat">
+        <p class="eyebrow">${icon('people', 11, 'var(--sage)')} ${esc(l.name)}</p>
+        <p class="bodytext" style="margin-top:4px">${esc(l.detail)}</p>
+        <a class="btn ghost sm" style="margin-top:9px;text-decoration:none;display:block;text-align:center"
+          href="tel:${esc(String(l.contact).replace(/[^0-9]/g, '').slice(-11))}">${esc(l.contact)}</a>
+      </div>`).join('')}
+    <p class="tiny" style="margin-top:8px">These take calls from partners and family too, not only
+    from the person who gave birth.</p>
+  </div>`;
 }
 
 function momNowRow(e) {
@@ -27541,6 +28108,7 @@ function momLogSave(typeId) {
   state.logDraft = { typeId: null, values: {} };
   store.logDraft = { typeId: null, values: {} };
   store.parentUpdatedAt = Date.now();
+  notedSet(typeId);
   /* Back to where she can see it, rather than to a dead end. */
   store.logWho = 'me';
   store.logDay = ciToday();
@@ -27639,6 +28207,68 @@ function medDueLine(name) {
     note: info.note + (count >= info.maxPer24h ? ' That is ' + count + ' in the last 24 hours, which is at or over the usual cap.' : ''),
     due: ok,
   };
+}
+
+/* ---------- A WORD AFTER SOMETHING IS LOGGED ----------
+
+   The written line ships and shows immediately. Willow rewrites it in
+   the background when she is reachable, on the same daily budget as
+   the rest of her background writing, and if she is not reachable the
+   written one simply stays. Nothing ever saves in silence. */
+
+function selfCareRun(kind) {
+  const since = Date.now() - 1000 * 60 * 60 * 24 * 7;
+  const want = kind === 'self' ? SELFCARE_TYPES
+    : kind === 'outside' ? ['mom-outside'] : ['mom-moved'];
+  return momLogs().filter((l) => want.indexOf(l.typeId) !== -1
+    && new Date(l.at).getTime() >= since).length;
+}
+
+function notedSet(typeId) {
+  const t = anyLogType(typeId);
+  const label = t ? t.label : 'that';
+  const day = ciToday();
+  store.noted = {
+    typeId: typeId,
+    text: encourageFor(typeId, day),
+    from: 'written',
+    at: Date.now(),
+  };
+  /* The run line only for the looking after yourself ones, and only
+     once there is actually a run to mention. */
+  if (SELFCARE_TYPES.indexOf(typeId) !== -1) {
+    store.noted.run = runLine('self', selfCareRun('self'));
+  }
+  /* Willow's version, when she is going. Same budget as the daily
+     affirmation so a heavy logging day cannot eat the chat. */
+  try {
+    if (typeof liftWrite === 'function') {
+      /* A fresh key each time, or liftWrite would only ever write one
+         of these per session. The daily cap still holds. */
+      liftWrite('noted:' + typeId + ':' + Date.now(), { typeId: typeId, label: label, parentName: (store.parent.name || '').trim().split(/\s+/)[0] || '' }, (text) => {
+        const line = String(text || '').trim().replace(/^["']|["']$/g, '');
+        if (!line || line.length > 240) return;
+        if (!store.noted || store.noted.typeId !== typeId) return;
+        store.noted.text = line;
+        store.noted.from = 'willow';
+      });
+    }
+  } catch (err) { /* the written line is already on screen */ }
+}
+
+/* Shown once, on the screen she lands on, then cleared by the next
+   thing she does. A note about something that just happened should not
+   still be there tomorrow. */
+function notedCard() {
+  const n = store.noted;
+  if (!n || !n.text) return '';
+  if (Date.now() - (n.at || 0) > 1000 * 60 * 10) return '';
+  return `
+  <div class="card notedcard">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(logWhoName('me'))}</p>
+    <p class="bodytext" style="margin-top:4px">${esc(n.text)}</p>
+    ${n.run ? `<p class="tiny" style="margin-top:7px">${icon('star', 10, 'var(--sage)')} ${esc(n.run)}</p>` : ''}
+  </div>`;
 }
 
 /* =================================================================
@@ -27893,6 +28523,8 @@ function screenLogsHub(c) {
       : 'What you have tracked for ' + esc(name) + ', and the version you can hand your pediatrician.'}</p>
   </div>
   <div class="sc">
+
+    ${notedCard()}
 
     ${logWhoStrip(who)}
 
@@ -29222,11 +29854,54 @@ function willowChildLine(c) {
    rather than from a textbook average. Nothing is sent when she has not
    logged anything. */
 function willowMotherLine() {
+  const bits = [];
+
+  /* Who she is to her children, so Willow never addresses an adoptive
+     father as though he gave birth. */
+  const sit = situation();
+  const roleLabels = (sit.roles || []).map((r) => {
+    const m = PARENT_ROLES.filter((x) => x.id === r)[0];
+    return m ? m.label : '';
+  }).filter(Boolean);
+  if (roleLabels.length) bits.push('She is: ' + roleLabels.join(', ') + '.');
+  if (!gaveBirthRecently()) bits.push('She did not give birth recently, so nothing about recovery '
+    + 'from a birth applies to her unless she raises it.');
+
+  /* Her cycle, when she has logged any of it. */
   const list = periods();
-  if (!list.length) return '';
-  const info = cycleInfoNow();
-  if (!info) return '';
-  return cycleForWillow(list, info, cycleStats(list)) + ' ' + CYCLE_WILLOW_BRIEF;
+  const info = list.length ? cycleInfoNow() : null;
+  if (info) bits.push(cycleForWillow(list, info, cycleStats(list)));
+
+  /* The last week of her own logs, so a question about how she has been
+     is answered from what she actually recorded. */
+  const since = Date.now() - 1000 * 60 * 60 * 24 * 7;
+  const recent = momLogs().filter((l) => new Date(l.at).getTime() >= since);
+  if (recent.length) {
+    const counts = {};
+    recent.forEach((l) => {
+      const t = anyLogType(l.typeId);
+      const label = t ? t.label : l.typeId;
+      counts[label] = (counts[label] || 0) + 1;
+    });
+    bits.push('In the last week she logged: '
+      + Object.keys(counts).map((k) => k.toLowerCase() + ' x' + counts[k]).join(', ') + '.');
+  }
+
+  /* And how she said the last few days went. */
+  const ci = momCheckins();
+  const days = Object.keys(ci).sort().reverse().slice(0, 3);
+  if (days.length) {
+    bits.push('Her last check ins: ' + days.map((d) => {
+      const v = ci[d] || {};
+      return d + ' ' + MOM_CHECKIN.rows.map((r) => v[r.id]).filter(Boolean).join('/');
+    }).join('; ') + '.');
+  }
+
+  if (!bits.length) return '';
+  return bits.join(' ') + ' '
+    + (info ? CYCLE_WILLOW_BRIEF + ' ' : '')
+    + 'Use any of this only if the question is about her. Never read her logs back at her '
+    + 'unprompted, never comment on weight or a number moving, and never diagnose.';
 }
 
 function willowSay(who, text, sources, kind, key) {
