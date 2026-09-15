@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-15 21:44">
+<meta name="rsg-build" content="2026-09-15 22:09">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -457,8 +457,41 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 .postpic-x{
   position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;
   background:rgba(0,0,0,.55);border:0;cursor:pointer;display:grid;place-items:center;
-  transform:rotate(45deg);
+  transform:rotate(45deg);z-index:2;
 }
+/* VIDEO AND VOICE IN A POST.
+   A video fills its tile the way a photo does. A voice memo has nothing
+   to look at, so it gets a row with the player in it rather than a
+   black rectangle pretending to be a picture. */
+.postpic.vid video{width:100%;height:100%;object-fit:cover;display:block;max-height:340px;background:#000}
+.postpics.draft .postpic.vid video{aspect-ratio:1;max-height:none}
+.postpic.aud{
+  display:flex;align-items:center;gap:9px;padding:10px 11px;
+  background:#F1F4EB;border:1px solid var(--line2);
+}
+.postpics.draft .postpic.aud{aspect-ratio:auto}
+.postpic.aud audio{flex:1;min-width:0;height:34px}
+.aud-x{
+  width:26px;height:26px;border-radius:50%;flex:none;border:1px solid var(--line2);
+  background:var(--surface);color:var(--muted);font-size:17px;line-height:1;
+  cursor:pointer;display:grid;place-items:center;
+}
+/* An audio row is a row, so it takes the width rather than a quarter
+   of it, whatever else is in the post. */
+.postpics .postpic.aud{grid-column:1 / -1}
+
+/* WHILE A FILE IS GOING UP.
+   A video on a phone connection is long enough that silence reads as
+   nothing happening. */
+.upbar{
+  position:relative;margin-top:9px;height:26px;border-radius:9px;overflow:hidden;
+  background:var(--leaf3);display:flex;align-items:center;
+}
+.upbar-fill{
+  position:absolute;inset:0 auto 0 0;background:var(--leaf);
+  transition:width .2s ease-out;
+}
+.upbar-t{position:relative;padding:0 10px;color:var(--deep);font-weight:600}
 
 .profstats{
   display:flex;gap:18px;justify-content:center;flex-wrap:wrap;
@@ -1149,7 +1182,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-15 21:44';
+const BUILD_STAMP = '2026-09-15 22:09';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -19012,6 +19045,24 @@ function memoryKind(id) {
   return MEMORY_KINDS.filter((k) => k.id === id)[0] || null;
 }
 
+/* WHAT A POST CAN CARRY.
+ *
+ * The same three file kinds and the same size limits as a memory, and
+ * deliberately the same code path underneath, because a post with a
+ * video in it and a memory with a video in it are the same problem and
+ * two answers to it would drift apart within a month.
+ *
+ * Posts are capped lower than memories on purpose. A memory is a
+ * keepsake and you may want six angles of the same birthday. A post is
+ * something you are saying, and four is already a lot to scroll past.
+ */
+const POST_MEDIA = MEMORY_KINDS.filter((k) => !!k.accept);
+const POST_MAX_FILES = 4;
+
+function postMediaKind(id) {
+  return POST_MEDIA.filter((k) => k.id === id)[0] || null;
+}
+
 /* What a memory looks like on the record.
  *
  *   id        stable, never reused
@@ -22514,8 +22565,17 @@ function initControls() {
       const how = t.dataset.post;
       if (how === 'open') { store.postOpen = true; postDraft(); }
       else if (how === 'save') postSave();
-      else if (how === 'discard') { store.postDraft = null; store.postOpen = false; store.photoError = ''; store.emojiOpen = false; flushStore(); }
+      else if (how === 'discard') {
+        /* Anything already uploaded for a post that is being thrown
+           away is a file nobody will ever see. */
+        const dropped = postDraft().files.slice();
+        store.postDraft = null; store.postOpen = false; store.photoError = ''; store.emojiOpen = false;
+        flushStore();
+        deleteStoredFiles(dropped);
+      }
       else if (how === 'unpic') postPhotoRemove(t.dataset.i);
+      else if (how === 'unfile') postFileRemove(t.dataset.i);
+      else if (how === 'pick') { postPick(t.dataset.kind); return; }
       else if (how === 'vis') { postSetVisibility(t.dataset.id || 'draft', t.dataset.vis); return; }
       else if (how === 'del') { postDelete(t.dataset.id); return; }
       else if (how === 'react') { postReact(t.dataset.id, t.dataset.r); return; }
@@ -26888,26 +26948,147 @@ const POST_VISIBILITY = [
 
 function postDraft() {
   if (!store.postDraft || typeof store.postDraft !== 'object') {
-    store.postDraft = { text: '', photos: [], visibility: 'private', childId: '' };
+    store.postDraft = { text: '', photos: [], files: [], visibility: 'private', childId: '' };
   }
+  /* photos is the old shape, a list of data URLs sitting on the record
+     itself. Everything new goes into files, which holds links to
+     Storage instead. Both are read, only files is written, and posts
+     she made before this build keep working untouched. */
   if (!Array.isArray(store.postDraft.photos)) store.postDraft.photos = [];
+  if (!Array.isArray(store.postDraft.files)) store.postDraft.files = [];
   return store.postDraft;
 }
 
 function postHasContent() {
   const d = postDraft();
-  return !!(String(d.text || '').trim() || d.photos.length);
+  return !!(String(d.text || '').trim() || d.photos.length || d.files.length);
+}
+
+/* THE PICKER, appended to the body once at boot.
+
+   Same reason as the photo one and the memory one: an input living
+   inside the part of the page that gets rebuilt on every repaint does
+   not survive a phone backgrounding the app while the camera roll is
+   open, and the file comes back to an element that no longer exists.
+   That is how Stetson's photo went missing the first time. */
+let postInput = null;
+let postKind = 'photo';
+
+function ensurePostInput() {
+  if (postInput && postInput.isConnected) return postInput;
+  const el = document.createElement('input');
+  el.type = 'file';
+  el.id = 'rsgPostIn';
+  el.style.position = 'fixed';
+  el.style.left = '-9999px';
+  el.setAttribute('aria-hidden', 'true');
+  el.addEventListener('change', () => {
+    const file = el.files && el.files[0];
+    el.value = '';
+    if (!file) return;
+    postTakeFile(file, postKind);
+  });
+  document.body.appendChild(el);
+  postInput = el;
+  return el;
+}
+
+function postPick(kind) {
+  const d = postDraft();
+  const k = postMediaKind(kind);
+  if (!k) return;
+  if (d.photos.length + d.files.length >= POST_MAX_FILES) {
+    store.photoError = 'That is ' + POST_MAX_FILES + ' already, which is as many as one post holds.';
+    render();
+    return;
+  }
+  postKind = kind;
+  const el = ensurePostInput();
+  el.accept = k.accept;
+  store.photoError = '';
+  try { el.click(); } catch (err) {
+    store.photoError = 'This browser would not open the picker.';
+    render();
+  }
+}
+
+async function postTakeFile(file, kind) {
+  const big = tooBigMessage(kind, file.size || 0);
+  if (big) { store.photoError = big; render(); return; }
+
+  store.photoBusy = 1;
+  store.photoError = '';
+  /* The box has to be open to show the progress, and picking a file
+     from the folded composer is a real way in. */
+  store.postOpen = true;
+  render();
+
+  try {
+    const saved = await uploadFile(file, kind, (pct) => {
+      store.photoBusy = Math.max(1, pct);
+      render();
+    });
+    const cur = postDraft();
+    cur.files.push(saved);
+    store.photoBusy = 0;
+    flushStore();
+    render();
+  } catch (err) {
+    store.photoBusy = 0;
+    store.photoError = 'That did not upload. ' + (navigator.onLine === false
+      ? 'You are offline at the moment, so it is worth trying again when you are back.'
+      : 'Worth trying again, and if it keeps failing tell me and I will look at it.');
+    render();
+  }
+}
+
+function postFileRemove(i) {
+  const d = postDraft();
+  const gone = d.files.splice(Number(i), 1);
+  flushStore();
+  render();
+  /* Nothing has been posted yet, so a file dropped here is a file
+     nobody will ever see and no reason to keep paying for. */
+  deleteStoredFiles(gone);
+}
+
+/* One block, whatever the file turns out to be. Kept beside the memory
+   version rather than merged with it, because a post plays inline and
+   a memory sits in a card, and forcing one function to do both is how
+   both end up slightly wrong. */
+function postFileBlock(f, i, editing) {
+  if (!f) return '';
+  const x = editing
+    ? `<button class="postpic-x" data-post="unfile" data-i="${i}" aria-label="Remove">${icon('plus', 14, '#fff')}</button>`
+    : '';
+  if (f.kind === 'video') {
+    return `<span class="postpic vid"><video src="${esc(f.url)}" controls preload="metadata" playsinline></video>${x}</span>`;
+  }
+  if (f.kind === 'audio') {
+    /* The remove button sits at the end of the row rather than floating
+       over the corner, because a voice memo row is wide and a corner
+       button lands on top of the player's own controls. */
+    const audX = editing
+      ? `<button class="aud-x" data-post="unfile" data-i="${i}" aria-label="Remove">&times;</button>`
+      : '';
+    return `<span class="postpic aud">${icon('note', 16, 'var(--deep)')}<audio src="${esc(f.url)}" controls preload="metadata"></audio>${audX}</span>`;
+  }
+  return `<span class="postpic"><img src="${esc(f.url)}" alt="" loading="lazy" />${x}</span>`;
 }
 
 function postSave() {
   const d = postDraft();
   const text = String(d.text || '').trim();
-  if (!text && !d.photos.length) return;
+  if (!text && !d.photos.length && !d.files.length) return;
+  /* Posting while a video is still going up would save a post with a
+     hole in it, so the button is off until the upload lands. */
+  if (store.photoBusy) return;
   store.posts = Array.isArray(store.posts) ? store.posts : [];
   store.posts.unshift({
     id: 'p' + Date.now() + Math.floor(Math.random() * 1000),
     text: text,
-    photos: d.photos.slice(0, 4),
+    photos: d.photos.slice(0, POST_MAX_FILES),
+    files: d.files.slice(0, POST_MAX_FILES),
     visibility: d.visibility === 'public' ? 'public' : 'private',
     childId: d.childId || '',
     at: Date.now(),
@@ -26931,10 +27112,14 @@ function postSave() {
 }
 
 function postDelete(id) {
+  const post = (store.posts || []).filter((p) => p.id === id)[0];
   store.posts = (store.posts || []).filter((p) => p.id !== id);
   store.parentUpdatedAt = Date.now();
   flushStore();
   render();
+  /* The files go after the record, so the screen never waits on the
+     network to show that the post is gone. */
+  if (post) deleteStoredFiles(post.files);
 }
 
 /* Who is reacting. One person on this account today, but the map is
@@ -27058,6 +27243,7 @@ function postComposer() {
   }
 
   const vis = d.visibility === 'public' ? 'public' : 'private';
+  const full = (d.photos.length + d.files.length) >= POST_MAX_FILES;
   return `
   <div class="card composer">
     <div style="display:flex;gap:10px;align-items:flex-start">
@@ -27066,7 +27252,7 @@ function postComposer() {
         placeholder="What is on your mind${first ? ', ' + esc(first) : ''}?">${esc(d.text || '')}</textarea>
     </div>
 
-    ${d.photos.length ? `
+    ${d.photos.length || d.files.length ? `
     <div class="postpics draft">
       ${d.photos.map((p, i) => `
         <span class="postpic">
@@ -27075,12 +27261,22 @@ function postComposer() {
             ${icon('plus', 14, '#fff')}
           </button>
         </span>`).join('')}
+      ${d.files.map((f, i) => postFileBlock(f, i, true)).join('')}
+    </div>` : ''}
+
+    ${store.photoBusy ? `
+    <div class="upbar" role="status">
+      <span class="upbar-fill" style="width:${Math.max(4, Math.min(100, Number(store.photoBusy) || 4))}%"></span>
+      <span class="tiny upbar-t">Uploading, ${Math.min(100, Number(store.photoBusy) || 0)}%</span>
     </div>` : ''}
 
     <div class="composer-bar">
-      <button class="chip" data-photopick="post" ${d.photos.length >= 4 || store.photoBusy ? 'disabled' : ''}>
-        ${icon('camera', 13, 'var(--deep)')} ${store.photoBusy ? 'Working on it' : 'Photo'}
-      </button>
+      ${POST_MEDIA.map((k) => `
+        <button class="chip" data-post="pick" data-kind="${esc(k.id)}"
+          ${full || store.photoBusy ? 'disabled' : ''}>
+          ${icon(k.id === 'video' ? 'eye' : k.id === 'audio' ? 'note' : 'camera', 13, 'var(--deep)')}
+          ${esc(k.label)}
+        </button>`).join('')}
       <button class="chip${store.emojiOpen ? ' on' : ''}" data-post="emojis"
         ${store.emojiOpen ? 'style="background:var(--leaf2);border-color:var(--leaf)"' : ''}>
         <span class="emo">\uD83D\uDE0A</span> Emoji
@@ -27106,13 +27302,16 @@ function postComposer() {
     ${vis === 'public' ? `
     <p class="tiny" style="margin-top:6px">
       ${esc((POST_VISIBILITY.filter((v) => v.id === vis)[0] || {}).help || '')}
-      ${d.photos.length ? ' This post has a photo in it. Once it is out there you cannot take it back.' : ''}
+      ${d.photos.length + d.files.length
+        ? ' There is ' + (d.photos.length + d.files.length === 1 ? 'a file' : 'more than one file')
+          + ' attached to this. Once it is out there you cannot take it back.'
+        : ''}
     </p>` : ''}
     ${store.photoError ? `<p class="tiny" style="margin-top:6px;color:#A85A44">${esc(store.photoError)}</p>` : ''}
 
     <div style="display:flex;gap:8px;margin-top:11px;justify-content:flex-end;flex-wrap:wrap">
       <button class="chip" data-post="discard">Discard</button>
-      <button class="btn" data-post="save" ${postHasContent() ? '' : 'disabled'}
+      <button class="btn" data-post="save" ${postHasContent() && !store.photoBusy ? '' : 'disabled'}
         style="width:auto;flex:none;padding:10px 20px">Post</button>
     </div>
   </div>`;
@@ -27166,9 +27365,10 @@ function postCard(p, own) {
 
     ${p.text ? `<p class="bodytext" style="margin-top:9px;white-space:pre-wrap">${esc(p.text)}</p>` : ''}
 
-    ${(p.photos || []).length ? `
-    <div class="postpics n${Math.min(4, p.photos.length)}">
-      ${p.photos.map((src) => `<span class="postpic"><img src="${esc(src)}" alt="" /></span>`).join('')}
+    ${(p.photos || []).length + (p.files || []).length ? `
+    <div class="postpics n${Math.min(4, (p.photos || []).length + (p.files || []).length)}">
+      ${(p.photos || []).map((src) => `<span class="postpic"><img src="${esc(src)}" alt="" loading="lazy" /></span>`).join('')}
+      ${(p.files || []).map((f, i) => postFileBlock(f, i, false)).join('')}
     </div>` : ''}
 
     ${p.visibility === 'public' ? reactionBar(p) : ''}
