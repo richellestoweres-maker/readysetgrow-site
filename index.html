@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-15 22:09">
+<meta name="rsg-build" content="2026-09-16 19:04">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -411,6 +411,15 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 }
 .obwhat-t{display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.35}
 .obwhat-b{display:block;font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+
+/* WILLOW ON TODAY, above the plan.
+   Her leaf beside it so it plainly reads as her voice rather than as
+   another block of app copy. */
+.planframe{display:flex;gap:11px;align-items:flex-start;background:#F1F4EB;border:1px solid var(--line2)}
+.planframe-face{
+  width:28px;height:28px;border-radius:50%;flex:none;margin-top:1px;
+  background:var(--deep);display:grid;place-items:center;
+}
 
 /* LEARNING CARD. */
 .learncard{
@@ -1182,7 +1191,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-15 22:09';
+const BUILD_STAMP = '2026-09-16 19:04';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -17048,6 +17057,12 @@ function liftPrompt(kind, context) {
     return nudgePrompt(c.reason, c);
   }
 
+  /* The words around today's plan. The activities are the library's,
+     this is the only part Willow writes. See planFraming.js. */
+  if (String(kind).indexOf('planframe:') === 0) {
+    return planFramingPrompt(c);
+  }
+
   if (kind === 'checkin') {
     return [
       'A parent has just recorded how today went for one of her children. Respond to her, briefly.',
@@ -19606,6 +19621,137 @@ const NUDGE_OPENERS = {
   back: 'I have been away a while.',
 };
 
+/* ===== src/data/planFraming.js ===== */
+/**
+ * Ready Set Grow: The Words Around Today's Plan
+ * ------------------------------------------------------------------
+ * She asked whether Today's Plan would change daily once the AI was
+ * connected, and she chose the hybrid answer: the activities keep
+ * coming from her own library, and Willow writes fresh words around
+ * them each day.
+ *
+ * WHY THE ACTIVITIES ARE NOT GENERATED
+ * Everything in the activity library was written for a specific age
+ * band, checked against what a child that age can actually do, and is
+ * safe to hand a tired parent at seven in the morning. A model asked to
+ * invent an activity for a fourteen month old will cheerfully suggest
+ * something involving scissors. So the library picks what to do, and
+ * that is not negotiable.
+ *
+ * WHAT WILLOW ACTUALLY ADDS
+ * The thing a plan made of three library entries cannot do on its own:
+ * say why THESE THREE, TODAY, for THIS CHILD. That is the difference
+ * between a list and somebody having thought about your morning.
+ *
+ * ONE PIECE OF WRITING PER CHILD PER DAY.
+ * Not one per item. Four calls a child a day would eat the budget that
+ * the chat needs, and a parent with two children would burn through it
+ * before lunch.
+ *
+ * AND THE RULE THAT HOLDS EVERYWHERE ELSE IN THIS APP HOLDS HERE:
+ * the written version ships, Willow replaces it when she can, and the
+ * screen is never blank while she thinks.
+ */
+
+/* Openers by age band. Each one has to make sense standing alone,
+   because on any day the model is unavailable this IS the framing.
+   They talk about the shape of the day rather than the activities, so
+   they are true whatever the library picked. */
+const FRAMING_BY_BAND = {
+  baby: [
+    'At this age the plan is mostly you. Your face, your voice, and the same few things often '
+    + 'enough that they start to expect them. None of it has to be done properly.',
+    'Everything below is optional. A day where you fed them, changed them and held them is a '
+    + 'complete day at this age, and the rest is a bonus if you have it in you.',
+    'They are learning what the world is like from how you handle it, which means a calm ten '
+    + 'minutes counts for more than a perfect hour.',
+  ],
+  toddler: [
+    'Expect about half of this to work. A toddler who refuses the activity and then plays with '
+    + 'the box it came in has still had the good part of it.',
+    'Two of these will land and one will not, and which one is which changes daily. Follow '
+    + 'whichever one they are still interested in after two minutes.',
+    'At this age the point is doing it alongside you rather than doing it right. Let them lead '
+    + 'it somewhere odd, that is the bit their brain is actually using.',
+  ],
+  preschool: [
+    'This is the age where they want to know why, constantly. Any of these will work better if '
+    + 'you let the questions take it off course.',
+    'Pick one. A whole plan done badly because everybody is tired is worse than one thing done '
+    + 'properly while you are both enjoying it.',
+    'They can hold a plan in their head now, so telling them what is coming next makes most of '
+    + 'today easier than just starting it.',
+  ],
+  school: [
+    'They have been following instructions from somebody else all day, so anything here works better '
+    + 'if they get to choose how it goes.',
+    'The talking matters more than the activity at this age. Most of these are really just an '
+    + 'excuse to be next to each other for twenty minutes.',
+    'Some of this will feel babyish to them and some will feel about right. Let them tell you '
+    + 'which, it is useful information.',
+  ],
+  tween: [
+    'Anything that feels like a scheduled activity will be rejected on principle at this age. '
+    + 'Use these as something to do while you talk, not as the point.',
+    'Being in the same room doing separate things still counts. Most of what they tell you at '
+    + 'this age arrives sideways rather than when you ask.',
+    'They are working out who they are away from you, which is the job. Staying available '
+    + 'without hovering is most of what today needs from you.',
+  ],
+  teen: [
+    'The plan at this age is mostly being reachable. Pick whichever of these gives you a reason '
+    + 'to be in the same space without it being a conversation they have to perform.',
+    'They will not want any of this framed as an activity. A car journey, cooking, or a walk is '
+    + 'where the actual talking happens.',
+    'Most of parenting a teenager is short moments you did not plan. These are just ways of '
+    + 'being around for more of them.',
+  ],
+};
+
+function planBand(months) {
+  if (months == null) return 'preschool';
+  if (months < 12) return 'baby';
+  if (months < 36) return 'toddler';
+  if (months < 72) return 'preschool';
+  if (months < 132) return 'school';
+  if (months < 168) return 'tween';
+  return 'teen';
+}
+
+function writtenFraming(months, seed) {
+  const list = FRAMING_BY_BAND[planBand(months)] || FRAMING_BY_BAND.preschool;
+  const n = String(seed || '').split('').reduce((a, ch) => a + ch.charCodeAt(0), 0);
+  return list[n % list.length];
+}
+
+/* What Willow is asked. She is given the actual titles so she can refer
+   to them, which is the whole reason this is worth a model call. */
+function planFramingPrompt(ctx) {
+  const c = ctx || {};
+  const items = (c.items || []).filter(Boolean);
+  return [
+    'A parent is about to open the plan for one of their children in a parenting app.',
+    'Write the short paragraph that sits at the top of it.',
+    c.childName ? 'The child: ' + c.childName + (c.ageLabel ? ', ' + c.ageLabel : '') + '.' : '',
+    items.length ? 'What the plan actually holds today: ' + items.join('; ') + '.' : '',
+    c.focus ? 'The development focus for their age right now: ' + c.focus + '.' : '',
+    '',
+    'Two or three sentences, sixty words maximum.',
+    'Say something true about doing THESE things with a child THIS age today. You may name one '
+    + 'of them. Do not list them all back, they are already on the screen underneath.',
+    'Speak to the parent, not about them.',
+    'Do not invent an activity that is not in the list, and do not suggest an alternative one.',
+    'Do not promise an outcome, do not tell them it will be fun, and do not tell them to enjoy it.',
+    'No exclamation marks, no emoji, no headings, no sign off.',
+    'Do not use dashes as punctuation, use commas and full stops.',
+    'Return the paragraph only.',
+  ].filter(Boolean).join('\n');
+}
+
+/* The eyebrow above it. Named rather than generic, because "Today" on a
+   screen called Today's Plan says nothing. */
+const PLAN_FRAMING_LABEL = 'Willow on today';
+
 /* ===== src/data/cycle.js ===== */
 /**
  * Ready Set Grow: Cycle And Dates
@@ -21066,6 +21212,11 @@ const store = {
      not reset her restraint. */
   nudge: {},
 
+  /* Willow's framing for today's plan, one per child, thrown away at
+     midnight when the plan itself changes. Never synced: it is a day
+     old at most and regenerating it costs less than carrying it. */
+  planLift: null,
+
   /* The day the "a year ago today" card was waved away, so it stays
      away until tomorrow rather than coming back on the next reload. */
   memDayHidden: '',
@@ -21259,6 +21410,7 @@ function flushStore() {
       memDayHidden: store.memDayHidden,
       onboard: store.onboard,
       nudge: store.nudge,
+      planLift: store.planLift,
       deletedMemoryIds: store.deletedMemoryIds,
       postDraft: store.postDraft,
       msEdit: store.msEdit,
@@ -21361,6 +21513,7 @@ function loadStore() {
     store.onboard = (saved.onboard && typeof saved.onboard === 'object')
       ? saved.onboard : { open: false, done: false, step: 'hello', line: '', lineFrom: '' };
     store.nudge = (saved.nudge && typeof saved.nudge === 'object') ? saved.nudge : {};
+    store.planLift = (saved.planLift && typeof saved.planLift === 'object') ? saved.planLift : null;
     store.postDraft = (saved.postDraft && typeof saved.postDraft === 'object') ? saved.postDraft : null;
   }
 
@@ -21488,10 +21641,64 @@ function buildPlan(c) {
   return { morning, learning, move, script, mins };
 }
 
+/* THE WORDS AROUND THE PLAN.
+
+   The activities are the library's, the framing is Willow's. See
+   src/data/planFraming.js for why it is split that way. Cached per
+   child per day, so opening the plan eleven times is one piece of
+   writing, and it rewrites itself at midnight along with the plan. */
+function planLift() {
+  const day = ciToday();
+  if (!store.planLift || typeof store.planLift !== 'object' || store.planLift.day !== day) {
+    store.planLift = { day: day, byChild: {} };
+  }
+  if (!store.planLift.byChild || typeof store.planLift.byChild !== 'object') {
+    store.planLift.byChild = {};
+  }
+  return store.planLift;
+}
+
+function planFraming(c, p) {
+  const kid = activeChild();
+  const id = kid ? kid.id : 'none';
+  const pl = planLift();
+  let entry = pl.byChild[id];
+
+  if (!entry) {
+    entry = {
+      text: writtenFraming(c.months, pl.day + id),
+      from: 'written',
+    };
+    pl.byChild[id] = entry;
+
+    /* Willow is given the titles the library actually chose, which is
+       the only reason this is worth a call: she can say something about
+       these three today rather than something generic about parenting. */
+    const items = [p.morning, p.learning, p.move]
+      .filter(Boolean).map((a) => a.title);
+    liftWrite('planframe:' + id + ':' + pl.day, {
+      childName: (c.child && c.child.name) || '',
+      ageLabel: (c.summary && c.summary.label) || '',
+      items: items,
+      focus: c.content && c.content[0] ? c.content[0].title : '',
+    }, (text) => {
+      const line = String(text || '').trim();
+      /* A wall of text at the top of a plan would push the plan itself
+         off the screen, which is the opposite of the point. */
+      if (!line || line.length > 420) return;
+      const cur = planLift();
+      if (cur.day !== pl.day) return;
+      cur.byChild[id] = { text: line, from: 'willow' };
+    });
+  }
+  return entry;
+}
+
 function screenPlan(c) {
   if (c.months == null) return emptyScreen('Add a birthday to see a plan.');
   const p = buildPlan(c);
   const focus = c.content[0];
+  const frame = planFraming(c, p);
 
   const item = (eyebrow, ic, title, text, btn, go) => `
     <div class="plan">
@@ -21512,6 +21719,14 @@ function screenPlan(c) {
     <p class="sub">${esc(c.child.name)} &middot; ${esc(c.summary.label)}</p>
   </div>
   <div class="sc">
+    <div class="card planframe">
+      <span class="planframe-face">${icon('leaf', 14, '#fff')}</span>
+      <div class="grow">
+        <p class="eyebrow">${esc(PLAN_FRAMING_LABEL)}</p>
+        <p class="bodytext" style="margin-top:4px">${esc(frame.text)}</p>
+      </div>
+    </div>
+
     ${focus ? `
     <div class="card leafy">
       <p class="eyebrow">Today's Development Focus</p>
@@ -29022,7 +29237,17 @@ function screenMyProfile() {
     ${editing ? facePicker('me', v.photo) : ''}
     ${editing ? editUnsavedNote() : ''}
 
-    ${postComposer()}
+    ${/* The box she writes in lives on Home and only on Home. This page
+          is where the posts LAND, which is the whole reason they are two
+          different screens. A second composer here was the same thing in
+          two places, and she has already had to say once that two
+          screens doing one job is how somebody ends up somewhere that is
+          not where they started. */ ''}
+    ${posts.length ? '' : `
+    <p class="tiny" style="text-align:center;padding:4px 0 2px">
+      Nothing posted yet. The box to write in is on Home.
+      <button class="chip" style="margin-left:6px" data-tab="home">Go there</button>
+    </p>`}
 
     ${posts.map((x) => postCard(x, true)).join('')}
 
