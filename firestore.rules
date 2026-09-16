@@ -70,6 +70,86 @@ service cloud.firestore {
     }
 
     /* ---------------------------------------------------------------
+     * WHO IS ALLOWED TO APPROVE THINGS
+     *
+     * One document per moderator, holding nothing. Its existence is the
+     * whole permission. Kept as documents rather than hardcoded uids so
+     * a second moderator can be added from the console without anybody
+     * redeploying these rules at two in the morning.
+     *
+     * Nobody can write this collection from the app. It is edited in the
+     * Firebase console only, which is the point: an account that could
+     * make itself a moderator is not a moderation system.
+     * --------------------------------------------------------------- */
+    function isModerator() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/moderators/$(request.auth.uid));
+    }
+
+    match /moderators/{uid} {
+      allow read: if isOwner(uid);
+      allow write: if false;
+    }
+
+    /* ---------------------------------------------------------------
+     * THE SHARED FEED
+     *
+     * NOTHING IS PUBLIC UNTIL A PERSON APPROVES IT. That is the rule
+     * this whole block exists to enforce, and it is enforced here rather
+     * than in the app, because rules are the only place a promise about
+     * who can see what is actually kept.
+     *
+     * A new post is created with status 'pending' and the rules refuse
+     * any other value on create, so an account cannot publish itself by
+     * sending a different field. A pending post is readable by its own
+     * author and by a moderator, and by nobody else. Only a moderator
+     * can move it to 'live', and only a moderator can move it to
+     * 'removed'.
+     *
+     * A post carries a username and never a child id, a birthday, or a
+     * name. That is the structural half of the promise that a child's
+     * record never becomes community content.
+     * --------------------------------------------------------------- */
+    match /feed/{postId} {
+      allow read: if signedIn() && (
+        resource.data.status == 'live'
+        || resource.data.authorUid == request.auth.uid
+        || isModerator()
+      );
+
+      allow create: if isAuthor()
+        && request.resource.data.status == 'pending'
+        && request.resource.data.body is string
+        && request.resource.data.body.size() > 0
+        && request.resource.data.body.size() <= 4000
+        && request.resource.data.username is string
+        && request.resource.data.username.size() > 0
+        && !('childId' in request.resource.data)
+        && !('birthday' in request.resource.data)
+        && !('childName' in request.resource.data);
+
+      /* A moderator decides what is live. An author may fix their own
+         wording while it is still waiting, and may not touch the status
+         while doing it. */
+      allow update: if isModerator()
+        || (ownsExisting()
+            && resource.data.status == 'pending'
+            && request.resource.data.status == 'pending'
+            && request.resource.data.authorUid == resource.data.authorUid
+            && request.resource.data.body.size() <= 4000);
+
+      allow delete: if ownsExisting() || isModerator();
+
+      /* One document per person per post, so nobody can overwrite
+         everybody else's reactions by writing a map. */
+      match /reactions/{uid} {
+        allow read: if signedIn();
+        allow write: if isOwner(uid)
+          && (request.method == 'delete' || request.resource.data.r is string);
+      }
+    }
+
+    /* ---------------------------------------------------------------
      * COMMUNITY
      * Any signed in parent can read a room. You may only write as
      * yourself, you may only edit or delete your own, and a post may

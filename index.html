@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-16 19:04">
+<meta name="rsg-build" content="2026-09-16 20:45">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -419,6 +419,18 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 .planframe-face{
   width:28px;height:28px;border-radius:50%;flex:none;margin-top:1px;
   background:var(--deep);display:grid;place-items:center;
+}
+
+/* THE SHARED FEED. */
+.feedtabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.feedtabs .chip.on{background:var(--leaf2);border-color:var(--leaf);color:var(--deep);font-weight:600}
+.feedav{
+  width:36px;height:36px;border-radius:50%;flex:none;
+  background:var(--leaf3);display:grid;place-items:center;
+}
+.feedstatus{
+  margin-top:9px;padding-top:8px;border-top:1px solid rgba(0,0,0,.055);
+  display:flex;align-items:flex-start;gap:6px;
 }
 
 /* LEARNING CARD. */
@@ -1191,7 +1203,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-16 19:04';
+const BUILD_STAMP = '2026-09-16 20:45';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -19103,14 +19115,25 @@ function newMemory(who, kind) {
 }
 
 /** A child's memories are private. There is no argument with this one. */
-function memoryVisibility(mem) {
-  if (!mem) return 'private';
-  if (mem.who && mem.who !== 'me') return 'private';
-  return mem.visibility === 'public' ? 'public' : 'private';
+/* EVERY MEMORY IS PRIVATE. HERS TOO.
+
+   Hers could once be shared, the same as a post. She changed that and
+   she was right: a post is something you are saying, a memory is
+   something you are keeping. The two were sitting next to each other on
+   her profile offering the same button and meaning completely different
+   things, which is exactly how somebody shares a thing they meant to
+   keep.
+
+   So sharing lives on posts, in one place, and memories are a private
+   shelf. Nothing here can be made public by the app, by a setter, or by
+   editing the record, and the function below is the single place that
+   is decided. */
+function memoryVisibility() {
+  return 'private';
 }
 
-function canBePublic(who) {
-  return who === 'me';
+function canBePublic() {
+  return false;
 }
 
 /* ------------------------------------------------------------------
@@ -19203,8 +19226,8 @@ const MEMORY_PRIVACY_CHILD = 'Memories on a child\'s profile are private, always
   + 'no way to make one public, because a page you keep about a child is for documenting them, '
   + 'never for sharing them.';
 
-const MEMORY_PRIVACY_MINE = 'Yours can be private or shared, the same as a post. Private is '
-  + 'the default and sharing is always something you press.';
+const MEMORY_PRIVACY_MINE = 'Yours are private too. Memories are a shelf you keep, not '
+  + 'something you say. Anything you want other people to see goes in a post instead.';
 
 const MEMORY_KEEP_NOTE = 'Kept until you delete it. Nothing here expires, tidies itself up, '
   + 'or drops the oldest when the list gets long.';
@@ -19751,6 +19774,191 @@ function planFramingPrompt(ctx) {
 /* The eyebrow above it. Named rather than generic, because "Today" on a
    screen called Today's Plan says nothing. */
 const PLAN_FRAMING_LABEL = 'Willow on today';
+
+/* ===== src/data/feed.js ===== */
+/**
+ * Ready Set Grow: The Shared Feed
+ * ------------------------------------------------------------------
+ * Until now a post could be marked "Share to Community" and nothing
+ * happened to it. The button was there, the switch flipped, and the
+ * post sat on her own profile exactly as before. This file and the
+ * rules in firestore.rules are what make that button tell the truth.
+ *
+ * THE DECISION SHE MADE, AND WHY IT SHAPES EVERYTHING HERE
+ * Nothing goes public until a person approves it. Not a filter, not a
+ * report queue that catches things after the fact. A human reads it
+ * first.
+ *
+ * That is slower than every other social feed and it is the right call
+ * for this one, because the people in it are new parents at three in
+ * the morning, and the cost of one bad post reaching them is not the
+ * same as the cost of one bad post reaching a hobby forum. At launch
+ * there will be few enough posts that she would read them all anyway.
+ *
+ * WHERE THE RULE ACTUALLY LIVES
+ * In firestore.rules, not here. A post is created with status pending
+ * and the rules refuse any other value on create, so an account cannot
+ * publish itself by sending a different field. Everything in this file
+ * is the wording around a promise that is kept somewhere else, which is
+ * the only place a promise about who can see what can be kept.
+ *
+ * WHAT A FEED POST DELIBERATELY DOES NOT CARRY
+ * No child id, no birthday, no child name. The rules reject a document
+ * holding any of them. A parent posts under a username and nothing in
+ * the document can be walked back to a child's record.
+ */
+
+const FEED_STATUS = {
+  pending: 'pending',
+  live: 'live',
+  removed: 'removed',
+};
+
+/* How many come down at once. A parent scrolling a feed on a phone
+   connection does not need two hundred. */
+const FEED_PAGE = 40;
+
+const FEED_TITLE = 'You are not the only one awake.';
+const FEED_SUB =
+  'What other parents are in the middle of tonight. Everything here was read by a person before '
+  + 'it went up.';
+
+const FEED_EMPTY =
+  'Nothing has been shared yet. Somebody has to be first, and being first in a quiet room is how '
+  + 'every good one started.';
+
+const FEED_HOW =
+  'Share a post from Home and it comes here once it has been read. Yours are the only ones you '
+  + 'can take back down.';
+
+/* What somebody sees about their own post while it is waiting. It says
+   plainly that a person is reading it, because "pending" on its own
+   reads like a machine lost it. */
+const FEED_WAITING =
+  'Waiting to be read. Somebody looks at every post before it goes up, usually within a day.';
+
+const FEED_REMOVED =
+  'This one was not put up. If you think that was a mistake, say so and it gets looked at again.';
+
+const FEED_GUEST =
+  'Looking around without an account, so this is read only. Make an account and you can join in.';
+
+/* The promise, said in the room it applies to rather than buried in a
+   settings screen. */
+const FEED_PRIVACY = [
+  'You post under your username. Your real name is never shown here.',
+  'A post cannot carry a child’s name, birthday or photo. The database itself refuses one that does.',
+  'Your children’s profiles, logs, milestones and memories are never part of this and never can be.',
+  'Nothing goes up until a person has read it.',
+];
+
+/* Why somebody reports something. Short list on purpose: a long one
+   makes people give up and scroll past instead. */
+const REPORT_REASONS = [
+  { id: 'cruel', label: 'Cruel or abusive' },
+  { id: 'unsafe', label: 'Unsafe advice, such as a dose or a sleep practice' },
+  { id: 'private', label: 'Somebody’s private information' },
+  { id: 'spam', label: 'Spam or selling something' },
+  { id: 'other', label: 'Something else' },
+];
+
+const REPORT_THANKS =
+  'Thank you. A person reads every report. You will not hear back about this one, which is '
+  + 'deliberate, since telling a reporter what happened tells them who reported.';
+
+const BLOCK_NOTE =
+  'You will stop seeing anything from them here. They are not told. This is kept on your account '
+  + 'and nowhere else.';
+
+/* ------------------------------------------------------------------
+ * MODERATION
+ * Only reachable by an account that has a document in the moderators
+ * collection, which can only be created from the Firebase console. An
+ * account that could make itself a moderator is not a moderation
+ * system.
+ * ------------------------------------------------------------------ */
+const MOD_TITLE = 'Waiting to be read';
+const MOD_EMPTY = 'Nothing is waiting. Everything shared has been looked at.';
+const MOD_NOTE =
+  'Nobody but you sees this. Approve puts it in the feed, leave it down keeps it off and tells '
+  + 'the person who wrote it that it was not put up.';
+
+/* ------------------------------------------------------------------
+ * PURE HELPERS, so the rules of the room can be tested without a
+ * network, a browser, or a Firebase project.
+ * ------------------------------------------------------------------ */
+
+/* What actually goes up. Built in one place so no screen can invent its
+   own shape, and written as a whitelist rather than a copy of the local
+   post, because a copy is how a child id ends up in a public document
+   six months from now when somebody adds a field. */
+function feedDocFrom(post, username, uid) {
+  return {
+    authorUid: uid,
+    username: String(username || '').trim(),
+    body: String((post && post.text) || '').trim(),
+    files: ((post && post.files) || []).map((f) => ({
+      url: String(f.url || ''),
+      kind: String(f.kind || 'photo'),
+    })),
+    status: FEED_STATUS.pending,
+    at: Number((post && post.at)) || Date.now(),
+    localId: String((post && post.id) || ''),
+  };
+}
+
+/* The last line of defence, checked before anything is sent as well as
+   by the rules on arrival. Belt and braces on purpose: this one can
+   tell her WHY in a sentence, the rules can only refuse. */
+function feedRefuseReason(doc, post) {
+  if (!doc.username) {
+    return 'You need a username before you can share anything. Settings has one waiting for you.';
+  }
+  if (!doc.body && !doc.files.length) {
+    return 'There is nothing in this one to share.';
+  }
+  if (doc.body.length > 4000) {
+    return 'That is longer than a post can be here. Four thousand characters is the limit.';
+  }
+  if (post && post.childId) {
+    return 'This post is tagged with one of your children, and posts about a child stay on your '
+      + 'own profile. Take the tag off if you want to share it.';
+  }
+  /* Data URLs were the old shape for photos and they can be a megabyte
+     each. Anything still carrying one predates Storage. */
+  if ((post && (post.photos || []).length)) {
+    return 'This post was made before the app could store files properly, so it can only stay on '
+      + 'your own profile. A new post with the same photo will share fine.';
+  }
+  return '';
+}
+
+function statusLine(status) {
+  if (status === FEED_STATUS.live) return '';
+  if (status === FEED_STATUS.removed) return FEED_REMOVED;
+  return FEED_WAITING;
+}
+
+/* Blocked people are filtered on the reader's own device rather than
+   with a query, because a query cannot express "not in this list" and
+   because who somebody has blocked is nobody else's business. */
+function visibleFeed(posts, blocked) {
+  const dead = {};
+  (blocked || []).forEach((uid) => { dead[uid] = true; });
+  return (posts || [])
+    .filter((p) => p && p.status === FEED_STATUS.live && !dead[p.authorUid])
+    .sort((a, b) => (Number(b.at) || 0) - (Number(a.at) || 0));
+}
+
+function countReactions(rows) {
+  const out = {};
+  (rows || []).forEach((r) => {
+    const k = r && r.r;
+    if (!k) return;
+    out[k] = (out[k] || 0) + 1;
+  });
+  return out;
+}
 
 /* ===== src/data/cycle.js ===== */
 /**
@@ -21217,6 +21425,13 @@ const store = {
      old at most and regenerating it costs less than carrying it. */
   planLift: null,
 
+  /* Accounts she has blocked in the feed. Kept on her own record and
+     filtered on her own device, because a query cannot say "not in this
+     list" and who somebody has blocked is nobody else's business. */
+  blocked: [],
+  feedError: '',
+  feedThanks: false,
+
   /* The day the "a year ago today" card was waved away, so it stays
      away until tomorrow rather than coming back on the next reload. */
   memDayHidden: '',
@@ -21411,6 +21626,7 @@ function flushStore() {
       onboard: store.onboard,
       nudge: store.nudge,
       planLift: store.planLift,
+      blocked: store.blocked,
       deletedMemoryIds: store.deletedMemoryIds,
       postDraft: store.postDraft,
       msEdit: store.msEdit,
@@ -21514,29 +21730,53 @@ function loadStore() {
       ? saved.onboard : { open: false, done: false, step: 'hello', line: '', lineFrom: '' };
     store.nudge = (saved.nudge && typeof saved.nudge === 'object') ? saved.nudge : {};
     store.planLift = (saved.planLift && typeof saved.planLift === 'object') ? saved.planLift : null;
+    store.blocked = Array.isArray(saved.blocked) ? saved.blocked : [];
     store.postDraft = (saved.postDraft && typeof saved.postDraft === 'object') ? saved.postDraft : null;
   }
 
-  if (saved && Array.isArray(saved.children) && saved.children.length) {
-    store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '', photo: '', situation: { stages: [], path: '', roles: [], support: [] } }, saved.parent || {});
+  /* SHE COMES BACK WHETHER OR NOT THERE ARE CHILDREN YET.
+
+     This used to sit inside the children check below, which meant an
+     account with no child on it lost her name, username, email,
+     birthday and everything she had ticked about her situation on
+     every single reload. Somebody who signed up, told the app who they
+     were, and had not added a child yet got an empty profile back.
+     Willow's walkthrough makes that path far more likely, since it now
+     asks who you are before it asks about a child and lets you skip
+     the child entirely. */
+  if (saved && saved.parent) {
+    store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '', photo: '', situation: { stages: [], path: '', roles: [], support: [] } }, saved.parent);
     store.parent.birthday = sanitizeStoredDate(store.parent.birthday, 0);
     store.parent.lastPeriod = sanitizeStoredDate(store.parent.lastPeriod, 0);
     store.parent.situation = normalizeSituation(store.parent.situation);
+    store.bagChecked = Array.isArray(saved.bagChecked) ? saved.bagChecked : [];
+    store.parentUpdatedAt = Number(saved.parentUpdatedAt) || 0;
+  }
+
+  if (saved && Array.isArray(saved.children) && saved.children.length) {
     // Fill in any field an older saved record is missing, so a profile
     // written by a previous version cannot crash a newer screen.
     store.children = saved.children.map((k) => Object.assign(normalizeChild(k), {
       birthday: sanitizeStoredDate(k.birthday, 2) || null,
     }));
-    store.bagChecked = Array.isArray(saved.bagChecked) ? saved.bagChecked : [];
     /* Reopen whoever was open last. Three of the five tabs are about one
        child, so dropping back to the picker on every refresh would make
        the app feel like it forgot. With one child there is nothing to
        choose, so that one opens itself. */
-    store.parentUpdatedAt = Number(saved.parentUpdatedAt) || 0;
     const was = saved.activeChildId;
     const stillThere = was && store.children.some((k) => k.id === was);
     store.activeChildId = stillThere ? was
       : (store.children.length === 1 ? store.children[0].id : null);
+    return true;
+  }
+
+  /* An account that exists but has no child on it yet. Her own details
+     have already been restored above, and seeding the example child
+     into a real account would put somebody else's child on it. */
+  if (saved && saved.parent && (saved.hadSession || saved.guest
+      || (saved.parent.name || saved.parent.email || saved.parent.username))) {
+    store.children = [];
+    store.activeChildId = null;
     return true;
   }
 
@@ -22690,7 +22930,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -22828,6 +23068,21 @@ function initControls() {
     } else if (t.dataset.memall !== undefined) {
       store.memAll = t.dataset.memall || null;
       flushStore();
+    } else if (t.dataset.feed) {
+      const a = t.dataset.feed;
+      if (a === 'view') { feed.view = t.dataset.v || 'feed'; render(); }
+      else if (a === 'retry') feedLoad(true);
+      else if (a === 'react') feedReact(t.dataset.id, t.dataset.r);
+      else if (a === 'reportopen') { feed.reporting = t.dataset.id; render(); }
+      else if (a === 'reportclose') { feed.reporting = ''; render(); }
+      else if (a === 'report') feedReport(t.dataset.id, t.dataset.reason);
+      else if (a === 'block') { feedBlock(t.dataset.id); }
+      else if (a === 'unblock') feedUnblock(t.dataset.id);
+      else if (a === 'approve') modDecide(t.dataset.id, FEED_STATUS.live);
+      else if (a === 'reject') modDecide(t.dataset.id, FEED_STATUS.removed);
+      else if (a === 'thanksok') { store.feedThanks = false; flushStore(); render(); }
+      else if (a === 'errok') { store.feedError = ''; flushStore(); render(); }
+      return;
     } else if (t.dataset.nudge) {
       if (t.dataset.nudge === 'open') nudgeTake(); else nudgeDismiss();
       return;
@@ -25221,22 +25476,425 @@ const COMMUNITY_RULES = [
   'Report anything that worries you. A person reads every report.',
 ];
 
+/* =================================================================
+   THE SHARED FEED
+
+   The part that makes "Share to Community" true. Everything about why
+   it works this way is in src/data/feed.js, and the rule it rests on
+   is in firestore.rules: nothing is public until a person approves it.
+
+   THIS LAYER NEVER DECIDES WHO CAN SEE WHAT. It asks, and the rules
+   answer. An app that enforced its own visibility would be one bug away
+   from a private post in front of strangers.
+   ================================================================= */
+
+const feed = {
+  posts: [],        // live ones, from everybody
+  mine: [],         // this account's own, whatever their status
+  queue: [],        // waiting to be read, moderators only
+  loaded: false,
+  loading: false,
+  error: '',
+  isMod: false,
+  modChecked: false,
+  busy: '',         // the id of whatever is mid flight
+  reporting: '',    // the id being reported, so the reasons show
+  view: 'feed',     // feed | mine | queue
+};
+
+function feedOn() {
+  return !!(cloud.started && cloud.db && cloud.mod && myUid());
+}
+
+function blockedList() {
+  if (!Array.isArray(store.blocked)) store.blocked = [];
+  return store.blocked;
+}
+
+/* Is this account allowed to approve things. Asked once per session,
+   and a refusal is the normal answer for almost everybody, so it is
+   never shown as an error. */
+async function feedCheckMod() {
+  if (feed.modChecked || !feedOn()) return;
+  feed.modChecked = true;
+  const fs = cloud.mod;
+  try {
+    const snap = await fs.getDoc(fs.doc(cloud.db, 'moderators', myUid()));
+    feed.isMod = snap.exists();
+    if (feed.isMod) feedLoadQueue();
+  } catch (err) {
+    feed.isMod = false;
+  }
+  render();
+}
+
+async function feedLoad(force) {
+  if (!feedOn()) { feed.error = ''; return; }
+  if (feed.loading) return;
+  if (feed.loaded && !force) return;
+  feed.loading = true;
+  feed.error = '';
+  render();
+
+  const fs = cloud.mod;
+  try {
+    const q = fs.query(
+      fs.collection(cloud.db, 'feed'),
+      fs.where('status', '==', FEED_STATUS.live),
+      fs.orderBy('at', 'desc'),
+      fs.limit(FEED_PAGE)
+    );
+    const snap = await fs.getDocs(q);
+    const rows = [];
+    snap.forEach((d) => rows.push(Object.assign({ id: d.id }, d.data())));
+    feed.posts = rows;
+
+    /* Her own, including the ones still waiting, so she can see what
+       happened to something she shared rather than wondering. */
+    const mineQ = fs.query(
+      fs.collection(cloud.db, 'feed'),
+      fs.where('authorUid', '==', myUid()),
+      fs.orderBy('at', 'desc'),
+      fs.limit(FEED_PAGE)
+    );
+    const mineSnap = await fs.getDocs(mineQ);
+    const mine = [];
+    mineSnap.forEach((d) => mine.push(Object.assign({ id: d.id }, d.data())));
+    feed.mine = mine;
+
+    feed.loaded = true;
+
+    /* Carry what happened back onto her own copies, so her profile can
+       say "up in Community" or "not put up" rather than guessing. */
+    const byId = {};
+    mine.forEach((m) => { byId[m.id] = m.status; });
+    (store.posts || []).forEach((p) => {
+      if (!p.sharedId) return;
+      const st = byId[p.sharedId];
+      /* Gone from the feed entirely means a moderator deleted it, which
+         is not the same as leaving it down. Either way it is not up. */
+      p.sharedStatus = st || FEED_STATUS.removed;
+    });
+    flushStore();
+  } catch (err) {
+    feed.error = 'The feed would not load just now. It is worth trying again in a moment.';
+  }
+  feed.loading = false;
+  render();
+  feedCheckMod();
+}
+
+async function feedLoadQueue() {
+  if (!feedOn() || !feed.isMod) return;
+  const fs = cloud.mod;
+  try {
+    const q = fs.query(
+      fs.collection(cloud.db, 'feed'),
+      fs.where('status', '==', FEED_STATUS.pending),
+      fs.orderBy('at', 'asc'),
+      fs.limit(FEED_PAGE)
+    );
+    const snap = await fs.getDocs(q);
+    const rows = [];
+    snap.forEach((d) => rows.push(Object.assign({ id: d.id }, d.data())));
+    feed.queue = rows;
+  } catch (err) { /* the rest of the screen still works */ }
+  render();
+}
+
+/* SHARING ONE. Called when a post on her profile is switched to public.
+   It goes up as pending, which is the only status the rules will take
+   on a create. */
+async function feedShare(post) {
+  if (!feedOn()) {
+    store.feedError = 'Sharing needs an account and a connection. This one has stayed private.';
+    render();
+    return false;
+  }
+  const doc = feedDocFrom(post, store.parent.username, myUid());
+  const refuse = feedRefuseReason(doc, post);
+  if (refuse) { store.feedError = refuse; render(); return false; }
+
+  feed.busy = post.id;
+  store.feedError = '';
+  render();
+  const fs = cloud.mod;
+  try {
+    const ref = await fs.addDoc(fs.collection(cloud.db, 'feed'), doc);
+    post.sharedId = ref.id;
+    post.sharedStatus = FEED_STATUS.pending;
+    store.parentUpdatedAt = Date.now();
+    feed.loaded = false;
+    flushStore();
+  } catch (err) {
+    store.feedError = 'That would not go up. It has stayed private, so nothing was lost.';
+    feed.busy = '';
+    render();
+    return false;
+  }
+  feed.busy = '';
+  render();
+  return true;
+}
+
+/* TAKING ONE BACK DOWN. Hers to take, whatever its status. */
+async function feedUnshare(post) {
+  if (!post.sharedId || !feedOn()) return;
+  feed.busy = post.id;
+  render();
+  const fs = cloud.mod;
+  try {
+    await fs.deleteDoc(fs.doc(cloud.db, 'feed', post.sharedId));
+  } catch (err) { /* it may already be gone. Either way it is not hers any more. */ }
+  post.sharedId = '';
+  post.sharedStatus = '';
+  store.parentUpdatedAt = Date.now();
+  feed.loaded = false;
+  feed.busy = '';
+  flushStore();
+  render();
+}
+
+/* One document per person per post, so nobody can overwrite everybody
+   else's reactions by writing a map. */
+async function feedReact(id, r) {
+  if (!feedOn()) return;
+  const fs = cloud.mod;
+  const post = feed.posts.filter((p) => p.id === id)[0];
+  if (!post) return;
+  if (!post.myReaction) post.myReaction = '';
+  const next = post.myReaction === r ? '' : r;
+  post.myReaction = next;
+  render();
+  try {
+    const ref = fs.doc(cloud.db, 'feed', id, 'reactions', myUid());
+    if (next) await fs.setDoc(ref, { r: next, at: Date.now() });
+    else await fs.deleteDoc(ref);
+  } catch (err) { /* the tap already showed. A lost one is not worth a dialog. */ }
+}
+
+async function feedReport(id, reason) {
+  feed.reporting = '';
+  store.feedThanks = true;
+  render();
+  if (!feedOn()) return;
+  const fs = cloud.mod;
+  try {
+    await fs.addDoc(fs.collection(cloud.db, 'reports'), {
+      reporterUid: myUid(),
+      postId: id,
+      reason: String(reason || 'other'),
+      at: Date.now(),
+    });
+  } catch (err) { /* nothing comes back out of reports, including errors */ }
+}
+
+/* Blocking is kept on her own account and filtered on her own device.
+   A query cannot say "not in this list", and who somebody has blocked
+   is nobody else's business. */
+function feedBlock(uid) {
+  if (!uid) return;
+  const list = blockedList();
+  if (list.indexOf(uid) === -1) list.push(uid);
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+function feedUnblock(uid) {
+  store.blocked = blockedList().filter((x) => x !== uid);
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+async function modDecide(id, status) {
+  if (!feedOn() || !feed.isMod) return;
+  feed.busy = id;
+  render();
+  const fs = cloud.mod;
+  try {
+    await fs.updateDoc(fs.doc(cloud.db, 'feed', id), {
+      status: status,
+      decidedAt: Date.now(),
+      decidedBy: myUid(),
+    });
+    feed.queue = feed.queue.filter((p) => p.id !== id);
+    feed.loaded = false;
+  } catch (err) { /* it stays in the queue, which is the safe way round */ }
+  feed.busy = '';
+  render();
+}
+
+/* ------------------------------------------------------------------
+ * WHAT IT ALL LOOKS LIKE
+ * ------------------------------------------------------------------ */
+
+function feedFileBlock(f) {
+  if (!f || !f.url) return '';
+  if (f.kind === 'video') {
+    return `<span class="postpic vid"><video src="${esc(f.url)}" controls preload="metadata" playsinline></video></span>`;
+  }
+  if (f.kind === 'audio') {
+    return `<span class="postpic aud">${icon('note', 16, 'var(--deep)')}<audio src="${esc(f.url)}" controls preload="metadata"></audio></span>`;
+  }
+  return `<span class="postpic"><img src="${esc(f.url)}" alt="" loading="lazy" /></span>`;
+}
+
+function feedCard(p, opts) {
+  const o = opts || {};
+  const mine = p.authorUid === myUid();
+  const line = statusLine(p.status);
+
+  return `
+  <div class="card postcard">
+    <div style="display:flex;gap:10px;align-items:center">
+      <span class="feedav">${icon('user', 16, 'var(--deep)')}</span>
+      <span class="grow">
+        <span class="post-who">${esc(p.username || 'A parent')}${mine ? ' (you)' : ''}</span>
+        <span class="post-when">${esc(postWhen(p.at))}</span>
+      </span>
+      ${o.queue ? `<span class="post-vis">${icon('clock', 11, 'var(--muted)')} Waiting</span>` : ''}
+    </div>
+
+    ${p.body ? `<p class="bodytext" style="margin-top:9px;white-space:pre-wrap">${esc(p.body)}</p>` : ''}
+
+    ${(p.files || []).length ? `
+    <div class="postpics n${Math.min(4, p.files.length)}">
+      ${p.files.map(feedFileBlock).join('')}
+    </div>` : ''}
+
+    ${line ? `<p class="tiny feedstatus">${icon(p.status === FEED_STATUS.removed ? 'info' : 'clock', 11, 'var(--muted)')} ${esc(line)}</p>` : ''}
+
+    ${o.queue ? `
+    <div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap">
+      <button class="btn" data-feed="approve" data-id="${esc(p.id)}"
+        ${feed.busy === p.id ? 'disabled' : ''}
+        style="width:auto;flex:none;padding:9px 18px">Put it up</button>
+      <button class="chip" data-feed="reject" data-id="${esc(p.id)}"
+        ${feed.busy === p.id ? 'disabled' : ''}>Leave it down</button>
+    </div>` : ''}
+
+    ${o.live ? `
+    <div class="reacts">
+      <div class="reactrow">
+        ${POST_REACTIONS.map((r) => `
+          <button class="reactbtn${p.myReaction === r.id ? ' on' : ''}" data-feed="react"
+            data-id="${esc(p.id)}" data-r="${esc(r.id)}" title="${esc(r.label)}" aria-label="${esc(r.label)}">
+            <span class="emo">${r.glyph}</span>
+          </button>`).join('')}
+      </div>
+    </div>
+
+    ${mine ? '' : `
+    <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap">
+      <button class="chip tiny" data-feed="reportopen" data-id="${esc(p.id)}">Report</button>
+      <button class="chip tiny" data-feed="block" data-id="${esc(p.authorUid)}">Block ${esc(p.username || 'them')}</button>
+    </div>`}
+
+    ${feed.reporting === p.id ? `
+    <div class="card flat" style="margin-top:9px">
+      <p class="eyebrow">What is wrong with it</p>
+      ${REPORT_REASONS.map((r) => `
+        <button class="lrow" data-feed="report" data-id="${esc(p.id)}" data-reason="${esc(r.id)}">
+          <span class="grow" style="font-size:13.5px;color:var(--ink)">${esc(r.label)}</span>
+          <span class="chev">${icon('chev', 15, 'var(--faint)')}</span>
+        </button>`).join('')}
+      <button class="chip" style="margin-top:8px" data-feed="reportclose">Never mind</button>
+    </div>` : ''}` : ''}
+  </div>`;
+}
+
 function screenCommunity(c) {
-  /* Deterministic from the date so the number holds still while someone
-     is reading, rather than jumping on every render. */
-  const awake = 180 + (hashSeed(todayKey()) % 90);
-  const pumping = 20 + (hashSeed(todayKey() + 'p') % 40);
+  const signedIn = !!auth.user;
+  const blocked = blockedList();
+  const live = visibleFeed(feed.posts, blocked);
+  const waiting = (feed.mine || []).filter((p) => p.status !== FEED_STATUS.live);
+
+  /* Asked for as soon as somebody opens the room, rather than on a
+     button, because a feed you have to press load on reads as broken. */
+  if (signedIn && !feed.loaded && !feed.loading) {
+    setTimeout(() => feedLoad(), 0);
+  }
+
+  const tab = feed.view === 'queue' && feed.isMod ? 'queue'
+    : feed.view === 'mine' ? 'mine' : 'feed';
 
   return `
   ${cornerLeaves()}
   <div class="sc-head">
     <p class="eyebrow">Community</p>
-    <h1 class="title">You are not the only one awake.</h1>
-    <p class="sub">Rooms for what you are actually in the middle of, and people who are in it too.</p>
+    <h1 class="title">${esc(FEED_TITLE)}</h1>
+    <p class="sub">${esc(FEED_SUB)}</p>
   </div>
   <div class="sc">
 
-    <button class="lrow" data-go="screen" data-id="wisdom" style="align-items:flex-start">
+    ${signedIn ? `
+    <div class="feedtabs">
+      <button class="chip${tab === 'feed' ? ' on' : ''}" data-feed="view" data-v="feed">Everyone</button>
+      <button class="chip${tab === 'mine' ? ' on' : ''}" data-feed="view" data-v="mine">
+        Yours${waiting.length ? ' (' + waiting.length + ' waiting)' : ''}
+      </button>
+      ${feed.isMod ? `
+      <button class="chip${tab === 'queue' ? ' on' : ''}" data-feed="view" data-v="queue">
+        To read${feed.queue.length ? ' (' + feed.queue.length + ')' : ''}
+      </button>` : ''}
+    </div>` : `
+    <div class="card flat">
+      <p class="bodytext">${esc(FEED_GUEST)}</p>
+    </div>`}
+
+    ${store.feedThanks ? `
+    <div class="card leafy">
+      <p class="bodytext">${esc(REPORT_THANKS)}</p>
+      <button class="chip" style="margin-top:9px" data-feed="thanksok">Close</button>
+    </div>` : ''}
+
+    ${store.feedError ? `
+    <div class="card" style="border-left:3px solid var(--attention)">
+      <p class="bodytext">${esc(store.feedError)}</p>
+      <button class="chip" style="margin-top:9px" data-feed="errok">Close</button>
+    </div>` : ''}
+
+    ${feed.error ? `
+    <div class="card flat">
+      <p class="bodytext">${esc(feed.error)}</p>
+      <button class="chip" style="margin-top:9px" data-feed="retry">Try again</button>
+    </div>` : ''}
+
+    ${tab === 'queue' ? `
+      <p class="sect">${esc(MOD_TITLE)}</p>
+      <p class="tiny" style="margin:-4px 0 10px">${esc(MOD_NOTE)}</p>
+      ${feed.queue.length
+        ? feed.queue.map((p) => feedCard(p, { queue: true })).join('')
+        : `<div class="card flat"><p class="bodytext">${esc(MOD_EMPTY)}</p></div>`}
+    ` : tab === 'mine' ? `
+      <p class="sect">What you have shared</p>
+      ${(feed.mine || []).length
+        ? feed.mine.map((p) => feedCard(p, { live: p.status === FEED_STATUS.live })).join('')
+        : `<div class="card flat"><p class="bodytext">${esc(FEED_HOW)}</p></div>`}
+    ` : `
+      ${feed.loading ? `
+      <div class="card flat"><p class="bodytext">Loading the room.</p></div>` : ''}
+
+      ${!feed.loading && !live.length ? `
+      <div class="card" style="text-align:center;padding:30px 22px">
+        ${growthSVG(2, 58)}
+        <p style="margin:12px 0 0;font-size:14.5px;font-weight:600;color:var(--ink)">
+          Nobody has shared anything yet
+        </p>
+        <p class="bodytext" style="margin-top:7px">${esc(FEED_EMPTY)}</p>
+        ${signedIn ? `
+        <button class="chip" data-tab="home" style="margin-top:14px">Write something on Home</button>` : ''}
+      </div>` : ''}
+
+      ${live.map((p) => feedCard(p, { live: true })).join('')}
+
+      ${live.length ? `
+      <p class="tiny" style="text-align:center;margin-top:10px">${esc(FEED_HOW)}</p>` : ''}
+    `}
+
+    <button class="lrow" data-go="screen" data-id="wisdom" style="align-items:flex-start;margin-top:14px">
       <span class="licon">${icon('bulb', 18, 'var(--sage)')}</span>
       <span class="grow">
         <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">What worked for us</span>
@@ -25245,38 +25903,15 @@ function screenCommunity(c) {
       <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
     </button>
 
-    <div class="card leafy">
-      <p class="eyebrow">${icon('moon', 11, 'var(--sage)')} You are not doing this alone</p>
-      <p class="bodytext" style="margin-top:7px">
-        Somebody else is awake right now for the same reason you are. Pick the room that matches
-        what you are in the middle of.
-      </p>
-    </div>
-
-    <p class="sect">Rooms</p>
-    ${COMMUNITY_ROOMS.map((r) => `
-      <button class="lrow" data-room="${esc(r.id)}" style="align-items:flex-start">
-        <span class="licon">${icon(r.icon, 18)}</span>
-        <span class="grow">
-          <span style="display:block;font-size:14.5px;font-weight:600;color:var(--ink)">${esc(r.label)}</span>
-          <span class="tiny" style="display:block;margin-top:2px">${esc(r.blurb)}</span>
-        </span>
-        <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-      </button>`).join('')}
-
-    <div class="card" style="text-align:center;padding:30px 22px">
-      ${growthSVG(2, 58)}
-      <p style="margin:12px 0 0;font-size:14.5px;font-weight:600;color:var(--ink)">
-        Nobody has posted in here yet
-      </p>
-      <p class="bodytext" style="margin-top:7px">
-        Somebody has to be first, and being first in a quiet room is how every good one started.
-        Say what you are in the middle of tonight.
-      </p>
-      <button class="chip" data-go="screen" data-id="wisdom" style="margin-top:14px">
-        Read what has worked for other parents
-      </button>
-    </div>
+    ${blocked.length ? `
+    <p class="sect">People you have blocked</p>
+    <div class="card">
+      ${blocked.map((uid) => `
+      <div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-top:1px solid rgba(0,0,0,.055)">
+        <span class="grow tiny">${esc(uid.slice(0, 8))}</span>
+        <button class="chip" data-feed="unblock" data-id="${esc(uid)}">Unblock</button>
+      </div>`).join('')}
+    </div>` : ''}
 
     <p class="sect">How this room works</p>
     <div class="card">
@@ -25284,16 +25919,12 @@ function screenCommunity(c) {
     </div>
 
     <div class="card flat">
-      <p class="eyebrow">${icon('people', 11, 'var(--sage)')} How your privacy works here</p>
-      <p class="bodytext" style="margin-top:5px">
-        You post under a username, never your child's name, birthday or photo. Your children's
-        profiles, milestones and notes stay in your account and never become community content.
-        Reports go to a person, not a queue nobody reads.
-      </p>
+      <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} What is never shown here</p>
+      <ul class="dlist" style="margin-top:5px">${FEED_PRIVACY.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>
     </div>
 
     <p class="disclaimer">
-      Other parents are not a substitute for your pediatrician. Anything in a community room is one
+      Other parents are not a substitute for your pediatrician. Anything in here is one
       person’s experience, not medical advice, and what worked for their child may not be right
       for yours.
     </p>
@@ -26401,6 +27032,14 @@ function hasAccess() {
   return !!auth.user || auth.guest;
 }
 
+/* Who this account is, to Firebase. Read through one function rather
+   than reaching into auth.user.uid all over the place, because a guest
+   has no user at all and every one of those reads would have to
+   remember that. */
+function myUid() {
+  return (auth.user && auth.user.uid) || '';
+}
+
 /* Loads the Firebase SDK the first time it is needed, rather than on
    every page load, so someone reading the public site never pays for a
    library they did not use. */
@@ -27341,7 +27980,7 @@ function postDelete(id) {
    keyed by person from the start, so when the Community is live the
    same posts count everybody's without being rebuilt. */
 function reactorId() {
-  return (auth && auth.uid) || (store.parent && store.parent.username) || 'me';
+  return myUid() || (store.parent && store.parent.username) || 'me';
 }
 
 function postReactions(p) {
@@ -27405,6 +28044,24 @@ function postSetVisibility(id, vis) {
   if (id === 'draft') { postDraft().visibility = vis; flushStore(); render(); return; }
   const p = (store.posts || []).filter((x) => x.id === id)[0];
   if (!p) return;
+
+  /* Switching a post to public is now a real thing that happens
+     somewhere else, rather than a word on her own record. It goes up
+     waiting to be read, and it only counts as public once it is. */
+  if (vis === 'public' && !p.sharedId) {
+    feedShare(p).then((ok) => {
+      if (!ok) return;
+      p.visibility = 'public';
+      store.parentUpdatedAt = Date.now();
+      flushStore();
+      render();
+    });
+    return;
+  }
+  if (vis !== 'public' && p.sharedId) {
+    feedUnshare(p);
+  }
+
   p.visibility = vis;
   store.parentUpdatedAt = Date.now();
   flushStore();
@@ -27586,13 +28243,29 @@ function postCard(p, own) {
       ${(p.files || []).map((f, i) => postFileBlock(f, i, false)).join('')}
     </div>` : ''}
 
-    ${p.visibility === 'public' ? reactionBar(p) : ''}
+    ${/* Reactions used to be counted here, on her own copy of her own
+          post, which was a placeholder until there was somewhere real
+          for a shared post to live. There is now. Real people react in
+          Community, so what belongs here is not a count, it is what
+          actually happened to the thing she shared. */ ''}
+    ${p.visibility === 'public' ? `
+    <p class="tiny feedstatus">
+      ${icon(p.sharedStatus === FEED_STATUS.live ? 'people'
+        : p.sharedStatus === FEED_STATUS.removed ? 'info' : 'clock', 11, 'var(--muted)')}
+      ${p.sharedStatus === FEED_STATUS.live
+        ? 'Up in Community.'
+        : esc(statusLine(p.sharedStatus || FEED_STATUS.pending))}
+      ${p.sharedStatus === FEED_STATUS.live
+        ? '<button class="chip" style="margin-left:6px" data-tab="community">See it there</button>' : ''}
+    </p>` : ''}
 
     ${own ? `
     <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
       ${p.visibility === 'public'
-        ? `<button class="chip" data-post="vis" data-id="${esc(p.id)}" data-vis="private">Make it private</button>`
-        : `<button class="chip" data-post="vis" data-id="${esc(p.id)}" data-vis="public">Share it</button>`}
+        ? `<button class="chip" data-post="vis" data-id="${esc(p.id)}" data-vis="private"
+             ${feed.busy === p.id ? 'disabled' : ''}>Take it back down</button>`
+        : `<button class="chip" data-post="vis" data-id="${esc(p.id)}" data-vis="public"
+             ${feed.busy === p.id ? 'disabled' : ''}>${feed.busy === p.id ? 'Sending' : 'Share it'}</button>`}
       <button class="chip" data-post="del" data-id="${esc(p.id)}">Delete</button>
     </div>` : ''}
   </div>`;
@@ -28397,6 +29070,10 @@ function screenHome(c) {
     ${cycleWidget()}
 
     ${memOnThisDay()}
+
+    ${/* Hers live here rather than on her profile. Nothing on Home is
+          shareable, which is exactly what a memory should be. */ ''}
+    ${memSection('me')}
 
     ${caretakerCards()}
 
@@ -29237,6 +29914,12 @@ function screenMyProfile() {
     ${editing ? facePicker('me', v.photo) : ''}
     ${editing ? editUnsavedNote() : ''}
 
+    ${store.feedError ? `
+    <div class="card" style="border-left:3px solid var(--attention)">
+      <p class="bodytext">${esc(store.feedError)}</p>
+      <button class="chip" style="margin-top:9px" data-feed="errok">Close</button>
+    </div>` : ''}
+
     ${/* The box she writes in lives on Home and only on Home. This page
           is where the posts LAND, which is the whole reason they are two
           different screens. A second composer here was the same thing in
@@ -29251,7 +29934,11 @@ function screenMyProfile() {
 
     ${posts.map((x) => postCard(x, true)).join('')}
 
-    ${memSection('me')}
+    ${/* Her memories are NOT here. This page is the public facing half
+          of her, the one her posts live on, and a private shelf sitting
+          underneath it offering the same kind of box was the thing that
+          made her look twice. Hers are on Home, where nothing is
+          shareable. A child's stay on the child's own profile. */ ''}
 
     <p class="tiny" style="margin-top:10px;text-align:center">
       ${icon('shield', 10, 'var(--muted)')} Only posts can be shared, and only the ones you choose.
@@ -29522,7 +30209,12 @@ function storageFolder(kind) {
  * onProgress gets 0 to 100 so a slow upload never looks like a hang.
  */
 async function uploadFile(file, kind, onProgress) {
-  const uid = auth && auth.uid;
+  /* This used to read auth.uid, which has never existed. The signed in
+     user lives at auth.user.uid, so this was undefined every time and
+     every upload threw "not signed in" before it started. Photos,
+     videos and voice memos could not have worked in production at all.
+     Found while wiring the feed, which needed the same value. */
+  const uid = myUid();
   if (!uid) throw new Error('not signed in');
   const { mod, storage } = await loadStorage();
 
@@ -30158,8 +30850,7 @@ function memCard(mem, opts) {
       </span>
       ${mine ? `
       <span class="post-vis${vis === 'public' ? ' pub' : ''}">
-        ${vis === 'public' ? icon('people', 11, '#6E8B54') : icon('shield', 11, 'var(--muted)')}
-        ${vis === 'public' ? 'Shared' : 'Just me'}
+        ${icon('shield', 11, 'var(--muted)')} Just me
       </span>` : `
       <span class="post-vis">${icon('shield', 11, 'var(--muted)')} Private</span>`}
     </div>
@@ -30171,11 +30862,10 @@ function memCard(mem, opts) {
       ${mem.files.map((f, i) => memFileBlock(f, i, false)).join('')}
     </div>` : ''}
 
+    ${/* No share button, on hers or on a child's. Memories are a shelf
+          you keep. Anything meant for other people is a post. */ ''}
     ${o.actions === false ? '' : `
     <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
-      ${mine ? (vis === 'public'
-        ? `<button class="chip" data-memvis="${esc(mem.id)}" data-vis="private">Make it private</button>`
-        : `<button class="chip" data-memvis="${esc(mem.id)}" data-vis="public">Share it</button>`) : ''}
       <button class="chip" data-memdel="${esc(mem.id)}">Delete</button>
     </div>`}
   </div>`;
@@ -30235,16 +30925,8 @@ function memComposer(who) {
     </div>
     <div style="margin-top:7px">${dateSelects('memory', d.at || ciToday(), 20, 0)}</div>
 
-    ${canBePublic(who) ? `
-    <div class="vispick" style="margin-top:10px">
-      ${POST_VISIBILITY.map((v) => `
-        <button class="chip${(d.visibility === v.id || (v.id === 'private' && d.visibility !== 'public')) ? ' on' : ''}"
-          data-memvisdraft="${esc(v.id)}"
-          ${(d.visibility === v.id || (v.id === 'private' && d.visibility !== 'public'))
-            ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
-          >${v.id === 'private' ? icon('shield', 12, 'var(--deep)') : icon('people', 12, 'var(--deep)')} ${esc(v.label)}</button>`).join('')}
-    </div>` : `
-    <p class="tiny" style="margin-top:10px">${icon('shield', 10, 'var(--sage)')} ${esc(MEMORY_PRIVACY_CHILD)}</p>`}
+    <p class="tiny" style="margin-top:10px">${icon('shield', 10, 'var(--sage)')}
+      ${esc(who === 'me' ? MEMORY_PRIVACY_MINE : MEMORY_PRIVACY_CHILD)}</p>
 
     <div style="display:flex;gap:8px;margin-top:11px;justify-content:flex-end;flex-wrap:wrap">
       <button class="chip" data-memclose="1">Cancel</button>
@@ -31440,6 +32122,7 @@ function parentPayload() {
     /* Carried so the walkthrough she already sat through on her phone
        does not run again on her laptop. */
     onboardDone: !!(store.onboard && store.onboard.done),
+    blocked: store.blocked || [],
     deletedChildIds: store.deletedChildIds || [],
     notDuplicates: store.notDuplicates || [],
     updatedAt: store.parentUpdatedAt || 0,
