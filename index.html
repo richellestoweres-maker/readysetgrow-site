@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-16 20:45">
+<meta name="rsg-build" content="2026-09-17 00:15">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -1203,7 +1203,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-16 20:45';
+const BUILD_STAMP = '2026-09-17 00:15';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -15129,6 +15129,26 @@ const WILLOW = {
     'Something went wrong reaching me just then. Nothing is lost, try again in a moment. If it is ' +
     'urgent, do not wait on me: the Right Now tab works with no connection at all.',
 
+  /* Out of quota is not a broken app, and calling it one sends somebody
+     looking for a bug that does not exist. */
+  outOfQuota:
+    'I have hit the limit on how much I can answer just now. This is a billing ceiling rather ' +
+    'than anything wrong, and it lifts on its own. Everything written in the app is still here ' +
+    'to read in the meantime.',
+
+  /* The model refusing is not the model failing, and in a parenting app
+     it happens most on the questions most worth asking. Saying so
+     plainly beats a shrug, and it points somewhere real. */
+  wouldNotAnswer:
+    'I could not answer that one. It came back refused rather than failed, which usually happens ' +
+    'on anything that reads as medical, and in here that is most of the questions worth asking. ' +
+    'Try asking me in your own words about what you are seeing rather than what it might be, and ' +
+    'if it is about their health, your pediatrician is the right call anyway.',
+
+  noNetwork:
+    'I cannot reach anything at the moment, which usually means the connection dropped. ' +
+    'Everything already written in the app works with no signal at all, including Right Now.',
+
   /* Kept as data but no longer shown. A wall of suggested questions
      made the panel look like a help desk rather than somebody to talk
      to, and it pushed the thing she came to type down the screen. */
@@ -19785,22 +19805,33 @@ const PLAN_FRAMING_LABEL = 'Willow on today';
  * rules in firestore.rules are what make that button tell the truth.
  *
  * THE DECISION SHE MADE, AND WHY IT SHAPES EVERYTHING HERE
- * Nothing goes public until a person approves it. Not a filter, not a
- * report queue that catches things after the fact. A human reads it
- * first.
+ * People choose public or private themselves, and a public post goes up
+ * straight away. She said plainly that she does not want to be the
+ * person everything waits on, and she is right: a room where every post
+ * sits in a queue until the founder wakes up is a room where nobody
+ * bothers posting twice.
  *
- * That is slower than every other social feed and it is the right call
- * for this one, because the people in it are new parents at three in
- * the morning, and the cost of one bad post reaching them is not the
- * same as the cost of one bad post reaching a hobby forum. At launch
- * there will be few enough posts that she would read them all anyway.
+ * SO THE BACKSTOP IS NARROW ON PURPOSE.
+ * A very short filter holds back the few things that are dangerous
+ * rather than merely disagreeable: a medication dose, or somebody's
+ * phone number or email address. Those are objective, they are rare,
+ * and getting one wrong in a room full of new parents is the mistake
+ * that cannot be taken back afterwards. Everything else goes straight
+ * up and is handled by people reporting it.
  *
- * WHERE THE RULE ACTUALLY LIVES
- * In firestore.rules, not here. A post is created with status pending
- * and the rules refuse any other value on create, so an account cannot
- * publish itself by sending a different field. Everything in this file
- * is the wording around a promise that is kept somewhere else, which is
- * the only place a promise about who can see what can be kept.
+ * WHAT THE FILTER DELIBERATELY DOES NOT TRY TO DO
+ * It does not judge tone, advice, parenting choices or arguments. A
+ * filter that tried would be wrong constantly and would quietly become
+ * the thing deciding what parents are allowed to say to each other.
+ * Cruelty is caught by people reporting it, which is slower and far
+ * more accurate.
+ *
+ * WHERE THE FILTER ACTUALLY LIVES
+ * In firestore.rules as well as here. The rules run the same patterns
+ * on arrival and refuse a post that trips one unless it is marked held,
+ * so a modified app cannot send a dose straight to the feed by lying
+ * about its status. This file is the wording, the rules are the
+ * enforcement.
  *
  * WHAT A FEED POST DELIBERATELY DOES NOT CARRY
  * No child id, no birthday, no child name. The rules reject a document
@@ -19809,9 +19840,9 @@ const PLAN_FRAMING_LABEL = 'Willow on today';
  */
 
 const FEED_STATUS = {
-  pending: 'pending',
-  live: 'live',
-  removed: 'removed',
+  live: 'live',       // up, which is where almost everything goes
+  held: 'held',       // tripped the narrow filter, waiting on a person
+  removed: 'removed', // taken down after the fact
 };
 
 /* How many come down at once. A parent scrolling a feed on a phone
@@ -19820,25 +19851,26 @@ const FEED_PAGE = 40;
 
 const FEED_TITLE = 'You are not the only one awake.';
 const FEED_SUB =
-  'What other parents are in the middle of tonight. Everything here was read by a person before '
-  + 'it went up.';
+  'What other parents are in the middle of tonight. You choose what you share and what stays '
+  + 'yours, and you can take anything back down.';
 
 const FEED_EMPTY =
   'Nothing has been shared yet. Somebody has to be first, and being first in a quiet room is how '
   + 'every good one started.';
 
 const FEED_HOW =
-  'Share a post from Home and it comes here once it has been read. Yours are the only ones you '
-  + 'can take back down.';
+  'Share a post from Home and it appears here straight away. Yours are the only ones you can '
+  + 'take back down.';
 
-/* What somebody sees about their own post while it is waiting. It says
-   plainly that a person is reading it, because "pending" on its own
-   reads like a machine lost it. */
-const FEED_WAITING =
-  'Waiting to be read. Somebody looks at every post before it goes up, usually within a day.';
+/* What somebody sees when the filter has held their own post. It says
+   what tripped it and that a person will look, because a bare status
+   reads like the app lost it. */
+const FEED_HELD =
+  'Held for a look. This one mentions a dose or a way to contact somebody, and those two get '
+  + 'read by a person first. Everything else goes straight up.';
 
 const FEED_REMOVED =
-  'This one was not put up. If you think that was a mistake, say so and it gets looked at again.';
+  'This one was taken down. If you think that was a mistake, say so and it gets looked at again.';
 
 const FEED_GUEST =
   'Looking around without an account, so this is read only. Make an account and you can join in.';
@@ -19846,10 +19878,11 @@ const FEED_GUEST =
 /* The promise, said in the room it applies to rather than buried in a
    settings screen. */
 const FEED_PRIVACY = [
+  'Nothing is shared unless you press share. A post is private until you say otherwise.',
   'You post under your username. Your real name is never shown here.',
   'A post cannot carry a child’s name, birthday or photo. The database itself refuses one that does.',
   'Your children’s profiles, logs, milestones and memories are never part of this and never can be.',
-  'Nothing goes up until a person has read it.',
+  'You can take anything of yours back down, whenever you like.',
 ];
 
 /* Why somebody reports something. Short list on purpose: a long one
@@ -19871,17 +19904,82 @@ const BLOCK_NOTE =
   + 'and nowhere else.';
 
 /* ------------------------------------------------------------------
+ * THE FILTER
+ *
+ * Two patterns. That is the whole thing, and keeping it to two is the
+ * design, not a first draft.
+ *
+ * A DOSE. "Give him 5ml of ibuprofen" from a stranger on the internet
+ * is the one piece of advice in a parenting app that can put a child in
+ * hospital, and the parent reading it at 3am is in no state to check.
+ * Held, read, and usually put straight up with nothing changed, because
+ * most of these are somebody saying what their own doctor told them.
+ *
+ * CONTACT DETAILS. A phone number or an email address in a public room
+ * is either somebody about to be harassed or somebody about to be sold
+ * something. Held either way.
+ *
+ * Everything else, including every argument about sleep training that
+ * this app will ever host, goes straight up.
+ *
+ * The same patterns are in firestore.rules, which is what actually
+ * enforces them. These are here so the app can say WHY in a sentence,
+ * which rules cannot do.
+ * ------------------------------------------------------------------ */
+
+const RE_EMAIL = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i;
+/* Ten digits with anything or nothing between the groups, which catches
+   555-123-4567, 555.123.4567, (555) 123 4567 and 5551234567. */
+const RE_PHONE = /[0-9]{3}[^a-zA-Z0-9]?[0-9]{3}[^a-zA-Z0-9]?[0-9]{4}/;
+/* A number next to a unit. Deliberately not matching "2 doses" or
+   "10 minutes", only the units a medicine is measured in. */
+const RE_DOSE = /[0-9]\s?(mg|mcg|ml|cc)\b/i;
+
+function filterVerdict(body) {
+  const b = String(body || '');
+  if (RE_DOSE.test(b)) return 'dose';
+  if (RE_EMAIL.test(b) || RE_PHONE.test(b)) return 'contact';
+  return '';
+}
+
+function filterReason(verdict) {
+  if (verdict === 'dose') {
+    return 'This mentions a dose, so it gets read by a person before it goes up. That usually '
+      + 'takes a day and most of them go up exactly as written.';
+  }
+  if (verdict === 'contact') {
+    return 'This looks like it has a phone number or an email address in it, so it gets read by '
+      + 'a person before it goes up. Sharing contact details in an open room rarely ends well.';
+  }
+  return '';
+}
+
+/* Which status a new post should carry. The rules check this again on
+   arrival, so an app that lied about it would simply be refused. */
+function statusFor(body) {
+  return filterVerdict(body) ? FEED_STATUS.held : FEED_STATUS.live;
+}
+
+/* ------------------------------------------------------------------
  * MODERATION
  * Only reachable by an account that has a document in the moderators
  * collection, which can only be created from the Firebase console. An
  * account that could make itself a moderator is not a moderation
  * system.
  * ------------------------------------------------------------------ */
-const MOD_TITLE = 'Waiting to be read';
-const MOD_EMPTY = 'Nothing is waiting. Everything shared has been looked at.';
+const MOD_TITLE = 'Needs a look';
+const MOD_EMPTY = 'Nothing needs you right now.';
 const MOD_NOTE =
-  'Nobody but you sees this. Approve puts it in the feed, leave it down keeps it off and tells '
-  + 'the person who wrote it that it was not put up.';
+  'Nobody but you sees this tab, and nothing in the room is waiting on you. Posts go up by '
+  + 'themselves. This is only the handful the filter held, and anything people have reported.';
+
+const MOD_HELD_TITLE = 'Held by the filter';
+const MOD_HELD_NOTE =
+  'A dose or a set of contact details. Most of these are fine and go straight up.';
+
+const MOD_REPORTED_TITLE = 'Reported by somebody';
+const MOD_REPORTED_NOTE =
+  'Already up in the room. Taking one down is the only thing that changes that.';
 
 /* ------------------------------------------------------------------
  * PURE HELPERS, so the rules of the room can be tested without a
@@ -19901,7 +19999,7 @@ function feedDocFrom(post, username, uid) {
       url: String(f.url || ''),
       kind: String(f.kind || 'photo'),
     })),
-    status: FEED_STATUS.pending,
+    status: statusFor((post && post.text) || ''),
     at: Number((post && post.at)) || Date.now(),
     localId: String((post && post.id) || ''),
   };
@@ -19936,7 +20034,7 @@ function feedRefuseReason(doc, post) {
 function statusLine(status) {
   if (status === FEED_STATUS.live) return '';
   if (status === FEED_STATUS.removed) return FEED_REMOVED;
-  return FEED_WAITING;
+  return FEED_HELD;
 }
 
 /* Blocked people are filtered on the reader's own device rather than
@@ -23080,6 +23178,7 @@ function initControls() {
       else if (a === 'unblock') feedUnblock(t.dataset.id);
       else if (a === 'approve') modDecide(t.dataset.id, FEED_STATUS.live);
       else if (a === 'reject') modDecide(t.dataset.id, FEED_STATUS.removed);
+      else if (a === 'clearreports') modClearReports(t.dataset.id);
       else if (a === 'thanksok') { store.feedThanks = false; flushStore(); render(); }
       else if (a === 'errok') { store.feedError = ''; flushStore(); render(); }
       return;
@@ -23233,6 +23332,34 @@ function initControls() {
       return;
     } else if (t.dataset.willow === 'try') {
       willowAsk(t.dataset.q);
+      return;
+    } else if (t.dataset.willow === 'copyerr') {
+      const text = willow.lastError || '';
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text);
+        } else {
+          /* Older iOS Safari has no clipboard API on a plain page, and
+             a Copy button that silently does nothing is worse than no
+             Copy button. */
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        store.willowCopied = true;
+      } catch (err) { store.willowCopied = false; }
+      render();
+      setTimeout(() => { store.willowCopied = false; render(); }, 3000);
+      return;
+    } else if (t.dataset.willow === 'clearerr') {
+      willow.lastError = '';
+      store.willowCopied = false;
+      render();
       return;
     } else if (t.dataset.combinechild) {
       combineDuplicateChildren(t.dataset.combinechild);
@@ -25491,7 +25618,8 @@ const COMMUNITY_RULES = [
 const feed = {
   posts: [],        // live ones, from everybody
   mine: [],         // this account's own, whatever their status
-  queue: [],        // waiting to be read, moderators only
+  queue: [],        // held by the filter, moderators only
+  reported: [],     // already up, but somebody reported it
   loaded: false,
   loading: false,
   error: '',
@@ -25584,13 +25712,16 @@ async function feedLoad(force) {
   feedCheckMod();
 }
 
+/* What actually needs a person. Two short lists, and both are usually
+   empty: the handful the filter held, and anything somebody reported.
+   Nothing in the room is waiting on either of them. */
 async function feedLoadQueue() {
   if (!feedOn() || !feed.isMod) return;
   const fs = cloud.mod;
   try {
     const q = fs.query(
       fs.collection(cloud.db, 'feed'),
-      fs.where('status', '==', FEED_STATUS.pending),
+      fs.where('status', '==', FEED_STATUS.held),
       fs.orderBy('at', 'asc'),
       fs.limit(FEED_PAGE)
     );
@@ -25599,6 +25730,35 @@ async function feedLoadQueue() {
     snap.forEach((d) => rows.push(Object.assign({ id: d.id }, d.data())));
     feed.queue = rows;
   } catch (err) { /* the rest of the screen still works */ }
+
+  /* Reports, grouped by the post they are about, so five people
+     reporting the same thing is one row rather than five. */
+  try {
+    const rq = fs.query(fs.collection(cloud.db, 'reports'), fs.limit(200));
+    const rsnap = await fs.getDocs(rq);
+    const byPost = {};
+    rsnap.forEach((d) => {
+      const r = d.data();
+      if (!r || !r.postId) return;
+      const e = byPost[r.postId] || (byPost[r.postId] = { postId: r.postId, n: 0, reasons: {}, ids: [] });
+      e.n += 1;
+      e.reasons[r.reason] = (e.reasons[r.reason] || 0) + 1;
+      e.ids.push(d.id);
+    });
+    const ids = Object.keys(byPost);
+    const posts = [];
+    for (let i = 0; i < ids.length; i++) {
+      try {
+        const snap2 = await fs.getDoc(fs.doc(cloud.db, 'feed', ids[i]));
+        if (!snap2.exists()) continue;
+        const data = snap2.data();
+        /* Already taken down, so it is not a decision any more. */
+        if (data.status === FEED_STATUS.removed) continue;
+        posts.push(Object.assign({ id: ids[i] }, data, { report: byPost[ids[i]] }));
+      } catch (err) { /* skip the one that would not load */ }
+    }
+    feed.reported = posts;
+  } catch (err) { /* reports are readable by moderators only, so this is the normal failure */ }
   render();
 }
 
@@ -25622,7 +25782,12 @@ async function feedShare(post) {
   try {
     const ref = await fs.addDoc(fs.collection(cloud.db, 'feed'), doc);
     post.sharedId = ref.id;
-    post.sharedStatus = FEED_STATUS.pending;
+    post.sharedStatus = doc.status;
+    /* Said at the moment she presses share rather than left for her to
+       discover later, and it says which of the two patterns it was. */
+    if (doc.status === FEED_STATUS.held) {
+      store.feedError = filterReason(filterVerdict(doc.body));
+    }
     store.parentUpdatedAt = Date.now();
     feed.loaded = false;
     flushStore();
@@ -25720,8 +25885,28 @@ async function modDecide(id, status) {
       decidedBy: myUid(),
     });
     feed.queue = feed.queue.filter((p) => p.id !== id);
+    feed.reported = feed.reported.filter((p) => p.id !== id);
     feed.loaded = false;
-  } catch (err) { /* it stays in the queue, which is the safe way round */ }
+  } catch (err) { /* it stays in the list, which is the safe way round */ }
+  feed.busy = '';
+  render();
+}
+
+/* Reports read and dealt with. Clearing them is separate from deciding
+   about the post, because "I looked and it is fine" is a real answer
+   and the post should not have to move for her to give it. */
+async function modClearReports(postId) {
+  if (!feedOn() || !feed.isMod) return;
+  const entry = (feed.reported.filter((p) => p.id === postId)[0] || {}).report;
+  if (!entry) return;
+  feed.busy = postId;
+  render();
+  const fs = cloud.mod;
+  try {
+    await Promise.all(entry.ids.map((rid) =>
+      fs.deleteDoc(fs.doc(cloud.db, 'reports', rid)).catch(() => null)));
+    feed.reported = feed.reported.filter((p) => p.id !== postId);
+  } catch (err) { /* it stays listed, which is the safe way round */ }
   feed.busy = '';
   render();
 }
@@ -25766,6 +25951,16 @@ function feedCard(p, opts) {
 
     ${line ? `<p class="tiny feedstatus">${icon(p.status === FEED_STATUS.removed ? 'info' : 'clock', 11, 'var(--muted)')} ${esc(line)}</p>` : ''}
 
+    ${o.report ? `
+    <p class="tiny feedstatus">
+      ${icon('info', 11, 'var(--attention)')}
+      Reported by ${o.report.n} ${o.report.n === 1 ? 'person' : 'people'}:
+      ${esc(Object.keys(o.report.reasons).map((k) => {
+        const r = REPORT_REASONS.filter((x) => x.id === k)[0];
+        return (r ? r.label : k) + (o.report.reasons[k] > 1 ? ' (' + o.report.reasons[k] + ')' : '');
+      }).join(', '))}
+    </p>` : ''}
+
     ${o.queue ? `
     <div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap">
       <button class="btn" data-feed="approve" data-id="${esc(p.id)}"
@@ -25773,6 +25968,15 @@ function feedCard(p, opts) {
         style="width:auto;flex:none;padding:9px 18px">Put it up</button>
       <button class="chip" data-feed="reject" data-id="${esc(p.id)}"
         ${feed.busy === p.id ? 'disabled' : ''}>Leave it down</button>
+    </div>` : ''}
+
+    ${o.report ? `
+    <div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap">
+      <button class="chip" data-feed="clearreports" data-id="${esc(p.id)}"
+        ${feed.busy === p.id ? 'disabled' : ''}>Looked, it is fine</button>
+      <button class="btn ghost sm" data-feed="reject" data-id="${esc(p.id)}"
+        ${feed.busy === p.id ? 'disabled' : ''}
+        style="width:auto;flex:none;padding:9px 16px">Take it down</button>
     </div>` : ''}
 
     ${o.live ? `
@@ -25833,11 +26037,12 @@ function screenCommunity(c) {
     <div class="feedtabs">
       <button class="chip${tab === 'feed' ? ' on' : ''}" data-feed="view" data-v="feed">Everyone</button>
       <button class="chip${tab === 'mine' ? ' on' : ''}" data-feed="view" data-v="mine">
-        Yours${waiting.length ? ' (' + waiting.length + ' waiting)' : ''}
+        Yours${waiting.length ? ' (' + waiting.length + ' held)' : ''}
       </button>
       ${feed.isMod ? `
       <button class="chip${tab === 'queue' ? ' on' : ''}" data-feed="view" data-v="queue">
-        To read${feed.queue.length ? ' (' + feed.queue.length + ')' : ''}
+        Needs a look${(feed.queue.length + feed.reported.length)
+          ? ' (' + (feed.queue.length + feed.reported.length) + ')' : ''}
       </button>` : ''}
     </div>` : `
     <div class="card flat">
@@ -25865,9 +26070,19 @@ function screenCommunity(c) {
     ${tab === 'queue' ? `
       <p class="sect">${esc(MOD_TITLE)}</p>
       <p class="tiny" style="margin:-4px 0 10px">${esc(MOD_NOTE)}</p>
-      ${feed.queue.length
-        ? feed.queue.map((p) => feedCard(p, { queue: true })).join('')
-        : `<div class="card flat"><p class="bodytext">${esc(MOD_EMPTY)}</p></div>`}
+
+      ${!feed.queue.length && !feed.reported.length ? `
+      <div class="card flat"><p class="bodytext">${esc(MOD_EMPTY)}</p></div>` : ''}
+
+      ${feed.queue.length ? `
+      <p class="sect">${esc(MOD_HELD_TITLE)}</p>
+      <p class="tiny" style="margin:-4px 0 10px">${esc(MOD_HELD_NOTE)}</p>
+      ${feed.queue.map((p) => feedCard(p, { queue: true })).join('')}` : ''}
+
+      ${feed.reported.length ? `
+      <p class="sect">${esc(MOD_REPORTED_TITLE)}</p>
+      <p class="tiny" style="margin:-4px 0 10px">${esc(MOD_REPORTED_NOTE)}</p>
+      ${feed.reported.map((p) => feedCard(p, { report: p.report })).join('')}` : ''}
     ` : tab === 'mine' ? `
       <p class="sect">What you have shared</p>
       ${(feed.mine || []).length
@@ -26702,6 +26917,24 @@ function screenSettings() {
         already set is changed by running it again.
       </p>
     </button>
+
+    ${/* Only ever here, and only after something has actually failed.
+          Willow tells a parent what went wrong in plain words and that
+          is all they need. This is the line underneath it, for whoever
+          has to fix it, because "something went wrong" with the real
+          reason thrown away is how an evening disappears. */ ''}
+    ${willow.lastError ? `
+    <div class="card flat" style="border-left:3px solid var(--attention)">
+      <p class="eyebrow">${icon('info', 11, 'var(--attention)')} What Willow ran into last time</p>
+      <p class="tiny" style="margin-top:6px;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">
+        ${esc(willow.lastError)}
+      </p>
+      <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap">
+        <button class="chip" data-willow="copyerr">Copy it</button>
+        <button class="chip" data-willow="clearerr">Clear</button>
+      </div>
+      ${store.willowCopied ? '<p class="tiny" style="margin-top:6px">Copied.</p>' : ''}
+    </div>` : ''}
 
     ${situationBlock()}
 
@@ -28250,12 +28483,12 @@ function postCard(p, own) {
           actually happened to the thing she shared. */ ''}
     ${p.visibility === 'public' ? `
     <p class="tiny feedstatus">
-      ${icon(p.sharedStatus === FEED_STATUS.live ? 'people'
-        : p.sharedStatus === FEED_STATUS.removed ? 'info' : 'clock', 11, 'var(--muted)')}
-      ${p.sharedStatus === FEED_STATUS.live
+      ${icon(p.sharedStatus === FEED_STATUS.removed ? 'info'
+        : p.sharedStatus === FEED_STATUS.held ? 'clock' : 'people', 11, 'var(--muted)')}
+      ${!p.sharedStatus || p.sharedStatus === FEED_STATUS.live
         ? 'Up in Community.'
-        : esc(statusLine(p.sharedStatus || FEED_STATUS.pending))}
-      ${p.sharedStatus === FEED_STATUS.live
+        : esc(statusLine(p.sharedStatus))}
+      ${!p.sharedStatus || p.sharedStatus === FEED_STATUS.live
         ? '<button class="chip" style="margin-left:6px" data-tab="community">See it there</button>' : ''}
     </p>` : ''}
 
@@ -32847,6 +33080,9 @@ const willow = {
   failed: false,
   usedToday: 0,
   usedDate: '',
+  /* The last real failure, kept so Settings can show it. Memory only:
+     it describes this device at this moment and is worthless tomorrow. */
+  lastError: '',
 };
 
 /* One conversation per child rather than one for the whole app.
@@ -33024,8 +33260,26 @@ async function willowAsk(question) {
     const history = willowHistory(willowThread(key).slice(0, -1), 10);
     const chat = model.startChat({ history: history });
     const res = await chat.sendMessage(willowPrompt(q, hits.slice(0, 4), willowChildLine(c), willowMotherLine()));
-    const raw = res && res.response && typeof res.response.text === 'function'
-      ? res.response.text() : String(res || '');
+
+    /* A response the model refused to give comes back looking almost
+       like a normal one, with the reason tucked away and text() set to
+       throw. Read the refusal FIRST, or the throw arrives in the catch
+       below with nothing on it to identify itself. */
+    const resp = res && res.response;
+    const blocked = resp && ((resp.promptFeedback && resp.promptFeedback.blockReason)
+      || (resp.candidates && resp.candidates[0] && resp.candidates[0].finishReason
+          && ['SAFETY', 'BLOCKLIST', 'PROHIBITED_CONTENT', 'RECITATION', 'SPII']
+               .indexOf(resp.candidates[0].finishReason) !== -1
+          && resp.candidates[0].finishReason));
+    if (blocked) {
+      willow.lastError = 'blocked: ' + blocked;
+      willowSay('willow', WILLOW.wouldNotAnswer, [], 'failed', key);
+      willow.busyKey = '';
+      render();
+      return;
+    }
+
+    const raw = resp && typeof resp.text === 'function' ? resp.text() : String(res || '');
     const split = willowSplitSources(raw);
     /* Only entries that were actually offered can be linked, whatever
        the model wrote on that line. */
@@ -33038,20 +33292,58 @@ async function willowAsk(question) {
     willow.usedToday = willowCountToday() + 1;
     willowSay('willow', split.body || WILLOW.failed, used, '', key);
   } catch (err) {
-    /* Three failures, three different fixes, so they get three
-       different sentences. Telling somebody to try again in a moment,
-       when the real answer is that a key was never pasted in, wastes
-       their evening on a problem no amount of retrying will move. */
-    const code = String((err && err.code) || '') + ' ' + String((err && err.message) || '');
+    /* Different failures have different fixes, so they get different
+       sentences. Telling somebody to try again in a moment, when the
+       real answer is that a key was never pasted in, wastes their
+       evening on a problem no amount of retrying will move.
+
+       AND THE ONE THAT SENT ME ROUND IN CIRCLES: everything that did
+       not match a pattern used to become "something went wrong",
+       which is the least useful sentence in the app. The real reason
+       was thrown away, so there was nothing to look at. It is kept
+       now, and Settings shows it. */
+    willow.lastError = willowErrorDetail(err);
+    const code = willow.lastError;
     let message;
-    if (/app.?check|401|unauthenticated/i.test(code)) message = WILLOW.notVerified;
-    else if (/api-not-enabled|not been used|SERVICE_DISABLED|403|permission/i.test(code)) message = WILLOW.notReady;
+    if (/app.?check|401|unauthenticated|recaptcha/i.test(code)) message = WILLOW.notVerified;
+    else if (/api-not-enabled|not been used|SERVICE_DISABLED|403|permission|consumer/i.test(code)) message = WILLOW.notReady;
+    /* Out of quota is not a broken app and should never be described
+       as one. It is a billing page, or tomorrow. */
+    else if (/429|quota|RESOURCE_EXHAUSTED|rate.?limit/i.test(code)) message = WILLOW.outOfQuota;
+    /* The model refused rather than failed. Common on anything that
+       sounds medical, which in a parenting app is most questions worth
+       asking, so it gets its own honest answer rather than a shrug. */
+    else if (/SAFETY|blocked|block.?reason|PROHIBITED|RECITATION/i.test(code)) message = WILLOW.wouldNotAnswer;
+    else if (/offline|network|Failed to fetch|NetworkError|ERR_/i.test(code)) message = WILLOW.noNetwork;
     else if (!willow.ready) message = WILLOW.notReady;
     else message = WILLOW.failed;
     willowSay('willow', message, [], 'failed', key);
   }
   willow.busyKey = '';
   render();
+}
+
+/* Everything an error is willing to tell us, flattened into one line.
+   Firebase wraps its failures, so the useful part is often two levels
+   down in `cause` or in `customData`, and the top level says only
+   "error". */
+function willowErrorDetail(err) {
+  if (!err) return 'unknown';
+  const bits = [];
+  const add = (v) => { const t = String(v == null ? '' : v).trim(); if (t && bits.indexOf(t) === -1) bits.push(t); };
+  add(err.code);
+  add(err.name);
+  add(err.message);
+  add(err.status);
+  if (err.customData) { try { add(JSON.stringify(err.customData)); } catch (e) {} }
+  let cause = err.cause;
+  let depth = 0;
+  while (cause && depth < 3) {
+    add(cause.code); add(cause.message); add(cause.status);
+    cause = cause.cause; depth += 1;
+  }
+  if (!bits.length) { try { add(JSON.stringify(err)); } catch (e) { add(String(err)); } }
+  return bits.join(' | ').slice(0, 600);
 }
 
 function willowBubble() {
