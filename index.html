@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-17 21:25">
+<meta name="rsg-build" content="2026-09-17 21:36">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -1246,7 +1246,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-17 21:25';
+const BUILD_STAMP = '2026-09-17 21:36';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -17160,7 +17160,20 @@ function liftPrompt(kind, context) {
 /* A hard cap on how many of these the app will generate in a day, so a
    background feature can never quietly eat the budget that the chat
    she actually opened is meant to have. */
-const LIFT_DAILY_LIMIT = 12;
+/* Six, not twelve.
+
+   Twelve was set when the only background writers were the affirmation
+   and the morning line. There are five now: those two, the reply after
+   a check in, Willow speaking up after a log, and the framing on each
+   child's plan. With two children that is easily a dozen before lunch,
+   all of it drawn from the same allowance the chat needs.
+
+   Six is deliberately mean. Every one of these ships a written version
+   that is already on screen, so the cost of running out is that a line
+   stays as written, which nobody notices. The cost of the CHAT running
+   out is that a parent at two in the morning gets nothing, which they
+   notice very much. */
+const LIFT_DAILY_LIMIT = 6;
 
 /* ===== src/data/situation.js ===== */
 /**
@@ -21806,6 +21819,12 @@ const store = {
   feedError: '',
   feedThanks: false,
 
+  /* The day the project last ran out of AI quota. Everything Willow
+     writes in the background stands down for the rest of that day so
+     the chat keeps whatever is left. */
+  liftQuotaDay: '',
+  liftQuotaHit: false,
+
   /* The day the "a year ago today" card was waved away, so it stays
      away until tomorrow rather than coming back on the next reload. */
   memDayHidden: '',
@@ -22001,6 +22020,8 @@ function flushStore() {
       nudge: store.nudge,
       planLift: store.planLift,
       blocked: store.blocked,
+      liftQuotaDay: store.liftQuotaDay,
+      liftQuotaHit: store.liftQuotaHit,
       deletedMemoryIds: store.deletedMemoryIds,
       postDraft: store.postDraft,
       msEdit: store.msEdit,
@@ -22105,6 +22126,8 @@ function loadStore() {
     store.nudge = (saved.nudge && typeof saved.nudge === 'object') ? saved.nudge : {};
     store.planLift = (saved.planLift && typeof saved.planLift === 'object') ? saved.planLift : null;
     store.blocked = Array.isArray(saved.blocked) ? saved.blocked : [];
+    store.liftQuotaDay = typeof saved.liftQuotaDay === 'string' ? saved.liftQuotaDay : '';
+    store.liftQuotaHit = !!saved.liftQuotaHit;
     store.postDraft = (saved.postDraft && typeof saved.postDraft === 'object') ? saved.postDraft : null;
   }
 
@@ -29280,9 +29303,37 @@ async function liftLoad() {
 
 /* Never throws and never blocks anything. Returns the written text
    straight away and quietly replaces it if Willow answers. */
+/* HAS THE PROJECT RUN OUT OF QUOTA TODAY.
+
+   The background writers and the chat draw on the same allowance. The
+   chat is the one somebody is waiting on, so the moment a background
+   write comes back over quota, every background write stops for the
+   rest of the day and leaves what is left to Willow.
+
+   Nothing visible is lost by stopping. Every one of these has a written
+   version that is already on screen, which is the whole design. The
+   affirmation quietly not being rewritten costs a parent nothing. Not
+   being able to ask a question at two in the morning costs them the
+   feature. */
+function liftOutOfQuota() {
+  const day = ciToday();
+  if (store.liftQuotaDay !== day) return false;
+  return !!store.liftQuotaHit;
+}
+
+function liftNoteQuota(err) {
+  const code = String((err && err.code) || '') + ' ' + String((err && err.message) || '')
+    + ' ' + String((err && err.status) || '');
+  if (!/429|quota|RESOURCE_EXHAUSTED|rate.?limit/i.test(code)) return;
+  store.liftQuotaDay = ciToday();
+  store.liftQuotaHit = true;
+  saveStore();
+}
+
 function liftWrite(kind, context, onDone) {
   if (!hasAccess()) return;
   if (lift.tried[kind]) return;
+  if (liftOutOfQuota()) return;
   if (liftCountToday() >= LIFT_DAILY_LIMIT) return;
   lift.tried[kind] = true;
   store.liftUsed = liftCountToday() + 1;
@@ -29297,7 +29348,11 @@ function liftWrite(kind, context, onDone) {
       flushStore();
       render();
     })
-    .catch(() => { /* The written one is already on screen. Nothing to do. */ });
+    .catch((err) => {
+      /* The written one is already on screen, so there is nothing to
+         show. The only thing worth doing is getting out of the way. */
+      liftNoteQuota(err);
+    });
 }
 
 function liftContext() {
