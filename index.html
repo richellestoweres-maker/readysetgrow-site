@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-17 21:36">
+<meta name="rsg-build" content="2026-09-17 21:59">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -1246,7 +1246,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-17 21:36';
+const BUILD_STAMP = '2026-09-17 21:59';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -15175,9 +15175,22 @@ const WILLOW = {
   /* Out of quota is not a broken app, and calling it one sends somebody
      looking for a bug that does not exist. */
   outOfQuota:
-    'I have hit the limit on how much I can answer just now. This is a billing ceiling rather ' +
-    'than anything wrong, and it lifts on its own. Everything written in the app is still here ' +
-    'to read in the meantime.',
+    'I have hit the limit on how much I can answer just now. This is a rate limit rather than ' +
+    'anything wrong, and it lifts on its own. Everything written in the app is still here to ' +
+    'read in the meantime.',
+
+  /* A DIFFERENT THING ENTIRELY, AND THE REASON IT GETS ITS OWN WORDS.
+
+     Running out of prepaid credit is not a rate limit and it does NOT
+     lift on its own. Telling somebody to wait when the real answer is
+     that a card needs topping up costs them a day of waiting for
+     something that was never going to happen. Found the hard way: the
+     app said "it lifts on its own" for a week while the credits sat
+     at zero. */
+  outOfCredit:
+    'I am out of credit rather than out of capacity, so waiting will not bring me back. The ' +
+    'account this runs on needs topping up, and everything else in the app works exactly as ' +
+    'normal in the meantime.',
 
   /* The model refusing is not the model failing, and in a parenting app
      it happens most on the questions most worth asking. Saying so
@@ -33946,6 +33959,12 @@ async function willowAsk(question) {
     else if (/api-not-enabled|not been used|SERVICE_DISABLED|403|permission|consumer/i.test(code)) message = WILLOW.notReady;
     /* Out of quota is not a broken app and should never be described
        as one. It is a billing page, or tomorrow. */
+    /* Credit before quota, because a depleted balance also arrives as a
+       429 and the two need opposite answers: one you wait out, the
+       other you pay. */
+    else if (/prepayment|credits? (are |is )?depleted|billing#prepay|insufficient (funds|credit)/i.test(code)) {
+      message = WILLOW.outOfCredit;
+    }
     else if (/429|quota|RESOURCE_EXHAUSTED|rate.?limit/i.test(code)) message = WILLOW.outOfQuota;
     /* The model refused rather than failed. Common on anything that
        sounds medical, which in a parenting app is most questions worth
