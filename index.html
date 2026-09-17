@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-17 21:05">
+<meta name="rsg-build" content="2026-09-17 21:25">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -198,6 +198,49 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 /* plan items */
 .plan{background:var(--surface);border-radius:18px;padding:13px 14px;margin-bottom:9px;box-shadow:0 3px 12px rgba(107,101,80,.07);display:flex;gap:12px}
 .plan .picon{width:36px;height:36px;border-radius:50%;background:var(--leaf2);display:grid;place-items:center;flex:none}
+
+/* TICKING ONE OFF.
+   A real target rather than a small box, because this gets used with
+   one hand while the other is holding somebody. A done row fades
+   rather than striking through, since a plan that crosses things out
+   reads as a list of chores. */
+.plantick{
+  width:34px;height:34px;border-radius:50%;flex:none;margin-top:1px;cursor:pointer;
+  border:1.8px solid var(--line2);background:var(--surface);
+  display:grid;place-items:center;transition:background .15s,border-color .15s;
+}
+.plantick.on{background:var(--deep);border-color:var(--deep)}
+.plan.done{opacity:.62}
+.plan.done .h3{text-decoration:none;color:var(--muted)}
+
+/* A PARENT AT BREAKING POINT.
+   Warmer than the rest of the app and a little louder, because this is
+   read by somebody who is not really reading. Never alarming: red
+   borders and warning triangles tell a frightened person they are in
+   trouble, which is the opposite of what this page is for. */
+.bp{border-left:3px solid #C98B76;background:var(--surface)}
+.bpbox{
+  margin-top:13px;padding:13px 14px;border-radius:14px;
+  background:#FBF1EC;border:1px solid #EAD2C7;
+}
+.bpbox.surrender{background:#F1F4EB;border-color:var(--line2)}
+.bpbox-t{margin:0;font-size:14.5px;font-weight:600;color:#8A4E3B;line-height:1.35}
+.bpbox.surrender .bpbox-t{color:var(--deep)}
+.bpsteps{margin:9px 0 0;padding-left:20px}
+.bpsteps li{font-size:14px;line-height:1.55;color:var(--body);margin-bottom:7px}
+.bpwarn{
+  margin:11px 0 0;padding-top:10px;border-top:1px solid rgba(138,78,59,.22);
+  font-size:13.5px;line-height:1.5;color:#8A4E3B;font-weight:500;
+}
+.bpclose{margin:12px 0 0;font-size:14px;line-height:1.55;color:var(--ink);font-style:italic}
+.bpwho{padding:9px 0;border-top:1px solid rgba(0,0,0,.055)}
+.bpwho:first-of-type{border-top:0;padding-top:2px}
+.bpwho-w{display:block;font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.35}
+.bpwho-s{display:block;font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+.bpline{padding:10px 0;border-top:1px solid rgba(0,0,0,.055)}
+.bpline:first-of-type{border-top:0;padding-top:2px}
+.bpline-n{margin:0;font-size:13px;font-weight:600;color:var(--ink)}
+.bpline-c{display:block;font-size:19px;font-weight:600;color:#A85A44;text-decoration:none;margin-top:1px}
 
 /* progress */
 .bar{height:7px;border-radius:999px;background:#E0DED1;overflow:hidden;margin-top:6px;box-shadow:inset 0 1px 2px rgba(90,85,65,.09)}
@@ -1203,7 +1246,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-17 21:05';
+const BUILD_STAMP = '2026-09-17 21:25';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -20058,6 +20101,239 @@ function countReactions(rows) {
   return out;
 }
 
+/* ===== src/data/breakingPoint.js ===== */
+/**
+ * Ready Set Grow: When A Parent Is At The End Of It
+ * ------------------------------------------------------------------
+ * She asked for this in her own words, and the words matter, so they
+ * are written down here:
+ *
+ *   "we need to gear this as well towards moms who are struggling.
+ *    Like call a loved one, a friend, family member, baby sitter... if
+ *    you need time to yourself thats okay and its okay to not be okay.
+ *    if you dont want your kid dont toss them in a trashbag or dumpster
+ *    you can literally drop them at a fire station or adopt them out as
+ *    all kids deserve a chance."
+ *
+ * WHY THIS SITS INSIDE "HOME ALONE" RATHER THAN SOMEWHERE GENTLER
+ * Because that is where the real question gets asked. She pointed out
+ * that home alone cannot be a question that only appears at seven,
+ * since babies get left unattended too, and left in hot cars. A parent
+ * looking for permission to walk out of the house is not going to open
+ * a screen called Support. They will open the one about leaving a child
+ * alone, and what they find there has to be the truth and a way out.
+ *
+ * THE FOUR THINGS IT HAS TO DO, IN ORDER
+ * 1. Say the feeling is ordinary and survivable. A parent who believes
+ *    they are the only one who has ever felt this will not ask for
+ *    help, and shame is the thing that kills babies here.
+ * 2. Give the thirty second version. Put them down somewhere safe and
+ *    walk out of the room. That single sentence is the whole of shaken
+ *    baby prevention and it works in the moment it is needed.
+ * 3. Give a person to call, in the order somebody would actually try.
+ * 4. Say plainly that giving a child up is legal, free, anonymous and
+ *    not a crime, because the alternative a desperate person reaches
+ *    for is the one she named.
+ *
+ * THE TONE RULE
+ * Not one line of this scolds. A parent reading this is already certain
+ * they are a bad person, and anything that agrees with them makes the
+ * worst outcome likelier. Every line assumes somebody who loves their
+ * child and has run out of room.
+ *
+ * WHAT IS CHECKED AND WHAT IS NOT
+ * The Safe Haven facts are real, checked against the Texas DFPS Baby
+ * Moses page and the National Safe Haven Alliance, September 2026.
+ * Every state has a law, the age limit and the locations vary by state,
+ * and that variation is stated rather than smoothed over, because a
+ * parent acting on a wrong number here is the worst thing this file
+ * could cause. Where a number is state specific the app says so and
+ * sends them to the hotline that knows their state.
+ */
+
+const BREAKING_HEADLINE = 'If you are at the end of it right now, start here.';
+
+const BREAKING_INTRO = [
+  'Almost every parent has had a moment they do not tell anybody about. The one where the crying '
+  + 'has gone on so long that something in you goes cold, or you think about walking out of the '
+  + 'house and not coming back. Having that moment does not make you dangerous and it does not '
+  + 'mean you do not love them. It means you are a person who has not slept.',
+  'It is okay to not be okay. What matters is what you do in the next five minutes, and there is '
+  + 'a right answer that costs you nothing.',
+];
+
+/* THE THIRTY SECOND VERSION. First, biggest, and written to be followed
+   by somebody who is not really reading. This is the whole of shaken
+   baby prevention in four lines. */
+const BREAKING_RIGHT_NOW = {
+  title: 'Right now, in this order',
+  steps: [
+    'Put them down somewhere safe. A crib, a pack and play, or the floor with nothing on it. On '
+    + 'their back, no pillows, no blankets.',
+    'Walk out of the room and shut the door.',
+    'Let them cry. A baby crying in a safe place for ten minutes is not being harmed. Ten minutes '
+    + 'is nothing to them and it might be everything to you.',
+    'Breathe, get water, put your face under cold water, sit on the floor. Whatever gets you back.',
+    'Then call somebody, before you go back in.',
+  ],
+  note: 'Never shake a baby, not even a little, not even to get their attention. Their neck cannot '
+    + 'hold their head and the damage happens in under five seconds. If you have already shaken '
+    + 'them, even gently, call 911 now and say so, because the treatable window is short and '
+    + 'telling the truth is the thing that saves them.',
+};
+
+/* Who to call, in the order somebody would really try, with permission
+   built into each line. The hardest part of asking is believing you are
+   allowed to, so each of these says that you are. */
+const BREAKING_WHO_TO_CALL = {
+  title: 'Somebody to call',
+  intro: 'You do not need a reason better than "I am struggling and I need an hour". Anybody who '
+    + 'loves you would rather get this call than the other one.',
+  people: [
+    { who: 'Your partner, if you have one',
+      say: 'Come home, or take them for an hour. I am not okay.' },
+    { who: 'Your mom, your sister, a friend',
+      say: 'Can you come and hold the baby while I have a shower. You do not have to say more than that.' },
+    { who: 'Any neighbor you are on speaking terms with',
+      say: 'People say yes to this far more often than you think, and they think more of you for asking, not less.' },
+    { who: 'A babysitter, even a teenager down the road',
+      say: 'An hour of paid help is cheaper than almost anything else that will fix this today.' },
+    { who: 'Your pediatrician or your own doctor',
+      say: 'Tell them how you actually feel, not the tidy version. They have heard it and there is treatment for it.' },
+  ],
+};
+
+/* The lines, with what each one is actually for, because a wall of
+   numbers helps nobody at two in the morning. */
+const BREAKING_LINES = [
+  { name: 'National Maternal Mental Health Hotline',
+    contact: '1-833-852-6262',
+    detail: 'Free, 24 hours, English and Spanish, for pregnant and new parents. Call or text.',
+    url: 'https://mchb.hrsa.gov/national-maternal-mental-health-hotline' },
+  { name: '988 Suicide and Crisis Lifeline',
+    contact: '988',
+    detail: 'If the thoughts have turned toward yourself or toward them. Call or text, any hour.',
+    url: 'https://988lifeline.org/' },
+  { name: 'National Safe Haven Alliance',
+    contact: '1-888-510-2229',
+    detail: 'They know the law in your state and they will talk it through with you, whatever you decide.',
+    url: 'https://www.nationalsafehavenalliance.org/' },
+  { name: 'Childhelp National Child Abuse Hotline',
+    contact: '1-800-422-4453',
+    detail: 'For a parent who is frightened of what they might do, as much as for anybody else. Nobody is reported for asking for help.',
+    url: 'https://www.childhelphotline.org/' },
+];
+
+/* NEVER, AND WHY. Short, factual, no lecture. Each one is a thing that
+   kills children every year and each one is something an exhausted
+   person does without deciding to. */
+const BREAKING_NEVER = {
+  title: 'The three that cannot be undone',
+  items: [
+    { what: 'Never shake them',
+      why: 'Under five seconds of shaking can cause permanent brain injury or death. There is no safe amount.' },
+    { what: 'Never leave them in a car, not for a minute',
+      why: 'A car reaches lethal heat in ten minutes, even at 70 degrees, even with a window cracked. Put '
+        + 'something you need, such as a phone or a shoe, in the back seat every single time.' },
+    { what: 'Never leave a baby or young child alone in the house',
+      why: 'Not while you run one errand, not while they sleep. If you have to leave and there is nobody '
+        + 'to call, take them with you, or read what is below.' },
+  ],
+};
+
+/* ------------------------------------------------------------------
+ * SAFE SURRENDER
+ *
+ * The part she asked for most directly, and the part with the highest
+ * cost of getting wrong. Facts checked September 2026 against the Texas
+ * DFPS Baby Moses page and the National Safe Haven Alliance.
+ *
+ * WHAT IS TRUE EVERYWHERE: all fifty states have a law. It goes by
+ * different names. Handing an unharmed baby to staff at a safe haven
+ * location is legal and is not abandonment, and the parent is not
+ * prosecuted and is not required to give their name or any information.
+ *
+ * WHAT VARIES BY STATE: the maximum age of the baby and exactly which
+ * locations count. Texas is 60 days, fire stations, EMS stations and
+ * hospitals. Other states differ, some considerably.
+ *
+ * So the app states what is true everywhere as fact, states plainly
+ * that the age limit and locations depend on the state, gives Texas as
+ * the worked example because that is where she is, and sends anybody
+ * else to the hotline rather than guessing at their state for them.
+ * ------------------------------------------------------------------ */
+const SAFE_SURRENDER = {
+  title: 'If you cannot do this, there is a legal way out, today',
+  intro: [
+    'If you have got to the point of thinking about leaving your baby somewhere, or worse, read '
+    + 'this part carefully, because the thing you are imagining is not your only option and there '
+    + 'is one that harms nobody.',
+    'Every state has a Safe Haven law. You can hand your baby to a person at a fire station, an '
+    + 'ambulance station or a hospital, and walk away. It is legal. It is not abandonment and it '
+    + 'is not a crime.',
+  ],
+  facts: [
+    'You do not have to give your name, your address, or any reason.',
+    'You are not arrested and you are not charged, as long as the baby has not been hurt.',
+    'You do not have to explain yourself to anybody there. Handing the baby over is the whole process.',
+    'They will ask if you want to give medical history, for the baby’s sake. You can say no.',
+    'The baby goes into care that day and into the adoption process, and there are far more '
+    + 'families waiting than there are babies.',
+  ],
+  varies: 'The age limit and which places count depend on which state you are in. In Texas it is 60 '
+    + 'days old or younger, at any fire station, EMS station or hospital. Other states set different '
+    + 'ages. If you are not in Texas, or you are not sure, call 1-888-510-2229 and they will tell you '
+    + 'the law where you are, at any hour.',
+  ifOlder: 'If your child is past the age your state allows, this law is not the route, but you still '
+    + 'have one. Call 1-888-510-2229 or your local child protective services and say you cannot care '
+    + 'for your child and you want to place them safely. Asking to place a child is not the same as '
+    + 'being reported, and people do it, and their children are alright.',
+  closing: 'Choosing this is not the worst thing a person can do. It is the opposite of the worst '
+    + 'thing. Every child deserves a chance, and so does every parent who was honest enough to know '
+    + 'they could not give it.',
+};
+
+const BREAKING_SOURCES = [
+  { org: 'Texas DFPS', label: 'Baby Moses law, safe surrender of an infant 60 days or younger',
+    url: 'https://www.dfps.texas.gov/child_protection/child_safety/resources/baby_moses.asp' },
+  { org: 'National Safe Haven Alliance', label: 'Safe Haven laws by state, and the 24 hour helpline',
+    url: 'https://www.nationalsafehavenalliance.org/' },
+  { org: 'HRSA', label: 'National Maternal Mental Health Hotline',
+    url: 'https://mchb.hrsa.gov/national-maternal-mental-health-hotline' },
+  { org: 'AAP', label: 'Responding to crying, and why a baby is never shaken',
+    url: 'https://www.healthychildren.org/English/ages-stages/baby/crying-colic/Pages/Responding-to-Your-Babys-Cries.aspx' },
+  { org: 'NHTSA', label: 'Heatstroke, why a child is never left in a car',
+    url: 'https://www.nhtsa.gov/campaign/heatstroke' },
+];
+
+/* WHO SEES WHICH HALF.
+
+   The breaking point content is shown at every age, because a parent
+   can reach the end of it with a toddler or a fourteen year old just as
+   easily as with a newborn.
+
+   Safe surrender is shown when there is a baby in the house, since the
+   law is written for newborns, and the wording for an older child
+   points somewhere that actually applies to them instead. */
+function showsSafeSurrender(months) {
+  return typeof months === 'number' && months < 12;
+}
+
+/* Home alone readiness, the original question, only once it is a real
+   question. Below that age the answer is simply no, and the screen says
+   so and turns into the content above. */
+function showsHomeAloneReadiness(months) {
+  return typeof months === 'number' && months >= 84;
+}
+
+const HOME_ALONE_TOO_YOUNG = {
+  headline: 'At this age the answer is no, and that is the easy part.',
+  body: 'A child this young is not left alone, not for ten minutes, not while they sleep, not while '
+    + 'you run one errand. You already know that. The harder question, and the one nobody asks out '
+    + 'loud, is what you are supposed to do when you badly need to not be here and there is nobody '
+    + 'to hand them to. That is what the rest of this page is about.',
+};
+
 /* ===== src/data/cycle.js ===== */
 /**
  * Ready Set Grow: Cycle And Dates
@@ -21922,63 +22198,6 @@ function ctx() {
    SCREENS
    ----------------------------------------------------------------- */
 
-function buildPlan(c) {
-  /* A screen called Today's Plan has to actually change today.
-   *
-   * The seed is the date plus this child's id, which gives three things
-   * at once. It moves on at midnight, so a parent opening the app on
-   * Tuesday does not get Monday back. Two children get different plans
-   * on the same day, which matters in a house where one of them is
-   * listening. And it holds still while somebody is reading it, because
-   * the same seed always produces the same answer, so nothing reshuffles
-   * under them when the screen redraws.
-   *
-   * None of this needs a server or an API key. It is arithmetic on the
-   * date. What it cannot do is invent an activity that is not in the
-   * library, which is a content problem rather than a code one. */
-  const kid = activeChild();
-  const seed = hashSeed(todayKey() + ':' + (kid ? kid.id : 'none'));
-
-  /* Rotate the list by the seed before choosing, rather than always
-     taking the first match. Same candidates, different starting point
-     each day. */
-  const rotate = (list, offset) => {
-    if (!list.length) return list;
-    const n = offset % list.length;
-    return list.slice(n).concat(list.slice(0, n));
-  };
-
-  const used = new Set();
-  const pickFrom = (fn, offset) => {
-    const candidates = rotate(c.activities.filter((a) => fn(a) && !used.has(a.id)), offset);
-    const chosen = candidates[0] || null;
-    if (chosen) used.add(chosen.id);
-    return chosen;
-  };
-  const anyLeft = (offset) => {
-    const rest = rotate(c.activities.filter((a) => !used.has(a.id)), offset);
-    const chosen = rest[0] || null;
-    if (chosen) used.add(chosen.id);
-    return chosen;
-  };
-
-  const morning = pickFrom(
-    (a) => a.skills.includes('regulation') || a.skills.includes('socialEmotional'), seed
-  ) || anyLeft(seed);
-
-  const learning = pickFrom(
-    (a) => a.skills.some((sk) => ['cognitive', 'literacy', 'numeracy', 'language'].includes(sk)), seed + 3
-  ) || anyLeft(seed + 3);
-
-  const move = pickFrom(
-    (a) => a.skills.includes('grossMotor') || a.setting === 'outdoor', seed + 7
-  ) || anyLeft(seed + 7);
-
-  const script = c.scripts.length ? c.scripts[seed % c.scripts.length] : null;
-  const mins = c.months == null ? 10 : c.months < 12 ? 5 : c.months < 36 ? 10 : c.months < 72 ? 15 : 20;
-  return { morning, learning, move, script, mins };
-}
-
 /* THE WORDS AROUND THE PLAN.
 
    The activities are the library's, the framing is Willow's. See
@@ -22032,15 +22251,186 @@ function planFraming(c, p) {
   return entry;
 }
 
+/* HOW MANY THINGS THE PLAN CAN REMEMBER OFFERING.
+
+   Capped so a small age band cannot run itself dry. If the library only
+   holds twelve activities for a nine month old and the plan remembered
+   all twelve, there would be nothing left to offer on day five and it
+   would start refusing to fill slots. So the list is always kept a few
+   shorter than the pool it is drawn from. */
+function planRecentCap(poolSize) {
+  /* Leave four spare: three slots plus one, so there is always
+     something fresh for every slot and the fallback is never needed. */
+  return Math.max(0, Math.min(40, poolSize - 4));
+}
+
+function planRecent(kid) {
+  if (!kid) return [];
+  if (!Array.isArray(kid.planRecent)) kid.planRecent = [];
+  return kid.planRecent;
+}
+
+/* Today's plan for this child, built once and then left alone.
+
+   It used to be recomputed on every render from a seed. That was fine
+   for showing, and no use at all for ticking: a tick has to attach to a
+   specific thing, and a thing that is recalculated on every repaint is
+   not specific. So it is built once a day, saved on the child, and the
+   ticks hang off it.
+
+   THREE THINGS IT HAS TO GET RIGHT, ALL OF WHICH SHE ASKED FOR:
+   it changes every day, it is different for each child on the same day,
+   and it does not keep offering the same activity it offered on Tuesday.
+   The first two come from the seed, which is the date plus the child's
+   id. The third needs an actual memory, which is planRecent. */
+function buildPlan(c) {
+  const kid = activeChild();
+  const day = ciToday();
+  const kept = kid && kid.plan && kid.plan.day === day ? kid.plan : null;
+
+  /* Already built today. Hand back what the ticks are attached to
+     rather than building a second, different plan. */
+  if (kept) return planHydrate(kept, c);
+
+  const seed = hashSeed(day + ':' + (kid ? kid.id : 'none'));
+
+  /* Rotate the list by the seed before choosing, rather than always
+     taking the first match. Same candidates, different starting point
+     each day. */
+  const rotate = (list, offset) => {
+    if (!list.length) return list;
+    const n = offset % list.length;
+    return list.slice(n).concat(list.slice(0, n));
+  };
+
+  /* Everything offered in the last few days, so the plan stops handing
+     back Tuesday's activity on Thursday. */
+  const seenList = planRecent(kid);
+  const seen = {};
+  seenList.forEach((id) => { seen[id] = true; });
+
+  const used = {};
+  /* THE ORDER OF PREFERENCE, WHICH IS THE WHOLE TRICK.
+
+     Each slot has a category it wants, such as something physical for
+     the movement slot. Those categories are small: an age band might
+     hold fourteen activities in total but only four that are physical.
+     Preferring the right category above all else means the movement
+     slot cycles through its four and starts repeating by Thursday,
+     while ten perfectly good activities sit unused.
+
+     So a FRESH activity from anywhere beats a REPEAT from the right
+     category. A parent notices being handed the same thing twice in a
+     week. Nobody notices that today's movement suggestion came out of
+     the learning drawer.
+
+     Age is never in question at any point here: c.activities only ever
+     holds what the library has for this child's months, and nothing
+     below can reach outside it. */
+  const pick = (fn, offset) => {
+    const free = c.activities.filter((a) => !used[a.id]);
+    const wanted = free.filter(fn);
+    const order = [
+      wanted.filter((a) => !seen[a.id]),   // right category, not seen lately
+      free.filter((a) => !seen[a.id]),     // anything at all, not seen lately
+      wanted,                              // right category, seen lately
+      free,                                // whatever is left
+    ];
+    const pool = order.filter((list) => list.length)[0] || [];
+    const chosen = rotate(pool, offset)[0] || null;
+    if (chosen) used[chosen.id] = true;
+    return chosen;
+  };
+  const anyLeft = (offset) => pick(() => true, offset);
+
+  const morning = pick(
+    (a) => a.skills.includes('regulation') || a.skills.includes('socialEmotional'), seed
+  ) || anyLeft(seed);
+
+  const learning = pick(
+    (a) => a.skills.some((sk) => ['cognitive', 'literacy', 'numeracy', 'language'].includes(sk)), seed + 3
+  ) || anyLeft(seed + 3);
+
+  const move = pick(
+    (a) => a.skills.includes('grossMotor') || a.setting === 'outdoor', seed + 7
+  ) || anyLeft(seed + 7);
+
+  const script = c.scripts.length ? c.scripts[seed % c.scripts.length] : null;
+  const mins = c.months == null ? 10 : c.months < 12 ? 5 : c.months < 36 ? 10 : c.months < 72 ? 15 : 20;
+
+  const record = {
+    day: day,
+    morningId: morning ? morning.id : '',
+    learningId: learning ? learning.id : '',
+    moveId: move ? move.id : '',
+    scriptId: script ? script.id : '',
+    mins: mins,
+    done: {},
+  };
+
+  if (kid) {
+    kid.plan = record;
+    /* Newest first, so the oldest fall off the end as the list fills. */
+    const fresh = [record.morningId, record.learningId, record.moveId].filter(Boolean);
+    const next = fresh.concat(planRecent(kid).filter((id) => fresh.indexOf(id) === -1));
+    kid.planRecent = next.slice(0, planRecentCap(c.activities.length));
+    kid.updatedAt = Date.now();
+    saveStore();
+  }
+
+  return planHydrate(record, c);
+}
+
+/* The saved plan holds ids. The screen needs the actual entries, looked
+   up fresh each time so a change to the library shows up rather than
+   being frozen into somebody's Tuesday. */
+function planHydrate(record, c) {
+  const byId = {};
+  c.activities.forEach((a) => { byId[a.id] = a; });
+  const script = (c.scripts || []).filter((x) => x.id === record.scriptId)[0] || null;
+  return {
+    morning: byId[record.morningId] || null,
+    learning: byId[record.learningId] || null,
+    move: byId[record.moveId] || null,
+    script: script,
+    mins: record.mins,
+    done: record.done || {},
+    day: record.day,
+  };
+}
+
+/* Ticking one. Kept on the child, keyed by the slot rather than by the
+   activity, so the reading and evening rows can be ticked too even
+   though they are not library entries. */
+function planTick(slot) {
+  const kid = activeChild();
+  if (!kid || !kid.plan) return;
+  if (!kid.plan.done || typeof kid.plan.done !== 'object') kid.plan.done = {};
+  if (kid.plan.done[slot]) delete kid.plan.done[slot];
+  else kid.plan.done[slot] = true;
+  kid.updatedAt = Date.now();
+  flushStore();
+  render();
+}
+
 function screenPlan(c) {
   if (c.months == null) return emptyScreen('Add a birthday to see a plan.');
   const p = buildPlan(c);
   const focus = c.content[0];
   const frame = planFraming(c, p);
+  const done = p.done || {};
 
-  const item = (eyebrow, ic, title, text, btn, go) => `
-    <div class="plan">
-      <span class="picon">${icon(ic, 17)}</span>
+  /* Every row is tickable now, because "did we do it" is the question a
+     parent actually has about a plan, and a plan you cannot answer that
+     about is a list of suggestions. The tick is the whole row rather
+     than a small box beside it, since this gets used one handed. */
+  const item = (slot, eyebrow, ic, title, text, btn, go) => `
+    <div class="plan${done[slot] ? ' done' : ''}">
+      <button class="plantick${done[slot] ? ' on' : ''}" data-plan="tick" data-slot="${esc(slot)}"
+        aria-pressed="${done[slot] ? 'true' : 'false'}"
+        aria-label="${done[slot] ? 'Did this, tap to undo' : 'Mark as done'}">
+        ${done[slot] ? icon('check', 14, '#fff') : ''}
+      </button>
       <div class="grow">
         <p class="eyebrow">${eyebrow}</p>
         <h3 class="h3">${esc(title)}</h3>
@@ -22048,6 +22438,11 @@ function screenPlan(c) {
         ${btn ? `<button class="btn ghost sm" style="margin-top:9px" ${go}>${btn}</button>` : ''}
       </div>
     </div>`;
+
+  const slots = ['morning', 'learning', 'reading', 'move', 'evening']
+    .filter((k) => k === 'reading' || k === 'evening'
+      || (k === 'morning' && p.morning) || (k === 'learning' && p.learning) || (k === 'move' && p.move));
+  const ticked = slots.filter((k) => done[k]).length;
 
   return `
   ${cornerLeaves()}
@@ -22072,12 +22467,12 @@ function screenPlan(c) {
       <p class="bodytext" style="margin-top:5px">${esc(focus.summary)}</p>
     </div>` : ''}
 
-    ${p.morning ? item('Morning Activity', 'sun', p.morning.title, p.morning.description, 'Let\'s do it', `data-go="activity" data-id="${esc(p.morning.id)}"`) : ''}
-    ${p.learning ? item('Learning Moment', 'book', p.learning.title, p.learning.description, 'Try this', `data-go="activity" data-id="${esc(p.learning.id)}"`) : ''}
+    ${p.morning ? item('morning', 'Morning Activity', 'sun', p.morning.title, p.morning.description, 'Let\'s do it', `data-go="activity" data-id="${esc(p.morning.id)}"`) : ''}
+    ${p.learning ? item('learning', 'Learning Moment', 'book', p.learning.title, p.learning.description, 'Try this', `data-go="activity" data-id="${esc(p.learning.id)}"`) : ''}
 
-    ${item('Reading Time', 'book', `Read together for ${p.mins} minutes`, 'Ask what they think happens next. Questions build more language than reading straight through.', '', '')}
+    ${item('reading', 'Reading Time', 'book', `Read together for ${p.mins} minutes`, 'Ask what they think happens next. Questions build more language than reading straight through.', '', '')}
 
-    ${p.move ? item('Outdoor / Movement', 'run', p.move.title, p.move.description, 'Get moving', `data-go="activity" data-id="${esc(p.move.id)}"`) : ''}
+    ${p.move ? item('move', 'Outdoor / Movement', 'run', p.move.title, p.move.description, 'Get moving', `data-go="activity" data-id="${esc(p.move.id)}"`) : ''}
 
     ${p.script ? `
     <p class="sect">Parent Script</p>
@@ -22087,7 +22482,15 @@ function screenPlan(c) {
       <p class="why">${esc(p.script.why)}</p>
     </div>` : ''}
 
-    ${item('Evening Wind Down', 'moon', 'Gratitude and Good Night', 'Share one thing that went well, one feeling you noticed, and end with: tomorrow is a new day, and I am so proud of you.', '', '')}
+    ${item('evening', 'Evening Wind Down', 'moon', 'Gratitude and Good Night', 'Share one thing that went well, one feeling you noticed, and end with: tomorrow is a new day, and I am so proud of you.', '', '')}
+
+    ${/* Said once, at the bottom, quietly. A plan that counts what you
+          did not do is a plan that makes a hard day worse. */ ''}
+    <p class="tiny" style="text-align:center;margin-top:12px">
+      ${ticked
+        ? esc(ticked + ' of ' + slots.length + ' ticked off. Tomorrow brings a different plan either way.')
+        : 'Tick anything you get to. Nothing here is a requirement, and a new plan arrives tomorrow whatever happens with this one.'}
+    </p>
     <p class="disclaimer">${esc(CONTENT_DISCLAIMER)}</p>
   </div>`;
 }
@@ -22239,6 +22642,41 @@ function msSet(id, st) {
   else store.msEdit.statuses[id] = next;
   if (!Object.keys(store.msEdit.statuses).length) store.msEdit = null;
   flushStore();
+}
+
+/* WHERE BACK ACTUALLY GOES.
+
+   Back used to mean "clear the view", which drops to whatever tab is
+   underneath. From an activity opened out of Today's Plan that is the
+   child's profile, two steps back rather than one, and the plan she was
+   reading is gone.
+
+   So there is a stack now. Going deeper remembers where you were,
+   Back returns there, and running out of stack behaves the way it
+   always did and drops to the tab. Deliberately short: this is for
+   stepping back out of a couple of screens, not for replaying an
+   afternoon. It is memory only, because a back stack restored from
+   disk would send somebody back to yesterday. */
+const NAV_MAX = 12;
+let navStack = [];
+
+function navPush() {
+  navStack.push({ tab: state.tab, view: state.view });
+  if (navStack.length > NAV_MAX) navStack.shift();
+}
+
+function navBack() {
+  const prev = navStack.pop();
+  if (!prev) { state.view = null; return; }
+  state.tab = prev.tab;
+  state.view = prev.view;
+}
+
+/* Anything that jumps sideways rather than deeper, such as a tab, makes
+   the stack meaningless. Better an empty stack than one that sends
+   somebody somewhere they were never coming from. */
+function navClear() {
+  navStack = [];
 }
 
 function msChangeCount() {
@@ -23037,7 +23475,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-plan]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -23086,6 +23524,7 @@ function initControls() {
     } else if (t.dataset.profilebtn) {
       state.view = { type: 'screen', id: 'profile' };
     } else if (t.dataset.child) {
+      navClear();
       // Opening a child switches every child scoped screen at once, which
       // is the whole reason profiles are separate in the first place.
       selectChild(t.dataset.child);
@@ -23446,9 +23885,9 @@ function initControls() {
       if (i !== -1) { delete state.lensOptions[id]; delete state.lensNumbers[id]; }
       t.setAttribute('aria-pressed', i === -1);
     } else if (t.dataset.tab) {
-      state.tab = t.dataset.tab; state.view = null;
+      state.tab = t.dataset.tab; state.view = null; navClear();
     } else if (t.dataset.go === 'tab') {
-      state.tab = t.dataset.id; state.view = null;
+      state.tab = t.dataset.id; state.view = null; navClear();
     } else if (t.dataset.go) {
       if (t.tagName === 'A') return; // source links open normally
       // Following one of her links means you want to read it, not keep chatting.
@@ -23463,6 +23902,7 @@ function initControls() {
       // Opening a different lens starts from the child's real age again,
       // rather than inheriting whichever band was last looked at.
       if (t.dataset.go === 'lens') state.lensBand = null;
+      navPush();
       state.view = { type: t.dataset.go, id: t.dataset.id };
     } else if (t.dataset.back) {
       const to = t.dataset.back;
@@ -23473,9 +23913,18 @@ function initControls() {
         store.profileEdit = null;
         state.tab = 'home';
         state.view = null;
+        navClear();
+      } else if (to && to !== '1') {
+        /* A screen that names where Back should land still wins, since
+           it knows something the stack does not. */
+        state.view = { type: 'screen', id: to };
+        navClear();
       } else {
-        state.view = to && to !== '1' ? { type: 'screen', id: to } : null;
+        navBack();
       }
+    } else if (t.dataset.plan === 'tick') {
+      planTick(t.dataset.slot);
+      return;
     } else if (t.dataset.ms) {
       msSet(t.dataset.ms, t.dataset.st);
     } else if (t.dataset.msave) {
@@ -24356,6 +24805,90 @@ function screenFeeding(c) {
  * plainly that reading it is not the same as taking the class.
  * ------------------------------------------------------------------ */
 
+/* THE PART FOR A PARENT WHO HAS RUN OUT OF ROOM.
+
+   Everything about why this exists and why the wording is what it is
+   lives in src/data/breakingPoint.js. The short version: a parent
+   looking for permission to walk out of the house will not open a
+   screen called Support, they will open the one about leaving a child
+   alone, so this is what they find there.
+
+   Not one line of it scolds. Somebody reading this is already certain
+   they are a bad person, and anything that agrees with them makes the
+   worst outcome likelier. */
+function breakingPointBlock(c) {
+  const phone = (l) => {
+    const digits = String(l.contact || '').replace(/[^\d]/g, '');
+    const dial = (digits.length >= 10 || digits.length === 3) ? 'tel:' + digits : '';
+    return `
+    <div class="bpline">
+      <p class="bpline-n">${esc(l.name)}</p>
+      ${dial
+        ? `<a class="bpline-c" href="${esc(dial)}">${esc(l.contact)}</a>`
+        : `<span class="bpline-c">${esc(l.contact)}</span>`}
+      <p class="tiny" style="margin:2px 0 0">${esc(l.detail)}</p>
+      <a class="tiny" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"
+        style="text-decoration:underline">Their website</a>
+    </div>`;
+  };
+
+  return `
+  <div class="card bp">
+    <p class="eyebrow">${icon('heart', 11, '#A85A44')} ${esc(BREAKING_HEADLINE)}</p>
+    ${BREAKING_INTRO.map((p) => `<p class="bodytext" style="margin-top:9px">${esc(p)}</p>`).join('')}
+
+    <div class="bpbox">
+      <p class="bpbox-t">${esc(BREAKING_RIGHT_NOW.title)}</p>
+      <ol class="bpsteps">
+        ${BREAKING_RIGHT_NOW.steps.map((x) => `<li>${esc(x)}</li>`).join('')}
+      </ol>
+      <p class="bpwarn">${esc(BREAKING_RIGHT_NOW.note)}</p>
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(BREAKING_WHO_TO_CALL.title)}</h4>
+      <p class="tiny" style="margin:0 0 9px">${esc(BREAKING_WHO_TO_CALL.intro)}</p>
+      ${BREAKING_WHO_TO_CALL.people.map((p) => `
+        <div class="bpwho">
+          <span class="bpwho-w">${esc(p.who)}</span>
+          <span class="bpwho-s">${esc(p.say)}</span>
+        </div>`).join('')}
+    </div>
+
+    <div class="dsec">
+      <h4>Somebody who will pick up, any hour</h4>
+      ${BREAKING_LINES.map(phone).join('')}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(BREAKING_NEVER.title)}</h4>
+      ${BREAKING_NEVER.items.map((n) => `
+        <div class="bpwho">
+          <span class="bpwho-w">${esc(n.what)}</span>
+          <span class="bpwho-s">${esc(n.why)}</span>
+        </div>`).join('')}
+    </div>
+
+    ${showsSafeSurrender(c.months) ? `
+    <div class="bpbox surrender">
+      <p class="bpbox-t">${esc(SAFE_SURRENDER.title)}</p>
+      ${SAFE_SURRENDER.intro.map((p) => `<p class="bodytext" style="margin-top:8px">${esc(p)}</p>`).join('')}
+      <ul class="dlist" style="margin-top:10px">
+        ${SAFE_SURRENDER.facts.map((f) => `<li>${esc(f)}</li>`).join('')}
+      </ul>
+      <p class="bodytext" style="margin-top:10px">${esc(SAFE_SURRENDER.varies)}</p>
+      <p class="bpclose">${esc(SAFE_SURRENDER.closing)}</p>
+    </div>` : `
+    <div class="bpbox surrender">
+      <p class="bpbox-t">If you cannot keep going, there is still a way that harms nobody</p>
+      <p class="bodytext" style="margin-top:8px">${esc(SAFE_SURRENDER.ifOlder)}</p>
+      <p class="bpclose">${esc(SAFE_SURRENDER.closing)}</p>
+    </div>`}
+
+    ${dsec('Where this comes from', sourceRows(BREAKING_SOURCES))}
+  </div>`;
+}
+
 function screenSafety(c) {
   const months = c.months;
   const tab = state.safetyTab || 'cpr';
@@ -24474,10 +25007,27 @@ function screenSafety(c) {
       })()}` : ''}
 
     ${tab === 'alone' ? `
+      ${/* THE ANSWER FIRST, WHICHEVER ANSWER APPLIES.
+
+            Home alone used to appear only from seven, on the reasoning
+            that it is not a question before then. She pointed out that
+            it is: babies get left unattended, and left in cars, and the
+            parent who does it is usually not a monster, they are a
+            person who has run out of room. So the tab is there at every
+            age now, and below seven it answers the real question
+            instead of the stated one. */ ''}
+      ${showsHomeAloneReadiness(c.months) ? `
       <div class="card leafy">
         <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(HOME_ALONE.headline)}</p>
-      </div>
+      </div>` : `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(HOME_ALONE_TOO_YOUNG.headline)}</p>
+        <p class="bodytext" style="margin-top:10px">${esc(HOME_ALONE_TOO_YOUNG.body)}</p>
+      </div>`}
 
+      ${breakingPointBlock(c)}
+
+      ${showsHomeAloneReadiness(c.months) ? `
       <div class="dsec">
         <h4>What the law actually says</h4>
         ${list(HOME_ALONE.theLegalPart)}
@@ -24505,7 +25055,7 @@ function screenSafety(c) {
       <div class="dsec">
         <h4>Leaving them in charge of a sibling</h4>
         <div class="callout"><p style="margin:0">${esc(HOME_ALONE.siblings)}</p></div>
-      </div>` : ''}
+      </div>` : ''}` : ''}
 
     ${dsec('Sources', sourceRows(EMERGENCY_SOURCES))}
     <p class="disclaimer">
@@ -30308,9 +30858,13 @@ function screenChild(c) {
         ? esc(msChangeCount() + ' marked but not saved yet')
         : (doneMs ? esc(doneMs + ' marked so far. Ranges, not deadlines.') : 'Ranges, not deadlines'),
       'data-go="screen" data-id="milestones"') : ''}
-    ${childRow('book', 'Development guidance',
-      c.content.length ? esc(c.content.length + ' written for exactly this age') : 'Nothing written for this age yet',
-      'data-go="screen" data-id="development"')}
+    ${/* Same rule as milestones past six. A four week old has nothing
+          written for them yet, and a link to an empty screen reads as a
+          broken part of the app rather than a gap in the content. When
+          there is nothing, there is no row. */ ''}
+    ${c.content.length ? childRow('book', 'Development guidance',
+      esc(c.content.length + ' written for exactly this age'),
+      'data-go="screen" data-id="development"') : ''}
 
     <p class="sect">How their mind works</p>
     ${childRow('bulb', 'Understanding ' + esc(name),
