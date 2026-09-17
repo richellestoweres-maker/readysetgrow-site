@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-17 00:15">
+<meta name="rsg-build" content="2026-09-17 21:05">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -1203,7 +1203,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-17 00:15';
+const BUILD_STAMP = '2026-09-17 21:05';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -22620,6 +22620,15 @@ function render() {
     v = null; state.view = null; state.tab = 'home';
   }
   if (v && v.type === 'log' && !activeChild()) { v = null; state.view = null; state.tab = 'home'; }
+  /* An old link, a back button, or a reminder left over from before a
+     birthday. Development guidance is what this child actually has, so
+     that is where it goes rather than to an empty screen. */
+  if (v && v.type === 'screen' && v.id === 'milestones' && !getAgeSummary({
+    name: (activeChild() || {}).name, birthday: (activeChild() || {}).birthday,
+  }).checkpoint) {
+    v = { type: 'screen', id: 'development' };
+    state.view = v;
+  }
 
   if (v && v.type === 'content') html = viewContent(c, v.id);
   else if (v && v.type === 'activity') html = viewActivity(c, v.id);
@@ -27711,7 +27720,13 @@ function pendingNotices() {
       });
     }
   });
-  if (msChangeCount()) {
+  /* A draft can only belong to a child young enough to have a
+     checkpoint, but a birthday can pass while one is sitting there, and
+     a reminder pointing at a screen this child no longer has is a dead
+     end with a number on it. */
+  if (msChangeCount() && getAgeSummary({
+    name: (activeChild() || {}).name, birthday: (activeChild() || {}).birthday,
+  }).checkpoint) {
     out.push({
       icon: 'chart',
       title: msChangeCount() + ' milestone' + (msChangeCount() === 1 ? '' : 's') + ' not saved',
@@ -30275,11 +30290,24 @@ function screenChild(c) {
     ${kid ? memSection(kid.id) : ''}
 
     <p class="sect">Where they are now</p>
-    ${childRow('chart', 'Milestones',
+    ${/* MILESTONES STOP AT SIX, AND SO DOES THE ROW.
+
+          The CDC checklists run to five years, so getCurrentCheckpoint
+          returns nothing from 72 months on. The row was still being
+          drawn for a twelve year old, and tapping it landed on a screen
+          whose entire content was an apology for having nothing. An
+          option that leads somewhere empty is worse than no option: it
+          reads as a part of the app that is broken rather than a part
+          that does not apply.
+
+          Tied to whether a checkpoint exists rather than to a number,
+          so the row disappears exactly when there is nothing behind
+          it. */ ''}
+    ${c.summary.checkpoint ? childRow('chart', 'Milestones',
       msChangeCount()
         ? esc(msChangeCount() + ' marked but not saved yet')
         : (doneMs ? esc(doneMs + ' marked so far. Ranges, not deadlines.') : 'Ranges, not deadlines'),
-      'data-go="screen" data-id="milestones"')}
+      'data-go="screen" data-id="milestones"') : ''}
     ${childRow('book', 'Development guidance',
       c.content.length ? esc(c.content.length + ' written for exactly this age') : 'Nothing written for this age yet',
       'data-go="screen" data-id="development"')}
