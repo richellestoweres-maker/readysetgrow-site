@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-18 14:48">
+<meta name="rsg-build" content="2026-09-18 17:15">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -1364,7 +1364,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-18 14:48';
+const BUILD_STAMP = '2026-09-18 17:15';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -22113,7 +22113,7 @@ const OUT_BAGS = [
   {
     id: 'toddler',
     label: 'Toddler',
-    max: 48,
+    max: 36,
     items: [
       'Snacks, plural, and water',
       'A change of clothes and a bag for the wet ones, well past potty training',
@@ -22122,6 +22122,28 @@ const OUT_BAGS = [
       'Sun cream and a hat in summer, gloves that stay on in winter',
       'Plasters, because there is always a knee',
       'Something familiar for the journey and something new for the hard bit',
+    ],
+  },
+  /* THE BAND THAT WAS MISSING.
+
+     The list used to run toddler to 48 months and then straight to
+     school age, so Stetson at four years five months was handed the
+     twelve year old's list. Four and five are their own thing: out of
+     diapers mostly, still needing a spare pair of trousers, and old
+     enough to carry something. */
+  {
+    id: 'preschool',
+    label: 'Three to six',
+    max: 72,
+    items: [
+      'Water and snacks, and one more snack than that',
+      'Spare underwear and trousers, because accidents keep happening well past training',
+      'Wipes, still. Faces, hands, seats, everything',
+      'A hat and sun cream, or gloves and a warm layer',
+      'Plasters. There is always a knee',
+      'Something small to do while waiting, a pad and crayons or a sticker book',
+      'A comforter if there is one, even if they say there is not',
+      'Their own small backpack, with two of their own things in it',
     ],
   },
   {
@@ -22138,6 +22160,31 @@ const OUT_BAGS = [
     ],
   },
 ];
+
+/* Things that are packed once for the whole outing rather than once
+   per child. They used to be scattered through each age list, which
+   meant a parent of three saw "sun cream" three times. */
+const OUT_SHARED = {
+  id: 'everyone',
+  label: 'For everyone',
+  items: [
+    'Water, and more of it than you think',
+    'Sun cream and hats, or gloves and layers',
+    'A small first aid kit. Plasters, infant paracetamol, an antihistamine',
+    'Phone charger or a battery pack',
+    'A bag for wet or dirty things',
+    'Snacks that are not in the diaper bag, for you',
+    'Hand sanitiser and a pack of wipes within reach',
+  ],
+};
+
+/* A stable id per line, so ticking something survives the wording of
+   that line being improved later. Built from the list id and the
+   position rather than stored by hand, because a hand maintained id
+   list is a list that drifts. */
+function outItemId(listId, index) {
+  return String(listId) + ':' + String(index);
+}
 
 function outBagForAge(months) {
   if (typeof months !== 'number') return OUT_BAGS[1];
@@ -24778,6 +24825,7 @@ const store = {
 
   /* Parent scoped. These follow the mother, not any child. */
   bagChecked: [],
+  outChecked: [],   // the packing checklist, ticked per child
   pumpTab: 'flange',
   pumpGoal: 'exclusive',
   pumpProblem: null,
@@ -24878,7 +24926,7 @@ const state = {};
   });
 });
 
-['parent', 'children', 'activeChildId', 'bagChecked', 'birthdaySeen', 'profileWho', 'posts', 'postDraft',
+['parent', 'children', 'activeChildId', 'bagChecked', 'outChecked', 'birthdaySeen', 'profileWho', 'posts', 'postDraft',
  'postOpen', 'menuOpen', 'calMonth',
  'profileEdit', 'msEdit', 'ciEdit', 'ciOpen', 'photoBusy', 'photoError',
  'liftUsed', 'liftDate', 'pumpTab', 'pumpGoal',
@@ -24908,6 +24956,7 @@ function flushStore() {
       children: store.children,
       activeChildId: store.activeChildId,
       bagChecked: store.bagChecked,
+      outChecked: store.outChecked,
       birthdaySeen: store.birthdaySeen,
       posts: store.posts,
       /* Memories live here too, or a voice memo saved this morning
@@ -25045,6 +25094,7 @@ function loadStore() {
     store.parent.lastPeriod = sanitizeStoredDate(store.parent.lastPeriod, 0);
     store.parent.situation = normalizeSituation(store.parent.situation);
     store.bagChecked = Array.isArray(saved.bagChecked) ? saved.bagChecked : [];
+    store.outChecked = Array.isArray(saved.outChecked) ? saved.outChecked : [];
     store.parentUpdatedAt = Number(saved.parentUpdatedAt) || 0;
   }
 
@@ -26491,7 +26541,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -26930,6 +26980,25 @@ function initControls() {
       const key = t.dataset.sub;
       const val = t.dataset.val;
       state[key] = val === '' ? null : val;
+    } else if (t.dataset.out) {
+      if (!Array.isArray(store.outChecked)) store.outChecked = [];
+      const id = t.dataset.out;
+      const at = store.outChecked.indexOf(id);
+      if (at === -1) store.outChecked.push(id); else store.outChecked.splice(at, 1);
+      store.parentUpdatedAt = Date.now();
+      flushStore();
+      render();
+      return;
+    } else if (t.dataset.outclear) {
+      /* One button per list rather than one for the whole page, since
+         packing for one child is finished at a different moment from
+         packing for another. */
+      const prefix = t.dataset.outclear + ':';
+      store.outChecked = (store.outChecked || []).filter((x) => x.indexOf(prefix) !== 0);
+      store.parentUpdatedAt = Date.now();
+      flushStore();
+      render();
+      return;
     } else if (t.dataset.bag) {
       const id = t.dataset.bag;
       const i = state.bagChecked.indexOf(id);
@@ -28453,10 +28522,113 @@ function screenSigns(c) {
    rather than just annoying.
    ----------------------------------------------------------------- */
 
+/* THE PACKING LIST IS A LIST PER CHILD, NOT A LIST PER APP.
+
+   It used to read the active child and show one age band, so a mother
+   of four opened Outings and got the twelve year old's list because he
+   happened to be the child selected. Of course she did. Outings hangs
+   off her, not off one of them.
+
+   So: one ticked list for everyone, then one ticked list per child, in
+   age order, each at that child's own band. Ticks are saved and they
+   survive leaving the screen, because a packing list you cannot tick
+   is just an article about packing. */
+
+function outTicked(id) {
+  return (store.outChecked || []).indexOf(id) !== -1;
+}
+
+function outRow(listId, i, label) {
+  const id = outItemId(listId, i);
+  const on = outTicked(id);
+  return `
+  <button class="lrow" data-out="${esc(id)}" style="align-items:flex-start;padding:10px 6px">
+    <span style="width:22px;height:22px;border-radius:6px;margin-top:1px;flex:0 0 auto;
+      display:flex;align-items:center;justify-content:center;
+      background:${on ? 'var(--sage)' : 'transparent'};
+      border:${on ? 'none' : '1.5px solid var(--line)'}">
+      ${on ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>' : ''}
+    </span>
+    <span class="grow" style="margin-left:11px">
+      <span style="display:block;font-size:14px;line-height:1.4;
+        color:${on ? 'var(--faint)' : 'var(--ink)'};
+        text-decoration:${on ? 'line-through' : 'none'}">${esc(label)}</span>
+    </span>
+  </button>`;
+}
+
+function outList(listId, heading, sub, items) {
+  const done = items.filter((x, i) => outTicked(outItemId(listId, i))).length;
+  return `
+  <div class="dsec">
+    <h4>${esc(heading)}</h4>
+    <div style="display:flex;align-items:baseline;gap:9px;margin:0 0 8px;flex-wrap:wrap">
+      <p class="tiny" style="margin:0;flex:1 1 auto">${esc(sub)}</p>
+      <span class="tiny" style="color:${done === items.length ? 'var(--sage)' : 'var(--muted)'};font-weight:600">
+        ${esc(String(done))} of ${esc(String(items.length))}
+      </span>
+      ${done ? `<button class="chip" data-outclear="${esc(listId)}"
+        style="padding:3px 10px;font-size:11px">Clear</button>` : ''}
+    </div>
+    <div class="card" style="padding:4px 10px">
+      ${items.map((x, i) => outRow(listId, i, x)).join('')}
+    </div>
+  </div>`;
+}
+
+function outPacking() {
+  /* Real children only, youngest first, since the youngest needs the
+     most packed for them and that is the list she will work through
+     first. */
+  const kids = (store.children || [])
+    .filter((k) => !isExampleChild(k))
+    .map((k) => {
+      const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+      return {
+        id: k.id,
+        name: (k.name || 'Your child'),
+        months: sum && sum.age ? sum.age.totalMonths : null,
+        label: sum && sum.label ? sum.label : '',
+      };
+    })
+    .sort((a, b) => (a.months == null ? 9999 : a.months) - (b.months == null ? 9999 : b.months));
+
+  return `
+    <div class="card leafy" style="margin-bottom:12px">
+      <p class="bodytext">Tick as you pack. It remembers, so you can put the phone down and come
+      back to it.</p>
+    </div>
+
+    ${outList(OUT_SHARED.id, OUT_SHARED.label, 'Packed once, whoever is coming.', OUT_SHARED.items)}
+
+    ${kids.length ? kids.map((k) => {
+      const b = outBagForAge(k.months);
+      return outList(k.id, 'For ' + k.name,
+        b.label + (k.label ? ', ' + k.label : ''), b.items);
+    }).join('') : `
+      <div class="dsec">
+        <h4>For your child</h4>
+        <p class="tiny" style="margin:0 0 10px">Add a child and this becomes a list for each of
+        them, at their own age.</p>
+        ${outList('nokid', OUT_BAGS[1].label, 'A general one, until there is somebody to make it for.', OUT_BAGS[1].items)}
+      </div>`}
+
+    ${kids.length > 1 ? `
+    <p class="tiny" style="text-align:center;margin-top:4px">One list each, at each of their own
+    ages. Ticking one does not tick the others.</p>` : ''}
+
+    <div class="dsec">
+      <h4>The other ages, if you want to look ahead</h4>
+      ${OUT_BAGS.map((b) => `
+        <div class="quote">
+          <p class="sit">${esc(b.label)}</p>
+          <p class="why" style="margin-top:4px">${esc(b.items.slice(0, 3).join('. '))}.</p>
+        </div>`).join('')}
+    </div>`;
+}
+
 function screenOutings(c) {
   const months = c.months;
-  const bag = outBagForAge(months);
-  const name = (c.child && c.child.name) ? c.child.name : '';
 
   const tabs = [
     { id: 'bag', label: 'What to bring' },
@@ -28500,22 +28672,7 @@ function screenOutings(c) {
                 aria-pressed="${t.id === tab}">${esc(t.label)}</button>`).join('')}
     </div>
 
-    ${tab === 'bag' ? `
-      <div class="dsec">
-        <h4>${esc(bag.label)}${name ? ', for ' + esc(name) : ''}</h4>
-        <p class="tiny" style="margin:0 0 10px">The bag that covers an afternoon out. Everything
-        longer is the same list with more of it.</p>
-        ${list(bag.items)}
-      </div>
-
-      <div class="dsec">
-        <h4>Every age, if you want to look ahead</h4>
-        ${OUT_BAGS.filter((b) => b.id !== bag.id).map((b) => `
-          <div class="quote">
-            <p class="sit">${esc(b.label)}</p>
-            <p class="why" style="margin-top:4px">${esc(b.items.slice(0, 3).join('. '))}.</p>
-          </div>`).join('')}
-      </div>` : ''}
+    ${tab === 'bag' ? outPacking() : ''}
 
     ${tab === 'rent' ? `
       <div class="card leafy">
