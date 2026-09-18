@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-18 13:10">
+<meta name="rsg-build" content="2026-09-18 14:48">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -1364,7 +1364,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-18 13:10';
+const BUILD_STAMP = '2026-09-18 14:48';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -25583,6 +25583,10 @@ function msSet(id, st) {
    the DOM: see the comment where this is used. */
 let lastWillowHTML = null;
 
+/* Which part of Settings to scroll to on the next paint, set by the
+   account menu and cleared as soon as it has been used once. */
+let settingsJump = null;
+
 const NAV_MAX = 12;
 let navStack = [];
 
@@ -25862,7 +25866,12 @@ function tabList() {
        would ever find it. */
     { id: 'outings', label: 'Outings', icon: 'bag' },
     { id: 'profile', label: 'Profile', icon: 'user' },
-    { id: 'settings', label: 'Settings', icon: 'gear' },
+    /* Settings used to sit here and it made six, which is too many
+       across a phone. It is not a daily destination, it is the place
+       you go once a month to change something, so it moved into the
+       menu behind your own face at the top, the way every app with an
+       account does it. Nothing was removed, it just stopped taking a
+       sixth of the bottom of the screen. */
   ];
 }
 
@@ -26020,6 +26029,8 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'safety') html = screenSafety(c);
   else if (v && v.type === 'screen' && v.id === 'signs') html = screenSigns(c);
   else if (v && v.type === 'screen' && v.id === 'privacy') html = screenPrivacy(c);
+  else if (v && v.type === 'screen' && v.id === 'rules') html = screenRules(c);
+  else if (v && v.type === 'screen' && v.id === 'about') html = screenAbout(c);
   else if (v && v.type === 'screen' && v.id === 'plan') html = screenPlan(c);
   else if (v && v.type === 'screen' && v.id === 'sleep') html = screenSleep(c);
   else if (v && v.type === 'screen' && v.id === 'development') html = screenDevelopment(c);
@@ -26184,6 +26195,14 @@ function render() {
   const sameRoute = nowRoute === lastRoute;
   lastRoute = nowRoute;
   screen.scrollTop = (keepId || sameRoute) ? keepScroll : 0;
+
+  if (settingsJump) {
+    const target = document.getElementById(settingsJump);
+    settingsJump = null;
+    if (target && target.scrollIntoView) {
+      try { target.scrollIntoView({ block: 'start' }); screen.scrollTop = Math.max(0, screen.scrollTop - 12); } catch (err) {}
+    }
+  }
 
   if (postCaret != null) {
     restoreFocus('postIn', postCaret, postCaret);
@@ -26472,7 +26491,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -26724,6 +26743,30 @@ function initControls() {
       return;
     } else if (t.dataset.sitpath) {
       sitSetPath(t.dataset.sitpath);
+      return;
+    } else if (t.dataset.menugo) {
+      /* The account menu opens Settings at the part she pressed rather
+         than at the top, because Settings is long and hunting for the
+         password section is exactly the annoyance this was meant to
+         remove. */
+      const where = t.dataset.menugo;
+      store.menuOpen = false;
+      if (where === 'password' && !auth.user) {
+        /* No account yet, so the useful thing behind this row is the
+           front door rather than a password field that cannot exist. */
+        auth.guest = false;
+        store.guest = false;
+        auth.mode = 'signup';
+        auth.error = '';
+        flushStore();
+        render();
+        return;
+      }
+      navClear();
+      state.tab = 'settings';
+      state.view = null;
+      settingsJump = 'set-' + where;
+      render();
       return;
     } else if (t.dataset.calledby) {
       /* Tapping a chip clears the typed word, since the two are the
@@ -28588,6 +28631,97 @@ function screenOutings(c) {
    it is being. See the header of src/data/privacy.js for what this
    replaced and why.
    ----------------------------------------------------------------- */
+
+/* The rules, and what this app is. Both used to be blocks sitting on
+   other screens announcing themselves. They are real pages now, in the
+   menu behind her own face, which is where somebody actually goes
+   looking for them. */
+
+function screenRules(c) {
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">Community rules</h1>
+    <p class="sub">Short, because a long list of rules is a list nobody reads.</p>
+  </div>
+  <div class="sc">
+    <div class="dsec">
+      <h4>How the rooms work</h4>
+      ${list(COMMUNITY_RULES)}
+    </div>
+
+    <div class="dsec">
+      <h4>What gets a post held</h4>
+      <p class="bodytext" style="margin:0 0 9px">Posts go up straight away. Three things are held
+      back for a person to read first, and they are held rather than deleted.</p>
+      ${list([
+        'A medication dose. A wrong number passed between strangers is the one mistake here that can actually hurt a child.',
+        'A phone number.',
+        'An email address. Both of those because they move a conversation somewhere with none of the protections this room has.',
+      ])}
+      <p class="tiny" style="margin-top:8px">If yours is held you will see it on your own Yours tab,
+      with what happened to it. Nothing disappears without being accounted for.</p>
+    </div>
+
+    <div class="dsec">
+      <h4>Reporting and blocking</h4>
+      ${list([
+        'Anything can be reported, and a person reads every report.',
+        'Anybody can be blocked, and blocking is kept on your own device rather than anywhere we can see.',
+        'Reporting somebody is not a complaint about you and nobody is told you did it.',
+      ])}
+    </div>
+
+    ${privacyLine()}
+  </div>`;
+}
+
+function screenAbout(c) {
+  const stamp = buildStamp();
+  const notDoctor = PRIV_SECTIONS.filter((x) => x.id === 'notdoctor')[0];
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">About this app</h1>
+    <p class="sub">What it is for, and what it is not.</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="bodytext" style="font-size:15px;line-height:1.55">Ready Set Grow follows your child
+      rather than a calendar, and it is built for the parent as much as for the child. It was made by
+      one mother who wanted it to exist.</p>
+    </div>
+
+    ${notDoctor ? `
+    <div class="dsec">
+      <h4>${esc(notDoctor.title)}</h4>
+      ${notDoctor.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+    </div>` : ''}
+
+    <div class="dsec">
+      <h4>This copy of it</h4>
+      <p class="bodytext" style="margin:0 0 9px">
+        ${stamp ? 'Built ' + esc(stamp) + '.' : 'This copy does not carry a build stamp.'}
+        ${update.available ? ' A newer one is ready.' : ' It is up to date.'}
+      </p>
+      ${update.available
+        ? `<button class="btn" data-update="go">Load the new version</button>`
+        : `<button class="chip" data-update="check">Check again</button>`}
+    </div>
+
+    <div class="dsec">
+      <h4>Where the guidance comes from</h4>
+      <p class="bodytext">Everything clinical in this app is written against published guidance from
+      the American Academy of Pediatrics, the CDC and equivalent bodies, and the pages that lean on a
+      specific document link to it at the bottom. Where the evidence is weaker than the packaging
+      suggests, the app says so rather than repeating the claim.</p>
+    </div>
+
+    ${privacyLine()}
+  </div>`;
+}
 
 function screenPrivacy(c) {
   return `
@@ -30774,11 +30908,6 @@ function screenCommunity(c) {
       </div>`).join('')}
     </div>` : ''}
 
-    <p class="sect">How this room works</p>
-    <div class="card">
-      <ul class="dlist">${COMMUNITY_RULES.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>
-    </div>
-
     ${privacyLine()}
 
     <p class="disclaimer">
@@ -31549,7 +31678,7 @@ function screenSettings() {
       </div>
     `}
 
-    <p class="sect">Password</p>
+    <p class="sect" id="set-password">Password</p>
     ${passwordBlock()}
 
     <p class="sect">Willow</p>
@@ -31618,7 +31747,7 @@ function screenSettings() {
       </span>
     </button>
 
-    <p class="sect">Your children</p>
+    <p class="sect" id="set-children">Your children</p>
     ${duplicateCard()}
     ${kids.map(settingsChildRow).join('')}
     ${childRow('plus', 'Add a child', 'Name and birthday is all it takes to start',
@@ -32330,13 +32459,50 @@ function cornerMenu(who) {
       </button>`).join('')}
 
     <div class="cmenu-rule"></div>
+    <p class="cmenu-h">Your account</p>
     <button class="cmenu-row" data-tab="settings">
-      <span class="cmenu-ic">${icon('gear', 15, 'var(--deep)')}</span>
-      <span class="grow"><span class="cmenu-t">Settings</span></span>
+      <span class="cmenu-ic">${icon('user', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">Your details</span>
+      <span class="cmenu-s">Name, username, email and birthday</span></span>
     </button>
+    <button class="cmenu-row" data-menugo="password">
+      <span class="cmenu-ic">${icon('shield', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">${esc(auth.user ? 'Password' : 'Create an account')}</span>
+      <span class="cmenu-s">${esc(auth.user ? 'Change it, or reset it by email' : 'Keeps everything safe and on every device')}</span></span>
+    </button>
+    <button class="cmenu-row" data-menugo="children">
+      <span class="cmenu-ic">${icon('people', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">Your children</span>
+      <span class="cmenu-s">${esc(store.children.length === 1 ? 'One child' : store.children.length + ' children')}, and how each of them arrived</span></span>
+    </button>
+    <button class="cmenu-row" data-menugo="situation">
+      <span class="cmenu-ic">${icon('leaf', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">Where you are right now</span>
+      <span class="cmenu-s">What the app brings forward and what it puts away</span></span>
+    </button>
+
+    <div class="cmenu-rule"></div>
+    <p class="cmenu-h">The rules and the small print</p>
+    <button class="cmenu-row" data-go="screen" data-id="privacy">
+      <span class="cmenu-ic">${icon('shield', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">${esc(PRIV_TITLE)}</span>
+      <span class="cmenu-s">${esc(PRIV_SUB)}</span></span>
+    </button>
+    <button class="cmenu-row" data-go="screen" data-id="rules">
+      <span class="cmenu-ic">${icon('people', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">Community rules</span>
+      <span class="cmenu-s">How the rooms work, and what gets a post taken down</span></span>
+    </button>
+    <button class="cmenu-row" data-go="screen" data-id="about">
+      <span class="cmenu-ic">${icon('info', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">About this app</span>
+      <span class="cmenu-s">What it is for, what it is not, and which version you have</span></span>
+    </button>
+
+    <div class="cmenu-rule"></div>
     <button class="cmenu-row" data-auth="signout">
       <span class="cmenu-ic">${icon('back', 15, 'var(--deep)')}</span>
-      <span class="grow"><span class="cmenu-t">Sign out</span></span>
+      <span class="grow"><span class="cmenu-t">${esc(auth.user ? 'Sign out' : 'Leave this device')}</span></span>
     </button>
   </div>`;
 }
@@ -33318,7 +33484,7 @@ function situationBlock() {
   const nothing = !sit.stages.length && !sit.roles.length && !sit.support.length;
 
   return `
-  <p class="sect">Where you are right now</p>
+  <p class="sect" id="set-situation">Where you are right now</p>
   <p class="tiny" style="margin:-4px 0 10px">${esc(SITUATION_INTRO)}</p>
   ${nothing ? `<p class="tiny" style="margin:-4px 0 10px;color:var(--taupe)">${esc(SITUATION_EMPTY)}</p>` : ''}
 
