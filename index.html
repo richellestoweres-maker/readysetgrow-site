@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-17 21:59">
+<meta name="rsg-build" content="2026-09-18 02:40">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -413,6 +413,43 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 .k-bleed{background:#F0D3CB}
 .k-fertile{background:#E4EDDC}
 .k-ovul{background:#C9DDB6}
+
+/* A CHILD'S PROFILE, IN TWO HALVES.
+
+   Ten headings in a column reads as one undifferentiated list however
+   it is ordered, so the page has a top half you can feel and a bottom
+   half that gets out of the way. The top is what somebody touches
+   today. The bottom is everything they look up. */
+
+/* TODAY'S PLAN, drawn with some presence rather than as the ninth row
+   with a small grey label over it. */
+.todaycard{
+  display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
+  font:inherit;border:1px solid var(--leaf);background:var(--leaf3);
+}
+.todaycard-ic{
+  width:40px;height:40px;border-radius:50%;flex:none;
+  background:var(--deep);display:grid;place-items:center;
+}
+.todaycard-t{display:block;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.3}
+.todaycard-s{display:block;font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+
+/* The daily headings keep their weight. */
+.sect-day{color:var(--deep)}
+
+/* THE QUIET HALF. Tighter, smaller, less air between the rows, so the
+   change of weight is obvious without a rule across the page. */
+.restwrap{
+  margin-top:22px;padding-top:4px;
+  border-top:1px solid rgba(0,0,0,.07);
+}
+.rest-label{
+  margin-top:14px;color:var(--faint);
+}
+.restwrap .sect{margin-top:16px;margin-bottom:5px;font-size:10px}
+.restwrap .lrow{padding-top:9px;padding-bottom:9px}
+.restwrap .card{margin-bottom:7px}
+.restwrap .lrow span[style*="font-size:14"]{font-size:13.5px}
 
 /* WILLOW'S WALKTHROUGH.
    Her bubble is drawn the same way her chat bubbles are, so she reads
@@ -1246,7 +1283,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-17 21:59';
+const BUILD_STAMP = '2026-09-18 02:40';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -20360,6 +20397,309 @@ const HOME_ALONE_TOO_YOUNG = {
     + 'to hand them to. That is what the rest of this page is about.',
 };
 
+/* ===== src/data/eatingTogether.js ===== */
+/**
+ * Ready Set Grow: Eating, Once The Milk Question Is Over
+ * ------------------------------------------------------------------
+ * She spotted this one: Stetson is four and his Feeding screen was
+ * still leading with formula and breastfeeding. Her instruction was to
+ * end that at two, with a way to keep it for anybody still nursing or
+ * pumping.
+ *
+ * GATING IT OFF WAS THE EASY HALF. The hard half is that switching the
+ * infant content off at two leaves a four year old's parent with an
+ * almost empty screen, which is worse than the wrong content, because
+ * at least the wrong content could be scrolled past. A parent of a four
+ * year old has real feeding questions. They are just completely
+ * different questions.
+ *
+ * SO THIS IS WHAT REPLACES IT, AND THE SPINE OF IT IS THE DIVISION OF
+ * RESPONSIBILITY: the parent decides what is served, when, and where.
+ * The child decides whether to eat and how much. It is the most
+ * consistently supported idea in child feeding, and almost every
+ * mealtime battle in this age range comes from one side reaching across
+ * that line.
+ *
+ * THE TONE RULE, AND IT MATTERS MORE HERE THAN ALMOST ANYWHERE.
+ * Nothing in this file describes a child as a problem, and nothing
+ * frames a parent as the cause of one. Picky eating at three is
+ * developmentally ORDINARY, not a failure of anybody. Feeding is also
+ * the place where a parent's own history with food shows up fastest,
+ * so nothing here moralizes about food, ranks foods as good or bad, or
+ * mentions weight at all. That is the same rule encourage.js holds to,
+ * for the same reason.
+ */
+
+const TABLE_HEADLINE =
+  'Your job is what is served, when, and where. Their job is whether, and how much.';
+
+const TABLE_INTRO = [
+  'This one idea settles most of what happens at a table with a small child. You decide what food '
+  + 'appears, at roughly what times, and that it happens sitting down. They decide whether to eat '
+  + 'it and how much of it goes in.',
+  'Almost every mealtime fight comes from one side reaching over that line. Coaxing one more bite '
+  + 'is reaching over it. So is letting them decide that dinner is crackers.',
+];
+
+const TABLE_WHAT_WORKS = {
+  title: 'What actually helps',
+  items: [
+    'Serve one thing you know they will eat alongside whatever else is on the table. Not a separate '
+    + 'meal, just bread or fruit on the side, so there is always a safe landing.',
+    'Put a small amount of the new thing on the plate and say nothing else about it. Being near a '
+    + 'food is the first step to eating it, and it takes far more exposures than feels reasonable.',
+    'Eat the same food, at the same time, in the same room. Children copy eating far more than they '
+    + 'take instruction about it.',
+    'Let them leave food. A child who is trusted to stop when full keeps that signal, and that is '
+    + 'worth more than any single meal.',
+    'Keep the meal to about twenty minutes and end it without a comment either way.',
+  ],
+};
+
+const TABLE_WHAT_BACKFIRES = {
+  title: 'What backfires, even though it feels like it should work',
+  items: [
+    { what: 'Two more bites, and a bargain for dessert',
+      why: 'It teaches that the food is a chore and the sweet thing is the prize, which raises the '
+        + 'value of the sweet thing and lowers the value of the dinner.' },
+    { what: 'Cooking a second meal when the first is refused',
+      why: 'It is a completely reasonable thing to do at seven in the evening, and it teaches them '
+        + 'that refusing produces a better option. The side dish approach above does the same job '
+        + 'without the lesson.' },
+    { what: 'Describing food as good, bad, naughty or clean',
+      why: 'Children take that literally and apply it to themselves for eating it. Food is just '
+        + 'food, some of it more often than the rest.' },
+    { what: 'Making them finish, or praising them for finishing',
+      why: 'Both override the signal that tells them they are full, and that signal is much harder '
+        + 'to get back than it is to keep.' },
+  ],
+};
+
+/* Why a three year old suddenly stops eating things they liked. Almost
+   every parent thinks this is theirs alone and something they caused. */
+const TABLE_PICKY = {
+  title: 'The narrowing that happens around two',
+  body: [
+    'Somewhere between one and three, most children get suddenly and loudly picky, refuse things '
+    + 'they ate happily last month, and want the same four foods on repeat. This is ordinary, it '
+    + 'is well described, and it is not something you did.',
+    'Two things are behind it. Growth slows sharply after the first year, so they genuinely need '
+    + 'less food than they did. And this is the age where saying no to things is the whole '
+    + 'developmental project, and dinner is simply the place it is most convenient to practice.',
+    'It usually loosens between four and five on its own, provided nobody has turned mealtimes into '
+    + 'a contest in the meantime. Keep offering, keep it calm, and let time do most of the work.',
+  ],
+  whenToAsk: [
+    'They are losing weight, or their own growth curve has flattened off.',
+    'Fewer than about ten to fifteen foods accepted in total, and the list keeps shrinking.',
+    'Gagging, choking or vomiting at the sight or smell of food rather than at the taste.',
+    'A whole food group refused for months, such as anything with protein.',
+    'A texture or smell reaction strong enough to disrupt the meal for everybody, which is worth '
+    + 'mentioning alongside anything else you have noticed about their senses.',
+  ],
+  whenToAskNote:
+    'Any of these is worth raising at the next appointment. None of them is an emergency, and none '
+    + 'of them means you have done this wrong.',
+};
+
+/* THE ONE PIECE OF PURELY PRACTICAL SAFETY THAT OUTLIVES THE INFANT
+   CONTENT. Choking risk runs to about four, and these are exactly the
+   foods a parent stops thinking about once the baby stage is over. */
+const TABLE_CHOKING = {
+  title: 'Still a choking risk at this age',
+  intro: 'Airways stay small and chewing stays unreliable until around four. These are the usual '
+    + 'culprits, and most of them are easy to serve safely rather than avoid.',
+  items: [
+    'Whole grapes and cherry tomatoes. Quarter them lengthways.',
+    'Hot dogs and sausages. Slice lengthways first, then across.',
+    'Whole nuts. Nut butter thinly spread is fine, a spoonful of it is not.',
+    'Popcorn, hard candy and chunks of raw carrot or apple. Grate or cook the hard vegetables.',
+    'Marshmallows and sticky sweets, which can mould to the airway.',
+  ],
+  rules: [
+    'Sitting down, every time. Not walking, not in the car, not in a buggy.',
+    'An adult in the room. Choking is silent far more often than people expect.',
+    'No eating while laughing, crying or lying down.',
+  ],
+};
+
+const TABLE_SOURCES = [
+  { org: 'HealthyChildren.org (AAP)', label: 'Picky eaters and how to handle them',
+    url: 'https://www.healthychildren.org/English/ages-stages/toddler/nutrition/Pages/Picky-Eaters.aspx' },
+  { org: 'HealthyChildren.org (AAP)', label: 'Choking prevention and foods to avoid',
+    url: 'https://www.healthychildren.org/English/health-issues/injuries-emergencies/Pages/Choking-Prevention.aspx' },
+  { org: 'CDC', label: 'Toddler feeding, foods and drinks for 12 to 24 months',
+    url: 'https://www.cdc.gov/infant-toddler-nutrition/foods-and-drinks/index.html' },
+];
+
+/* ------------------------------------------------------------------
+ * WHO SEES WHICH VERSION
+ *
+ * The milk and solids content is the live question up to two. After
+ * that it is history for most families, and still the live question for
+ * anybody who is nursing or pumping, which is why the opt in is not an
+ * extra switch to find: it is the breastfeeding and pumping boxes she
+ * has already ticked on her own profile.
+ * ------------------------------------------------------------------ */
+const MILK_ENDS_MONTHS = 24;
+
+function showsMilkContent(months, stages) {
+  if (typeof months !== 'number') return true;
+  if (months < MILK_ENDS_MONTHS) return true;
+  const s = stages || [];
+  return s.indexOf('breastfeeding') !== -1 || s.indexOf('pumping') !== -1;
+}
+
+function showsTableContent(months) {
+  return typeof months !== 'number' || months >= 12;
+}
+
+/* Said once, on the screen, so a parent who is still nursing a three
+   year old knows exactly which switch is keeping it there and that
+   nothing is judging her for it. */
+const MILK_KEPT_NOTE =
+  'Milk and weaning are still here because you have breastfeeding or pumping ticked on your own '
+  + 'profile. Untick it whenever you are done and this tidies itself away.';
+
+const MILK_GONE_NOTE =
+  'Milk, formula and starting solids have moved out of the way now they are past two. If you are '
+  + 'still nursing or pumping, tick it on your own profile and it all comes back.';
+
+/* ===== src/data/childSections.js ===== */
+/**
+ * Ready Set Grow: What A Child's Profile Puts First
+ * ------------------------------------------------------------------
+ * She set the order herself, and then agreed with the one change I
+ * argued for: the daily check in goes back to the top rather than the
+ * bottom. It is thirty seconds, it happens every day, and it is the
+ * thing that makes everything else in the app smart over time. A daily
+ * habit that requires scrolling past nine sections is a daily habit
+ * that dies in a week.
+ *
+ * THEN SHE ASKED FOR THE PART I HAD ONLY FLOATED: that the order should
+ * follow the child's age. She is right, and the example she gave is the
+ * proof. For a newborn, Everyday care is the most opened screen in the
+ * app. For a twelve year old, Feeding and Care topics are almost never
+ * touched, while How their mind works matters enormously.
+ *
+ * THE PRINCIPLE, WHICH IS THE SAME AT EVERY AGE:
+ * how often would a parent of a child THIS age actually touch this,
+ * decaying down the page. Daily at the top, weekly in the middle, look
+ * it up at the bottom.
+ *
+ * WHAT THIS IS NOT. Nothing is ever hidden by age. Every section exists
+ * on every profile, and the order is the only thing that moves. A
+ * parent who wants the safety screen for their toddler can still reach
+ * it, it simply is not sitting above the thing they open every morning.
+ * Hiding is what the milestones and development guidance rules do, and
+ * they hide only when there is genuinely nothing behind the link.
+ */
+
+const CHILD_SECTIONS = [
+  { id: 'checkin', label: '' },        // drawn as a card, no heading
+  { id: 'plan', label: '' },           // likewise
+  { id: 'logs', label: 'Log it as it happens' },
+  { id: 'care', label: 'Everyday care' },
+  { id: 'together', label: 'Things to do together' },
+  { id: 'where', label: 'Where they are now' },
+  { id: 'mind', label: 'How their mind works' },
+  { id: 'health', label: 'Health' },
+  { id: 'safety', label: 'If something happens' },
+  { id: 'memories', label: '' },       // has its own heading inside
+];
+
+/* The default, which is hers exactly. Every age below is a small
+   rearrangement of this rather than its own list, so a section added
+   here shows up everywhere and cannot be forgotten in one band. */
+const BASE = CHILD_SECTIONS.map((s) => s.id);
+
+/* Moves one id to sit immediately before another, leaving everything
+   else exactly where it was. */
+function moveBefore(list, id, beforeId) {
+  const out = list.filter((x) => x !== id);
+  const at = out.indexOf(beforeId);
+  if (at === -1) return out.concat([id]);
+  return out.slice(0, at).concat([id], out.slice(at));
+}
+
+function childSectionOrder(months) {
+  let order = BASE.slice();
+  if (typeof months !== 'number') return order;
+
+  /* UNDER ONE. The day is feeds, diapers and naps, and Everyday care
+     holds the rhythm builder that a parent of a newborn opens more than
+     anything else in the app. Activities and milestones can wait. */
+  if (months < 12) {
+    order = moveBefore(order, 'care', 'logs');
+    order = moveBefore(order, 'health', 'together');
+    return order;
+  }
+
+  /* ONE TO THREE. Logging is still constant, the rhythm still matters,
+     and this is where behavior starts being the daily question, so
+     How their mind works climbs above the reference material. */
+  if (months < 36) {
+    order = moveBefore(order, 'mind', 'where');
+    return order;
+  }
+
+  /* THREE TO SIX. Her order as written. Play and doing things together
+     is the centre of the day at this age. */
+  if (months < 72) {
+    order = moveBefore(order, 'together', 'care');
+    return order;
+  }
+
+  /* SIX TO TWELVE. School age. Feeding and naps are settled, so
+     Everyday care drops, and understanding how they think is what a
+     parent is actually reading about. */
+  if (months < 144) {
+    order = moveBefore(order, 'mind', 'where');
+    order = moveBefore(order, 'care', 'health');
+    return order;
+  }
+
+  /* TWELVE AND UP. How their mind works is the whole game now, memories
+     matter more as the years behind them pile up, and Everyday care is
+     nearly never opened.
+
+     Mind sits just BELOW logging rather than above it. Above it was the
+     first thing I tried and it pushed Log it into the quiet half, which
+     is wrong: logging a mood or a bad night is still something a parent
+     DOES rather than something they look up, and actions belong in the
+     top half at every age. */
+  order = moveBefore(order, 'mind', 'together');
+  order = moveBefore(order, 'memories', 'where');
+  order = moveBefore(order, 'care', 'health');
+  return order;
+}
+
+/* WHERE THE PAGE BREAKS IN HALF.
+ *
+ * Ten headings in a column reads as one undifferentiated list however
+ * it is ordered. So the page has two halves you can feel: the things
+ * somebody touches today, drawn with some presence, and everything
+ * else, drawn quieter and tighter.
+ *
+ * The break is not a fixed position, because which sections are daily
+ * depends on the age. It is whatever comes after the last section in
+ * DAILY below, in whatever order that age produced. */
+const DAILY = ['checkin', 'plan', 'logs', 'care'];
+
+function isDailySection(id, months) {
+  if (id === 'care') {
+    /* Everyday care is daily for a baby and reference for a teenager,
+       which is the clearest case for why this is not a fixed list. */
+    return typeof months !== 'number' || months < 36;
+  }
+  return DAILY.indexOf(id) !== -1;
+}
+
+/* The quiet half gets one line saying what it is, so the change of
+   weight reads as deliberate rather than as the page running out of
+   steam. */
+const REST_LABEL = 'Everything else about them';
+
 /* ===== src/data/cycle.js ===== */
 /**
  * Ready Set Grow: Cycle And Dates
@@ -24656,13 +24996,31 @@ function screenFeeding(c) {
      it exists it goes first, because a parent of a nine day old is not
      on this screen to read about avocado. */
   const newbornHere = newbornRhythmIsRelevant(months);
-  const tabs = (newbornHere ? [{ id: 'newborn', label: 'The newborn rhythm' }] : []).concat([
-    { id: 'stance', label: 'Fed is best' },
-    { id: 'milk', label: 'Milk' },
-    { id: 'solids', label: 'Starting solids' },
-    { id: 'how', label: 'Purees or baby led' },
-    { id: 'foods', label: 'First foods' },
-  ]);
+
+  /* THE MILK HALF HAS AN END DATE.
+
+     Stetson is four and this screen was still opening on formula and
+     breastfeeding. Past two that is history for most families, and
+     still the live question for anybody nursing or pumping, so the opt
+     in is not another switch to hunt for: it is the breastfeeding and
+     pumping boxes already on her own profile. See eatingTogether.js. */
+  const milkHere = showsMilkContent(months, situation().stages);
+  const tableHere = showsTableContent(months);
+
+  const tabs = (newbornHere ? [{ id: 'newborn', label: 'The newborn rhythm' }] : [])
+    .concat(milkHere ? [
+      { id: 'stance', label: 'Fed is best' },
+      { id: 'milk', label: 'Milk' },
+      { id: 'solids', label: 'Starting solids' },
+      { id: 'how', label: 'Purees or baby led' },
+      { id: 'foods', label: 'First foods' },
+    ] : [])
+    .concat(tableHere ? [{ id: 'table', label: 'Eating together' }] : []);
+
+  /* Whichever tab is actually answering their question. A four year
+     old's parent should not land on a tab about first foods. */
+  if (!milkHere && ['stance', 'milk', 'solids', 'how', 'foods'].indexOf(tab) !== -1) tab = 'table';
+  if (!tabs.some((t) => t.id === tab)) tab = (tabs[0] || {}).id || 'table';
 
   return `
   ${cornerLeaves()}
@@ -24826,7 +25184,53 @@ function screenFeeding(c) {
         ${list(FIRST_FOODS.howToCutIt)}
       </div>` : ''}
 
-    ${dsec('Sources', sourceRows(FEEDING_SOURCES))}
+    ${tab === 'table' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(TABLE_HEADLINE)}</p>
+        ${TABLE_INTRO.map((p) => `<p class="bodytext" style="margin-top:10px">${esc(p)}</p>`).join('')}
+      </div>
+
+      ${!milkHere ? `
+      <p class="tiny" style="margin:10px 0 0">${icon('info', 10, 'var(--taupe)')} ${esc(MILK_GONE_NOTE)}</p>` : ''}
+
+      <div class="dsec">
+        <h4>${esc(TABLE_WHAT_WORKS.title)}</h4>
+        ${list(TABLE_WHAT_WORKS.items)}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TABLE_WHAT_BACKFIRES.title)}</h4>
+        ${TABLE_WHAT_BACKFIRES.items.map((x) => `
+          <div class="quote">
+            <p class="sit">${icon('info', 12, 'var(--taupe)')} ${esc(x.what)}</p>
+            <p class="why" style="margin-top:4px">${esc(x.why)}</p>
+          </div>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TABLE_PICKY.title)}</h4>
+        ${TABLE_PICKY.body.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+        <p class="sect" style="margin-top:4px">Worth mentioning at an appointment</p>
+        ${list(TABLE_PICKY.whenToAsk)}
+        <div class="callout" style="margin-top:10px">
+          <p style="margin:0">${esc(TABLE_PICKY.whenToAskNote)}</p>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TABLE_CHOKING.title)}</h4>
+        <p class="tiny" style="margin:0 0 9px">${esc(TABLE_CHOKING.intro)}</p>
+        ${list(TABLE_CHOKING.items)}
+        <p class="sect" style="margin-top:10px">Every time, whatever is being eaten</p>
+        ${list(TABLE_CHOKING.rules)}
+      </div>
+
+      ${dsec('Sources', sourceRows(TABLE_SOURCES))}` : ''}
+
+    ${milkHere && months != null && months >= MILK_ENDS_MONTHS ? `
+    <p class="tiny" style="margin:12px 0 0">${icon('leaf', 10, 'var(--sage)')} ${esc(MILK_KEPT_NOTE)}</p>` : ''}
+
+    ${milkHere ? dsec('Sources', sourceRows(FEEDING_SOURCES)) : ''}
     <p class="disclaimer">
       Educational information, not medical advice. Your pediatrician knows your child and this app does not.
     </p>
@@ -30822,6 +31226,133 @@ function screenChild(c) {
   const v = editing ? store.profileEdit.values : (kid || {});
   const doneMs = Object.keys(state.statuses || {}).filter(
     (id) => ['sometimes', 'mastered'].indexOf(state.statuses[id]) !== -1).length;
+  const months = c.months;
+  const first = (name || '').split(/\s+/)[0];
+
+  /* EACH SECTION IS WRITTEN ONCE AND PLACED SOMEWHERE ELSE.
+
+     The order follows the child's age, because the right order
+     genuinely differs: for a newborn, Everyday care is the most opened
+     screen in the app, and for a twelve year old it is almost never
+     touched while How their mind works becomes the whole game. All of
+     that reasoning lives in src/data/childSections.js.
+
+     Nothing is hidden by age, only reordered. The only things that
+     disappear are the ones with nothing behind them, such as milestones
+     past six and development guidance for an age nobody has written
+     yet, and those disappear for that reason rather than this one. */
+  const body = {
+    checkin: () => checkinCard(),
+
+    /* Today's plan is a card rather than another row with a heading,
+       because it is the thing a parent arrives wanting and it should
+       not look like the ninth item on a list. It used to appear twice,
+       here and again inside Things to do together, which is the same
+       duplication she has caught me on before. */
+    plan: () => (months == null ? '' : `
+      <button class="card todaycard" data-go="screen" data-id="plan">
+        <span class="todaycard-ic">${icon('sun', 20, '#fff')}</span>
+        <span class="grow">
+          <span class="todaycard-t">Today's plan</span>
+          <span class="todaycard-s">${esc(planCardLine(c))}</span>
+        </span>
+        ${icon('chev', 17, 'var(--deep)')}
+      </button>`),
+
+    logs: () => {
+      const quickLogs = months == null ? [] : getLogTypesForAge(months).slice(0, 4);
+      if (!quickLogs.length) return '';
+      return `
+      ${sectHead('logs', months, 'Log it as it happens')}
+      <div class="qgrid">
+        ${quickLogs.map((t) => `
+          <button class="q" data-go="log" data-id="${esc(t.id)}">
+            <span class="qi">${icon(logIcon(t.icon), 17)}</span>
+            <span class="qt">${esc(t.label)}</span>
+            <span class="qs">${esc(lastLogLine(t.id))}</span>
+          </button>`).join('')}
+      </div>
+      <button class="btn ghost sm" style="width:100%;margin-top:2px"
+        data-go="tab" data-id="logs">Everything logged for ${esc(first)}</button>`;
+    },
+
+    care: () => `
+      ${sectHead('care', months, 'Everyday care')}
+      ${childRow('moon', "Today's rhythm", 'Wake times, naps and bedtime, built from one answer',
+        'data-go="screen" data-id="sleep"')}
+      ${childRow('utensils', 'Feeding',
+        esc(getFeedingHeadline(months) || 'Milk, starting solids, and the family table'),
+        'data-go="screen" data-id="feeding"')}
+      ${childRow('bulb', 'Care topics',
+        c.topics.length ? esc(c.topics.slice(0, 4).map((t) => t.label).join(', ')) : 'Practical care, picked for this age',
+        'data-go="screen" data-id="topics"')}`,
+
+    together: () => `
+      ${sectHead('together', months, 'Things to do together')}
+      ${childRow('puzzle', 'Activities',
+        esc(c.activities.length + ' that fit this age'),
+        'data-go="screen" data-id="activities"')}`,
+
+    where: () => {
+      const rows = [
+        c.summary.checkpoint ? childRow('chart', 'Milestones',
+          msChangeCount()
+            ? esc(msChangeCount() + ' marked but not saved yet')
+            : (doneMs ? esc(doneMs + ' marked so far. Ranges, not deadlines.') : 'Ranges, not deadlines'),
+          'data-go="screen" data-id="milestones"') : '',
+        c.content.length ? childRow('book', 'Development guidance',
+          esc(c.content.length + ' written for exactly this age'),
+          'data-go="screen" data-id="development"') : '',
+      ].filter(Boolean).join('');
+      return rows ? sectHead('where', months, 'Where they are now') + rows : '';
+    },
+
+    mind: () => `
+      ${sectHead('mind', months, 'How their mind works')}
+      ${childRow('bulb', 'Understanding ' + esc(first),
+        state.lenses.length
+          ? esc(getLenses(state.lenses).map((l) => l.label).join(', '))
+          : 'Turn on what fits them, and read what it actually means',
+        'data-go="screen" data-id="understand"')}
+      ${state.lenses.length ? `
+      <div class="card flat">
+        <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Your active lenses</p>
+        <p class="tiny" style="margin-top:4px">${esc(getLenses(state.lenses).map((l) => l.label).join(', '))}
+        are reordering what surfaces first. Nothing is hidden, everything is still here.</p>
+      </div>` : ''}`,
+
+    health: () => `
+      ${sectHead('health', months, 'Health')}
+      ${childRow('shield', 'Vaccines',
+        'What the evidence says, what your rights are, and how to decide',
+        'data-go="screen" data-id="vaccines"')}
+      ${childRow('pill', 'Something is wrong right now',
+        'Fever, rashes, crying that will not stop, and when to call',
+        'data-go="screen" data-id="now"')}`,
+
+    safety: () => `
+      ${sectHead('safety', months, 'If something happens')}
+      ${childRow('heart', 'CPR, choking and staying safe',
+        esc('For ' + getCprForAge(months).label.toLowerCase()) + ', plus what to do when you are at the end of it',
+        'data-go="screen" data-id="safety"')}`,
+
+    memories: () => (kid ? memSection(kid.id) : ''),
+  };
+
+  const order = childSectionOrder(months);
+  /* The page breaks in half wherever the daily things stop for THIS
+     age, rather than at a fixed position, and the quiet half is
+     announced once so the change of weight reads as deliberate. */
+  let restOpened = false;
+  const sections = order.map((id) => {
+    const html = body[id] ? body[id]() : '';
+    if (!html) return '';
+    if (!restOpened && !isDailySection(id, months)) {
+      restOpened = true;
+      return `<div class="restwrap"><p class="sect rest-label">${esc(REST_LABEL)}</p>` + html;
+    }
+    return html;
+  }).join('');
 
   return `
   ${cornerLeaves()}
@@ -30856,8 +31387,6 @@ function screenChild(c) {
       </div>
     ` : ''}` : ''}
 
-    ${checkinCard()}
-
     ${c.days != null && c.days < 56 && getDiaperDay(c.days) ? `
     <p class="sect">The newborn count</p>
     ${newbornCounter(c)}
@@ -30866,131 +31395,32 @@ function screenChild(c) {
       Feeds, diapers and how many ounces
     </button>` : ''}
 
-    ${(() => {
-      const quickLogs = c.months == null ? [] : getLogTypesForAge(c.months).slice(0, 4);
-      if (!quickLogs.length) return '';
-      return `
-      <p class="sect">Log it as it happens</p>
-      <div class="qgrid">
-        ${quickLogs.map((t) => `
-          <button class="q" data-go="log" data-id="${esc(t.id)}">
-            <span class="qi">${icon(logIcon(t.icon), 17)}</span>
-            <span class="qt">${esc(t.label)}</span>
-            <span class="qs">${esc(lastLogLine(t.id))}</span>
-          </button>`).join('')}
-      </div>
-      <button class="btn ghost sm" style="width:100%;margin-top:9px" data-tab="logs">
-        Everything logged so far
-      </button>`;
-    })()}
+    ${sections}
+    ${restOpened ? '</div>' : ''}
 
-    ${(() => {
-      const pl = c.months == null ? null : buildPlan(c);
-      if (!pl || !pl.morning) return '';
-      return `
-      <p class="sect">Today's plan</p>
-      <p class="tiny" style="margin:-4px 0 10px">
-        This changes on its own at midnight, so tomorrow is not today again.
-      </p>
-      <div class="plan">
-        <span class="picon">${icon('sun', 17)}</span>
-        <div class="grow">
-          <p class="eyebrow">Morning</p>
-          <h3 class="h3" style="font-size:16px">${esc(pl.morning.title)}</h3>
-          <p class="tiny" style="margin-top:3px">${esc(pl.morning.description)}</p>
-          <button class="btn ghost sm" style="margin-top:9px" data-go="screen" data-id="plan">
-            The whole plan
-          </button>
-        </div>
-      </div>`;
-    })()}
-
-    ${kid ? memSection(kid.id) : ''}
-
-    <p class="sect">Where they are now</p>
-    ${/* MILESTONES STOP AT SIX, AND SO DOES THE ROW.
-
-          The CDC checklists run to five years, so getCurrentCheckpoint
-          returns nothing from 72 months on. The row was still being
-          drawn for a twelve year old, and tapping it landed on a screen
-          whose entire content was an apology for having nothing. An
-          option that leads somewhere empty is worse than no option: it
-          reads as a part of the app that is broken rather than a part
-          that does not apply.
-
-          Tied to whether a checkpoint exists rather than to a number,
-          so the row disappears exactly when there is nothing behind
-          it. */ ''}
-    ${c.summary.checkpoint ? childRow('chart', 'Milestones',
-      msChangeCount()
-        ? esc(msChangeCount() + ' marked but not saved yet')
-        : (doneMs ? esc(doneMs + ' marked so far. Ranges, not deadlines.') : 'Ranges, not deadlines'),
-      'data-go="screen" data-id="milestones"') : ''}
-    ${/* Same rule as milestones past six. A four week old has nothing
-          written for them yet, and a link to an empty screen reads as a
-          broken part of the app rather than a gap in the content. When
-          there is nothing, there is no row. */ ''}
-    ${c.content.length ? childRow('book', 'Development guidance',
-      esc(c.content.length + ' written for exactly this age'),
-      'data-go="screen" data-id="development"') : ''}
-
-    <p class="sect">How their mind works</p>
-    ${childRow('bulb', 'Understanding ' + esc(name),
-      state.lenses.length
-        ? esc(getLenses(state.lenses).map((l) => l.label).join(', ')) + ' &middot; tap to change'
-        : 'Twenty one ways a mind can work, explained in plain English and scoped to their age',
-      'data-go="screen" data-id="understand"')}
-    <p class="tiny" style="margin:-3px 0 8px">
-      Straight to one of them, whether or not it is turned on for ${esc(name)}:
-    </p>
-    <div class="chips" style="margin-bottom:6px">
-      ${COMMON_LENSES.map((id) => getLens(id)).filter(Boolean).map((l) => `
-        <button class="chip" data-go="lens" data-id="${esc(l.id)}">${esc(l.label)}</button>`).join('')}
-      <button class="chip" data-go="screen" data-id="understand"
-        style="background:var(--leaf2);border-color:var(--leaf)">All ${SUPPORT_LENSES.length}</button>
-    </div>
-
-    <p class="sect">Things to do together</p>
-    ${childRow('calendar', "Today's plan", 'Three things chosen for today, new again tomorrow',
-      'data-go="screen" data-id="plan"')}
-    ${childRow('puzzle', 'Activities',
-      esc(c.activities.length + ' that fit this age'),
-      'data-go="screen" data-id="activities"')}
-
-    <p class="sect">Everyday care</p>
-    ${childRow('moon', "Today's rhythm", 'Wake times, naps and bedtime, built from one answer',
-      'data-go="screen" data-id="sleep"')}
-    ${childRow('utensils', 'Feeding',
-      esc(getFeedingHeadline(c.months) || 'Milk, starting solids, and the family table'),
-      'data-go="screen" data-id="feeding"')}
-    ${childRow('bulb', 'Care topics',
-      c.topics.length ? esc(c.topics.slice(0, 4).map((t) => t.label).join(', ')) : 'Practical care, picked for this age',
-      'data-go="screen" data-id="topics"')}
-
-    <p class="sect">Health</p>
-    ${childRow('shield', 'Vaccines',
-      'What the evidence says, what your rights are, and how to decide',
-      'data-go="screen" data-id="vaccines"')}
-    ${childRow('pill', 'Something is wrong right now',
-      'Fever, rashes, crying that will not stop, and when to call',
-      'data-go="screen" data-id="now"')}
-
-    <p class="sect">If something happens</p>
-    ${childRow('heart', 'CPR, choking and staying safe',
-      esc('For ' + getCprForAge(c.months).label.toLowerCase()) +
-        (homeAloneIsRelevant(c.months) ? ', plus home alone readiness' : ''),
-      'data-go="screen" data-id="safety"')}
-
-    ${state.lenses.length ? `
-    <div class="card flat" style="margin-top:16px">
-      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Your active lenses</p>
-      <p class="tiny" style="margin-top:4px">${esc(getLenses(state.lenses).map((l) => l.label).join(', '))}
-      are reordering what surfaces first. Nothing is hidden, everything is still here.</p>
-    </div>` : ''}
     <p class="disclaimer">${esc(CONTENT_DISCLAIMER)}</p>
     ${editing ? editSaveBar() : ''}
   </div>`;
 }
+
+/* A heading, unless this section is one of the daily ones drawn as a
+   card, in which case it has none. */
+function sectHead(id, months, label) {
+  return `<p class="sect${isDailySection(id, months) ? ' sect-day' : ''}">${esc(label)}</p>`;
+}
+
+/* What today's plan card says underneath its title. Reads the plan that
+   already exists rather than building one, so opening the profile does
+   not quietly commit a child to a plan they may never look at. */
+function planCardLine(c) {
+  const kid = activeChild();
+  const plan = kid && kid.plan && kid.plan.day === ciToday() ? kid.plan : null;
+  if (!plan) return 'Three things chosen for today, new again tomorrow';
+  const done = Object.keys(plan.done || {}).length;
+  if (!done) return 'Three things chosen for today. Nothing ticked off yet.';
+  return done + ' ticked off today. Tomorrow brings a different one.';
+}
+
 
 /* -----------------------------------------------------------------
    LOGS
