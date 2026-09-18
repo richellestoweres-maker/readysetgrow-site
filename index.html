@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-18 12:40">
+<meta name="rsg-build" content="2026-09-18 12:51">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -1364,7 +1364,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-18 12:40';
+const BUILD_STAMP = '2026-09-18 12:51';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -36754,9 +36754,10 @@ function buildStamp() {
 async function checkForUpdate(force) {
   if (update.available) return;
   const now = Date.now();
-  /* Once on open, then at most every five minutes when the app comes
-     back to the front. Nobody needs this answered more often. */
-  if (!force && now - update.checkedAt < 300000) return;
+  /* At most every two minutes. The interval below asks every three, and
+     focus and coming back online ask too, so this only exists to stop
+     three of those landing at once. */
+  if (!force && now - update.checkedAt < 120000) return;
   update.checkedAt = now;
   if (typeof fetch !== 'function' || !buildStamp()) return;
   try {
@@ -36764,13 +36765,14 @@ async function checkForUpdate(force) {
       cache: 'no-store',
       headers: { Range: 'bytes=0-2047' },
     });
-    if (res.status !== 206) {
-      /* No range support means the only way to answer is to download
-         the whole app again, which is worse than not knowing. */
-      if (res.body && res.body.cancel) { try { res.body.cancel(); } catch (err) {} }
-      return;
-    }
-    const head = await res.text();
+    /* 206 is the partial answer that was asked for. A server that
+       ignores the Range header answers 200 with the whole file, and
+       reading the stamp out of the first couple of kilobytes of that
+       still works. It costs a download that was not wanted, so it is
+       not the happy path, but silently never checking again is worse.
+       GitHub Pages does honour ranges today. It has not always. */
+    if (res.status !== 206 && res.status !== 200) return;
+    const head = (await res.text()).slice(0, 4096);
     const m = head.match(/name="rsg-build"\s+content="([^"]+)"/);
     if (!m) return;
     if (m[1] && m[1] !== buildStamp()) {
@@ -37795,5 +37797,27 @@ render();
 /* Ask once, a few seconds in, so it never competes with the first
    paint or with signing in. */
 setTimeout(() => { try { checkForUpdate(true); } catch (err) {} }, 4000);
+
+/* AND THEN IT KEEPS ASKING.
+
+   This used to run four seconds after opening, and after that only
+   when the tab went away and came back. Which meant a tab left open on
+   a desk all afternoon asked exactly once, while it was still current,
+   and then never again. She sat in front of a version from twenty
+   minutes earlier twice in one day, both times concluding the work had
+   vanished, because nothing in the app ever told her otherwise.
+
+   So it now also asks on a timer, and on the two events that mean a
+   browser has probably been asleep: getting focus back, and the
+   network coming back. The ask itself is a range request for two
+   kilobytes, so doing it every few minutes costs effectively nothing
+   even on a phone. */
+if (typeof setInterval === 'function') {
+  setInterval(() => { try { checkForUpdate(false); } catch (err) {} }, 180000);
+}
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('focus', () => { try { checkForUpdate(false); } catch (err) {} });
+  window.addEventListener('online', () => { try { checkForUpdate(true); } catch (err) {} });
+}
 
 </script>
