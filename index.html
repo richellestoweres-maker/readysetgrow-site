@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-18 17:26">
+<meta name="rsg-build" content="2026-09-18 18:04">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -1364,7 +1364,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-18 17:26';
+const BUILD_STAMP = '2026-09-18 18:04';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -22841,6 +22841,401 @@ const PRIV_FOOTER =
 const PRIV_LINK_LINE = 'What this app keeps, and what it never does, is all in one place.';
 
 
+/* ===== src/data/sharing.js ===== */
+/**
+ * Ready Set Grow: Two parents, one child
+ * ------------------------------------------------------------------
+ * WHY THIS EXISTS
+ * She logs the feed and he does not see it. Every serious parenting
+ * app solves this and this one did not, because a child's record was
+ * owned outright by the account that made it.
+ *
+ * WHAT IT DOES NOT DO, ON PURPOSE
+ * It does not move anybody's data. A child stays exactly where it was,
+ * under the account that created it. Nothing migrates, which means
+ * nothing can be lost in a migration. What changes is that a second
+ * adult can be granted access to named children.
+ *
+ * THE DANGEROUS THING THIS IS BUILT AROUND
+ * The worst bug this app could ever have is one family reading another
+ * family's child. So the grant is never assembled from anything the
+ * joining person typed. They present a code, and the security rules
+ * themselves copy the child list out of the invite and refuse anything
+ * that does not match exactly. The client below is convenience. The
+ * rules in firestore.rules are the actual guarantee, and they were
+ * written first and tested against twenty seven ways in.
+ *
+ * WHY CODES RATHER THAN EMAIL INVITES
+ * An email invite needs somebody's address, which is a thing to store,
+ * a thing to get wrong, and a thing to leak. A code you read out over
+ * the phone or send in a text needs none of that, and the person
+ * joining proves nothing except that they were given it.
+ *
+ * PER CHILD, NOT PER ACCOUNT
+ * Stetson's dad can be given Stetson without being given Hartlee. This
+ * matters more than it sounds. Blended families, separated parents,
+ * grandparents who look after one of them on Thursdays. An all or
+ * nothing switch would make this feature unusable for most of the
+ * families who need it most.
+ */
+
+const SHARE_TITLE = 'Sharing a child';
+
+const SHARE_SUB = 'Let somebody else see and add to a child, without giving them your account.';
+
+const SHARE_INTRO =
+  'You keep the record. They get to open it, log a feed, mark a milestone, and see everything you '
+  + 'see about that child. You choose which children, and you can take it back at any time.';
+
+/* Unambiguous alphabet. No O or 0, no I or 1, no S or 5, because this
+   gets read out over the phone at least as often as it gets copied. */
+const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRTUVWXY2346789';
+
+const CODE_LENGTH = 10;
+
+function makeShareCode() {
+  let out = '';
+  const n = CODE_ALPHABET.length;
+  /* Real randomness where the browser has it. The fallback exists so
+     the function cannot throw, not because it is good enough. */
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    const buf = new Uint32Array(CODE_LENGTH);
+    crypto.getRandomValues(buf);
+    for (let i = 0; i < CODE_LENGTH; i++) out += CODE_ALPHABET[buf[i] % n];
+  } else {
+    for (let i = 0; i < CODE_LENGTH; i++) out += CODE_ALPHABET[Math.floor(Math.random() * n)];
+  }
+  return out;
+}
+
+/* Shown in two halves, because ten characters in a row is a thing
+   people misread. Stored without the gap. */
+function prettyCode(code) {
+  const c = String(code || '').toUpperCase();
+  if (c.length !== CODE_LENGTH) return c;
+  return c.slice(0, 5) + ' ' + c.slice(5);
+}
+
+function cleanCode(typed) {
+  return String(typed || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, CODE_LENGTH);
+}
+
+function codeLooksRight(typed) {
+  const c = cleanCode(typed);
+  if (c.length !== CODE_LENGTH) return false;
+  for (let i = 0; i < c.length; i++) if (CODE_ALPHABET.indexOf(c[i]) === -1) return false;
+  return true;
+}
+
+/* Long enough to send it and have them get to it. Short enough that a
+   forgotten code in an old text message stops working. */
+const CODE_HOURS = 48;
+
+function codeExpiry(now) {
+  return (Number(now) || Date.now()) + CODE_HOURS * 60 * 60 * 1000;
+}
+
+function codeLeft(expiresAt, now) {
+  const ms = Number(expiresAt || 0) - (Number(now) || Date.now());
+  if (ms <= 0) return '';
+  const hours = Math.ceil(ms / 3600000);
+  if (hours <= 1) return 'Expires within the hour';
+  if (hours < 24) return 'Expires in ' + String(hours) + ' hours';
+  const days = Math.ceil(hours / 24);
+  return days === 1 ? 'Expires tomorrow' : 'Expires in ' + String(days) + ' days';
+}
+
+const SHARE_STEPS = [
+  'Pick which children they should see. Not all of them unless you mean all of them.',
+  'You get a code. Text it, read it out, write it on a napkin.',
+  'They put it into their own Ready Set Grow, under Sharing.',
+  'From then on you are both looking at the same child.',
+];
+
+const SHARE_CODE_NOTE =
+  'The code works once and stops working after two days. Anybody who has it can use it, so send it '
+  + 'to the person and not to a group chat.';
+
+const SHARE_WHAT_THEY_GET = {
+  title: 'What they can do',
+  can: [
+    'See the children you picked, and everything logged about them.',
+    'Add logs, mark milestones, and tick off a plan.',
+    'Read the guidance and use Willow about those children.',
+  ],
+  cannot: [
+    'See your other children.',
+    'See your own logs, your memories, your posts or your check ins.',
+    'See anything about you except your first name.',
+    'Give anybody else access. Only you can do that.',
+    'Delete the child. If they leave, the record stays with you.',
+  ],
+};
+
+const SHARE_REVOKE_NOTE =
+  'Taking access back is immediate and it does not delete anything they added. Their logs stay on '
+  + 'the child, because those happened.';
+
+const SHARE_LEAVE_NOTE =
+  'Leaving removes the child from your app. Nothing about them is deleted, it goes back to being '
+  + 'only on the account that owns it.';
+
+const SHARE_EMPTY_OWNER = 'Nobody else can see your children.';
+const SHARE_EMPTY_JOINED = 'You have not been given access to anybody else’s child.';
+
+const SHARE_JOIN_TITLE = 'Somebody gave you a code';
+const SHARE_JOIN_HELP = 'Ten characters. Upper or lower case, the spaces do not matter.';
+
+const SHARE_ERRORS = {
+  shape: 'That does not look like one of our codes. It is ten characters long.',
+  missing: 'That code does not exist. Check it again, they are easy to mistype.',
+  expired: 'That code has expired. Ask them to make you a new one, it takes a second.',
+  used: 'That code has already been used. Codes only work once, so ask for a fresh one.',
+  own: 'That is your own code. Give it to the other person rather than using it yourself.',
+  already: 'You already have access to that child.',
+  offline: 'This needs a connection. Try again when you have one.',
+  failed: 'That would not go through. Nothing has changed, so it is safe to try again.',
+  noAccount: 'Sharing needs an account on both sides, so there is something to share with.',
+};
+
+function shareJoinedLine(ownerName, names) {
+  const who = (ownerName || 'They').trim();
+  if (!names || !names.length) return 'You are in.';
+  if (names.length === 1) return 'You can now see ' + names[0] + ', shared by ' + who + '.';
+  const last = names[names.length - 1];
+  return 'You can now see ' + names.slice(0, -1).join(', ') + ' and ' + last + ', shared by ' + who + '.';
+}
+
+function sharedWithLine(n) {
+  if (!n) return '';
+  return n === 1 ? 'Shared with one person' : 'Shared with ' + String(n) + ' people';
+}
+
+
+/* ===== src/data/diapers.js ===== */
+/**
+ * Ready Set Grow: How many diapers, actually
+ * ------------------------------------------------------------------
+ * WHY THIS IS SEPARATE FROM THE DIAPER COUNTS ALREADY IN THE APP
+ * src/data/feeding.js already carries diaper expectations, and those
+ * are a health signal: how many wet diapers a newborn should have to
+ * show enough milk is going in. Important, and a completely different
+ * question from the one a parent actually asks out loud, which is
+ * "how many of these am I going to get through, and how many do I send
+ * to daycare".
+ *
+ * Nobody writes that down. Every article is either the medical
+ * question or a brand telling you to buy more.
+ *
+ * THE DAYCARE ONE IS THE WHOLE POINT
+ * Her example, which is the reason this exists: her son at two or
+ * three was changed roughly every three hours at daycare plus whenever
+ * he pooped, so three or four there, and around five or six across the
+ * whole day. That is exactly the arithmetic a parent needs when the
+ * daycare says bring diapers and does not say how many, and it is
+ * nowhere.
+ *
+ * ON THE NUMBERS
+ * These are ranges from published guidance, and they are averages
+ * across a lot of babies rather than a target. A baby at the bottom of
+ * the range who is gaining and happy is not underchanged, and a baby
+ * at the top is not overchanged. Where a number really does matter
+ * medically, which is wet diapers in the first weeks, this file points
+ * at the place that already covers it rather than saying it again
+ * slightly differently.
+ */
+
+const DIAPER_TITLE = 'How many diapers';
+
+const DIAPER_SUB = 'What you will actually get through, and how many to send.';
+
+const DIAPER_INTRO =
+  'Nobody tells you this number and everybody needs it. Here is roughly what a day looks like at '
+  + 'each age, what to send to daycare, and how much to buy without ending up with four unopened '
+  + 'packs of a size they have grown out of.';
+
+/* ------------------------------------------------------------------
+ * PER DAY, BY AGE
+ * ------------------------------------------------------------------ */
+
+const DIAPER_BANDS = [
+  {
+    id: 'newborn',
+    label: 'Newborn, the first month',
+    max: 1,
+    perDay: '8 to 12',
+    low: 8, high: 12,
+    perMonth: 'around 240 to 360',
+    note: 'The most you will ever use. They feed constantly, so they go constantly, and a newborn will often go during the change itself.',
+  },
+  {
+    id: 'twotofour',
+    label: 'Two to four months',
+    max: 5,
+    perDay: '8 to 10',
+    low: 8, high: 10,
+    perMonth: 'around 240 to 300',
+    note: 'Still high, but the poops start spacing out, sometimes dramatically. A breastfed baby going several days without one at this age can be completely normal.',
+  },
+  {
+    id: 'fivetoeight',
+    label: 'Five to eight months',
+    max: 9,
+    perDay: '7 to 9',
+    low: 7, high: 9,
+    perMonth: 'around 210 to 270',
+    note: 'Solids arrive and change everything about the other end. Firmer, smellier, and usually fewer.',
+  },
+  {
+    id: 'ninetotwelve',
+    label: 'Nine to twelve months',
+    max: 13,
+    perDay: '6 to 8',
+    low: 6, high: 8,
+    perMonth: 'around 180 to 240',
+    note: 'Now moving, which means changes are a wrestling match rather than a task. Standing changes are allowed and they save everybody.',
+  },
+  {
+    id: 'oneandtwo',
+    label: 'One and two years',
+    max: 36,
+    perDay: '5 to 7',
+    low: 5, high: 7,
+    perMonth: 'around 150 to 210',
+    note: 'Roughly one every three hours awake plus whenever they poop, which is where most of the variation comes from.',
+  },
+  {
+    id: 'training',
+    label: 'Around potty training',
+    max: 60,
+    perDay: '3 to 6',
+    low: 3, high: 6,
+    perMonth: 'around 90 to 180',
+    note: 'It goes down in steps rather than smoothly, and it goes back up during any illness, any holiday, and the week a sibling arrives. That is not a failure, that is just what it does.',
+  },
+];
+
+function diaperBandFor(months) {
+  if (typeof months !== 'number') return DIAPER_BANDS[2];
+  for (let i = 0; i < DIAPER_BANDS.length; i++) {
+    if (months < DIAPER_BANDS[i].max) return DIAPER_BANDS[i];
+  }
+  return DIAPER_BANDS[DIAPER_BANDS.length - 1];
+}
+
+const DIAPER_RULE = {
+  title: 'The rule the whole thing runs on',
+  body: [
+    'Every two to three hours while they are awake, and straight away when they poop. Everything else on this screen is that rule with arithmetic done to it.',
+    'Overnight is the exception. A lightly wet diaper on a sleeping baby is not worth waking them for. A poop or a soaked one is.',
+    'Sooner than the schedule if they are uncomfortable, if it feels heavy, or if the wetness line has changed colour.',
+  ],
+};
+
+/* ------------------------------------------------------------------
+ * THE DAYCARE ONE
+ * ------------------------------------------------------------------ */
+
+const DIAPER_DAYCARE = {
+  title: 'How many to send to daycare',
+  headline: 'Hours there, divided by three, plus two. That is the whole formula.',
+  body: [
+    'Most centres change on a schedule of roughly every two to three hours, plus immediately for a poop. So an eight hour day is around three scheduled changes, plus one or two for poops, which is where three to four comes from.',
+    'Then add two spares. Not because they will use them, but because a blowout costs two and being the parent whose child ran out is a bad afternoon for everybody.',
+    'Most centres also ask you to keep a small stock there and will tell you when it is getting low. Send a full pack on the first day rather than counting them out, and top it up when they ask.',
+    'The rest of the day at home is another two or three, which is how a two year old lands at around five or six across a whole day.',
+  ],
+  alsoSend: [
+    'Wipes, a full pack, refilled more often than you expect',
+    'Cream, labelled with their name, since most centres will not share',
+    'Two full changes of clothes, and a third in summer',
+    'Bags for the wet things, if the centre does not provide them',
+  ],
+};
+
+function diaperDaycareCount(hours) {
+  const h = Math.max(0, Math.min(14, Number(hours) || 0));
+  if (!h) return 0;
+  return Math.ceil(h / 3) + 2;
+}
+
+function diaperDayTotal(months, daycareHours) {
+  const band = diaperBandFor(months);
+  const away = diaperDaycareCount(daycareHours);
+  if (!away) return { away: 0, home: band.low + ' to ' + band.high, total: band.perDay };
+  /* Away is a count of what to SEND, which includes spares, so the
+     home half is the band minus the changes they will actually use
+     there rather than minus what was sent. */
+  const used = Math.max(1, away - 2);
+  const lowHome = Math.max(1, band.low - used);
+  const highHome = Math.max(lowHome, band.high - used);
+  return { away: away, home: lowHome + ' to ' + highHome, total: band.perDay };
+}
+
+/* ------------------------------------------------------------------
+ * BUYING
+ * ------------------------------------------------------------------ */
+
+const DIAPER_BUYING = {
+  title: 'Buying them without wasting money',
+  items: [
+    'Do not stockpile newborn size. Most babies are in it for a few weeks and some skip it completely. One pack, and buy more only if you need more.',
+    'Size one is the same warning with a smaller siren. Two packs, not ten.',
+    'From size three onwards, stockpiling starts to make sense, because they stay in each of the bigger sizes for months.',
+    'Bigger sizes have fewer diapers in the same size box. The price per diaper goes up as they grow and the pack count goes down, which is why the bill feels like it never falls.',
+    'Register for a mix of sizes rather than a tower of newborn. Anybody buying you newborn diapers means well and is buying you three weeks.',
+    'Subscriptions are usually cheaper and usually send too many at first. Set it at the low end and adjust up.',
+    'Store brands are genuinely fine for most babies. The ones that matter are overnight and, if you have a leaker, the specific brand that stops it.',
+  ],
+  sizeUp: {
+    title: 'When to go up a size',
+    items: [
+      'Red marks at the thighs or the waist after a change.',
+      'Leaks that are happening more than occasionally, especially up the back.',
+      'The tabs are reaching the very edge to fasten.',
+      'Less than two fingers of room at the waist.',
+      'They are near the top of the weight range on the pack.',
+      'A diaper that leaks is usually the wrong size rather than the wrong brand, and going up a size fixes more leaks than going up a brand.',
+    ],
+  },
+};
+
+const DIAPER_NIGHT = {
+  title: 'Overnight',
+  items: [
+    'From around four to six months, one overnight diaper instead of a regular one solves most morning leaks.',
+    'A size up at night alone is the cheap version of the same trick and it works.',
+    'Point it downwards for a boy before you fasten it. That single move fixes an enormous number of leaks up the front.',
+    'Make sure the frill around each leg is pulled out rather than tucked in. Tucked in is the single most common cause of a leak and almost nobody is told.',
+    'If they still leak through, it is usually fit rather than absorbency. Go up a size before you go up a price.',
+  ],
+};
+
+const DIAPER_COST = {
+  title: 'What it adds up to',
+  body: [
+    'Somewhere around 2,000 to 2,500 diapers in the first year for most babies, and roughly 5,000 to 6,000 across the whole time they are in them.',
+    'The first three months are about a third of the first year’s total, which is why it feels so relentless at the start and why it genuinely does get easier.',
+    'If the cost is a real problem, diaper banks exist and they are ordinary to use. Hospital social workers, WIC offices, pediatric practices and local churches nearly all know where the nearest one is.',
+  ],
+};
+
+const DIAPER_HEALTH_NOTE =
+  'One thing here is medical rather than practical. In the first weeks, how many WET diapers a '
+  + 'newborn has is the simplest measure of whether enough milk is going in, and too few is a reason '
+  + 'to be seen rather than a reason to buy more. That is covered properly on the Feeding screen '
+  + 'under the newborn rhythm.';
+
+const DIAPER_SOURCES = [
+  { org: 'AAP', label: 'Diapering and diaper rash, HealthyChildren', url: 'https://www.healthychildren.org/English/ages-stages/baby/diapers-clothing/Pages/default.aspx' },
+  { org: 'CDC', label: 'Infant and toddler health basics', url: 'https://www.cdc.gov/child-development/positive-parenting-tips/infants.html' },
+];
+
+function showsDiaperContent(months) {
+  return typeof months !== 'number' || months < 60;
+}
+
+
 /* ===== src/data/breakingPoint.js ===== */
 /**
  * Ready Set Grow: When A Parent Is At The End Of It
@@ -25293,6 +25688,7 @@ const store = {
   bagChecked: [],
   outChecked: [],   // the packing checklist, ticked per trip and per child
   outTrip: 'day',   // which kind of trip she is packing for
+  daycareHours: 0,  // hours in daycare, for the diaper estimate
   pumpTab: 'flange',
   pumpGoal: 'exclusive',
   pumpProblem: null,
@@ -25393,7 +25789,7 @@ const state = {};
   });
 });
 
-['parent', 'children', 'activeChildId', 'bagChecked', 'outChecked', 'outTrip', 'birthdaySeen', 'profileWho', 'posts', 'postDraft',
+['parent', 'children', 'activeChildId', 'bagChecked', 'outChecked', 'outTrip', 'daycareHours', 'birthdaySeen', 'profileWho', 'posts', 'postDraft',
  'postOpen', 'menuOpen', 'calMonth',
  'profileEdit', 'msEdit', 'ciEdit', 'ciOpen', 'photoBusy', 'photoError',
  'liftUsed', 'liftDate', 'pumpTab', 'pumpGoal',
@@ -25425,6 +25821,7 @@ function flushStore() {
       bagChecked: store.bagChecked,
       outChecked: store.outChecked,
       outTrip: store.outTrip,
+      daycareHours: store.daycareHours,
       birthdaySeen: store.birthdaySeen,
       posts: store.posts,
       /* Memories live here too, or a voice memo saved this morning
@@ -25564,6 +25961,7 @@ function loadStore() {
     store.bagChecked = Array.isArray(saved.bagChecked) ? saved.bagChecked : [];
     store.outChecked = Array.isArray(saved.outChecked) ? saved.outChecked : [];
     store.outTrip = typeof saved.outTrip === 'string' ? saved.outTrip : 'day';
+    store.daycareHours = Number(saved.daycareHours) || 0;
     store.parentUpdatedAt = Number(saved.parentUpdatedAt) || 0;
   }
 
@@ -26547,6 +26945,8 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'feeding') html = screenFeeding(c);
   else if (v && v.type === 'screen' && v.id === 'safety') html = screenSafety(c);
   else if (v && v.type === 'screen' && v.id === 'signs') html = screenSigns(c);
+  else if (v && v.type === 'screen' && v.id === 'sharing') html = screenSharing(c);
+  else if (v && v.type === 'screen' && v.id === 'diaperplan') html = screenDiapers(c);
   else if (v && v.type === 'screen' && v.id === 'privacy') html = screenPrivacy(c);
   else if (v && v.type === 'screen' && v.id === 'rules') html = screenRules(c);
   else if (v && v.type === 'screen' && v.id === 'about') html = screenAbout(c);
@@ -26811,6 +27211,12 @@ function initControls() {
     if (e.target.matches('[data-wake]')) { state.wakeTime = e.target.value || '06:30'; render(); }
     else if (e.target.id === 'askIn') { state.askQuery = e.target.value; }
     else if (e.target.id === 'willowIn') { willow.input = e.target.value; }
+    else if (e.target.matches('[data-sharefield]')) {
+      /* No repaint while she types, or the caret jumps. The value is
+         read back off the element when she presses the button. */
+      share.joinInput = e.target.value;
+      share.error = '';
+    }
     else if (e.target.id === 'flangeIn') {
       const digits = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
       e.target.value = digits;
@@ -27010,7 +27416,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -27457,6 +27863,36 @@ function initControls() {
       store.parentUpdatedAt = Date.now();
       flushStore();
       render();
+      return;
+    } else if (t.dataset.daycare !== undefined) {
+      store.daycareHours = Number(t.dataset.daycare) || 0;
+      store.parentUpdatedAt = Date.now();
+      flushStore();
+      render();
+      return;
+    } else if (t.dataset.share) {
+      const a = t.dataset.share;
+      if (a === 'pick') {
+        const id = t.dataset.id;
+        const at = share.pickIds.indexOf(id);
+        if (at === -1) share.pickIds.push(id); else share.pickIds.splice(at, 1);
+        render();
+      }
+      else if (a === 'make') shareMakeCode();
+      else if (a === 'join') shareJoin();
+      else if (a === 'revoke') shareRevoke(t.dataset.id);
+      else if (a === 'leave') shareLeave(t.dataset.id);
+      else if (a === 'dropcode') shareDropCode(t.dataset.code);
+      else if (a === 'joinedok') { share.joined = ''; render(); }
+      else if (a === 'copy') {
+        const code = t.dataset.code || '';
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code);
+        } catch (err) {}
+        store.shareCopied = true;
+        render();
+        setTimeout(() => { store.shareCopied = false; render(); }, 1800);
+      }
       return;
     } else if (t.dataset.outtrip) {
       store.outTrip = t.dataset.outtrip;
@@ -29404,6 +29840,260 @@ function screenAbout(c) {
     </div>
 
     ${privacyLine()}
+  </div>`;
+}
+
+function screenDiapers(c) {
+  const months = c.months;
+  const band = diaperBandFor(months);
+  const name = (c.child && c.child.name) ? c.child.name : 'them';
+  const hours = Number(store.daycareHours) || 0;
+  const sums = diaperDayTotal(months, hours);
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">${esc(DIAPER_TITLE)}</h1>
+    <p class="sub">${esc(DIAPER_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="bodytext">${esc(DIAPER_INTRO)}</p>
+    </div>
+
+    ${months != null ? `
+    <div class="card" style="margin-top:11px;text-align:center;padding:20px 16px">
+      <p class="eyebrow">${esc(name)}, right now</p>
+      <p style="font-family:var(--serif);font-size:32px;color:var(--ink);margin:8px 0 0">
+        ${esc(band.perDay)}
+      </p>
+      <p class="tiny" style="margin-top:2px">a day, so ${esc(band.perMonth)} a month</p>
+      <p class="bodytext" style="margin-top:10px">${esc(band.note)}</p>
+    </div>` : ''}
+
+    <div class="dsec">
+      <h4>${esc(DIAPER_DAYCARE.title)}</h4>
+      <p class="bodytext" style="margin:0 0 10px;font-weight:600;color:var(--deep)">
+        ${esc(DIAPER_DAYCARE.headline)}</p>
+      <div class="card" style="margin-bottom:11px">
+        <p class="eyebrow">Hours they are there</p>
+        <div class="chips" style="margin-top:9px">
+          ${[0, 4, 6, 8, 9, 10, 12].map((h) => `
+            <button class="chip${hours === h ? ' on' : ''}" data-daycare="${h}"
+              ${hours === h ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
+              >${h ? h + ' hours' : 'Not in daycare'}</button>`).join('')}
+        </div>
+        ${hours ? `
+        <div style="margin-top:14px;padding-top:13px;border-top:1px solid var(--line2)">
+          <p style="font-family:var(--serif);font-size:24px;color:var(--ink);margin:0">
+            Send ${esc(String(sums.away))} a day
+          </p>
+          <p class="tiny" style="margin-top:4px">
+            About ${esc(String(Math.max(1, sums.away - 2)))} used on the schedule and for poops, plus two spare.
+          </p>
+          <p class="bodytext" style="margin-top:8px">
+            Another ${esc(sums.home)} at home, which is ${esc(sums.total)} across the whole day.
+          </p>
+        </div>` : ''}
+      </div>
+      ${DIAPER_DAYCARE.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      <p class="sect">Send these too</p>
+      ${list(DIAPER_DAYCARE.alsoSend)}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(DIAPER_RULE.title)}</h4>
+      ${DIAPER_RULE.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+    </div>
+
+    <div class="dsec">
+      <h4>Every age, so you can see it coming</h4>
+      ${DIAPER_BANDS.map((b) => `
+        <div class="quote"${b.id === band.id ? ' style="border-left-color:var(--sage)"' : ''}>
+          <p class="sit">${esc(b.label)}${b.id === band.id ? ', which is where you are' : ''}</p>
+          <p class="why" style="margin-top:4px"><strong style="color:var(--deep)">${esc(b.perDay)} a day</strong>, ${esc(b.perMonth)} a month. ${esc(b.note)}</p>
+        </div>`).join('')}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(DIAPER_BUYING.title)}</h4>
+      ${list(DIAPER_BUYING.items)}
+      <p class="sect">${esc(DIAPER_BUYING.sizeUp.title)}</p>
+      ${list(DIAPER_BUYING.sizeUp.items)}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(DIAPER_NIGHT.title)}</h4>
+      ${list(DIAPER_NIGHT.items)}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(DIAPER_COST.title)}</h4>
+      ${DIAPER_COST.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+    </div>
+
+    <div class="card flat" style="margin-top:6px">
+      <p class="eyebrow">${icon('info', 11, 'var(--sage)')} One of these is medical</p>
+      <p class="tiny" style="margin-top:4px">${esc(DIAPER_HEALTH_NOTE)}</p>
+      <button class="btn ghost sm" style="width:100%;margin-top:10px"
+        data-go="screen" data-id="feeding" data-asksub="feedTab" data-asksubval="newborn">
+        Open the newborn rhythm
+      </button>
+    </div>
+
+    <div class="dsec">
+      <h4>Where this comes from</h4>
+      ${DIAPER_SOURCES.map((sc) => `
+        <p class="tiny" style="margin:0 0 6px">
+          <strong style="color:var(--deep)">${esc(sc.org)}</strong>
+          <a href="${esc(sc.url)}" target="_blank" rel="noopener">${esc(sc.label)}</a>
+        </p>`).join('')}
+    </div>
+  </div>`;
+}
+
+function screenSharing(c) {
+  const signedIn = !!auth.user;
+  if (signedIn && !share.loaded && !share.busy) setTimeout(() => shareLoad(), 0);
+
+  const mine = store.children.filter((k) => !isExampleChild(k) && !k.sharedFrom);
+  const made = share.made;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">${esc(SHARE_TITLE)}</h1>
+    <p class="sub">${esc(SHARE_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="bodytext">${esc(SHARE_INTRO)}</p>
+    </div>
+
+    ${!signedIn ? `
+    <div class="card flat" style="margin-top:11px">
+      <p class="bodytext">${esc(SHARE_ERRORS.noAccount)}</p>
+      <button class="btn" style="width:100%;margin-top:11px" data-auth="account">Create an account</button>
+    </div>` : ''}
+
+    ${signedIn ? `
+    ${share.error ? `
+    <div class="card" style="border-left:3px solid var(--attention);margin-top:11px">
+      <p class="bodytext">${esc(share.error)}</p>
+    </div>` : ''}
+
+    ${share.joined ? `
+    <div class="card leafy" style="margin-top:11px">
+      <p class="bodytext">${esc(share.joined)}</p>
+      <button class="chip" style="margin-top:9px" data-share="joinedok">Close</button>
+    </div>` : ''}
+
+    ${made ? `
+    <div class="dsec">
+      <h4>Their code</h4>
+      <p class="tiny" style="margin:0 0 10px">For ${esc(made.names.join(', '))}.</p>
+      <div class="card" style="text-align:center;padding:20px 16px">
+        <p style="font-family:var(--serif);font-size:30px;letter-spacing:3px;color:var(--ink);margin:0">
+          ${esc(prettyCode(made.code))}
+        </p>
+        <p class="tiny" style="margin-top:8px">${esc(codeLeft(made.at + CODE_HOURS * 3600000, Date.now()))}</p>
+        <button class="btn" style="width:100%;margin-top:14px" data-share="copy" data-code="${esc(made.code)}">
+          ${esc(store.shareCopied ? 'Copied' : 'Copy the code')}
+        </button>
+        <button class="chip" style="margin-top:9px" data-share="dropcode" data-code="${esc(made.code)}">
+          Cancel this code
+        </button>
+      </div>
+      <p class="tiny" style="margin-top:9px">${esc(SHARE_CODE_NOTE)}</p>
+    </div>` : `
+    <div class="dsec">
+      <h4>Give somebody access</h4>
+      <p class="tiny" style="margin:0 0 10px">Pick which children. Only the ones you tick.</p>
+      ${mine.length ? `
+        <div class="card" style="margin-bottom:10px">
+          ${mine.map((k) => tickRow(share.pickIds.indexOf(k.id) !== -1, k.name || 'Your child',
+            childAgeLabel(k), `data-share="pick" data-id="${esc(k.id)}"`)).join('')}
+        </div>
+        <button class="btn" style="width:100%"
+          data-share="make" ${share.pickIds.length && !share.busy ? '' : 'disabled'}>
+          ${esc(share.pickIds.length ? 'Make a code' : 'Pick a child first')}
+        </button>
+      ` : `
+        <div class="card flat"><p class="bodytext">Add a child first, and then you can share them.</p></div>
+      `}
+    </div>`}
+
+    <div class="dsec">
+      <h4>${esc(SHARE_JOIN_TITLE)}</h4>
+      <p class="tiny" style="margin:0 0 10px">${esc(SHARE_JOIN_HELP)}</p>
+      <div class="card">
+        <input class="inp" type="text" id="shareIn" data-sharefield="1" autocomplete="off"
+          autocapitalize="characters" spellcheck="false"
+          placeholder="ABCDE 12345" style="width:100%;text-align:center;letter-spacing:2px;font-size:18px" />
+        <button class="btn" style="width:100%;margin-top:11px"
+          data-share="join" ${share.busy ? 'disabled' : ''}>Use this code</button>
+      </div>
+    </div>
+
+    <div class="dsec">
+      <h4>Who can see your children</h4>
+      ${share.shares.length ? share.shares.map((row) => {
+        const names = (row.childIds || []).map((id) => {
+          const k = store.children.filter((x) => x.id === id)[0];
+          return (k && k.name) || 'A child';
+        });
+        return `
+        <div class="quote">
+          <p class="sit">${icon('user', 12, 'var(--taupe)')} Somebody with the code ${esc(String(row.code || '').slice(0, 5))}</p>
+          <p class="why" style="margin-top:4px">Can see ${esc(names.join(', ') || 'nothing')}.</p>
+          <button class="chip" style="margin-top:8px" data-share="revoke" data-id="${esc(row.viewerUid)}"
+            ${share.busy ? 'disabled' : ''}>Take it back</button>
+        </div>`;
+      }).join('') : `
+        <div class="card flat"><p class="bodytext">${esc(SHARE_EMPTY_OWNER)}</p></div>`}
+      ${share.shares.length ? `<p class="tiny" style="margin-top:9px">${esc(SHARE_REVOKE_NOTE)}</p>` : ''}
+    </div>
+
+    <div class="dsec">
+      <h4>Children shared with you</h4>
+      ${share.links.length ? share.links.map((row) => {
+        const names = (row.childIds || []).map((id) => {
+          const k = store.children.filter((x) => x.id === id)[0];
+          return (k && k.name) || 'A child';
+        });
+        return `
+        <div class="quote">
+          <p class="sit">${icon('people', 12, 'var(--sage)')} ${esc(names.join(', ') || 'A child')}</p>
+          <p class="why" style="margin-top:4px">Shared with you by somebody else.</p>
+          <button class="chip" style="margin-top:8px" data-share="leave" data-id="${esc(row.ownerUid)}"
+            ${share.busy ? 'disabled' : ''}>Leave</button>
+        </div>`;
+      }).join('') : `
+        <div class="card flat"><p class="bodytext">${esc(SHARE_EMPTY_JOINED)}</p></div>`}
+      ${share.links.length ? `<p class="tiny" style="margin-top:9px">${esc(SHARE_LEAVE_NOTE)}</p>` : ''}
+    </div>
+
+    <div class="dsec">
+      <h4>How it works</h4>
+      ${SHARE_STEPS.map((x, i) => `
+        <div class="quote">
+          <p class="sit">${esc(String(i + 1))}</p>
+          <p class="why" style="margin-top:4px">${esc(x)}</p>
+        </div>`).join('')}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(SHARE_WHAT_THEY_GET.title)}</h4>
+      <p class="sect" style="margin-top:0">They can</p>
+      ${list(SHARE_WHAT_THEY_GET.can)}
+      <p class="sect">They cannot</p>
+      ${list(SHARE_WHAT_THEY_GET.cannot)}
+    </div>
+
+    ${privacyLine()}
+    ` : ''}
   </div>`;
 }
 
@@ -32436,6 +33126,8 @@ function screenSettings() {
     ${kids.map(settingsChildRow).join('')}
     ${childRow('plus', 'Add a child', 'Name and birthday is all it takes to start',
       'data-go="screen" data-id="addchild"')}
+    ${childRow('people', esc(SHARE_TITLE), 'Give somebody else access to one of them, or use a code',
+      'data-go="screen" data-id="sharing"')}
 
     <p class="sect">This app</p>
     ${childRow('shield', esc(PRIV_TITLE), esc(PRIV_SUB),
@@ -33158,6 +33850,11 @@ function cornerMenu(who) {
       <span class="cmenu-ic">${icon('people', 15, 'var(--deep)')}</span>
       <span class="grow"><span class="cmenu-t">Your children</span>
       <span class="cmenu-s">${esc(store.children.length === 1 ? 'One child' : store.children.length + ' children')}, and how each of them arrived</span></span>
+    </button>
+    <button class="cmenu-row" data-go="screen" data-id="sharing">
+      <span class="cmenu-ic">${icon('people', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">${esc(SHARE_TITLE)}</span>
+      <span class="cmenu-s">Let somebody else see and add to a child</span></span>
     </button>
     <button class="cmenu-row" data-menugo="situation">
       <span class="cmenu-ic">${icon('leaf', 15, 'var(--deep)')}</span>
@@ -35849,6 +36546,9 @@ function screenChild(c) {
       ${childRow('utensils', 'Feeding',
         esc(getFeedingHeadline(months) || 'Milk, starting solids, and the family table'),
         'data-go="screen" data-id="feeding"')}
+      ${showsDiaperContent(months) ? childRow('drop', esc(DIAPER_TITLE),
+        esc(diaperBandFor(months).perDay + ' a day at this age, and what to send to daycare'),
+        'data-go="screen" data-id="diaperplan"') : ''}
       ${childRow('bulb', 'Care topics',
         c.topics.length ? esc(c.topics.slice(0, 4).map((t) => t.label).join(', ')) : 'Practical care, picked for this age',
         'data-go="screen" data-id="topics"')}`,
@@ -37951,7 +38651,10 @@ const cloud = {
    named here as belonging to this browser rather than to the child. Add
    a field to a child and it syncs, which is the behaviour anybody would
    assume. */
-const CHILD_LOCAL_ONLY = ['seeded'];
+/* sharedFrom stays local on purpose. It says whose record this is from
+   the reader's point of view, so writing it into the document itself
+   would stamp the owner's own child as shared from themselves. */
+const CHILD_LOCAL_ONLY = ['seeded', 'sharedFrom', 'sharedNames'];
 
 function childPayload(k) {
   const src = k || {};
@@ -38168,6 +38871,9 @@ async function cloudStart(app, uid) {
     }
     await cloudFirstSync();
     cloudListen();
+    /* After, not before. The account's own children reconcile first,
+       then anything shared with it is added on top. */
+    sharePullAll();
   } catch (err) {
     cloud.started = false;
     cloudSetStatus('error', String((err && err.message) || err));
@@ -38182,6 +38888,8 @@ function cloudStop() {
   cloud.started = false;
   cloud.known = {};
   cloud.knownParent = null;
+  share.invites = []; share.shares = []; share.links = [];
+  share.loaded = false; share.made = null; share.joined = ''; share.error = '';
   if (cloud.timer) { clearTimeout(cloud.timer); cloud.timer = null; }
   cloud.status = 'local';
 }
@@ -38212,13 +38920,22 @@ async function cloudFirstSync() {
   /* The example never goes up, empty account or not. This is the line
      that stops every new signup starting life with somebody else's
      child on it. */
-  const localKids = store.children.filter((k) => !isUntouchedSeed(k)).map(childPayload);
+  /* Shared children are held out of this merge entirely. They are not
+     this account's to reconcile, they are pulled separately below from
+     the account that owns them. Leaving them in would have meant the
+     merge deciding a co parent's child was missing from their own
+     collection and helpfully writing it there. */
+  const localKids = store.children
+    .filter((k) => !isUntouchedSeed(k) && !k.sharedFrom)
+    .map(childPayload);
+  const sharedKids = store.children.filter((k) => !!k.sharedFrom);
 
   const merged = mergeChildren(localKids, remoteKids, deleted);
   /* Anything that came through the merge is on the account now, so
      nothing left is the app's invention. */
   merged.children.forEach((k) => { delete k.seeded; });
-  store.children = merged.children;
+  /* Mine, reconciled, plus the shared ones put back untouched. */
+  store.children = merged.children.concat(sharedKids);
   if (store.activeChildId && !store.children.some((k) => k.id === store.activeChildId)) {
     store.activeChildId = store.children.length === 1 ? store.children[0].id : null;
   }
@@ -38286,12 +39003,19 @@ function cloudListen() {
       cloud.known[remote.id] = key;
       const i = store.children.findIndex((k) => k.id === remote.id);
       if (i === -1) { store.children.push(normalizeChild(remote)); changed = true; return; }
+      /* Keep whose record it is. normalizeChild builds from the
+         document, and sharedFrom deliberately is not in the document. */
+      const wasShared = store.children[i].sharedFrom;
       const lt = Number(store.children[i].updatedAt) || 0;
       const rt = Number(remote.updatedAt) || 0;
       /* Through the normaliser, same as the first sync. A record written
          by an older copy of the app must never arrive missing fields
          and take the local copy's with it. */
-      if (rt > lt) { store.children[i] = normalizeChild(remote); changed = true; }
+      if (rt > lt) {
+        store.children[i] = normalizeChild(remote);
+        if (wasShared) store.children[i].sharedFrom = wasShared;
+        changed = true;
+      }
     });
     if (changed) {
       if (store.activeChildId && !store.children.some((k) => k.id === store.activeChildId)) {
@@ -38311,6 +39035,238 @@ function cloudQueue() {
   cloud.timer = setTimeout(() => { cloud.timer = null; cloudPush(false); }, 1400);
 }
 
+/* =================================================================
+   TWO PARENTS, ONE CHILD
+
+   The rules in firestore.rules are the guarantee. Everything here is
+   the convenience on top of them: making a code, redeeming one,
+   fetching the children it unlocked, and taking it all back.
+
+   Nothing in this block is trusted by the server. A modified copy of
+   this app can ask for whatever it likes and the rules will refuse it,
+   which is the whole reason they were written and tested first.
+   ================================================================= */
+
+const share = {
+  invites: [],      // codes this account has handed out, still live
+  shares: [],       // who currently has access, and to what
+  links: [],        // whose children this account has been given
+  loaded: false,
+  busy: false,
+  error: '',
+  made: null,       // the code just created, so it can be shown once
+  pickIds: [],      // which children the next code should cover
+  joinInput: '',
+  joined: '',       // the sentence after a successful redeem
+};
+
+function sharingOn() {
+  return !!(cloud.started && cloud.db && cloud.mod && myUid());
+}
+
+/* Everything the two lists on the screen need. Read rather than
+   watched, because access does not change minute to minute. */
+async function shareLoad(force) {
+  if (!sharingOn()) return;
+  if (share.loaded && !force) return;
+  const fs = cloud.mod;
+  const uid = myUid();
+  try {
+    const mine = [];
+    const invSnap = await fs.getDocs(fs.collection(cloud.db, 'users', uid, 'shares'));
+    invSnap.forEach((d) => mine.push(Object.assign({ viewerUid: d.id }, d.data())));
+    share.shares = mine;
+
+    const links = [];
+    const linkSnap = await fs.getDocs(fs.collection(cloud.db, 'links', uid, 'from'));
+    linkSnap.forEach((d) => links.push(Object.assign({ ownerUid: d.id }, d.data())));
+    share.links = links;
+
+    share.loaded = true;
+    share.error = '';
+  } catch (err) {
+    share.error = SHARE_ERRORS.offline;
+  }
+  render();
+}
+
+/* Make a code for the children she ticked. */
+async function shareMakeCode() {
+  if (!sharingOn()) { share.error = SHARE_ERRORS.noAccount; render(); return; }
+  const ids = (share.pickIds || []).filter((id) => store.children.some((k) => k.id === id && !k.sharedFrom));
+  if (!ids.length) return;
+  share.busy = true;
+  share.error = '';
+  render();
+  const fs = cloud.mod;
+  const code = makeShareCode();
+  const names = ids.map((id) => {
+    const k = store.children.filter((x) => x.id === id)[0];
+    return (k && k.name) || 'Your child';
+  });
+  try {
+    await fs.setDoc(fs.doc(cloud.db, 'invites', code), {
+      ownerUid: myUid(),
+      ownerName: (store.parent.name || '').trim().split(/\s+/)[0] || 'They',
+      childIds: ids,
+      childNames: names,
+      expiresAt: codeExpiry(Date.now()),
+      usedBy: '',
+      at: Date.now(),
+    });
+    share.made = { code: code, names: names, at: Date.now() };
+    share.pickIds = [];
+  } catch (err) {
+    share.error = SHARE_ERRORS.failed;
+  }
+  share.busy = false;
+  render();
+}
+
+/* Redeem one. The order matters: check it, write the grant, write the
+   index, burn the code, then fetch. If any of the first three fail the
+   rules have refused and nothing has changed. */
+async function shareJoin() {
+  if (!sharingOn()) { share.error = SHARE_ERRORS.noAccount; render(); return; }
+  const box = document.getElementById('shareIn');
+  if (box && box.value) share.joinInput = box.value;
+  const code = cleanCode(share.joinInput);
+  if (!codeLooksRight(code)) { share.error = SHARE_ERRORS.shape; render(); return; }
+  share.busy = true;
+  share.error = '';
+  share.joined = '';
+  render();
+
+  const fs = cloud.mod;
+  const uid = myUid();
+  try {
+    const snap = await fs.getDoc(fs.doc(cloud.db, 'invites', code));
+    if (!snap.exists()) { share.error = SHARE_ERRORS.missing; share.busy = false; render(); return; }
+    const inv = snap.data();
+    if (inv.ownerUid === uid) { share.error = SHARE_ERRORS.own; share.busy = false; render(); return; }
+    if (Number(inv.expiresAt || 0) <= Date.now()) { share.error = SHARE_ERRORS.expired; share.busy = false; render(); return; }
+    if (inv.usedBy) { share.error = SHARE_ERRORS.used; share.busy = false; render(); return; }
+
+    const payload = { childIds: inv.childIds, code: code, at: Date.now() };
+    await fs.setDoc(fs.doc(cloud.db, 'users', inv.ownerUid, 'shares', uid), payload);
+    await fs.setDoc(fs.doc(cloud.db, 'links', uid, 'from', inv.ownerUid), payload);
+    /* Burned last, so a failure earlier leaves the code usable rather
+       than spending it on an attempt that did not work. */
+    try { await fs.updateDoc(fs.doc(cloud.db, 'invites', code), { usedBy: uid }); } catch (err) {}
+
+    await sharePullFrom(inv.ownerUid, inv.childIds);
+    share.joined = shareJoinedLine(inv.ownerName, inv.childNames || []);
+    share.joinInput = '';
+    share.loaded = false;
+    await shareLoad(true);
+  } catch (err) {
+    share.error = SHARE_ERRORS.failed;
+  }
+  share.busy = false;
+  render();
+}
+
+/* Fetch the children a grant unlocked and put them in the store,
+   marked with whose they are. */
+async function sharePullFrom(ownerUid, childIds) {
+  if (!sharingOn()) return;
+  const fs = cloud.mod;
+  for (let i = 0; i < (childIds || []).length; i++) {
+    const id = childIds[i];
+    try {
+      const snap = await fs.getDoc(fs.doc(cloud.db, 'users', ownerUid, 'children', id));
+      if (!snap.exists()) continue;
+      const k = normalizeChild(snap.data());
+      k.sharedFrom = ownerUid;
+      const at = store.children.findIndex((x) => x.id === id);
+      if (at === -1) store.children.push(k);
+      else if ((Number(k.updatedAt) || 0) >= (Number(store.children[at].updatedAt) || 0)) store.children[at] = k;
+      cloud.known[id] = contentKey(childPayload(k));
+    } catch (err) { /* refused or gone. Either way it is not ours. */ }
+  }
+  flushStore();
+}
+
+/* Every shared child, refreshed. Called on sign in, after the account's
+   own first sync. */
+async function sharePullAll() {
+  if (!sharingOn()) return;
+  const fs = cloud.mod;
+  try {
+    const snap = await fs.getDocs(fs.collection(cloud.db, 'links', myUid(), 'from'));
+    const jobs = [];
+    snap.forEach((d) => jobs.push([d.id, (d.data() || {}).childIds || []]));
+    for (let i = 0; i < jobs.length; i++) await sharePullFrom(jobs[i][0], jobs[i][1]);
+    if (jobs.length) render();
+  } catch (err) { /* no links, or offline */ }
+}
+
+/* The owner taking it back. */
+async function shareRevoke(viewerUid) {
+  if (!sharingOn() || share.busy) return;
+  share.busy = true;
+  render();
+  const fs = cloud.mod;
+  try {
+    await fs.deleteDoc(fs.doc(cloud.db, 'users', myUid(), 'shares', viewerUid));
+    try { await fs.deleteDoc(fs.doc(cloud.db, 'links', viewerUid, 'from', myUid())); } catch (err) {}
+    share.shares = share.shares.filter((x) => x.viewerUid !== viewerUid);
+  } catch (err) {
+    share.error = SHARE_ERRORS.failed;
+  }
+  share.busy = false;
+  render();
+}
+
+/* The co parent walking away. Removes the children from this device
+   without touching the record itself. */
+async function shareLeave(ownerUid) {
+  if (!sharingOn() || share.busy) return;
+  share.busy = true;
+  render();
+  const fs = cloud.mod;
+  const uid = myUid();
+  try {
+    try { await fs.deleteDoc(fs.doc(cloud.db, 'links', uid, 'from', ownerUid)); } catch (err) {}
+    try { await fs.deleteDoc(fs.doc(cloud.db, 'users', ownerUid, 'shares', uid)); } catch (err) {}
+    const gone = store.children.filter((k) => k.sharedFrom === ownerUid).map((k) => k.id);
+    store.children = store.children.filter((k) => k.sharedFrom !== ownerUid);
+    /* NOT added to deletedChildIds. That list means "this child was
+       deleted", which would propagate and remove them from the owner's
+       account too. Leaving is not deleting. */
+    gone.forEach((id) => { delete cloud.known[id]; });
+    if (store.activeChildId && gone.indexOf(store.activeChildId) !== -1) {
+      store.activeChildId = store.children.length === 1 ? store.children[0].id : null;
+    }
+    if (store.profileWho && gone.indexOf(store.profileWho) !== -1) store.profileWho = 'me';
+    share.links = share.links.filter((x) => x.ownerUid !== ownerUid);
+    flushStore();
+  } catch (err) {
+    share.error = SHARE_ERRORS.failed;
+  }
+  share.busy = false;
+  render();
+}
+
+/* Cancel a code that has not been used. */
+async function shareDropCode(code) {
+  if (!sharingOn()) return;
+  try { await cloud.mod.deleteDoc(cloud.mod.doc(cloud.db, 'invites', code)); } catch (err) {}
+  if (share.made && share.made.code === code) share.made = null;
+  render();
+}
+
+/* Who owns this child, in words, for the profile. */
+function sharedOwnerName(k) {
+  if (!k || !k.sharedFrom) return '';
+  const link = share.links.filter((x) => x.ownerUid === k.sharedFrom)[0];
+  return (link && link.ownerName) || '';
+}
+
+function sharedWithCount(childId) {
+  return share.shares.filter((s2) => (s2.childIds || []).indexOf(childId) !== -1).length;
+}
+
 async function cloudPush() {
   if (!cloudOn()) return;
   const fs = cloud.mod;
@@ -38328,7 +39284,15 @@ async function cloudPush() {
     k.updatedAt = now;
     payload.updatedAt = now;
     pending.push(['child', k.id, key]);
-    writes.push(fs.setDoc(fs.doc(cloud.db, 'users', uid, 'children', k.id), payload));
+    /* THE LINE THAT STOPS A SECOND STETSON EXISTING.
+
+       A child shared with this account belongs to somebody else, so an
+       edit goes back to their record rather than creating a copy under
+       this one. Without this, a co parent logging a feed would quietly
+       fork the child, and neither parent would ever see the other's
+       entries again. */
+    const owner = k.sharedFrom || uid;
+    writes.push(fs.setDoc(fs.doc(cloud.db, 'users', owner, 'children', k.id), payload));
   });
 
   const pt = parentPayload();
