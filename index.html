@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-18 12:51">
+<meta name="rsg-build" content="2026-09-18 13:10">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -1364,7 +1364,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-18 12:51';
+const BUILD_STAMP = '2026-09-18 13:10';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -18533,6 +18533,12 @@ const REFERS_TO_NOTE =
   'This is only so the app writes about you correctly. It changes nothing about what you are shown, '
   + 'and it is never shared with anybody.';
 
+/* The version that actually goes on the screen. The long one above is
+   kept because the privacy page quotes this kind of thing properly,
+   and because three reassurances stacked in one card was the exact
+   thing she objected to. */
+const REFERS_TO_SHORT = 'Only so the app writes about you correctly.';
+
 /* The label to actually print, given what they picked and whatever they
    typed if they picked nothing from the list. */
 function calledByLabel(parent) {
@@ -20864,6 +20870,22 @@ const NUDGE_REASONS = {
       + 'probably alone with a baby. Say one warm thing and offer to keep them company. Do not '
       + 'give sleep advice and do not tell them to rest.',
   },
+  /* Somebody has just lit their firefly, which means they are awake,
+     probably alone, and reached for a screen to feel less like the
+     only one. Willow saying something at that exact moment is the
+     whole point of her existing. */
+  lit: {
+    id: 'lit',
+    lines: [
+      'I saw your light go on. However this night is going, you are not the only one having it.',
+      'Your light is up. I am here too, if you want to say how tonight is actually going.',
+      'You lit yours. Sitting in the dark with a baby is its own thing, and I am about if you want the company.',
+    ],
+    ask: 'A parent has just lit their light on a screen that shows how many other parents are '
+      + 'awake right now. They are almost certainly up at an odd hour, on their own, and looking '
+      + 'for company. Say one warm thing about not being the only one and offer to stay with them. '
+      + 'Do not give any advice, do not mention sleep training, and do not tell them to rest.',
+  },
   first: {
     id: 'first',
     lines: [
@@ -21009,6 +21031,7 @@ function nudgePrompt(reasonId, context) {
    rather than a message that vanishes. */
 const NUDGE_OPENERS = {
   night: 'I am up with them again.',
+  lit: 'It is just me and them right now.',
   lowrun: 'Can we talk about how I have been feeling?',
   first: 'What will this log show me?',
   run: 'Thanks for noticing.',
@@ -21473,25 +21496,32 @@ function countReactions(rows) {
 
 const FIREFLY_TITLE = 'Fireflies';
 
-const FIREFLY_SUB = 'Other people are awake too. This is how you see them.';
+const FIREFLY_SUB = 'Somebody else is awake right now.';
+
+/* WHAT THIS SCREEN IS FOR, WHICH IS NOT EXPLAINING ITSELF.
+   The first version of this copy spent four paragraphs justifying the
+   design decisions in this file to somebody sitting in the dark at
+   3am. She does not need my reasoning, she needs to feel less alone.
+   The reasoning lives in the header above and on the privacy screen.
+   Everything below is written for her. */
 
 const FIREFLY_WHAT = [
-  'Light yours and you become one of the lights. Nobody sees who you are, where you are, or what you are doing, because none of that is collected or sent. The only thing your light says is that somebody is up.',
-  'Tap any other light to send a quiet me too. No message, no name, nothing to write. They feel it and they see the number go up.',
+  'Light yours and you join the sky. Tap somebody else\u2019s light to send a quiet me too.',
+  'No names, no messages, nothing to write. Just the two of you knowing.',
 ];
 
 const FIREFLY_LIT_MINUTES = 45;
 
 const FIREFLY_LIMIT = 200;
 
-/* The three states of the sky, in words, because an empty sky needs
-   saying carefully. A parent up at 4am who lights hers and sees
-   nothing should not be told she is alone. */
+/* The three states of the sky. An empty sky needs saying most
+   carefully, because the one person it is talking to is the one most
+   likely to feel it. */
 const FIREFLY_ALONE =
-  'Nobody else is lit right now. Yours is still on, and whoever wakes up next will see it.';
+  'Yours is the only one lit right now. It stays up for a while, and whoever wakes next will see it.';
 
 const FIREFLY_DARK =
-  'The sky is dark at the moment. Light yours and you will be the first one up.';
+  'The sky is dark just now. Light yours and you will be the first one up.';
 
 function firefliesLine(others) {
   if (others <= 0) return '';
@@ -21503,40 +21533,55 @@ const FIREFLY_LIGHT = 'Light mine';
 const FIREFLY_OUT = 'Put mine out';
 
 function firefliesMineLine(minutes) {
-  if (minutes <= 0) return 'Your light just went out. Light it again whenever.';
-  if (minutes === 1) return 'Your light is on for one more minute.';
-  return 'Your light is on for another ' + String(minutes) + ' minutes.';
+  if (minutes <= 0) return 'It just went out. Light it again whenever you like.';
+  if (minutes === 1) return 'Up for one more minute.';
+  return 'Up for another ' + String(minutes) + ' minutes.';
 }
 
 function firefliesGlowLine(glow) {
-  if (!glow) return 'Nobody has tapped your light yet tonight.';
-  if (glow === 1) return 'One person saw your light and said me too.';
+  if (!glow) return 'Nobody has tapped yours yet. They will.';
+  if (glow === 1) return 'Somebody saw your light and said me too.';
   return String(glow) + ' people saw your light and said me too.';
 }
 
 const FIREFLY_SENT = 'Sent.';
 
+/* Written rather than generated, so there is something warm on the
+   screen the instant she lights it even if Willow is slow or off. */
+const FIREFLY_AFTER = [
+  'There you are.',
+  'That is you in the sky now.',
+  'Your light is up.',
+];
+
+function fireflyAfterLine(seed) {
+  const n = String(seed || '').split('').reduce((a, ch) => a + ch.charCodeAt(0), 0);
+  return FIREFLY_AFTER[n % FIREFLY_AFTER.length];
+}
+
+/* The long nights, said once, at the bottom, for whoever scrolls. Not
+   a feature list and not a policy. */
+const FIREFLY_NIGHT = {
+  title: 'The middle of the night',
+  body: [
+    'The hours between about two and five are the worst of it, and not only because of the tiredness. The house is silent, the world has gone to bed, and it is very easy to feel like the only person on earth still awake and still needed.',
+    'You are not. On any given night there are thousands of people doing exactly this, in exactly this state, at exactly this hour. They are just all in their own dark rooms, which is the whole problem.',
+    'That is all this is. A way of seeing the other rooms.',
+  ],
+};
+
 const FIREFLY_GUEST =
-  'Fireflies needs an account, because the sky has to be shared with other people to be a sky. '
-  + 'Making one takes a minute and it keeps everything else you have saved here safe too.';
+  'Fireflies needs an account, because a sky with one person in it is not a sky. It takes a minute, '
+  + 'and it keeps everything else you have saved here safe too.';
 
 const FIREFLY_OFFLINE =
   'The sky needs a connection. It will be here when you have one.';
 
-/* Said once on the screen rather than buried in a policy, because a
-   promise a parent cannot read is not a promise. */
-const FIREFLY_PRIVACY = [
-  'Your location is never asked for, never collected and never sent. There is no map here on purpose.',
-  'Your name, your username and your children are not attached to your light. Other people see a light, and that is all there is to see.',
-  'Your light goes out on its own after ' + String(FIREFLY_LIT_MINUTES) + ' minutes. You can put it out sooner any time.',
-  'Nothing you do here is written down anywhere you could be found later.',
-];
-
-const FIREFLY_WHY_NO_MAP =
-  'Other apps put this on a map. This one does not, and it is not an oversight. Most of the people '
-  + 'awake at 3am with a baby are alone in a house, and a map that says a new mother is awake and '
-  + 'alone near here is a useful thing for the wrong person to have. You lose nothing by not having '
-  + 'it. Knowing somebody else is up is the whole point, and a light says that perfectly well.';
+/* One line, at the bottom, linking to the one place all of this lives.
+   It used to be four bullet points and a paragraph, on this screen, in
+   the middle of the night. */
+const FIREFLY_QUIET_NOTE =
+  'Your light carries no name and no location. How that works is in Privacy.';
 
 /* Placement.
 
@@ -21757,6 +21802,530 @@ function groupCounts(posts) {
 }
 
 const GROUP_IDS = GROUPS.map((g) => g.id);
+
+
+/* ===== src/data/outings.js ===== */
+/**
+ * Ready Set Grow: Outings
+ * ------------------------------------------------------------------
+ * WHY THIS EXISTS
+ * Going anywhere with a small child is a logistics problem nobody
+ * teaches, and the advice that does exist is packing lists written by
+ * people selling the things on the list.
+ *
+ * TWO THINGS THIS FILE DOES THAT LISTS DO NOT
+ *
+ * ONE. It tells you what NOT to carry. Most of the misery of travelling
+ * with a baby is hauling a crib and a high chair through an airport,
+ * and a lot of that is avoidable. Renting at the other end, borrowing
+ * from the hotel, finding out what the ship already has. That section
+ * comes before the packing list on purpose.
+ *
+ * TWO. It takes safe sleep seriously somewhere else. Safe sleep at home
+ * is well covered everywhere. Safe sleep in a hotel room at midnight
+ * with a jetlagged baby and no crib is where people improvise, and
+ * improvising is where babies die. So the sleep section leads with the
+ * rule rather than the tips.
+ *
+ * THE SLEEP POD PROBLEM, STATED CAREFULLY
+ * Loungers and docks are everywhere in travel advice and a great many
+ * parents own one. They are genuinely useful for supervised awake time
+ * and they are not sleep surfaces. Since 2022 a product meant for
+ * infant sleep has to meet a federal standard, including a sleep
+ * surface angle of ten degrees or less, and the CPSC has specifically
+ * warned about loungers being used for sleep. This file says so plainly
+ * and without making anybody feel stupid for owning one, because the
+ * packaging on these things is doing its best to blur exactly that
+ * line.
+ *
+ * WHAT A PACK AND PLAY ACTUALLY IS
+ * A play yard, which is one of the categories that does meet a federal
+ * safe sleep standard. Which is why it is the answer to this whole
+ * section and why it is worth renting one rather than trusting whatever
+ * is in the closet of a hotel room.
+ *
+ * SOURCES at the bottom. TSA, FAA, CPSC and the cruise lines' own
+ * published policies, all linked.
+ */
+
+const OUT_TITLE = 'Outings';
+
+const OUT_SUB = 'Going places with them, from an afternoon out to a flight.';
+
+const OUT_INTRO =
+  'Leaving the house with a small child is a logistics problem, and it is a solvable one. Most of '
+  + 'what makes it awful is carrying things you did not need to carry and not knowing a rule until '
+  + 'somebody stops you at a gate.';
+
+/* ------------------------------------------------------------------
+ * DO NOT CARRY IT
+ * First, because it changes the shape of everything after it.
+ * ------------------------------------------------------------------ */
+
+const OUT_RENT = {
+  title: 'Rent it, do not haul it',
+  headline: 'You can have a crib, a high chair and a stroller waiting at the other end. Most parents have no idea.',
+  body: [
+    'Baby gear rental is a real and unglamorous industry that almost nobody tells new parents about. You book before you travel, choose what you want, and it is delivered to your hotel, your rental, a family member’s house or in some places the airport, and collected again when you leave.',
+    'BabyQuip is the biggest one in the US and works this way. The gear is cleaned between rentals, checked against recall lists and expiry dates, and carries liability insurance. There are regional companies in most holiday destinations too, and they are often cheaper.',
+    'The arithmetic is usually obvious once you look at it. A week of crib and high chair rental against checking a pack and play, wrestling it through an airport with a baby on your hip, and hoping it survives the hold.',
+  ],
+  worthRenting: [
+    'The crib or play yard. The single biggest thing you can stop carrying.',
+    'A high chair, which no hotel reliably has enough of.',
+    'A stroller, especially if yours is the good heavy one.',
+    'A car seat, if you are not bringing your own and the rental car company would otherwise charge you a fortune for a mystery one.',
+    'Bulky things you will use for four days: a bath seat, a monitor, a bouncer, stair gates.',
+  ],
+  bringAnyway: [
+    'Your own car seat if you possibly can. It is the one piece of gear where knowing its history matters, and airlines carry it free.',
+    'Anything they sleep with. Their sleep bag, their comforter, the specific muslin. This is the cheapest sleep insurance there is.',
+    'Enough formula or milk for the journey plus a full extra day. Brands vary by country and a hungry baby is not the moment to find out.',
+    'Medicine you would not want to hunt for in an unfamiliar pharmacy at 2am.',
+  ],
+};
+
+/* ------------------------------------------------------------------
+ * SLEEP AWAY FROM HOME
+ * The safety rule first, then the craft.
+ * ------------------------------------------------------------------ */
+
+const OUT_SLEEP = {
+  title: 'Sleeping somewhere that is not home',
+  headline: 'This is the part that goes wrong, and it is the part worth getting right before you leave.',
+  theRule: {
+    label: 'The one rule that does not bend for travel',
+    body: [
+      'A baby under one needs a firm, flat, empty surface of their own, on their back. That does not change because you are in a hotel, or at your mother in law’s, or because everybody is tired and it is one night.',
+      'Since 2022 anything sold for infant sleep in the US has to meet a federal safety standard, including a sleep surface angle of no more than ten degrees. That rule took inclined sleepers, in bed sleepers and non compliant travel bassinets off the market.',
+      'The things that do meet a safe sleep standard are full size cribs, smaller cribs, play yards, bassinets and cradles, and bedside sleepers. A play yard is what a pack and play is, which is exactly why it is the travel answer.',
+    ],
+  },
+  thePod: {
+    label: 'About loungers, docks and sleep pods',
+    body: [
+      'These are the soft padded nests with a raised rim, and a lot of parents own one. They are genuinely useful for supervised awake time, for a safe spot on somebody’s living room floor, for tummy time, for putting the baby down for two minutes while you are in the room watching.',
+      'They are not sleep surfaces, and they do not meet the federal infant sleep standard. The CPSC has issued specific warnings about loungers being used for sleep, including by name. The soft sides and padded base are the problem.',
+      'This is worth saying plainly because the marketing around them is doing its best to blur that line, and because they turn up constantly in travel advice as a hotel sleep solution. Take one if it is useful awake. Do not let it be the plan for the night.',
+    ],
+  },
+  darkness: {
+    label: 'The two things that actually make a strange room work',
+    body: [
+      'Dark, and the same noise as home. Unfamiliar rooms fail on light and on sound far more often than on the bed itself.',
+      'Suction cup blackout panels, or the portable blackout blinds that stick to the glass, are the single best thing in the bag. Hotel curtains almost never close properly and there is always a gap, a smoke alarm light, or a car park floodlight. Binder clips or clothes pegs on the curtain gap are the free version and they work.',
+      'Bring the white noise. The same one, at the same volume. It is a portable piece of their bedroom and it costs nothing to pack.',
+      'Their sleep bag and their comforter matter more than the room does. Smell does a lot of the work here.',
+    ],
+  },
+  theRoom: {
+    label: 'Sharing a room with them, which you probably are',
+    body: [
+      'Put them somewhere they cannot see you. Around a corner, in a dressing area, on the far side of a suitcase stood on its end, behind the curtain of a connecting door. A baby who can see you at 5am wants you at 5am.',
+      'Bathrooms are the classic answer for a travel cot and they are fine if the room is ventilated, not damp, and the extractor is off. Take the bin out first.',
+      'Go to bed in the dark with them, or sit in the bathroom with the door shut and the light on. Everybody has done a holiday evening reading on a toilet lid.',
+      'Keep the bedtime routine identical even if the timing slips. The order of events is the signal, not the clock.',
+    ],
+  },
+  hotelCribs:
+    'If you are relying on a hotel crib, ask before you book rather than on arrival, and ask three '
+    + 'things: whether it is a cot or a play yard, whether it comes with a mattress that fits it, and '
+    + 'whether they have more than one. Hotels routinely have two for two hundred rooms. What turns '
+    + 'up can also be older than the current standards, which is a real reason to rent instead.',
+};
+
+/* ------------------------------------------------------------------
+ * FLYING
+ * ------------------------------------------------------------------ */
+
+const OUT_FLY = {
+  title: 'Flying',
+  headline: 'Two rules genuinely worth knowing before you get to the airport, and the rest is craft.',
+  milkAndFormula: {
+    label: 'Milk, formula and baby food go through security',
+    items: [
+      'Breast milk, formula and juice are exempt from the 100ml liquids rule. You can take more than 3.4 ounces and it does not have to fit in the quart bag.',
+      'You do not have to be travelling with your child to bring breast milk. Pumping on a work trip and flying it home is allowed.',
+      'Take them out of your bag at the checkpoint to be screened separately, and say what they are.',
+      'Ice packs, freezer packs and cooler bags are allowed, including when they have partly thawed.',
+      'Expect extra screening sometimes. They may test the outside of the container. You can ask for it not to be opened and for alternative screening instead.',
+      'Allow an extra ten minutes for all of this and it is a non event. Allow none and it is the worst part of your day.',
+    ],
+  },
+  carSeat: {
+    label: 'The car seat question, answered honestly',
+    items: [
+      'The FAA is unambiguous: the safest place for a child under two on a plane is in an approved restraint, not on your lap. They stop short of requiring it, and they recommend it for every child from birth to forty pounds.',
+      'The reason is turbulence and aborted takeoffs rather than crashes. Arms cannot hold a twenty pound child against that.',
+      'A seat is FAA approved if it carries the label saying it is certified for use in aircraft, in red lettering. Almost every harnessed infant and convertible seat has one. Check yours at home, not at the gate.',
+      'Belt positioning booster seats cannot be used in flight, because there is no shoulder belt. You can carry one on as baggage.',
+      'The CARES harness is the light alternative for older toddlers, and it has height and weight limits. Smaller toddlers can slide underneath it, so it is not a substitute for a harnessed seat for a young one.',
+      'A car seat used in flight needs its own paid seat. Buying a seat for an under two is expensive and it is the safest option, and it is completely reasonable to weigh that against what a flight costs your family.',
+      'Gate checking a seat is free on US airlines, and it is where seats get damaged. A padded bag and a photo of it undamaged before you hand it over costs you nothing and settles arguments.',
+    ],
+  },
+  practical: {
+    label: 'The things that actually make the flight survivable',
+    items: [
+      'Feed, suck or drink on the way up and on the way down. Anything that makes them swallow sorts their ears out. A bottle, the breast, a pacifier, a straw cup, a lollipop for a bigger one.',
+      'Book the bassinet position the moment you book the flight if you are long haul. There are two or three on the plane and they go instantly. Weight and length limits apply and vary by airline.',
+      'Board last with a walking toddler, not first. The gate is a bigger room than the plane.',
+      'One parent boards early with the bags and the car seat, one stays out with the child until final call. This is the best trick in this section.',
+      'Change them right before boarding. Aircraft changing tables are tiny and there is a queue.',
+      'Pack twice the diapers you think, and one full change of clothes for you as well as for them. You are the one who has to sit in it for six hours.',
+      'New small things, wrapped, one per hour, doled out. Novelty is the whole resource on a plane.',
+      'A pouch or snack they have to work at slowly is worth three toys.',
+    ],
+  },
+};
+
+/* ------------------------------------------------------------------
+ * THE ROAD
+ * ------------------------------------------------------------------ */
+
+const OUT_ROAD = {
+  title: 'Road trips',
+  headline: 'Easier than flying in every way except one, which is that the car seat rules do not relax because the drive is long.',
+  safety: [
+    'Nothing goes behind or under the child in the seat. No aftermarket inserts, no rolled towel behind the back, no seat protector that did not come with the seat, no strap covers that are not the manufacturer’s. Every one of those changes how the seat performs in a crash.',
+    'Coats come off. A bulky coat leaves a gap under the harness that closes in a crash and leaves the straps loose. Harness first, then coat on backwards over the top, or a blanket.',
+    'Nothing loose in the cabin. A hard toy, a tablet or a travel mug becomes a projectile at speed. Soft things only within reach.',
+    'Never leave them in the car. Not for a minute, not with the engine running, not in mild weather. A car interior climbs dangerously fast even on a pleasant day. Put something you cannot leave without, a phone or a shoe, in the back beside them every single time you drive.',
+  ],
+  practical: [
+    'Drive into a nap if the timing works, and accept that a nap in the car is a shorter nap than a nap in a bed.',
+    'Stop every two hours or so for anybody in a car seat, and stop properly, out of the seat, moving. Long uninterrupted stretches in a seat are not good for a small baby’s breathing.',
+    'Feed at the stops, not on the move. Choking risk in a moving car is real and you cannot see them.',
+    'A window shade that actually blocks sun, not the mesh kind that does very little.',
+    'A bag in the boot and a bag in the cabin. Everything you need at a stop goes in the cabin one.',
+    'Take the bin bag. A grocery bag hung on a headrest saves the footwell.',
+  ],
+};
+
+/* ------------------------------------------------------------------
+ * CRUISES
+ * ------------------------------------------------------------------ */
+
+const OUT_CRUISE = {
+  title: 'Cruises',
+  headline: 'The two rules that catch families out are an age minimum and a pool rule, and both are enforced hard.',
+  rules: [
+    'Most major lines require a baby to be at least six months old on the first day of the cruise.',
+    'That rises to twelve months for transatlantic and transpacific crossings, Hawaii, some South American itineraries, and crucially any sailing with three or more consecutive days at sea. That last one catches people who did not think of their cruise as a long haul one.',
+    'It is enforced at the terminal, boarding is refused, and there is no refund. Check your specific sailing against your specific baby’s birthday before you pay.',
+    'Children in diapers, and children who are not fully toilet trained, are not allowed in the main pools or hot tubs. This is a public health rule, it is not negotiable, and a swim diaper does not change it.',
+    'Some ships have a separate baby splash area for exactly this reason. Some do not. It is a per ship question rather than a per cruise line one, so check your ship by name.',
+    'Ship childcare usually has its own minimum age, often six months or older, and the nursery is often paid and books out. Reserve it when you board, not when you want it.',
+  ],
+  provided: [
+    'Cribs or play yards, usually free, but you request them in advance rather than on arrival.',
+    'High chairs in the dining rooms as standard.',
+    'Bottle warming and refrigeration, though cabin fridges are cooler boxes rather than real fridges and do not reliably keep milk cold. Ask.',
+    'Diapers and wipes in the shops, at prices that will make you laugh. Bring your own.',
+  ],
+  worthKnowing: [
+    'Your cabin will be dark, which is genuinely the best sleep environment your baby has had all year. Interior cabins especially.',
+    'The cabin is small, so you are in the dark with them at 7pm. A balcony changes this enormously and is worth the upgrade with a baby.',
+    'Port days with a baby are shorter than you imagine. Plan one thing.',
+    'Bring a small night light and something to cover the bright safety lights.',
+  ],
+};
+
+/* ------------------------------------------------------------------
+ * HOTELS AND RENTALS
+ * ------------------------------------------------------------------ */
+
+const OUT_STAY = {
+  title: 'Hotels and rentals',
+  ask: {
+    label: 'Ask these before you book',
+    items: [
+      'Is there a crib, is it a cot or a play yard, does it come with a mattress, and how many do you have.',
+      'Is there a bath, or only a shower. This matters more than people expect with a baby.',
+      'Is there a fridge in the room, a real one or a cooler box.',
+      'Is it a separate bedroom or one room. One room with a baby means your evening ends at seven.',
+      'What floor, and is there a lift. Stairs with a stroller is a different holiday.',
+    ],
+  },
+  babyproof: {
+    label: 'Ten minutes when you arrive',
+    items: [
+      'Walk the room on your knees once. You will find the cables, the sockets, the sharp corner and the thing under the bed.',
+      'Move the minibar contents and the glass out of reach, and the kettle cord off the side.',
+      'Check the window opening and the balcony gaps. Balcony railings in older buildings are often wide enough to climb or slide through.',
+      'Find the cord on the blinds and tie it up high. Blind cords are a strangulation risk and they are at exactly toddler height.',
+      'Decide where they are sleeping before you are tired, and set it up now.',
+      'Bring a couple of outlet covers and a roll of painter’s tape. The tape holds a cupboard shut, covers a socket, and tapes a blackout panel up.',
+    ],
+  },
+};
+
+/* ------------------------------------------------------------------
+ * DAYS OUT
+ * ------------------------------------------------------------------ */
+
+const OUT_DAYS = {
+  title: 'Days out and afternoons',
+  items: [
+    'Go early. Almost everything with a small child is better before eleven and worse after three.',
+    'One thing a day. Two things with a toddler is how a nice day becomes a bad one.',
+    'Find the changing table before you need it, when you arrive, not when it is urgent.',
+    'Restaurants: ask for the food to come when it comes rather than together, and ask for their food first. A toddler with bread is a toddler with a timer on them.',
+    'Sit somewhere you can leave from easily. The booth at the back is a trap.',
+    'Beaches and pools: shade, then sun cream, then water. Under six months should be kept out of direct sun rather than covered in cream.',
+    'Water is never a nearly. Within arm’s reach for anybody under five, and one named adult watching rather than everybody vaguely watching.',
+    'Leave while it is still going well. The whole skill is leaving twenty minutes before you want to.',
+  ],
+};
+
+/* ------------------------------------------------------------------
+ * THE BAG, BY AGE
+ * ------------------------------------------------------------------ */
+
+const OUT_BAGS = [
+  {
+    id: 'newborn',
+    label: 'Newborn and small baby',
+    max: 6,
+    items: [
+      'Diapers, double what you think, plus wipes and a changing mat',
+      'Two full changes of clothes, and one top for you',
+      'Muslins, more than one',
+      'Feeding kit: bottles and formula, or a cover if you want one, or nothing at all',
+      'A carrier, which beats a stroller almost everywhere that is not a pavement',
+      'A blanket that works as a mat, a sunshade and a cover',
+      'Pacifier and a spare, in a case',
+      'Hand sanitiser and a bag for the wet things',
+    ],
+  },
+  {
+    id: 'baby',
+    label: 'Sitting up to crawling',
+    max: 12,
+    items: [
+      'Everything above, and now snacks and a cup',
+      'A few small toys, and a clip so they do not end up on the floor',
+      'Something to chew, because everything is teething at this stage',
+      'A portable high chair strap or seat, which turns any chair into a place they can sit',
+      'A spare pacifier and a spare comforter if the real one is load bearing',
+    ],
+  },
+  {
+    id: 'toddler',
+    label: 'Toddler',
+    max: 48,
+    items: [
+      'Snacks, plural, and water',
+      'A change of clothes and a bag for the wet ones, well past potty training',
+      'A small sticker book or a pad and crayons, which weigh nothing',
+      'A comforter, if there is one',
+      'Sun cream and a hat in summer, gloves that stay on in winter',
+      'Plasters, because there is always a knee',
+      'Something familiar for the journey and something new for the hard bit',
+    ],
+  },
+  {
+    id: 'big',
+    label: 'School age and up',
+    max: 1000,
+    items: [
+      'Water, and more snacks than seems reasonable',
+      'A layer, because they will say they are not cold and then be cold',
+      'Something to do that is not a screen, and the screen',
+      'Headphones, so it is not everybody’s problem',
+      'A charged phone or a card with your number on it for anywhere crowded',
+      'Let them carry their own small bag. It is half the battle and they like it',
+    ],
+  },
+];
+
+function outBagForAge(months) {
+  if (typeof months !== 'number') return OUT_BAGS[1];
+  for (let i = 0; i < OUT_BAGS.length; i++) {
+    if (months < OUT_BAGS[i].max) return OUT_BAGS[i];
+  }
+  return OUT_BAGS[OUT_BAGS.length - 1];
+}
+
+/* Which section a parent of this age most likely came for, so the tab
+   they land on is the useful one. */
+function outFirstTab(months) {
+  if (typeof months !== 'number') return 'bag';
+  if (months < 12) return 'sleep';
+  return 'bag';
+}
+
+const OUT_SOURCES = [
+  { org: 'TSA', label: 'Breast milk, formula and juice are exempt from the liquids rule', url: 'https://www.tsa.gov/travel/frequently-asked-questions/breast-milk-formula-and-juice-exempt-3-1-1-liquids-rule' },
+  { org: 'TSA', label: 'Traveling with children', url: 'https://www.tsa.gov/travel/tsa-cares/traveling-children' },
+  { org: 'FAA', label: 'Flying with children and child restraint systems', url: 'https://www.faa.gov/travelers/fly_children' },
+  { org: 'CPSC', label: 'Federal infant sleep products safety standard', url: 'https://www.cpsc.gov/Newsroom/News-Releases/2022/CPSCs-New-Federal-Infant-Sleep-Products-Safety-Standard-Takes-Effect' },
+  { org: 'CPSC', label: 'Safe sleep, cribs and infant products', url: 'https://www.cpsc.gov/SafeSleep' },
+  { org: 'Royal Caribbean', label: 'Infant age policy, including the three sea day rule', url: 'https://www.royalcaribbean.com/faq/questions/international-age-policy' },
+  { org: 'Royal Caribbean', label: 'Children in diapers and the onboard pools', url: 'https://www.royalcaribbean.com/faq/questions/are-children-in-diapers-allowed-in-the-onboard-pools' },
+];
+
+const OUT_NOT_SPONSORED =
+  'Rental companies and products are named because being told what exists is useful. Nothing here is '
+  + 'sponsored and nobody has paid to be mentioned.';
+
+
+/* ===== src/data/privacy.js ===== */
+/**
+ * Ready Set Grow: One privacy page, instead of twelve
+ * ------------------------------------------------------------------
+ * WHY THIS FILE EXISTS
+ * She looked at the Fireflies screen and said, correctly, that it read
+ * like a safety briefing rather than a product. Four bullet points
+ * about what her light does not say, and a paragraph explaining why
+ * there is no map, sitting on a screen whose entire job is to make
+ * somebody at 3am feel less alone.
+ *
+ * That was not the only place. The app was announcing its own
+ * carefulness on the community screen, on the composer, in the
+ * memories section, in the situation block in Settings, and next to
+ * every product it named. Each one was written well and each one was
+ * reassuring, and stacked up they said something the app did not mean,
+ * which is that using this thing is a risk you should be thinking
+ * about constantly.
+ *
+ * So: it all moves here. One page, reachable from Settings and from
+ * her own profile, written properly and in full, and the screens
+ * themselves get at most one quiet line at the bottom pointing at it.
+ *
+ * THE RULE FOR EVERY OTHER SCREEN FROM NOW ON
+ * Say the reassuring thing once, in small type, at the bottom, and
+ * link here. Never lead with it. Never repeat it. A parent who wants
+ * the detail will come and read this page, and a parent who does not
+ * should never be made to.
+ *
+ * THIS PAGE IS NOT A LEGAL DOCUMENT and does not pretend to be one. It
+ * is a plain account of what the app does with what she puts into it.
+ * If the app ever takes money, adds advertising, or is sold, this page
+ * has to be rewritten before any of that ships, not after.
+ */
+
+const PRIV_TITLE = 'Privacy';
+
+const PRIV_SUB = 'What this app knows, where it goes, and who can see it.';
+
+const PRIV_INTRO =
+  'Plain language, no lawyers. If something here is not clear, that is a fault in this page rather '
+  + 'than in you, and it is worth telling us about.';
+
+const PRIV_SHORT = {
+  title: 'The short version',
+  items: [
+    'Everything about your children is yours alone. Nobody else can read it, including us in any ordinary sense.',
+    'Nothing you write is shared anywhere unless you choose to share that specific thing.',
+    'Your location is never asked for and never collected, anywhere in this app.',
+    'You can take all of it with you, and you can delete all of it.',
+    'There is no advertising here and nothing is sold to anybody.',
+  ],
+};
+
+const PRIV_SECTIONS = [
+  {
+    id: 'children',
+    title: 'Your children',
+    body: [
+      'Their names, birthdays, photos, milestones, logs, check ins and support lenses are stored against your account and nobody else’s. There is no path in this app that lets one account read another account’s children, and there is not supposed to be one.',
+      'If you are signed in, it syncs so the same information is on your phone and your laptop. If you are not, it stays on the one device.',
+      'Nothing about a child can become community content. That is built into the structure rather than promised: a post physically cannot carry a child’s identity, and the server refuses one that tries.',
+    ],
+  },
+  {
+    id: 'posts',
+    title: 'What you write',
+    body: [
+      'Everything you write starts private. A post on your own page is read by you and by nobody else.',
+      'Sharing something to the community is a separate decision you make for that one post, and you can take it back down afterwards.',
+      'Memories are private always. There is no way to share one, on purpose.',
+      'A shared post carries the username you chose and nothing else. Not your name, not your email, not your children.',
+    ],
+  },
+  {
+    id: 'community',
+    title: 'The community',
+    body: [
+      'Posts go up straight away rather than waiting for approval, because a room where every post waits on one person is not a room.',
+      'A narrow filter holds back posts containing medication doses, phone numbers and email addresses, for review rather than deletion. Those three because they are the ones that do real harm: a wrong dose passed between strangers, and contact details that move a conversation somewhere with no protections at all.',
+      'Anything can be reported, and anybody can be blocked. Blocking is held on your own device, so who you have blocked is nobody else’s business including ours.',
+    ],
+  },
+  {
+    id: 'fireflies',
+    title: 'Fireflies',
+    body: [
+      'A lit firefly is two numbers: when it goes out, and how many people have tapped it. That is the whole record.',
+      'It carries no name, no username, no children, no words and no place. Other people see a light.',
+      'There is no map, and that is deliberate. Most people awake at 3am with a baby are alone in a house, and a map saying so near a real address is a useful thing for the wrong person to have. Knowing somebody else is up is the entire point, and a light says that perfectly well without saying where.',
+      'Your light goes out on its own, and you can put it out sooner at any time.',
+    ],
+  },
+  {
+    id: 'location',
+    title: 'Location',
+    body: [
+      'Never asked for, never collected, never stored, never sent. Not for Fireflies, not for the community, not for anything.',
+      'There is no feature in this app that needs it, and the ones that might have wanted it were built a different way on purpose.',
+    ],
+  },
+  {
+    id: 'willow',
+    title: 'Willow',
+    body: [
+      'What you say to Willow goes to Google’s AI service to be answered, which is how she works at all.',
+      'She is given what is useful for your question, such as your child’s age and which lenses you have on, and your own recent logs if you asked about yourself. She is not given your full history.',
+      'Your conversations with her are kept on your own device rather than on a server.',
+      'She is not a doctor, she refuses to give medication doses, and she will point you at real help rather than handle an emergency herself.',
+    ],
+  },
+  {
+    id: 'yours',
+    title: 'Taking it with you, and deleting it',
+    body: [
+      'You can export your logs at any time from the Logs screen, as plain text you keep.',
+      'Deleting a child removes their record. Deleting your account removes everything attached to it.',
+      'A post you take down comes down. A post a moderator removes stays out of sight rather than being recoverable by you.',
+    ],
+  },
+  {
+    id: 'money',
+    title: 'Money, advertising and recommendations',
+    body: [
+      'There is no advertising in this app and no plan for any.',
+      'Nothing here is sponsored. Where a product is named, such as a bottle or a pacifier, it is named because being told what exists is genuinely useful, and nobody has paid for it to be there.',
+      'Where a claim about a product rests on research the manufacturer funded, the app says so.',
+      'If that ever changes, it will be said plainly on this page and on the screen in question, in the same size type as everything else.',
+    ],
+  },
+  {
+    id: 'notdoctor',
+    title: 'What this app is not',
+    body: [
+      'It is not medical advice and it does not replace your pediatrician, your midwife or your IBCLC.',
+      'Support lenses are not diagnoses and never become one. Turning one on changes what the app puts in front of you and nothing else.',
+      'Nothing in the app will ever hide a reason to get seen. Softening the wording is allowed. Removing the guidance is not.',
+    ],
+  },
+];
+
+const PRIV_CONTACT = {
+  title: 'Asking about any of this',
+  body:
+    'If you want to know what is held about you, or you want it gone, or something on this page does '
+    + 'not match what you are seeing in the app, say so and it gets answered properly.',
+};
+
+const PRIV_FOOTER =
+  'This page is written to be read rather than to protect anybody legally. It describes how the app '
+  + 'actually behaves today.';
+
+/* The one line other screens are allowed to show. Any screen that
+   wants to reassure somebody uses this, in small type, at the bottom,
+   once. See the header of this file for why. */
+const PRIV_LINK_LINE = 'What this app keeps, and what it never does, is all in one place.';
 
 
 /* ===== src/data/breakingPoint.js ===== */
@@ -24256,6 +24825,7 @@ const store = {
 
   /* Sub tabs on the feeding and safety screens. */
   feedTab: 'stance',
+  outTab: null,
   safetyTab: 'cpr',
 
   /* Profile screen drafts, so a half typed child does not vanish on
@@ -24313,7 +24883,7 @@ const state = {};
  'profileEdit', 'msEdit', 'ciEdit', 'ciOpen', 'photoBusy', 'photoError',
  'liftUsed', 'liftDate', 'pumpTab', 'pumpGoal',
  'pumpProblem', 'flangeMm', 'ppTab', 'ppStage', 'askQuery', 'askAsked',
- 'tab', 'view', 'undGroup', 'lensBand', 'feedTab', 'safetyTab',
+ 'tab', 'view', 'undGroup', 'lensBand', 'feedTab', 'outTab', 'safetyTab',
  'logDraft', 'draftChildName', 'draftChildBday'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -25286,6 +25856,11 @@ function tabList() {
     { id: 'community', label: 'Community', icon: 'people' },
     { id: 'logs', label: 'Logs', icon: 'note' },
     { id: 'home', label: 'Home', icon: 'home', center: true },
+    /* Sixth tab, which means Home is no longer exactly in the middle.
+       Worth it: going places is a whole category of thing this app
+       had nothing to say about, and buried two screens down nobody
+       would ever find it. */
+    { id: 'outings', label: 'Outings', icon: 'bag' },
     { id: 'profile', label: 'Profile', icon: 'user' },
     { id: 'settings', label: 'Settings', icon: 'gear' },
   ];
@@ -25312,7 +25887,7 @@ function routeKey() {
     v ? v.type + ':' + v.id : '-',
     store.activeChildId || '-',
     store.profileWho || '-',
-    state.feedTab, state.safetyTab, state.ppTab, state.pumpTab,
+    state.feedTab, state.outTab, state.safetyTab, state.ppTab, state.pumpTab,
     /* Which room of Community she is in. Here so switching to the sky
        starts at the top of the sky rather than partway down the feed
        she was reading. */
@@ -25444,6 +26019,7 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'feeding') html = screenFeeding(c);
   else if (v && v.type === 'screen' && v.id === 'safety') html = screenSafety(c);
   else if (v && v.type === 'screen' && v.id === 'signs') html = screenSigns(c);
+  else if (v && v.type === 'screen' && v.id === 'privacy') html = screenPrivacy(c);
   else if (v && v.type === 'screen' && v.id === 'plan') html = screenPlan(c);
   else if (v && v.type === 'screen' && v.id === 'sleep') html = screenSleep(c);
   else if (v && v.type === 'screen' && v.id === 'development') html = screenDevelopment(c);
@@ -25486,6 +26062,7 @@ function render() {
      her here, a child's circle on Home puts them here. */
   else if (state.tab === 'profile') html = screenProfileTab(c);
   else if (state.tab === 'community') html = screenCommunity(c);
+  else if (state.tab === 'outings') html = screenOutings(c);
   else if (state.tab === 'logs') html = screenLogsHub(c);
   /* Home is hers and never asks which child you mean, which is the whole
      point of it being the middle tab. */
@@ -27819,6 +28396,242 @@ function screenSigns(c) {
   </div>`;
 }
 
+/* -----------------------------------------------------------------
+   OUTINGS
+
+   Its own tab, because going places with a child is a whole category
+   this app had nothing to say about, and because it was the thing she
+   had not thought of and immediately recognised as missing.
+
+   The order of the tabs is deliberate. What not to carry comes before
+   what to carry, because renting at the other end changes the shape of
+   every other decision. And sleeping away from home leads for a parent
+   of a baby, because that is the one where improvising is dangerous
+   rather than just annoying.
+   ----------------------------------------------------------------- */
+
+function screenOutings(c) {
+  const months = c.months;
+  const bag = outBagForAge(months);
+  const name = (c.child && c.child.name) ? c.child.name : '';
+
+  const tabs = [
+    { id: 'bag', label: 'What to bring' },
+    { id: 'rent', label: 'Rent, do not haul' },
+    { id: 'sleep', label: 'Sleeping away' },
+    { id: 'fly', label: 'Flying' },
+    { id: 'road', label: 'Road trips' },
+    { id: 'cruise', label: 'Cruises' },
+    { id: 'stay', label: 'Hotels and rentals' },
+    { id: 'days', label: 'Days out' },
+  ];
+  let tab = state.outTab || outFirstTab(months);
+  if (!tabs.some((t) => t.id === tab)) tab = 'bag';
+
+  const sourceBlock = `
+    <div class="dsec">
+      <h4>Where this comes from</h4>
+      <p class="tiny" style="margin:0 0 9px">${esc(OUT_NOT_SPONSORED)}</p>
+      ${OUT_SOURCES.map((sc) => `
+        <p class="tiny" style="margin:0 0 6px">
+          <strong style="color:var(--deep)">${esc(sc.org)}</strong>
+          <a href="${esc(sc.url)}" target="_blank" rel="noopener">${esc(sc.label)}</a>
+        </p>`).join('')}
+    </div>`;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <p class="eyebrow">${esc(OUT_TITLE)}</p>
+    <h1 class="title">Going places with them.</h1>
+    <p class="sub">${esc(OUT_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(OUT_INTRO)}</p>
+    </div>
+
+    <div class="chips" style="margin:12px 0">
+      ${tabs.map((t) => `
+        <button class="chip" data-sub="outTab" data-val="${esc(t.id)}"
+                aria-pressed="${t.id === tab}">${esc(t.label)}</button>`).join('')}
+    </div>
+
+    ${tab === 'bag' ? `
+      <div class="dsec">
+        <h4>${esc(bag.label)}${name ? ', for ' + esc(name) : ''}</h4>
+        <p class="tiny" style="margin:0 0 10px">The bag that covers an afternoon out. Everything
+        longer is the same list with more of it.</p>
+        ${list(bag.items)}
+      </div>
+
+      <div class="dsec">
+        <h4>Every age, if you want to look ahead</h4>
+        ${OUT_BAGS.filter((b) => b.id !== bag.id).map((b) => `
+          <div class="quote">
+            <p class="sit">${esc(b.label)}</p>
+            <p class="why" style="margin-top:4px">${esc(b.items.slice(0, 3).join('. '))}.</p>
+          </div>`).join('')}
+      </div>` : ''}
+
+    ${tab === 'rent' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(OUT_RENT.headline)}</p>
+      </div>
+      <div class="dsec">
+        <h4>${esc(OUT_RENT.title)}</h4>
+        ${OUT_RENT.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <p class="sect">Worth renting rather than carrying</p>
+        ${list(OUT_RENT.worthRenting)}
+        <p class="sect">Bring these anyway</p>
+        ${list(OUT_RENT.bringAnyway)}
+      </div>
+      ${sourceBlock}` : ''}
+
+    ${tab === 'sleep' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(OUT_SLEEP.headline)}</p>
+      </div>
+      <div class="dsec">
+        <h4>${esc(OUT_SLEEP.theRule.label)}</h4>
+        ${OUT_SLEEP.theRule.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+      <div class="dsec">
+        <h4>${esc(OUT_SLEEP.thePod.label)}</h4>
+        ${OUT_SLEEP.thePod.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+      <div class="dsec">
+        <h4>${esc(OUT_SLEEP.darkness.label)}</h4>
+        ${OUT_SLEEP.darkness.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+      <div class="dsec">
+        <h4>${esc(OUT_SLEEP.theRoom.label)}</h4>
+        ${OUT_SLEEP.theRoom.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout" style="margin-top:4px"><p style="margin:0">${esc(OUT_SLEEP.hotelCribs)}</p></div>
+      </div>
+      ${sourceBlock}` : ''}
+
+    ${tab === 'fly' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(OUT_FLY.headline)}</p>
+      </div>
+      <div class="dsec">
+        <h4>${esc(OUT_FLY.milkAndFormula.label)}</h4>
+        ${list(OUT_FLY.milkAndFormula.items)}
+      </div>
+      <div class="dsec">
+        <h4>${esc(OUT_FLY.carSeat.label)}</h4>
+        ${list(OUT_FLY.carSeat.items)}
+      </div>
+      <div class="dsec">
+        <h4>${esc(OUT_FLY.practical.label)}</h4>
+        ${list(OUT_FLY.practical.items)}
+      </div>
+      ${sourceBlock}` : ''}
+
+    ${tab === 'road' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(OUT_ROAD.headline)}</p>
+      </div>
+      <div class="dsec">
+        <h4>The car seat part, which does not relax</h4>
+        ${list(OUT_ROAD.safety)}
+      </div>
+      <div class="dsec">
+        <h4>Making the drive work</h4>
+        ${list(OUT_ROAD.practical)}
+      </div>
+      <button class="btn ghost sm" style="width:100%;margin-top:4px" data-go="screen" data-id="safety">
+        CPR, choking and what to do if something happens
+      </button>` : ''}
+
+    ${tab === 'cruise' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(OUT_CRUISE.headline)}</p>
+      </div>
+      <div class="dsec">
+        <h4>The rules that are enforced at the terminal</h4>
+        ${list(OUT_CRUISE.rules)}
+      </div>
+      <div class="dsec">
+        <h4>What the ship already has</h4>
+        ${list(OUT_CRUISE.provided)}
+      </div>
+      <div class="dsec">
+        <h4>Worth knowing</h4>
+        ${list(OUT_CRUISE.worthKnowing)}
+      </div>
+      ${sourceBlock}` : ''}
+
+    ${tab === 'stay' ? `
+      <div class="dsec">
+        <h4>${esc(OUT_STAY.ask.label)}</h4>
+        ${list(OUT_STAY.ask.items)}
+      </div>
+      <div class="dsec">
+        <h4>${esc(OUT_STAY.babyproof.label)}</h4>
+        ${list(OUT_STAY.babyproof.items)}
+      </div>` : ''}
+
+    ${tab === 'days' ? `
+      <div class="dsec">
+        <h4>${esc(OUT_DAYS.title)}</h4>
+        ${list(OUT_DAYS.items)}
+      </div>` : ''}
+  </div>`;
+}
+
+/* -----------------------------------------------------------------
+   PRIVACY
+
+   One page, so that no other screen has to keep announcing how careful
+   it is being. See the header of src/data/privacy.js for what this
+   replaced and why.
+   ----------------------------------------------------------------- */
+
+function screenPrivacy(c) {
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">${esc(PRIV_TITLE)}</h1>
+    <p class="sub">${esc(PRIV_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="bodytext">${esc(PRIV_INTRO)}</p>
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(PRIV_SHORT.title)}</h4>
+      ${list(PRIV_SHORT.items)}
+    </div>
+
+    ${PRIV_SECTIONS.map((sec) => `
+      <div class="dsec">
+        <h4>${esc(sec.title)}</h4>
+        ${sec.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>`).join('')}
+
+    <div class="dsec">
+      <h4>${esc(PRIV_CONTACT.title)}</h4>
+      <p class="bodytext">${esc(PRIV_CONTACT.body)}</p>
+    </div>
+
+    <p class="tiny" style="margin-top:6px">${esc(PRIV_FOOTER)}</p>
+  </div>`;
+}
+
+/* The one line any other screen may use, small and at the bottom. */
+function privacyLine() {
+  return `
+  <button class="tiny" data-go="screen" data-id="privacy"
+    style="display:block;width:100%;text-align:center;margin-top:14px;padding:8px;
+           background:none;border:0;color:var(--muted);text-decoration:underline">
+    ${esc(PRIV_LINK_LINE)}
+  </button>`;
+}
+
 function screenSafety(c) {
   const months = c.months;
   const tab = state.safetyTab || 'cpr';
@@ -29215,11 +30028,50 @@ async function flyLight() {
     /* merge, so relighting keeps the glow count from earlier tonight
        rather than resetting it to zero and losing the me toos. */
     await fs.setDoc(fs.doc(cloud.db, 'fireflies', myUid()), { out: out, lit: Date.now() }, { merge: true });
+    /* Somebody who just lit their light is awake, alone, and reached
+       for a screen to feel less like the only one. That is the exact
+       moment Willow should say something. */
+    flyNudge();
   } catch (err) {
     fly.error = FIREFLY_OFFLINE;
   }
   fly.busy = false;
   render();
+}
+
+/* Willow's check in after the light goes up. Same machinery as every
+   other nudge she makes: a written line on screen at once, rewritten
+   by her in the background if she can manage it. It respects the daily
+   nudge count, because three of these in one night would be somebody
+   pestering rather than somebody there. */
+function flyNudge() {
+  try {
+    if (nudgeCountToday() >= NUDGE_DAILY_MAX) return;
+    const n = nudgeState();
+    n.lastAt = Date.now();
+    n.count = nudgeCountToday() + 1;
+    n.at = Date.now();
+    n.gone = false;
+    n.reason = 'lit';
+    n.text = nudgeWritten('lit', ciToday() + String(Date.now()));
+    n.from = 'written';
+    n.opener = NUDGE_OPENERS.lit || '';
+    flushStore();
+    if (typeof liftWrite === 'function') {
+      liftWrite('nudge:lit:' + Date.now(), {
+        reason: 'lit',
+        label: '',
+        parentName: (store.parent.name || '').trim().split(/\s+/)[0] || '',
+      }, (text) => {
+        const line = String(text || '').trim().replace(/^["']|["']$/g, '');
+        if (!line || line.length > 200) return;
+        const cur = nudgeState();
+        if (cur.reason !== 'lit') return;
+        cur.text = line;
+        cur.from = 'willow';
+      });
+    }
+  } catch (err) { /* the written line is already there */ }
 }
 
 async function flyOut() {
@@ -29318,29 +30170,26 @@ function fliesBlock() {
 
     <div class="card" style="margin-bottom:10px">
       ${mine ? `
-        <p class="bodytext">${esc(firefliesMineLine(left))}</p>
-        <p class="tiny" style="margin-top:5px">${esc(firefliesGlowLine(mine.glow))}</p>
-        <button class="btn ghost" style="width:100%;margin-top:11px"
+        <p style="font-family:var(--serif);font-size:17px;color:var(--ink);margin:0">
+          ${esc(fireflyAfterLine(String(mine.out)))}</p>
+        <p class="bodytext" style="margin-top:6px">${esc(firefliesMineLine(left))}</p>
+        <p class="tiny" style="margin-top:4px">${esc(firefliesGlowLine(mine.glow))}</p>
+        <button class="btn ghost" style="width:100%;margin-top:12px"
           data-fly="out" ${fly.busy ? 'disabled' : ''}>${esc(FIREFLY_OUT)}</button>
       ` : `
-        <p class="bodytext">${esc(FIREFLY_WHAT[0])}</p>
+        ${FIREFLY_WHAT.map((t) => `<p class="bodytext" style="margin:0 0 7px">${esc(t)}</p>`).join('')}
         <button class="btn" style="width:100%;margin-top:11px"
           data-fly="light" ${fly.busy ? 'disabled' : ''}>${esc(FIREFLY_LIGHT)}</button>
       `}
     </div>
 
     <div class="dsec">
-      <h4>How this works</h4>
-      ${FIREFLY_WHAT.map((t) => `<p class="bodytext" style="margin:0 0 9px">${esc(t)}</p>`).join('')}
+      <h4>${esc(FIREFLY_NIGHT.title)}</h4>
+      ${FIREFLY_NIGHT.body.map((t) => `<p class="bodytext" style="margin:0 0 9px">${esc(t)}</p>`).join('')}
     </div>
 
-    <div class="dsec">
-      <h4>What your light does not say</h4>
-      ${list(FIREFLY_PRIVACY)}
-      <div class="callout" style="margin-top:10px">
-        <p style="margin:0">${esc(FIREFLY_WHY_NO_MAP)}</p>
-      </div>
-    </div>`;
+    <p class="tiny" style="text-align:center;margin-top:12px">${esc(FIREFLY_QUIET_NOTE)}</p>
+    ${privacyLine()}`;
 }
 
 function feedOn() {
@@ -29787,8 +30636,13 @@ function screenCommunity(c) {
   ${cornerLeaves()}
   <div class="sc-head">
     <p class="eyebrow">Community</p>
-    <h1 class="title">${esc(FEED_TITLE)}</h1>
-    <p class="sub">${esc(FEED_SUB)}</p>
+    ${tab === 'flies' ? `
+      <h1 class="title">${esc(FIREFLY_SUB)}</h1>
+      <p class="sub">Every light is somebody up with a child.</p>
+    ` : `
+      <h1 class="title">${esc(FEED_TITLE)}</h1>
+      <p class="sub">${esc(FEED_SUB)}</p>
+    `}
   </div>
   <div class="sc">
 
@@ -29925,10 +30779,7 @@ function screenCommunity(c) {
       <ul class="dlist">${COMMUNITY_RULES.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>
     </div>
 
-    <div class="card flat">
-      <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} What is never shown here</p>
-      <ul class="dlist" style="margin-top:5px">${FEED_PRIVACY.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>
-    </div>
+    ${privacyLine()}
 
     <p class="disclaimer">
       Other parents are not a substitute for your pediatrician. Anything in here is one
@@ -30774,6 +31625,8 @@ function screenSettings() {
       'data-go="screen" data-id="addchild"')}
 
     <p class="sect">This app</p>
+    ${childRow('shield', esc(PRIV_TITLE), esc(PRIV_SUB),
+      'data-go="screen" data-id="privacy"')}
     ${(() => {
       const stamp = buildStamp();
       return `
@@ -32445,7 +33298,7 @@ function caretakerBlock() {
   <div class="card" style="margin-bottom:10px">
     ${REFERS_TO.map((r) => tickRow(p.refersTo === r.id, r.label, r.help,
       `data-refersto="${esc(r.id)}"`)).join('')}
-    <p class="tiny" style="margin-top:9px">${esc(REFERS_TO_NOTE)}</p>
+    <p class="tiny" style="margin-top:9px">${esc(REFERS_TO_SHORT)}</p>
   </div>`;
 }
 
@@ -32507,7 +33360,7 @@ function situationBlock() {
       `data-sit="conditions" data-id="${esc(r.id)}"`)).join('')}
   </div>
 
-  <p class="tiny" style="margin-top:2px">${icon('shield', 11, 'var(--sage)')} ${esc(SITUATION_PRIVACY)}</p>`;
+  <p class="tiny" style="margin-top:2px">${esc(SITUATION_PRIVACY)}</p>`;
 }
 
 /* -----------------------------------------------------------------
@@ -34037,6 +34890,7 @@ function screenMyProfile() {
       ` : `
         <button class="btn ghost" data-edit="me">${icon('camera', 14, 'var(--deep)')} Change photo</button>
         <button class="btn ghost" data-tab="settings">${icon('gear', 14, 'var(--deep)')} Edit details</button>
+        <button class="btn ghost" data-go="screen" data-id="privacy">${icon('shield', 14, 'var(--deep)')} Privacy</button>
       `}
     </div>
 
