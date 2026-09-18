@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-18 17:15">
+<meta name="rsg-build" content="2026-09-18 17:26">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -1364,7 +1364,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-18 17:15';
+const BUILD_STAMP = '2026-09-18 17:26';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -22152,11 +22152,13 @@ const OUT_BAGS = [
     max: 1000,
     items: [
       'Water, and more snacks than seems reasonable',
-      'A layer, because they will say they are not cold and then be cold',
+      'A layer. They will say they are not cold and then be cold',
       'Something to do that is not a screen, and the screen',
       'Headphones, so it is not everybody’s problem',
-      'A charged phone or a card with your number on it for anywhere crowded',
-      'Let them carry their own small bag. It is half the battle and they like it',
+      'A charged phone, or a card in their pocket with your number written on it for anywhere crowded',
+      'Any medication they take, in its own labelled box rather than loose',
+      'A little cash, so they are not stuck if a phone dies',
+      'Let them pack and carry their own small bag. It is half the battle and they like it',
     ],
   },
 ];
@@ -22184,6 +22186,470 @@ const OUT_SHARED = {
    list is a list that drifts. */
 function outItemId(listId, index) {
   return String(listId) + ':' + String(index);
+}
+
+/* PACKING FOR THE CHILD YOU ACTUALLY HAVE.
+ *
+ * She asked for this and she is right that it is the difference
+ * between an app that mentions inclusion and one that does anything
+ * about it. A generic packing list is written for an imaginary average
+ * child, and the parent who most needs a list is the one whose child
+ * is not that.
+ *
+ * The lenses are already set per child, so the packing list knows. A
+ * child with the autism lens on gets ear defenders and a chew on their
+ * list. A deaf child gets spare batteries and a drying kit. Nobody has
+ * to remember to go and look somewhere else.
+ *
+ * THE RULE THIS IS WRITTEN UNDER, SAME AS EVERY LENS IN THIS APP
+ * These are things that help, not things a diagnosis requires. Nothing
+ * here says your child has anything. It says parents of children who
+ * need this kind of support have found these worth having in the bag,
+ * which is true and useful and not a label.
+ *
+ * WHY IT IS ADDITIVE RATHER THAN A REPLACEMENT
+ * A child with two lenses on gets both lists merged, with duplicates
+ * removed, on top of their ordinary age list. Nothing is taken away,
+ * because a child who needs ear defenders still needs a change of
+ * clothes.
+ */
+const OUT_LENS_PACK = {
+  adhd: {
+    label: 'Because sitting still is hard work',
+    items: [
+      'Something for their hands. A fidget, a stress ball, a bit of blu tack',
+      'More snacks than the age list says. Medication can flatten appetite, and then it comes back all at once',
+      'Their medication in its own labelled box, with the timing written down if somebody else might be giving it',
+      'A plan they have heard out loud. Where you are going, how long, what happens after',
+      'Somewhere to run before you need them to sit. Ten minutes of moving buys you an hour of still',
+    ],
+  },
+  autism: {
+    label: 'Because the world is louder here',
+    items: [
+      'Ear defenders, and headphones as well if they use both for different things',
+      'Sunglasses or a cap. Fluorescent light and glare are as much of a problem as noise',
+      'A chew, or whatever they use for that',
+      'The comfort item, and a spare if one exists',
+      'Familiar food. Somewhere new is not the day to find out what they will eat',
+      'The plan, as pictures or a written list they can hold',
+      'Something with their name and your number on it, or a tag, for anywhere crowded',
+      'A decided quiet place and a decided way out, before you need either',
+    ],
+  },
+  pda: {
+    label: 'Because being told is the hard part',
+    items: [
+      'Real choices packed in advance. Two snacks, two activities, two hats',
+      'The plan offered rather than announced, and loosely',
+      'A way out that is theirs to take rather than yours to impose',
+      'Extra time built in, so nothing has to become a demand',
+    ],
+  },
+  sensory: {
+    label: 'Because how it feels decides how it goes',
+    items: [
+      'Ear defenders',
+      'The clothes that work. Seamless socks, the soft label free top, the one pair of trousers',
+      'A spare set of the same clothes rather than different ones',
+      'Familiar food and a familiar cup',
+      'Something heavy for their lap, or the weighted thing if they have one',
+      'Wipes, for the texture problems as much as the mess',
+    ],
+  },
+  communication: {
+    label: 'Because being understood should not depend on the room',
+    items: [
+      'Their communication device, charged, plus the charger and a battery pack',
+      'A paper backup. Picture cards or a printed board, for when the device dies or gets wet',
+      'A card you can hand to somebody explaining how your child communicates',
+      'Their signs, if you sign, and the family knowing the ten that matter most',
+    ],
+  },
+  speech: {
+    label: 'Because strangers will not understand them yet',
+    items: [
+      'Picture cards or a phone with their pictures on it',
+      'A card explaining how they communicate, so you are not translating for every stranger',
+      'Extra time for ordering, asking and answering',
+    ],
+  },
+  selectiveMutism: {
+    label: 'Because speaking to strangers may not be possible today',
+    items: [
+      'A written card they can hand over instead of speaking',
+      'Their order or their question written down before you arrive',
+      'An agreed signal that means take over for me',
+      'No expectation packed at all. This is the one that matters',
+    ],
+  },
+  auditoryProcessing: {
+    label: 'Because noise takes the words away',
+    items: [
+      'Ear defenders or noise reducing earbuds for busy places',
+      'The plan written down, since a spoken plan in a loud room did not happen',
+      'Extra time, and a habit of checking rather than assuming',
+    ],
+  },
+  deafHoh: {
+    label: 'Because the equipment has to survive the trip',
+    items: [
+      'Spare batteries, more than you think, and the charger for rechargeables',
+      'A drying kit or a dehumidifier pot. Heat, damp and swimming are hard on aids and processors',
+      'Retention clips, toupee tape or a headband, especially for water and wind',
+      'The remote microphone if they use one, charged',
+      'Spare cables, coils, domes or earmoulds. The small part that fails is always the one you did not bring',
+      'A waterproof case or a dry bag for anything going near water',
+      'Your audiologist details, and the make and model written down',
+      'Captions downloaded rather than streamed, for anything they will watch on the way',
+      'A card explaining that your child is deaf, for staff, drivers and anybody with a whistle',
+    ],
+  },
+  blindLowVision: {
+    label: 'Because the space has to be learned, not seen',
+    items: [
+      'Their cane, and a spare tip',
+      'Familiar toys that work by touch and sound rather than by looking',
+      'Sunglasses or a brimmed hat. Light sensitivity is very common and glare outdoors is exhausting',
+      'A description of where you are going, talked through before you get there',
+      'Tactile markers. A few bump dots or a bit of textured tape to mark their bed, their cup, the bathroom door',
+      'Anything high contrast that helps. Their own dark plate, a bright cup',
+      'Their own bedding, since the room will be learned by touch rather than by sight',
+    ],
+  },
+  downSyndrome: {
+    label: 'Because the day needs more room in it',
+    items: [
+      'Extra time, built into the plan rather than hoped for',
+      'Signs or picture cards, if you use them',
+      'Familiar food and their own cup or straw cup',
+      'A buggy or carrier for longer distances than you would expect at their age. Low tone makes walking tiring',
+      'A letter from your care team if there is a heart, thyroid or airway issue, and the medication list',
+      'Spare clothes past the age the ordinary list would suggest',
+    ],
+  },
+  motor: {
+    label: 'Because getting about takes more here',
+    items: [
+      'A buggy, carrier or wheelchair for further than they would usually manage',
+      'Their adaptive cutlery, cup or seat insert',
+      'Somewhere supported to sit, rather than assuming a chair will work',
+      'Shoes or splints they actually walk in, plus a spare pair of socks',
+      'Plan the route for the surface, not the distance. Cobbles and sand are a different trip',
+    ],
+  },
+  tics: {
+    label: 'Because tired and watched both make it worse',
+    items: [
+      'Water. A lot of vocal tics get worse when a throat is dry',
+      'An agreed quiet place to go if it gets loud, without anybody making it a thing',
+      'A card or a sentence you have both agreed on for strangers who stare',
+      'Rest built into the day, since tiredness is the biggest driver there is',
+    ],
+  },
+  anxiety: {
+    label: 'Because knowing is most of it',
+    items: [
+      'The plan, told in advance and in order, and a photo of where you are going',
+      'A comfort item, whatever age they are',
+      'An agreed way out, and an agreed signal for needing it',
+      'Something to do with their hands for the waiting parts',
+      'Food and water, since hunger turns into panic faster than anyone expects',
+    ],
+  },
+  ocd: {
+    label: 'Because a strange place raises the volume',
+    items: [
+      'Anything you already use for the hard moments, packed rather than left at home',
+      'Extra time for the parts that take longer',
+      'Their own soap or towel if that is one of the ones that matters',
+    ],
+  },
+  emotionalRegulation: {
+    label: 'Because the fall happens fast',
+    items: [
+      'Food and water within reach, always, and earlier than seems necessary',
+      'A decided place to go to come down, chosen when you arrive rather than mid meltdown',
+      'The comfort item',
+      'A shorter day than you planned. This is the pack item people forget',
+    ],
+  },
+  bigChanges: {
+    label: 'Because the change is the difficult bit',
+    items: [
+      'The plan in advance, with the parts that will be different named out loud',
+      'Something from home that is coming too and is theirs',
+      'The routine kept in the same order even when the timing slips',
+      'Photos of where you are going, looked at before you leave',
+    ],
+  },
+  executiveFunction: {
+    label: 'Because holding the steps is the hard part',
+    items: [
+      'A packing list they tick themselves, which is what this screen is',
+      'A written list of what is happening, in order, that they keep',
+      'A labelled bag per day or per activity, rather than one bag to rummage in',
+      'Photos of where you put things',
+    ],
+  },
+  learningDifferences: {
+    label: 'Because reading the signs is somebody else’s job today',
+    items: [
+      'Anything they need read aloud already dealt with. Tickets, times, menus checked in advance',
+      'Their reading tool if they use one, and its charger',
+      'A checklist in pictures rather than words',
+    ],
+  },
+  prematurity: {
+    label: 'Because corrected age is the age that counts',
+    items: [
+      'Pack for their corrected age, not the date on the birth certificate',
+      'Anything medical, in the cabin bag and never checked',
+      'Their feeding kit exactly as at home, including the specific bottle',
+      'A note of their corrected age and any ongoing care, for anybody who needs it',
+      'More caution about crowds and germs in the first winter than an ordinary list assumes',
+    ],
+  },
+  medicalComplexity: {
+    label: 'Because running out is not an option',
+    items: [
+      'Medication and supplies for twice the days you are away',
+      'Everything in the cabin bag. Nothing medical goes in the hold, ever',
+      'A written list of conditions, medications and doses, and a photo of it on two phones',
+      'A letter from your team, especially for flying with equipment or liquids',
+      'Prescriptions in original labelled boxes',
+      'Chargers, spare batteries, and the right plug adapter for any equipment',
+      'The nearest hospital and pharmacy to where you are staying, looked up before you go',
+      'Your insurance details and any prior authorisation, on paper as well as on a phone',
+    ],
+  },
+  gifted: {
+    label: 'Because boredom is the risk',
+    items: [
+      'Something harder than seems age appropriate. They will finish the easy thing on the way there',
+      'A book well above their level',
+      'A real question to think about for the journey',
+    ],
+  },
+  exploring: {
+    label: 'Because you are still working it out',
+    items: [
+      'Ear defenders are worth trying even if you are not sure. They are cheap and they either help or they do not',
+      'A comfort item, whatever their age',
+      'A shorter day than you planned, and a way out',
+      'A note on your phone of what worked and what did not. That note is how you find out',
+    ],
+  },
+};
+
+/* One merged list for a child, from whichever lenses they have on.
+   Additive, deduplicated, and never a replacement for the age list.
+
+   ON THE DEDUPLICATION, WHICH TOOK TWO GOES.
+   A child with autism and sensory both on was getting "Ear defenders"
+   twice, because autism says "Ear defenders, and headphones as well if
+   they use both" and sensory just says "Ear defenders". So the first
+   attempt keyed on the opening fourteen characters, which merged those
+   two correctly and also merged five pairs that are genuinely
+   different items, such as "A card explaining how they communicate"
+   and "A card explaining that your child is deaf". Losing the second
+   of those for a child who is deaf AND uses a device is exactly the
+   kind of quiet failure this whole feature exists to avoid.
+
+   So it merges only when one line is actually the start of the other,
+   which is true for the ear defenders case and false for the cards.
+   Where they do overlap, the longer wording wins, since it is the one
+   carrying the extra detail. */
+function outLensPack(lensIds) {
+  const norm = (t) => String(t).toLowerCase().replace(/[^a-z]/g, '');
+  const kept = [];
+  (lensIds || []).forEach((id) => {
+    const entry = OUT_LENS_PACK[id];
+    if (!entry) return;
+    entry.items.forEach((line) => {
+      const a = norm(line);
+      if (!a) return;
+      for (let i = 0; i < kept.length; i++) {
+        const b = norm(kept[i]);
+        if (a === b || a.indexOf(b) === 0 || b.indexOf(a) === 0) {
+          /* Same item, said at two lengths. Keep the fuller one. */
+          if (a.length > b.length) kept[i] = line;
+          return;
+        }
+      }
+      kept.push(line);
+    });
+  });
+  return kept;
+}
+
+function outLensLabels(lensIds) {
+  return (lensIds || [])
+    .filter((id) => OUT_LENS_PACK[id])
+    .map((id) => OUT_LENS_PACK[id].label);
+}
+
+const OUT_LENS_NOTE =
+  'These are on this list because of the support lenses you have turned on for them. Nothing here '
+  + 'is a requirement and nothing here is a diagnosis. They are the things parents in the same '
+  + 'situation say they wish somebody had told them to pack.';
+
+const OUT_LENS_NONE =
+  'If your child needs something the standard list does not cover, turn on a support lens for them '
+  + 'under Understanding and this list will change to match.';
+
+/* A CHECKLIST PER TRIP, NOT ONE LIST FOR EVERYTHING.
+ *
+ * Her words: it is not just one list, it is a list for flying, for
+ * cruising, for days out, for road trips, for everything. She is
+ * right. Packing for an afternoon at the park and packing for a seven
+ * night cruise share maybe a third of their items, and one list that
+ * tries to cover both is wrong for both.
+ *
+ * SO THE SHAPE IS: pick the trip, and the checklist is built from
+ * three layers.
+ *   1. What everybody needs for that kind of trip
+ *   2. What each child needs at their own age
+ *   3. What each child needs because of the lenses they have on
+ *
+ * Ticks are saved against the trip as well as the list, so packing for
+ * a cruise does not quietly tick off your day bag.
+ */
+const OUT_TRIPS = [
+  {
+    id: 'day',
+    label: 'An afternoon out',
+    everyoneLabel: 'Just for today',
+    blurb: 'The park, the shops, somebody’s house. Back before bedtime.',
+    everyone: [],
+    perChild: [],
+    note: 'Keep this bag packed between outings and restock it when you get home rather than when you leave.',
+  },
+  {
+    id: 'road',
+    label: 'A road trip',
+    everyoneLabel: 'Because you are driving',
+    blurb: 'Hours in the car, with stops.',
+    everyone: [
+      'A bin bag, or a grocery bag hooked on a headrest',
+      'Wipes and a roll of paper towel in the cabin, not the boot',
+      'A cooler bag for milk, snacks and anything that must stay cold',
+      'Window shades that actually block sun, not the mesh kind',
+      'A phone mount, and a charger for every phone',
+      'Change and a card for tolls and parking',
+      'A blanket each, for sleeping and for the moment the air conditioning wins',
+      'Sick bags or a lidded tub within reach of whoever gets car sick',
+      'The bag you need at stops packed separately from the bag in the boot',
+    ],
+    perChild: [
+      'Their own drink, in something that does not spill when it rolls under a seat',
+      'Snacks they can manage alone, handed out at stops rather than on the move',
+      'Soft things only. Anything hard within reach is a projectile at speed',
+      'A change of clothes in the cabin, not the boot',
+    ],
+    note: 'Stop every two hours or so for anybody in a car seat, and stop properly, out of the seat and moving.',
+  },
+  {
+    id: 'night',
+    label: 'A night or two away',
+    everyoneLabel: 'Because you are sleeping there',
+    blurb: 'One sleep somewhere else, which is the hardest single night of any trip.',
+    everyone: [
+      'Blackout. Suction panels, a travel blind, or binder clips and a bin liner',
+      'White noise, the same one, at the same volume',
+      'A night light, so you are not using the main light at 3am',
+      'Travel detergent or a couple of pods, for the inevitable',
+      'Medicine you would not want to hunt for at 2am, in its own bag',
+    ],
+    perChild: [
+      'Whatever they sleep in. Sleep bag, comforter, the specific muslin. The most important thing you will pack',
+      'Their own fitted sheet. Smell does more than you expect, and hotel cot sheets rarely fit anyway',
+      'A travel cot for anyone under two, or a confirmed promise of one',
+      'Two more outfits than the number of nights',
+      'Their toothbrush, and their own toothpaste if the flavour matters',
+    ],
+    note: 'The first night away is nearly always bad and the second is nearly always fine. Plan for that rather than being surprised by it.',
+  },
+  {
+    id: 'week',
+    label: 'A week or more',
+    everyoneLabel: 'Because you are away a while',
+    blurb: 'Long enough that laundry beats packing more.',
+    everyone: [
+      'Everything from the overnight list, plus a plan for washing',
+      'Travel detergent, a few hangers, and a small drying line for a rental',
+      'Prescriptions in original labelled boxes, with a photo of each label on your phone',
+      'The nearest pharmacy and urgent care to where you are staying, looked up before you go',
+      'Insurance details on paper as well as on a phone',
+      'A plug adapter for every country, and one more than you think',
+    ],
+    perChild: [
+      'Four days of clothes and a plan to wash, whatever the length of the trip',
+      'One outfit per day plus two for anyone under three',
+      'Enough formula or milk for the whole trip plus two days. Brands and availability change by country',
+      'Shoes that are already broken in. A holiday is not the week for new sandals',
+      'Their own sun cream, if theirs is the one that does not cause a reaction',
+    ],
+    note: 'Rent the bulky things at the other end rather than checking them. The next tab is entirely about that.',
+  },
+  {
+    id: 'plane',
+    label: 'Flying',
+    everyoneLabel: 'Because you are flying',
+    blurb: 'Different rules, and a bag that has to work in a metre of space.',
+    everyone: [
+      'Passports for everybody including the baby, and any visa or travel authorisation',
+      'A notarised consent letter if one parent is travelling without the other',
+      'A birth certificate or proof of age for a lap infant, since airlines do ask',
+      'Boarding passes downloaded rather than relying on signal at the gate',
+      'Everything medical in the cabin. Nothing medical in the hold, ever',
+      'A padded bag for a gate checked car seat or stroller, and a photo of it undamaged before you hand it over',
+      'Snacks bought after security, since the good ones are past it',
+      'An empty water bottle each, filled on the other side',
+    ],
+    perChild: [
+      'Twice the diapers you would take for the same hours on the ground. Delays are the whole reason',
+      'A full change of clothes, and a spare top for you, in a bag you can reach without standing up',
+      'Feeds for the whole journey plus one extra, planned around takeoff and landing',
+      'Something to suck on going up and coming down. Bottle, breast, pacifier, straw cup, lollipop',
+      'Small new things, wrapped, one per hour. Novelty is the only resource you have on a plane',
+      'A pouch or a snack they have to work at slowly',
+      'Their comforter, in the cabin bag and never in the hold',
+      'A muslin or a light blanket. Planes are cold and the blanket may not come',
+      'A plastic bag for the clothes that do not survive',
+    ],
+    note: 'Book the bassinet position the moment you book the flight. There are two or three on the plane and they go instantly.',
+  },
+  {
+    id: 'cruise',
+    label: 'A cruise',
+    everyoneLabel: 'Because you are on a ship',
+    blurb: 'A hotel that moves, with its own rules about small children.',
+    everyone: [
+      'Check the age minimum against your sailing before you pay. Six months on most lines, twelve for any itinerary with three or more days at sea in a row',
+      'Passports, and a birth certificate for anyone who does not have one yet',
+      'A power strip with no surge protector, since surge protectors are confiscated on most ships',
+      'A magnetic hook or two. Cabin walls are steel and there is nowhere to put anything',
+      'A small night light, and something to cover the bright safety lights in the cabin',
+      'Motion sickness remedies for everybody, including the ones who have never needed them',
+      'A lanyard for each cruise card, children included',
+      'A small backpack for port days, packed the night before',
+      'Cash in small notes for taxis and markets in port',
+    ],
+    perChild: [
+      'Swim diapers, and the knowledge that they will not get your child into the main pool. Most lines do not allow children in diapers in any pool, only in a baby splash area if the ship has one',
+      'A rash vest and sun cream, reapplied more often than you think at sea',
+      'Their own cup with a lid, for the buffet and the cabin',
+      'A carrier for gangways and tenders, which are not stroller friendly',
+      'Their sleep kit exactly as at home. An interior cabin is the darkest room they will ever sleep in',
+      'Whatever the nursery asks for, and the nursery booked the day you board rather than the day you want it',
+    ],
+    note: 'Request the cot when you book rather than on arrival, and check whether your specific ship has a baby splash area. It is a per ship question, not a per cruise line one.',
+  },
+];
+
+function outTripById(id) {
+  return OUT_TRIPS.filter((t) => t.id === id)[0] || OUT_TRIPS[0];
 }
 
 function outBagForAge(months) {
@@ -24825,7 +25291,8 @@ const store = {
 
   /* Parent scoped. These follow the mother, not any child. */
   bagChecked: [],
-  outChecked: [],   // the packing checklist, ticked per child
+  outChecked: [],   // the packing checklist, ticked per trip and per child
+  outTrip: 'day',   // which kind of trip she is packing for
   pumpTab: 'flange',
   pumpGoal: 'exclusive',
   pumpProblem: null,
@@ -24926,7 +25393,7 @@ const state = {};
   });
 });
 
-['parent', 'children', 'activeChildId', 'bagChecked', 'outChecked', 'birthdaySeen', 'profileWho', 'posts', 'postDraft',
+['parent', 'children', 'activeChildId', 'bagChecked', 'outChecked', 'outTrip', 'birthdaySeen', 'profileWho', 'posts', 'postDraft',
  'postOpen', 'menuOpen', 'calMonth',
  'profileEdit', 'msEdit', 'ciEdit', 'ciOpen', 'photoBusy', 'photoError',
  'liftUsed', 'liftDate', 'pumpTab', 'pumpGoal',
@@ -24957,6 +25424,7 @@ function flushStore() {
       activeChildId: store.activeChildId,
       bagChecked: store.bagChecked,
       outChecked: store.outChecked,
+      outTrip: store.outTrip,
       birthdaySeen: store.birthdaySeen,
       posts: store.posts,
       /* Memories live here too, or a voice memo saved this morning
@@ -25095,6 +25563,7 @@ function loadStore() {
     store.parent.situation = normalizeSituation(store.parent.situation);
     store.bagChecked = Array.isArray(saved.bagChecked) ? saved.bagChecked : [];
     store.outChecked = Array.isArray(saved.outChecked) ? saved.outChecked : [];
+    store.outTrip = typeof saved.outTrip === 'string' ? saved.outTrip : 'day';
     store.parentUpdatedAt = Number(saved.parentUpdatedAt) || 0;
   }
 
@@ -26541,7 +27010,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -26985,6 +27454,12 @@ function initControls() {
       const id = t.dataset.out;
       const at = store.outChecked.indexOf(id);
       if (at === -1) store.outChecked.push(id); else store.outChecked.splice(at, 1);
+      store.parentUpdatedAt = Date.now();
+      flushStore();
+      render();
+      return;
+    } else if (t.dataset.outtrip) {
+      store.outTrip = t.dataset.outtrip;
       store.parentUpdatedAt = Date.now();
       flushStore();
       render();
@@ -28538,8 +29013,23 @@ function outTicked(id) {
   return (store.outChecked || []).indexOf(id) !== -1;
 }
 
-function outRow(listId, i, label) {
-  const id = outItemId(listId, i);
+/* Which trip she is packing for. Kept in the store rather than in
+   state, because it belongs to her rather than to a child, and because
+   coming back to a half packed cruise list and finding it reset to the
+   day bag would be maddening. */
+function outTrip() {
+  const id = store.outTrip || 'day';
+  return outTripById(id);
+}
+
+/* The tick key carries the trip, so packing for a cruise does not
+   quietly tick off the day bag. */
+function outKey(trip, listId, i) {
+  return trip + '|' + outItemId(listId, i);
+}
+
+function outRow(trip, listId, i, label) {
+  const id = outKey(trip, listId, i);
   const on = outTicked(id);
   return `
   <button class="lrow" data-out="${esc(id)}" style="align-items:flex-start;padding:10px 6px">
@@ -28557,29 +29047,41 @@ function outRow(listId, i, label) {
   </button>`;
 }
 
-function outList(listId, heading, sub, items) {
-  const done = items.filter((x, i) => outTicked(outItemId(listId, i))).length;
+/* One block, which may be several groups of items under one heading
+   with one running count. The groups are what lets a child's own list
+   say "and these because of their lenses" without becoming a second
+   list with a second count. */
+function outBlock(trip, listId, heading, sub, groups) {
+  const all = groups.reduce((n, g) => n + g.items.length, 0);
+  if (!all) return '';
+  let at = 0;
+  const body = groups.map((g) => {
+    const head = g.label ? `
+      <p class="tiny" style="margin:10px 8px 2px;color:var(--taupe);font-weight:600">${esc(g.label)}</p>` : '';
+    const rows = g.items.map((x) => outRow(trip, listId, at++, x)).join('');
+    return head + rows;
+  }).join('');
+
+  let done = 0;
+  for (let i = 0; i < all; i++) if (outTicked(outKey(trip, listId, i))) done++;
+
   return `
   <div class="dsec">
     <h4>${esc(heading)}</h4>
     <div style="display:flex;align-items:baseline;gap:9px;margin:0 0 8px;flex-wrap:wrap">
       <p class="tiny" style="margin:0;flex:1 1 auto">${esc(sub)}</p>
-      <span class="tiny" style="color:${done === items.length ? 'var(--sage)' : 'var(--muted)'};font-weight:600">
-        ${esc(String(done))} of ${esc(String(items.length))}
+      <span class="tiny" style="color:${done === all ? 'var(--sage)' : 'var(--muted)'};font-weight:600">
+        ${esc(String(done))} of ${esc(String(all))}
       </span>
-      ${done ? `<button class="chip" data-outclear="${esc(listId)}"
+      ${done ? `<button class="chip" data-outclear="${esc(trip + '|' + listId)}"
         style="padding:3px 10px;font-size:11px">Clear</button>` : ''}
     </div>
-    <div class="card" style="padding:4px 10px">
-      ${items.map((x, i) => outRow(listId, i, x)).join('')}
-    </div>
+    <div class="card" style="padding:4px 10px">${body}</div>
   </div>`;
 }
 
 function outPacking() {
-  /* Real children only, youngest first, since the youngest needs the
-     most packed for them and that is the list she will work through
-     first. */
+  const trip = outTrip();
   const kids = (store.children || [])
     .filter((k) => !isExampleChild(k))
     .map((k) => {
@@ -28589,33 +29091,58 @@ function outPacking() {
         name: (k.name || 'Your child'),
         months: sum && sum.age ? sum.age.totalMonths : null,
         label: sum && sum.label ? sum.label : '',
+        lenses: Array.isArray(k.lenses) ? k.lenses : [],
       };
     })
     .sort((a, b) => (a.months == null ? 9999 : a.months) - (b.months == null ? 9999 : b.months));
 
+  const anyLens = kids.some((k) => outLensPack(k.lenses).length);
+
   return `
-    <div class="card leafy" style="margin-bottom:12px">
-      <p class="bodytext">Tick as you pack. It remembers, so you can put the phone down and come
-      back to it.</p>
+    <div class="chips" style="margin-bottom:10px">
+      ${OUT_TRIPS.map((t) => `
+        <button class="chip${t.id === trip.id ? ' on' : ''}" data-outtrip="${esc(t.id)}"
+          ${t.id === trip.id ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
+          >${esc(t.label)}</button>`).join('')}
     </div>
 
-    ${outList(OUT_SHARED.id, OUT_SHARED.label, 'Packed once, whoever is coming.', OUT_SHARED.items)}
+    <div class="card leafy" style="margin-bottom:12px">
+      <p style="font-family:var(--serif);font-size:17px;color:var(--ink);margin:0">${esc(trip.label)}</p>
+      <p class="bodytext" style="margin-top:5px">${esc(trip.blurb)}</p>
+      <p class="tiny" style="margin-top:8px">Tick as you pack. It remembers, and each trip keeps its
+      own list.</p>
+    </div>
+
+    ${outBlock(trip.id, 'everyone', OUT_SHARED.label, 'Packed once, whoever is coming.', [
+      { label: '', items: OUT_SHARED.items },
+      { label: trip.everyone.length ? (trip.everyoneLabel || 'For this trip') : '',
+        items: trip.everyone },
+    ])}
 
     ${kids.length ? kids.map((k) => {
       const b = outBagForAge(k.months);
-      return outList(k.id, 'For ' + k.name,
-        b.label + (k.label ? ', ' + k.label : ''), b.items);
+      const lens = outLensPack(k.lenses);
+      return outBlock(trip.id, k.id, 'For ' + k.name,
+        b.label + (k.label ? ', ' + k.label : ''), [
+          { label: '', items: b.items },
+          { label: trip.perChild.length ? 'For this trip' : '', items: trip.perChild },
+          { label: lens.length ? outLensLabels(k.lenses).join('. ') : '', items: lens },
+        ]);
     }).join('') : `
-      <div class="dsec">
-        <h4>For your child</h4>
-        <p class="tiny" style="margin:0 0 10px">Add a child and this becomes a list for each of
-        them, at their own age.</p>
-        ${outList('nokid', OUT_BAGS[1].label, 'A general one, until there is somebody to make it for.', OUT_BAGS[1].items)}
-      </div>`}
+      ${outBlock(trip.id, 'nokid', 'For your child',
+        'A general one, until there is somebody to make it for.', [
+          { label: '', items: OUT_BAGS[1].items },
+          { label: trip.perChild.length ? 'For this trip' : '', items: trip.perChild },
+        ])}
+      <p class="tiny" style="text-align:center;margin-top:-4px">Add a child and this becomes a list
+      for each of them, at their own age and their own needs.</p>`}
 
-    ${kids.length > 1 ? `
-    <p class="tiny" style="text-align:center;margin-top:4px">One list each, at each of their own
-    ages. Ticking one does not tick the others.</p>` : ''}
+    ${trip.note ? `
+    <div class="callout" style="margin-top:2px"><p style="margin:0">${esc(trip.note)}</p></div>` : ''}
+
+    ${anyLens ? `
+    <p class="tiny" style="margin-top:12px">${esc(OUT_LENS_NOTE)}</p>` : `
+    <p class="tiny" style="margin-top:12px">${esc(OUT_LENS_NONE)}</p>`}
 
     <div class="dsec">
       <h4>The other ages, if you want to look ahead</h4>
