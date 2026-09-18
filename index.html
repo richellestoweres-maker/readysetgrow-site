@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-18 02:40">
+<meta name="rsg-build" content="2026-09-18 03:32">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -1283,7 +1283,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-18 02:40';
+const BUILD_STAMP = '2026-09-18 03:32';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -19040,7 +19040,7 @@ const ENCOURAGE = {
 
   /* ---- feeding ---- */
   'mom-breastfeeding': [
-    'Down. Next time the app remembers the side so you do not have to.',
+    'Written down. Next time the app remembers the side so you do not have to.',
     'That is another one done, at whatever hour it was.',
     'Fed is fed, and you did it again.',
   ],
@@ -19078,7 +19078,7 @@ const ENCOURAGE = {
   /* ---- pregnancy ---- */
   'mom-kicks': [
     'Counted and kept. Knowing their normal is the whole value of this.',
-    'Down, with the time it took.',
+    'Written down, with the time it took.',
   ],
   'mom-contraction': [
     'Timed. Keep going and the pattern will show itself.',
@@ -19093,7 +19093,13 @@ const ENCOURAGE = {
 /* Used when a log type has no lines of its own, including every child
    log, so nothing ever saves in silence. */
 const ENCOURAGE_ANY = [
-  'Down. You are keeping track of a lot.',
+  /* This read "Down. You are keeping track of a lot." and meant
+     "written down". On its own it reads as a number going down, which
+     is the one word the weight rule at the top of this file forbids,
+     and ENCOURAGE_ANY is the fallback for every log that has no lines
+     of its own. A line that can be misread as a comment on a number
+     does not belong in the list that catches everything. */
+  'Written down. You are keeping track of a lot.',
   'Noted, with the time on it.',
   'Kept. Small records add up to something useful later.',
   'That is one more thing you will not have to hold in your head.',
@@ -23333,7 +23339,13 @@ function routeKey() {
     store.activeChildId || '-',
     store.profileWho || '-',
     state.feedTab, state.safetyTab, state.ppTab, state.pumpTab,
-    state.undGroup, state.lensBand,
+    /* undGroup is NOT here on purpose. It is the accordion on the
+       Understanding page, which opens a group in place rather than
+       going anywhere, and including it meant every tap counted as a new
+       screen and threw her back to the top. A sub tab that replaces the
+       whole body belongs in this key. Something that expands where she
+       is standing does not. */
+    state.lensBand,
   ].join('|');
 }
 
@@ -23466,6 +23478,8 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'learnall') html = screenLearnAll();
   else if (v && v.type === 'screen' && v.id === 'checkins') html = screenCheckins(c);
   else if (v && v.type === 'screen' && v.id === 'addchild') html = screenAddChild();
+  /* One child's logs, opened from their profile, with a way back to it. */
+  else if (v && v.type === 'screen' && v.id === 'childlogs') html = screenLogsHub(c, { page: true });
   /* Every old link that said "profile" meant her own, so it still lands
      there rather than on a dead route. */
   else if (v && v.type === 'screen' && v.id === 'profile') {
@@ -24278,6 +24292,14 @@ function initControls() {
       // Opening a different lens starts from the child's real age again,
       // rather than inheriting whichever band was last looked at.
       if (t.dataset.go === 'lens') state.lensBand = null;
+      /* store.logWho persists, so without this, looking at her own logs
+         and then opening Stetson's would show hers with his name on the
+         button that got you there. */
+      if (t.dataset.go === 'screen' && t.dataset.id === 'childlogs') {
+        store.logWho = store.profileWho || store.activeChildId || 'me';
+        store.logDay = ciToday();
+        store.logCal = 0;
+      }
       navPush();
       state.view = { type: t.dataset.go, id: t.dataset.id };
     } else if (t.dataset.back) {
@@ -31242,7 +31264,10 @@ function screenChild(c) {
      past six and development guidance for an age nobody has written
      yet, and those disappear for that reason rather than this one. */
   const body = {
-    checkin: () => checkinCard(),
+    /* notedCard is what says something kind after a log is saved. It
+       used to live only on the Logs hub, so saving from here returned
+       her to this page and the encouragement was never seen. */
+    checkin: () => notedCard() + checkinCard(),
 
     /* Today's plan is a card rather than another row with a heading,
        because it is the thing a parent arrives wanting and it should
@@ -31273,7 +31298,7 @@ function screenChild(c) {
           </button>`).join('')}
       </div>
       <button class="btn ghost sm" style="width:100%;margin-top:2px"
-        data-go="tab" data-id="logs">Everything logged for ${esc(first)}</button>`;
+        data-go="screen" data-id="childlogs">Everything logged for ${esc(first)}</button>`;
     },
 
     care: () => `
@@ -32792,7 +32817,21 @@ function logWhoStrip(who) {
 }
 
 /* The Logs tab. Everybody in the house, a month at a time. */
-function screenLogsHub(c) {
+/* THE LOGS SCREEN WEARS TWO HATS.
+
+   As the TAB it is the whole house: a strip along the top to pick who,
+   and no Back, because a tab is a place rather than a step.
+
+   Opened from a child's profile it is THAT CHILD'S log page: their name
+   at the top, a Back button to their profile, and no person strip,
+   because she did not come here to browse everybody.
+
+   She hit the difference the hard way. "Everything logged for Stetson"
+   used to jump to the tab, which dropped the back stack and left the
+   bottom bar as the only way out, so pressing anything sent her Home. */
+function screenLogsHub(c, opts) {
+  const o = opts || {};
+  const page = !!o.page;
   const who = logWho();
   const types = logTypesOf(who);
   const name = logWhoName(who);
@@ -32801,7 +32840,8 @@ function screenLogsHub(c) {
   return `
   ${cornerLeaves()}
   <div class="sc-head">
-    <h1 class="title">Logs</h1>
+    ${page ? `<button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>` : ''}
+    <h1 class="title"${page ? ' style="margin-top:6px"' : ''}>${page && !mine ? esc(name) + "'s logs" : 'Logs'}</h1>
     <p class="sub">${mine
       ? 'Everything you have put down, and where the numbers have moved.'
       : 'What you have tracked for ' + esc(name) + ', and the version you can hand your pediatrician.'}</p>
@@ -32810,7 +32850,7 @@ function screenLogsHub(c) {
 
     ${notedCard()}
 
-    ${logWhoStrip(who)}
+    ${page ? '' : logWhoStrip(who)}
 
     <p class="sect">Log something</p>
     ${types.length ? `
