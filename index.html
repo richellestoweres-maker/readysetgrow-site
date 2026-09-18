@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-18 03:32">
+<meta name="rsg-build" content="2026-09-18 11:58">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -1283,7 +1283,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-18 03:32';
+const BUILD_STAMP = '2026-09-18 11:58';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -3170,6 +3170,90 @@ const SUPPORT_LENSES = [
     suppressesRedFlags: false,
   },
 
+  /* Added because the app had eighteen lenses and not one of them was
+     for a child who does not hear. That is a gap that says something,
+     and what it said was that this app assumed every child takes in
+     language through their ears.
+
+     The framing throughout is the one Deaf families themselves ask
+     for: this is a difference in how language arrives, and the thing
+     that predicts how a deaf child does is early full access to a
+     language, whichever language that is. Delay is the risk. Signing
+     is not the fallback for when speech fails. */
+  {
+    id: 'deafHoh',
+    group: 'communication',
+    label: 'Deaf or hard of hearing',
+    aka: ['deaf', 'hard of hearing', 'hearing loss', 'HoH', 'cochlear implant', 'hearing aids'],
+    tagline: 'Language gets in. It just does not have to come through the ears.',
+    description:
+      'For families of a child who is deaf or hard of hearing. Strategies lean on visual language, ' +
+      'getting attention before speaking, and protecting full access to language early.',
+    framing:
+      'A deaf child who has full access to a language from the start develops language on time. ' +
+      'The thing that causes delay is not deafness, it is the months spent without a language they ' +
+      'can fully reach.',
+    understanding: {
+      headline: 'Nothing about their thinking is different. Everything about how language reaches them is.',
+      mind: [
+        'A deaf child learns language on the same timetable as anybody else when the language is fully available to them. Sign counts. Speech with hearing aids or an implant counts. Both together counts. What does not work is a year of waiting to see how the hearing technology goes, because that year is a year of language.',
+        'Attention is single channel. They cannot watch your face and watch the toy at the same time, so anything you say while they are looking at something else did not happen. Get the eyes first, then talk or sign, then let them look back.',
+        'Hard of hearing is not a mild version of deaf with nothing to manage. A child who catches most of what is said in a quiet room may catch almost none of it in a classroom, a car, or a birthday party, and they will usually not tell you that, because from the inside it feels like everybody else is just keeping up.',
+        'Listening through hearing aids or an implant is work. A child who is fine in the morning and falling apart at five is often not being difficult, they are out of fuel. It has a name, concentration fatigue, and the answer to it is breaks, not discipline.',
+        'They miss what they were never in the conversation for. Hearing children pick up a huge amount from talk that was not aimed at them, at the dinner table, in the back of the car, in the next room. A deaf child gets almost none of that unless somebody brings them in on purpose. Filling that in is a real and ongoing job, and it is why they can seem to have gaps in things nobody ever taught anyone.',
+        'Deafness is a culture as well as an audiogram. Plenty of Deaf adults do not experience it as a loss or want it fixed, and meeting Deaf adults early is one of the few things that changes outcomes for the whole family, not just the child.',
+      ],
+      strengths: [
+        'Strong visual attention and unusually good at reading faces and rooms.',
+        'Often excellent at noticing what changed, since watching is the main channel.',
+        'Good at repair. Children who constantly have to check what was said get skilled at asking.',
+        'Bilingual where sign and speech are both in the house, with everything that comes with that.',
+      ],
+      misreadAs: [
+        {
+          looksLike: 'Ignoring you.',
+          isOften: 'Not knowing you spoke. A tap, a wave, or a light flick is not rudeness, it is how you start.',
+        },
+        {
+          looksLike: 'Selective hearing, since they heard it yesterday.',
+          isOften: 'Real and normal variation. Quiet room, familiar voice, facing them, known topic, and it lands. Change any one of those and it might not.',
+        },
+        {
+          looksLike: 'Falling apart in the late afternoon.',
+          isOften: 'Concentration fatigue after a whole day of listening work.',
+        },
+        {
+          looksLike: 'Nodding along, so they understood.',
+          isOften: 'A learned habit from years of being asked. Ask them to tell you the plan back instead.',
+        },
+        {
+          looksLike: 'Gaps in general knowledge.',
+          isOften: 'Everything they were never in earshot for. Not a learning problem.',
+        },
+      ],
+    },
+    emphasizes: ['language', 'environment', 'school', 'connection'],
+    strategyTags: ['sign-language', 'visual-schedule', 'model-language', 'narrate', 'wait-time', 'join-their-play', 'repetition', 'connection-first', 'one-step-directions', 'noise-reduction'],
+    environmentTips: [
+      'Get their attention before you speak or sign, every time. A tap on the shoulder, a wave in their line of sight, or flicking the light.',
+      'Let them see your face. Not backlit, not across the room, not talking while you walk away or while your hands are over your mouth.',
+      'Sign with them, and learn it as a family rather than leaving it to the child. A child who is the only signer in the house is still alone in the house.',
+      'Narrate what happened that they missed. The phone call, the joke, why everyone laughed. Say it even when it seems too small to bother with.',
+      'Cut background noise during anything that matters. Hearing aids and implants amplify the dishwasher just as happily as your voice.',
+      'Expect the wall at the end of the day and build in a quiet stretch before you need anything from them.',
+      'Find Deaf adults and Deaf children. Families who do this early describe it as the thing that changed how the whole house felt.',
+      'Caption everything. Television, tablets, films. It costs nothing and it builds reading.',
+    ],
+    whenToAsk:
+      'Newborn hearing screening catches a lot and misses some, and hearing can change later, so a ' +
+      'concern at any age is worth a full audiology assessment rather than a wait and see. Ask your ' +
+      'audiologist and your early intervention team about a language plan with a date on it, since ' +
+      'the strongest evidence is about how early full language access starts, not about which ' +
+      'language it is in.',
+    milestoneFlexMonths: 0,
+    suppressesRedFlags: false,
+  },
+
   /* ================= SENSES AND BODY ================= */
   {
     id: 'sensory',
@@ -3229,6 +3313,93 @@ const SUPPORT_LENSES = [
     milestoneFlexMonths: 0,
     suppressesRedFlags: false,
   },
+  /* The mirror of the lens above. Written with the same rule: this
+     changes how the world arrives, not how the child thinks. The
+     content leans hard on the two things blind parents and teachers of
+     the visually impaired say get missed by sighted families, which
+     are that nothing is learned by watching and that hands are how the
+     looking happens. */
+  {
+    id: 'blindLowVision',
+    group: 'sensoryBody',
+    label: 'Blind or low vision',
+    aka: ['blind', 'low vision', 'visually impaired', 'VI', 'sight loss', 'CVI'],
+    tagline: 'They are taking it all in. Just not by looking.',
+    description:
+      'For families of a child who is blind or has low vision. Strategies lean on describing out ' +
+      'loud, hands on exploring, and keeping the world predictable enough to move through.',
+    framing:
+      'Almost nothing here is about ability. It is about the fact that a great deal of early ' +
+      'learning happens by watching, and that channel has to be replaced on purpose rather than ' +
+      'left to happen.',
+    understanding: {
+      headline: 'Sighted children learn a huge amount by accident. A blind child learns the same things on purpose, or not at all.',
+      mind: [
+        'Watching is how most children learn to wave, to use a spoon, to put on a coat, and to know that the milk lives in the fridge. None of that arrives on its own here. It has to be said out loud and put in their hands, and once it is, it is learned exactly as well.',
+        'Hands are how the looking happens. A child who has to touch everything is not being destructive, they are doing what a sighted child does with a glance. Hand under hand, where your hand goes under theirs rather than grabbing and steering, lets them stay in charge of their own looking.',
+        'Low vision is not a dimmer switch. Most children called blind see something, and what they see can change with light, contrast, distance, fatigue and clutter. Struggling in one room and managing in the next is normal and is not them putting it on.',
+        'A predictable world is a walkable world. A room whose furniture stays put is a room they can cross confidently. Moving the couch without telling them takes that away, and it is the kind of thing a sighted family does without thinking.',
+        'Early motor and social milestones often run late for a reason that has nothing to do with capability. A baby crawls toward something they saw. A baby who hears something has to learn first that a sound means an object is over there, which is a real concept and it arrives a bit later.',
+        'Rocking, eye pressing and hand flapping turn up often here. Usually it is a body getting the input it is not getting any other way. Offer more real movement and more real texture before trying to stop it, and get eye pressing looked at, since it can irritate the eye.',
+        'Say who you are when you come in, and say when you leave. Walking out of a silent room is how a child ends up talking to nobody.',
+      ],
+      strengths: [
+        'Strong listening and unusually good memory for routes, sequences and detail.',
+        'Excellent at recognizing people by voice and by step.',
+        'Often very verbal, since language is doing more of the work.',
+        'Real independence once a space is learned, which is quicker than most sighted people expect.',
+      ],
+      misreadAs: [
+        {
+          looksLike: 'Touching everything.',
+          isOften: 'Looking. It is the same act, done with different equipment.',
+        },
+        {
+          looksLike: 'Not interested in a toy.',
+          isOften: 'Not knowing it is there. Put it in their hand and say what it is.',
+        },
+        {
+          looksLike: 'Clumsy or hesitant.',
+          isOften: 'A space they have not learned yet, or something that got moved.',
+        },
+        {
+          looksLike: 'Being antisocial, since they did not join in.',
+          isOften: 'Not knowing who is in the room or that the game started. Nobody said.',
+        },
+        {
+          looksLike: 'Copying phrases without meaning them.',
+          isOften: 'Learning language in chunks, which is common here and usually sorts itself out as the meaning fills in.',
+        },
+        {
+          looksLike: 'Seeing fine, since they picked up the crumb.',
+          isOften: 'Real variability with light, contrast and distance. Both things are true.',
+        },
+      ],
+    },
+    emphasizes: ['motor', 'language', 'environment', 'selfCare', 'connection'],
+    strategyTags: ['narrate', 'model-language', 'break-into-steps', 'repetition', 'sensory-bin', 'fine-motor-play', 'adaptive-tools', 'celebrate-partial', 'join-their-play', 'hand-under-hand', 'consistent-layout', 'high-contrast'],
+    environmentTips: [
+      'Narrate. What you are doing, what you are about to do to them, what that noise was, who just came in. It feels like talking too much and it is not.',
+      'Say their name first so they know the sentence is theirs.',
+      'Put it in their hands rather than pointing. Let them explore it before you name it.',
+      'Use hand under hand rather than taking their hands and driving them.',
+      'Keep furniture and belongings where they live, and tell them when something moves.',
+      'Light and contrast do a lot for low vision. A dark plate under light food, a light switch that is not in shadow, and less clutter on a surface.',
+      'Warn before you lift them. Being picked up out of nowhere is startling in a way it is not for a sighted child.',
+      'Teach the boring self care steps explicitly, in order, since they cannot be copied. Dressing, brushing teeth, making a sandwich.',
+      'Ask your team about orientation and mobility early. A cane is a tool for exploring, not a last resort, and plenty of toddlers use one.',
+      'Find blind adults. They know things about doing this that no sighted professional does.',
+    ],
+    whenToAsk:
+      'Anything that looks like a vision concern gets a pediatric ophthalmology referral rather than ' +
+      'a wait and see, including eyes that do not follow, that wander past about four months, a white ' +
+      'reflection in photographs, or vision that seems to come and go. Ask about early intervention ' +
+      'and about a teacher of students with visual impairments, and about an orientation and mobility ' +
+      'assessment, all of which many families are never told exist.',
+    milestoneFlexMonths: 4,
+    suppressesRedFlags: false,
+  },
+
   {
     id: 'motor',
     group: 'sensoryBody',
@@ -4933,6 +5104,174 @@ const LENS_BY_AGE = {
         'Assume competence and adjust down only where you must, never the reverse.',
         'Talk about relationships honestly. Adults with Down syndrome have them.',
         'Get the legal and financial planning advice early, without letting it shrink the plans.',
+      ],
+    },
+  },
+
+  deafHoh: {
+    baby: {
+      looksLike: [
+        'A referred newborn screen, or a screen that passed and a nagging feeling since.',
+        'Not startling at sudden sound, or not turning toward a voice from behind.',
+        'Babbling that started on time and then thinned out or stopped, which is one of the clearest early signs there is.',
+        'Settling well when you are in sight and not settling at all when you are talking from the next room.',
+        'Hearing aids that come out of the ears roughly four hundred times a day.',
+      ],
+      whatHelps: [
+        'Do not wait and see. A referred screen gets a full audiology assessment, and the timeline that matters is months, not years.',
+        'Start signing now, as a whole family, before anyone knows how the hearing technology will go. Language in now costs nothing and cannot be taken back.',
+        'Get their eyes before you speak or sign, every single time. Tap, wave, or come into their view.',
+        'Talk and sign about everything you are doing while you do it. The narration is the language.',
+        'Keep the aids in with caps, clips and tape, and accept that the first weeks are a battle everybody has.',
+        'Find Deaf adults and other families now. Families who do this in the first year describe it as the thing that made the rest feel possible.',
+      ],
+    },
+    early: {
+      looksLike: [
+        'Language that is coming along beautifully in the language they have most access to, and thin in the other one.',
+        'Watching your face constantly, and missing anything said while their eyes are elsewhere.',
+        'Doing well at home and lost in a nursery room with fifteen other children.',
+        'Frustration and hitting, which at this age is almost always about not being able to say it.',
+        'Being the one who did not hear the instruction and then getting told off for it.',
+      ],
+      whatHelps: [
+        'Keep the family signing ahead of the child. A house where only the child signs is a house where the child is still alone.',
+        'Ask nursery to get attention first, face them, and cut the background noise, and put it in writing rather than saying it at pickup.',
+        'Fill in what they missed out loud. Who came, what the noise was, why everyone laughed.',
+        'Ask them to tell you the plan back instead of asking whether they understood. Nodding is a habit, not an answer.',
+        'Caption everything they watch. It is free and it builds reading.',
+      ],
+    },
+    primary: {
+      looksLike: [
+        'Coping in a quiet room and drowning in a classroom, a hall, or a playground.',
+        'Coming home wiped out, and the meltdown landing on you rather than on school.',
+        'Reading that needs more deliberate teaching, since a lot of reading is built on sounds they access differently.',
+        'Friendship groups that are harder to break into, since group talk moves fast and overlaps.',
+        'Saying they are fine, because being the one who needs things repeated gets old.',
+      ],
+      whatHelps: [
+        'Get the formal school support in writing, including a remote microphone system, a seat with sightlines, and captions on anything shown.',
+        'Ask for a teacher of the deaf. Many families are never told the role exists.',
+        'Protect a quiet stretch after school before you ask anything of them.',
+        'Teach them to advocate in actual words. Not "pardon" but "say that again, I missed the middle".',
+        'Arrange one to one time with friends, since two people in a quiet room is a completely different game from six at a table.',
+        'Keep them around other deaf children. Being the only one is its own weight.',
+      ],
+    },
+    middle: {
+      looksLike: [
+        'Refusing the aids, the implant, or the microphone, because being visibly different is unbearable at this age.',
+        'Real questions about identity, about whether they are Deaf or hard of hearing or neither.',
+        'Exhaustion that looks like laziness.',
+        'Missing the social layer, the asides and the group chat energy that happens in overlapping talk.',
+        'Anger at you specifically, which is common and is usually not actually about you.',
+      ],
+      whatHelps: [
+        'Do not force the technology. Talk about what it is for and let them make some real choices, since a device that gets left in a bag helps nobody.',
+        'Deaf mentors and Deaf teenagers matter more now than at any other age.',
+        'Back their own advocacy at school rather than doing it for them, and stay available for the parts that are too big.',
+        'Take the fatigue seriously in the timetable, not just in sympathy.',
+        'Let identity be theirs to work out. It may not be where you would have put it.',
+      ],
+    },
+    teen: {
+      looksLike: [
+        'A clear view of what they need and no patience for people who will not do it.',
+        'Decisions about college, interpreters, captioning and disclosure coming up fast.',
+        'Real thinking about where they belong, in Deaf spaces, hearing spaces, or both.',
+        'Worry about work, driving, and independence, some of it inherited from you.',
+      ],
+      whatHelps: [
+        'Teach them the legal ground. What accommodations they can require, and how to ask in writing.',
+        'Make sure they can run their own audiology and technology appointments before they leave.',
+        'Talk about disclosure honestly, since when and whether to tell an employer is theirs to decide.',
+        'Deaf adults doing the job they want are worth more than any amount of reassurance from you.',
+      ],
+    },
+  },
+
+  blindLowVision: {
+    baby: {
+      looksLike: [
+        'Eyes that do not follow a face, or that still wander past about four months.',
+        'A white or washed out reflection in photographs instead of red eye, which is worth a same week call.',
+        'Smiling to your voice rather than to your face.',
+        'Rolling, sitting and crawling arriving later, since there is nothing visible to move toward.',
+        'Going still and quiet to listen, which is easy to read as not interested.',
+        'Hands that do not come together at the middle, or that avoid touching new textures.',
+      ],
+      whatHelps: [
+        'Any vision concern goes to pediatric ophthalmology rather than to a wait and see, and a white reflection in a photo goes today.',
+        'Narrate constantly. What you are doing, what you are about to do to them, and who just walked in.',
+        'Say their name before you touch them or lift them, so nothing arrives out of nowhere.',
+        'Put things in their hands rather than holding them up, and let them explore before you name it.',
+        'Give them reasons to move. Sound toys just out of reach, and a lot of floor time and tummy time.',
+        'Get early intervention and ask specifically for a teacher of students with visual impairments.',
+      ],
+    },
+    early: {
+      looksLike: [
+        'Language that is strong, sometimes with whole phrases copied before the meaning fills in.',
+        'Self care steps not arriving on their own, since dressing and spoons are normally copied.',
+        'Rocking, eye pressing or hand flapping, especially when there is nothing going on.',
+        'Real confidence in rooms they know and hesitance in rooms they do not.',
+        'Playing alongside other children rather than with them, because they cannot see what the game is.',
+      ],
+      whatHelps: [
+        'Teach self care explicitly, in order, hand under hand, and expect to teach it more times than feels reasonable.',
+        'Keep the house where it lives, and say out loud when something moves.',
+        'Offer real movement and real texture before trying to stop the rocking, and get eye pressing looked at since it can damage the eye.',
+        'Tell them who is in the room and what the game is, and give them a job in it.',
+        'Start orientation and mobility now. A cane at three is a tool for exploring, not a last resort.',
+        'Use high contrast and good light for low vision. A dark plate under light food does more than it sounds like it should.',
+      ],
+    },
+    primary: {
+      looksLike: [
+        'Braille or large print and the gap in speed between them and the class, which is real and closes with practice.',
+        'Being helped far too much by adults who mean well, and losing the chance to learn it.',
+        'Playground and PE being the hardest parts of the day, not the lessons.',
+        'Gaps in things nobody taught anyone, like what a cloud looks like or how a shop is laid out.',
+        'Tiredness, since listening and touching all day is more work than glancing.',
+      ],
+      whatHelps: [
+        'Get materials in their format before the lesson, not during it, and put that in the school plan in writing.',
+        'Ask adults to stop doing it for them. Hands off is how independence gets built.',
+        'Keep orientation and mobility going, including routes around school they walk without an adult.',
+        'Fill in the accidental knowledge on purpose. Go to the farm, the building site, the fish counter, and let them touch things.',
+        'Teach the technology early. Screen readers and magnification are literacy now.',
+        'Find blind children and blind adults, so the only blind person they know is not themselves.',
+      ],
+    },
+    middle: {
+      looksLike: [
+        'Resisting the cane or the equipment, because visible difference is unbearable at this age.',
+        'Social life moving to screens and group chats that may or may not be accessible.',
+        'Wanting to go places alone and both of you being frightened of it.',
+        'Real questions about the future, driving, and what work looks like.',
+      ],
+      whatHelps: [
+        'Do not fight the cane head on. Talk about what it buys them, which is going places without you.',
+        'Hand over real independence in pieces, with a plan and a phone, and let the first ones be short.',
+        'Make sure their devices and their school platforms actually work with a screen reader, and complain loudly when they do not.',
+        'Blind teenagers and blind adults, again. It is the single thing that changes what they think is possible.',
+        'Let them own their own accommodations at school, with you as backup rather than as the voice.',
+      ],
+    },
+    teen: {
+      looksLike: [
+        'Knowing exactly what they need and being tired of explaining it.',
+        'College, work, travel and disclosure decisions arriving at once.',
+        'Grief about driving, which is real and worth saying out loud.',
+        'Wanting to live alone, and the whole family quietly not believing it yet.',
+      ],
+      whatHelps: [
+        'Start transition planning by fourteen. Travel training, work experience, and the technology they will use at work.',
+        'Teach them the law, what they can require, and how to ask for it in writing.',
+        'Sort the practical independence now, cooking, laundry, money, public transport, while you are still there to catch it.',
+        'Talk about driving honestly rather than around it, including what the alternatives actually cost and how people manage.',
+        'Assume competence and adjust down only where you must, never the reverse.',
       ],
     },
   },
@@ -14824,6 +15163,343 @@ function formulaOuncesForWeight(pounds) {
 }
 
 
+/* ===== src/data/latchAndTies.js ===== */
+/**
+ * Ready Set Grow: The Latch, And The Thing Everybody Blames
+ * ------------------------------------------------------------------
+ * WHY THIS FILE EXISTS
+ * The Feeding screen talked about what to feed and never once about
+ * how the feeding physically works. A parent whose baby clicks at the
+ * breast, slides off, feeds for fifty minutes and is hungry again in
+ * twenty had nowhere in this app to find out what that means. The
+ * oral ties care topic existed, buried two screens away under
+ * Understanding, and it opened on the evidence review rather than on
+ * the question she actually came with, which is "what am I looking
+ * at".
+ *
+ * THE ORDER THIS CONTENT IS IN, AND WHY
+ * Signs first. What it usually is second. What it sometimes is third.
+ * That order is deliberate and it is the opposite of how the internet
+ * does it. Search any one of these signs and the first result names a
+ * tongue tie, because the pages that name a tie are written by people
+ * who release ties. Latch depth causes far more of this, latch depth
+ * is fixable in one visit with somebody who knows what they are
+ * looking at, and a parent who reads that first gets the cheap fix
+ * offered before the procedure.
+ *
+ * THE OTHER HALF OF THE RULE
+ * Ties are real. A baby who genuinely cannot transfer milk and whose
+ * parent is told for four months that it is positioning is also being
+ * failed, and that failure ends in a weaning nobody chose. So this
+ * file does not talk anybody out of a frenotomy. It gives her the
+ * three questions that separate a real functional problem from a
+ * diagnosis somebody reached for, and it says plainly when to stop
+ * trying to fix it at home.
+ *
+ * ON BOTTLES
+ * Everything here is written for bottle feeding too. A shallow latch
+ * on a bottle nipple clicks, leaks and swallows air exactly the same
+ * way, and half the parents reading this are feeding expressed milk
+ * or formula. Splitting the content in two would have meant writing
+ * the bottle half badly.
+ *
+ * SOURCES
+ * AAP 2024 clinical report on ankyloglossia, AAP breastfeeding policy
+ * (2022), and CDC infant nutrition guidance. Listed at the bottom.
+ */
+
+const LATCH_INTRO =
+  'Feeding is a physical skill, and like any physical skill it has a shape that works and a '
+  + 'shape that does not. Almost everything that goes wrong in the early weeks is the shape, '
+  + 'and the shape is fixable. Start here before you start reading about ties.';
+
+/* ------------------------------------------------------------------
+ * WHAT A DEEP LATCH ACTUALLY LOOKS LIKE
+ * Written as things she can see from where she is sitting, because
+ * she cannot see inside the mouth and most descriptions assume she
+ * can.
+ * ------------------------------------------------------------------ */
+
+const DEEP_LATCH = {
+  title: 'What a deep latch looks like',
+  headline: 'A deep latch takes in a mouthful of breast, not a nipple. On a bottle it takes in the wide part, not the tip.',
+  intro:
+    'These are the things you can actually see from where you are sitting, in the order they '
+    + 'happen. If most of them are true, the latch is doing its job.',
+  signs: [
+    {
+      sign: 'Their nose lines up with the nipple before they open, not their mouth.',
+      why: 'Starting nose to nipple makes them tip their head back to reach, and a tipped back head is what opens the jaw wide. Lining up mouth to nipple gives you a shallow latch every time.',
+    },
+    {
+      sign: 'The mouth opens wide, like a yawn, before they come on.',
+      why: 'A small opening can only take the nipple. Wait for the wide one, even if it takes three tries.',
+    },
+    {
+      sign: 'The chin is pressed in and the nose is clear.',
+      why: 'Chin leading means the tongue is under the right part of the breast. A baby who can breathe easily at the breast is a baby who is on deeply.',
+    },
+    {
+      sign: 'More of the areola is visible above the top lip than below the bottom one.',
+      why: 'An off center latch is the point. The nipple should end up toward the roof of the mouth, away from the part of the jaw that compresses.',
+    },
+    {
+      sign: 'Both lips are turned out, not tucked in.',
+      why: 'A tucked lower lip is easy to fix. Press gently on the chin and it usually rolls out.',
+    },
+    {
+      sign: 'Cheeks are rounded and full, not dimpled or hollow.',
+      why: 'Dimpling means they are pulling a vacuum against air, which is the single clearest sign the seal is not holding.',
+    },
+    {
+      sign: 'The rhythm changes after the first half minute.',
+      why: 'Fast short sucks at the start to trigger letdown, then long slow draws with a pause you can hear. That pause is a swallow. Swallows are the measure of a feed, not minutes.',
+    },
+    {
+      sign: 'It stops hurting after the first few seconds.',
+      why: 'A stretch or a tug for the first seconds is common. Sharp pain that carries on through the feed is information, not something to breathe through.',
+    },
+  ],
+  bottleNote:
+    'On a bottle the same rules hold. Wait for the wide open mouth, aim the nipple at the roof '
+    + 'of the mouth, get the lips out past the narrow neck onto the wide base, and hold the '
+    + 'bottle closer to level than upright so they have to work for it. Upright bottle feeding '
+    + 'pours milk in faster than a baby can pace, which is where a lot of gulping, spluttering '
+    + 'and wind comes from.',
+};
+
+/* ------------------------------------------------------------------
+ * THE SIGNS SHE CAME HERE FOR
+ * Split by who is showing them, because a parent usually notices one
+ * side or the other and does not connect the two.
+ * ------------------------------------------------------------------ */
+
+const LATCH_SIGNS = {
+  intro:
+    'Any one of these on its own is worth a look. Two or three together, and feeding is working '
+    + 'harder than it needs to.',
+  inBaby: [
+    {
+      sign: 'Clicking or a small smacking sound while they feed',
+      means:
+        'The seal is breaking and resealing, so they are swallowing air along with the milk. '
+        + 'Clicking is the most reported sign there is, and it is much more often a shallow latch '
+        + 'or a fast letdown they are struggling to keep up with than it is a tie.',
+    },
+    {
+      sign: 'Sliding off, or gradually working their way down onto the tip',
+      means:
+        'A latch that starts deep and shallows out as the feed goes on usually means the jaw is '
+        + 'tiring or the position is letting gravity pull them off. Try more support under them '
+        + 'and relatching partway through instead of pushing on.',
+    },
+    {
+      sign: 'Dimpled or sucked in cheeks',
+      means: 'They are pulling against air rather than against milk. Break the seal and start again.',
+    },
+    {
+      sign: 'Milk running out of the corners of the mouth',
+      means: 'A leak is a seal problem. It happens on bottles for the same reason it happens at the breast.',
+    },
+    {
+      sign: 'Feeds that go on and on and they are hungry again almost at once',
+      means:
+        'Long plus ineffective is the pairing that matters. Long feeds alone are normal in a '
+        + 'newborn, and cluster feeding in the evening is normal too. Long feeds with very few '
+        + 'swallows, and hunger again within a few minutes, means milk is not moving.',
+    },
+    {
+      sign: 'Falling asleep within a few minutes, every single feed',
+      means:
+        'Newborns are sleepy. A baby who falls asleep because feeding is hard work with little '
+        + 'reward is different from a baby who fed well and drifted off full, and the difference '
+        + 'shows up in the diapers and on the scale.',
+    },
+    {
+      sign: 'A lot of wind, hiccups, or arching and pulling off mid feed',
+      means:
+        'Air swallowed through a broken seal has to go somewhere. Fixing the seal usually does '
+        + 'more for this than any amount of winding afterwards.',
+    },
+    {
+      sign: 'Weight gain that has stalled, or fewer wet diapers than expected',
+      means:
+        'This is the one that is not about comfort. This one gets seen by somebody today, not '
+        + 'worked on at home. Diapers and the scale are the only honest measure of how much went in.',
+    },
+    {
+      sign: 'A tongue that cannot lift to the roof of the mouth, or a heart shaped tip when they cry',
+      means:
+        'This one genuinely points at anatomy. Note it, mention it, and still start with a '
+        + 'feeding assessment rather than with a referral for a procedure.',
+    },
+  ],
+  inYou: [
+    {
+      sign: 'Sharp pain that carries on past the first few seconds',
+      means:
+        'Not normal, not something to toughen up through, and almost always fixable. Pain is the '
+        + 'fastest signal you have that the latch is shallow.',
+    },
+    {
+      sign: 'A nipple that comes out slanted, wedged, or shaped like a new lipstick',
+      means:
+        'Textbook shallow latch. The nipple is being compressed against the hard part of the '
+        + 'jaw instead of sitting back near the soft palate.',
+    },
+    {
+      sign: 'A white or blanched stripe across the nipple after a feed',
+      means: 'Compression again, sometimes with vasospasm on top of it. Warmth right after a feed helps the pain while you fix the cause.',
+    },
+    {
+      sign: 'Cracking, bleeding, or scabs',
+      means: 'Damage means friction, and friction means the latch. Skilled help now saves weeks of this.',
+    },
+    {
+      sign: 'Breasts that still feel full after a feed, or blocked ducts that keep coming back',
+      means: 'Milk that is not being removed well. That is a transfer problem, and transfer problems and latch problems are usually the same problem.',
+    },
+    {
+      sign: 'Dreading the next feed',
+      means:
+        'Worth writing down as a sign, because it is treated as a feeling and it is actually '
+        + 'data. Nobody dreads something that is going well. Something is wrong and it is '
+        + 'probably fixable.',
+    },
+  ],
+};
+
+/* ------------------------------------------------------------------
+ * WHAT IT USUALLY IS
+ * ------------------------------------------------------------------ */
+
+const USUAL_CAUSES = {
+  title: 'What it usually is',
+  headline: 'Before anyone says tie, these four account for most of it.',
+  causes: [
+    {
+      cause: 'Latch depth',
+      detail:
+        'By a wide margin the most common cause of pain, clicking, and poor transfer. It is also '
+        + 'the one that can be fixed in a single visit with somebody who knows what they are '
+        + 'watching for, at no cost to the baby.',
+    },
+    {
+      cause: 'Position and support',
+      detail:
+        'A baby who is not well supported spends energy holding on instead of feeding. Tummy to '
+        + 'you, ear shoulder and hip in a line, their weight taken by you or a pillow rather than '
+        + 'by their own grip on the latch.',
+    },
+    {
+      cause: 'A fast or forceful letdown',
+      detail:
+        'Clicking, spluttering, pulling off and gulping can all be a baby trying to cope with '
+        + 'milk arriving faster than they can swallow. Leaning back so they are working uphill, '
+        + 'or letting the first spray into a cloth, usually settles it.',
+    },
+    {
+      cause: 'A flange or bottle nipple that is the wrong size',
+      detail:
+        'For pumping, a flange that is too big or too small hurts and empties poorly. For '
+        + 'bottles, a flow that is too fast makes a baby gulp and a flow that is too slow makes '
+        + 'them tire out and give up. Both get blamed on the baby.',
+    },
+  ],
+  theGoodNews:
+    'Every one of those is a change somebody can make with you in one appointment. That is why '
+    + 'they come first. Not because ties are not real, but because these are cheaper, faster, '
+    + 'and reversible, and a procedure is none of those things.',
+};
+
+/* ------------------------------------------------------------------
+ * WHAT IT SOMETIMES IS
+ * ------------------------------------------------------------------ */
+
+const ABOUT_TIES = {
+  title: 'What it sometimes is',
+  headline: 'Tongue tie is real. It is also diagnosed far more often than the evidence supports, and both of those are true at once.',
+  plain:
+    'A tongue tie, called ankyloglossia, is when the band of tissue under the tongue is short or '
+    + 'tight enough to stop the tongue lifting and moving the way feeding needs it to. The '
+    + 'question that matters is never whether a band is visible, because everybody has one. The '
+    + 'question is whether the tongue can do its job.',
+  points: [
+    'The AAP published a clinical report in 2024 specifically because diagnoses had climbed so sharply, roughly tenfold between 1997 and 2012 and then roughly doubled again by 2016.',
+    'The central finding of that report is that most breastfeeding difficulty, pain included, is not caused by ankyloglossia.',
+    'Function is the test, not appearance. A tongue that lifts, cups and extends is doing its job whatever the band under it looks like.',
+    'Non surgical help comes first. A skilled lactation consultant, and where speech is the concern a speech language pathologist, before any procedure.',
+    'Upper lip tie and posterior tongue tie are diagnosed frequently and have notably weaker evidence behind them than classic anterior tongue tie.',
+    'Frenotomy is quick and low risk, and low risk is not the same as no reason to be careful. It is a procedure on a newborn, sometimes with stretching aftercare that a lot of parents find distressing.',
+    'Where there is a genuine functional problem that skilled feeding support has not resolved, release can help quickly and it is a reasonable thing to do.',
+  ],
+  askBeforeAProcedure: {
+    intro:
+      'You are allowed to ask these, and a good provider will not mind. Asking is not being '
+      + 'difficult, it is the same thing you would do before any other procedure.',
+    questions: [
+      'What specific function is impaired here, and what did you see that shows it.',
+      'What have we tried first, and how long did we give it.',
+      'What does the evidence show for this particular kind of tie, at this age.',
+      'What happens if we do nothing for two weeks and work on the latch instead.',
+      'Who benefits financially from this being done, and is a second opinion available from someone who does not perform them.',
+    ],
+    note:
+      'That last one is not an accusation. It is the ordinary question you would ask about any '
+      + 'procedure, and it is worth asking here because the people most likely to diagnose a tie '
+      + 'are often the people who release them.',
+  },
+};
+
+/* ------------------------------------------------------------------
+ * WHO TO GET, AND WHEN IT STOPS BEING A HOME PROJECT
+ * ------------------------------------------------------------------ */
+
+const WHO_TO_ASK = {
+  title: 'Who to ask, and when',
+  headline: 'The right person is an IBCLC, and early rather than as a last resort.',
+  body: [
+    'IBCLC is the highest lactation credential there is. Many hospitals have one, many pediatric offices can refer to one, and the Affordable Care Act requires most plans to cover lactation support without a copay. A lot of parents never find this out.',
+    'Ask for a feeding assessment, which means somebody watches a whole feed and weighs the baby before and after. That measures what actually transferred, which is the number nobody can guess at from across the room.',
+    'Go early. Week one help changes the whole trajectory. Week six help is repairing six weeks of damage and of dread, and the dread is usually the harder part.',
+  ],
+  ifYouAreDoneTrying:
+    'And if you get to the point where you are done, that is allowed. A parent who is coping '
+    + 'matters more to a baby than the source of the milk. Fed is best is the position of this '
+    + 'whole app and it has no asterisk on it.',
+};
+
+const LATCH_RED_FLAGS = {
+  title: 'Stop working on this at home and get seen',
+  items: [
+    'Your baby is not back to birth weight by about two weeks, or has stopped gaining',
+    'Fewer wet diapers than expected for their age',
+    'Your baby is very hard to wake, or will not wake for feeds',
+    'Feeding pain that skilled lactation support has not improved',
+    'Your baby cannot hold a latch at all, or feeds are very long and still ineffective',
+    'You have a fever, a red painful area on the breast, or you feel like you have flu',
+  ],
+  urgent:
+    'Weight and diapers are the two that do not wait. Everything else on this screen is worth '
+    + 'reading tonight. Those two are worth a phone call today.',
+};
+
+const LATCH_SOURCES = [
+  { org: 'AAP', label: 'Identification and Management of Ankyloglossia (2024 clinical report)', url: 'https://publications.aap.org/pediatrics/article/154/2/e2024067605/198022/Identification-and-Management-of-Ankyloglossia-and' },
+  { org: 'AAP', label: 'Report addresses rise in tongue tie diagnoses', url: 'https://www.healthychildren.org/English/news/Pages/AAP-report-addresses-rise-in-tongue-tie-diagnoses-for-breastfeeding-concerns.aspx' },
+  { org: 'AAP', label: 'Breastfeeding and the use of human milk (2022 policy statement)', url: 'https://publications.aap.org/pediatrics/article/150/1/e2022057988/188347/Policy-Statement-Breastfeeding-and-the-Use-of' },
+  { org: 'CDC', label: 'Infant and toddler nutrition', url: 'https://www.cdc.gov/nutrition/infantandtoddlernutrition/' },
+];
+
+/* WHEN THIS TAB EXISTS
+   Exactly when the rest of the milk half exists, which is
+   showsMilkContent in src/data/eatingTogether.js, opt in and all. It
+   had its own copy of that rule for about ten minutes and the copy
+   said months <= 24 against the original's months < 24, so a two year
+   old got a latch tab with no milk tabs behind it. Two copies of one
+   rule drift, so there is only the one. */
+
+
 /* ===== src/data/emergencySkills.js ===== */
 /**
  * Ready Set Grow: Emergency skills and home alone readiness
@@ -17333,6 +18009,104 @@ const PARENT_ROLES = [
   { id: 'kinship', label: 'Grandparent or kinship carer' },
   { id: 'guardian', label: 'Guardian' },
 ];
+
+/* WHO THEY ARE, AND WHO THEY ARE TO THE CHILD.
+ *
+ * She asked for this directly: the app should find out who is holding
+ * the phone and what they are to the child, rather than quietly
+ * assuming a woman who recently gave birth.
+ *
+ * TWO QUESTIONS, NOT ONE, BECAUSE THEY ARE GENUINELY DIFFERENT.
+ *
+ * CALLED_BY is what the child calls them. It is the warm one, it is
+ * the one that shows up on screen, and it is the one that covers the
+ * grandmother, the auntie, the step dad and the foster carer without
+ * any of them having to file themselves under a category first.
+ *
+ * REFERS_TO is how the app and Willow should write about them. She
+ * asked for male or female, and the honest reason this is phrased as
+ * words rather than as a sex is that what the app needs is not their
+ * sex, it is which pronoun to put in a sentence. Getting that wrong in
+ * a piece of writing that is supposed to feel like it knows them is a
+ * small thing that lands hard.
+ *
+ * NEITHER IS REQUIRED. Skipping both leaves the app writing the way it
+ * did before, which is with the name and no pronoun at all.
+ *
+ * NOTE ON THE BODY CONTENT. This does not gate anything medical. What
+ * gates bleeding, stitches and blood pressure is having given birth,
+ * which is asked separately and stays that way.
+ */
+
+const CALLED_BY = [
+  { id: 'mom', label: 'Mom' },
+  { id: 'dad', label: 'Dad' },
+  { id: 'mama', label: 'Mama' },
+  { id: 'papa', label: 'Papa' },
+  { id: 'grandma', label: 'Grandma' },
+  { id: 'grandpa', label: 'Grandpa' },
+  { id: 'nana', label: 'Nana' },
+  { id: 'pawpaw', label: 'Pawpaw' },
+  { id: 'auntie', label: 'Auntie' },
+  { id: 'uncle', label: 'Uncle' },
+  { id: 'byname', label: 'They call me by my name' },
+];
+
+const CALLED_BY_OTHER_NOTE =
+  'Not on the list? Type whatever they actually call you. Every family has its own word for this '
+  + 'and yours is the right one.';
+
+const REFERS_TO = [
+  { id: 'she', label: 'She and her', help: 'Woman or mother.' },
+  { id: 'he', label: 'He and him', help: 'Man or father.' },
+  { id: 'they', label: 'They and them', help: 'Or if you would rather not pick one.' },
+  { id: 'name', label: 'Just use my name', help: 'The app writes around it.' },
+];
+
+const REFERS_TO_NOTE =
+  'This is only so the app writes about you correctly. It changes nothing about what you are shown, '
+  + 'and it is never shared with anybody.';
+
+/* The label to actually print, given what they picked and whatever they
+   typed if they picked nothing from the list. */
+function calledByLabel(parent) {
+  const p = parent || {};
+  const custom = (p.calledByOther || '').trim();
+  if (custom) return custom;
+  const m = CALLED_BY.filter((x) => x.id === p.calledBy)[0];
+  if (!m || m.id === 'byname') return '';
+  return m.label;
+}
+
+/* Subject, object and possessive, so a sentence can be written without
+   the caller having to remember three lookups. Empty strings when they
+   asked for their name instead, which is the signal to write around it
+   rather than to guess. */
+function pronounsFor(parent) {
+  const id = (parent || {}).refersTo || '';
+  if (id === 'she') return { subject: 'she', object: 'her', possessive: 'her', plural: false };
+  if (id === 'he') return { subject: 'he', object: 'him', possessive: 'his', plural: false };
+  if (id === 'they') return { subject: 'they', object: 'them', possessive: 'their', plural: true };
+  return { subject: '', object: '', possessive: '', plural: false };
+}
+
+/* One line for Willow, so she stops calling everybody she. Returns an
+   empty string when nothing was picked, which leaves Willow writing the
+   way she always did. */
+function caretakerLine(parent) {
+  const p = parent || {};
+  const bits = [];
+  const called = calledByLabel(p);
+  if (called) bits.push('Their child calls them ' + called + '.');
+  const pr = pronounsFor(p);
+  if (pr.subject) {
+    bits.push('Refer to them as ' + pr.subject + ' and ' + pr.object + '.');
+  } else if (p.refersTo === 'name') {
+    bits.push('They asked not to be given a pronoun. Use their name, or write around it.');
+  }
+  if (!bits.length) return '';
+  return bits.join(' ');
+}
 
 const SUPPORT_SHAPE = [
   { id: 'solo', label: 'Doing this on my own' },
@@ -20706,6 +21480,382 @@ function isDailySection(id, months) {
    steam. */
 const REST_LABEL = 'Everything else about them';
 
+/* ===== src/data/signLanguage.js ===== */
+/**
+ * Ready Set Grow: Signing, For Every Family And For Some Families
+ * ------------------------------------------------------------------
+ * WHY THIS FILE EXISTS
+ * Two different questions ended up in one place on purpose.
+ *
+ * The first is baby sign, which is a nice thing that helps a hearing
+ * toddler ask for milk before they can say milk. It is optional, it is
+ * fun, and nothing bad happens if a family skips it.
+ *
+ * The second is a deaf or hard of hearing child getting full access to
+ * a language in the first year of their life. That is not a nice
+ * optional extra. Language deprivation in early childhood has lifelong
+ * effects, and the single largest factor is how early a child had a
+ * language they could fully reach.
+ *
+ * Those two are kept visibly separate below, because flattening them
+ * into one cheerful "signing is great" section is how the serious one
+ * gets treated as a hobby.
+ *
+ * WHAT THIS FILE IS NOT
+ * It is not an ASL course and it does not pretend to be. You cannot
+ * learn a language from written descriptions of handshapes, any more
+ * than you could learn French pronunciation from a paragraph. What is
+ * here is enough signs to start using today, honest information about
+ * what ASL actually is, and pointers to the people who teach it
+ * properly. Every one of those pointers is free.
+ *
+ * ON WRITING SIGNS DOWN
+ * Each sign below has a handshape, a movement, and a hook. The hook is
+ * the bit that makes it stick, because most ASL signs are motivated by
+ * something and knowing what it is means you remember it. Where a sign
+ * has regional variation, that is said rather than hidden.
+ *
+ * THE LANGUAGE RULE, AGAIN
+ * Deaf with a capital D is a culture and an identity. deaf with a
+ * small d is an audiological fact. Both are used here deliberately.
+ * The app never calls a deaf child hearing impaired, and never frames
+ * being deaf as a thing to be fixed, because plenty of Deaf adults do
+ * not experience it that way and they are the people whose opinion on
+ * this counts most.
+ */
+
+const SIGN_INTRO =
+  'Signing is worth doing whether or not your child is deaf. For a hearing baby it gives them a '
+  + 'way to tell you what they want months before they can say it. For a deaf or hard of hearing '
+  + 'child it is something much bigger than that, and the section below says so plainly.';
+
+/* ------------------------------------------------------------------
+ * THE PART THAT IS NOT OPTIONAL
+ * ------------------------------------------------------------------ */
+
+const WHY_IT_MATTERS = {
+  title: 'If your child is deaf or hard of hearing',
+  headline: 'For a deaf or hard of hearing child, this is not an enrichment activity. It is language access, and the clock is real.',
+  body: [
+    'The first few years are when the brain builds language, and it builds it out of whatever language it can fully reach. A child who has full access to a signed language from the start builds language on the ordinary timetable. A child who spends the first two years with partial access to speech and no signed language behind it can end up behind in a way that is hard to make up later.',
+    'This is the part families are often not told: signing does not slow down speech. The research runs the other way. Children with early signed language tend to do better on spoken language too, including children with cochlear implants. There is no tradeoff to weigh here.',
+    'Hearing technology is wonderful and it is not instant and it is not total. Aids and implants take fitting, mapping, and time, they come out at bath time and bedtime, and they do not make a noisy classroom quiet. Signing fills the gap while that is being worked out, and it keeps filling it afterwards.',
+    'The most useful thing a hearing family can do is learn faster than their child. A house where only the child signs is a house where the child is still on their own at the dinner table.',
+  ],
+  theHardTruth:
+    'A deaf child raised among people who all sign is a child with a language. A deaf child raised '
+    + 'among people who each know twenty signs is a child being spoken to in fragments. Whatever '
+    + 'you decide about hearing technology, the family learning the language is the part that is '
+    + 'worth the most and it is the part most often left undone.',
+};
+
+const ABOUT_ASL = {
+  title: 'What ASL actually is',
+  headline: 'ASL is a language, with its own grammar. It is not English done with hands.',
+  points: [
+    'American Sign Language has its own word order, its own grammar, and its own idioms. It is not a code for English and it cannot be translated word for word.',
+    'The face is grammar, not decoration. Raised eyebrows turn a statement into a yes or no question, and a furrowed brow marks a different kind of question. Signing with a blank face is like speaking in a monotone with no punctuation.',
+    'Signed Exact English, sometimes called SEE, is a different thing. It maps English word for word onto signs and it is used in some schools. It is not ASL and Deaf adults largely do not use it with each other.',
+    'Sign language is not universal. British Sign Language is a completely different language from ASL, and the two are not mutually intelligible.',
+    'Fingerspelling is the alphabet, and it is what you use for names and for words you do not have a sign for. Learn it early, because it gets you through everything else.',
+    'ASL has regions and accents like any language. If a Deaf adult signs something differently from a video you watched, they are not wrong.',
+  ],
+};
+
+const DEAF_CULTURE = {
+  title: 'Deaf culture, in the order it usually matters',
+  headline: 'The things hearing families usually learn late, and wish they had learned first.',
+  points: [
+    'Deaf with a capital D usually means identifying with Deaf culture and community. Small d deaf refers to hearing levels. Many people are both, some are only one, and it is theirs to choose.',
+    'Hearing impaired is a term most Deaf people dislike. Deaf or hard of hearing is what to use.',
+    'It is normal and polite to tap a shoulder, wave in someone line of sight, or flick a light to get attention. None of that is rude.',
+    'Look at the person, not at the interpreter, and talk to the person, not about them. Say you rather than tell him.',
+    'Eye contact in a signed conversation is not optional, it is how you listen. Looking away is hanging up.',
+    'Directness reads differently in Deaf culture, and comments a hearing person might soften are often said plainly. It is not rudeness.',
+    'Deaf children of hearing parents are the great majority, around nine in ten, so almost every hearing family is starting from zero. That is normal and there is a whole community used to helping with it.',
+    'Deaf adults are the best resource your family will ever have and the one most often skipped. Find them before you need them.',
+  ],
+};
+
+/* ------------------------------------------------------------------
+ * THE SIGNS
+ * Grouped by why a family reaches for them. Ordered inside each group
+ * by how soon it earns its keep.
+ * ------------------------------------------------------------------ */
+
+const SIGN_GROUPS = [
+  {
+    id: 'first',
+    label: 'The first five',
+    blurb: 'Start here. These five do most of the work and they are the ones babies give back soonest.',
+    note:
+      'Sign the word every single time you say it and every single time it happens, and expect '
+      + 'weeks of nothing before the first one comes back. Most babies start signing back somewhere '
+      + 'around eight to twelve months, and earlier if you started early.',
+    signs: [
+      {
+        word: 'Milk',
+        how: 'Hold a hand up, open, and squeeze it into a fist. Open, squeeze, open, squeeze.',
+        hook: 'It is milking a cow. Once you see it you cannot unsee it.',
+        why: 'Usually the first one a baby gives back, because it is the one they want most.',
+      },
+      {
+        word: 'More',
+        how: 'Flatten your fingers against your thumb on both hands so each hand makes a closed beak, then tap the two fingertips together twice.',
+        hook: 'Two handfuls of something coming together to make a bigger pile.',
+        why: 'The one that ends the most crying, because it turns a scream into a request.',
+      },
+      {
+        word: 'Eat, or food',
+        how: 'Fingers and thumb together in a beak, tap your fingertips to your mouth a couple of times.',
+        hook: 'Putting food in your mouth. It is exactly what it looks like.',
+        why: 'Pairs with more and milk to cover almost everything a one year old wants.',
+      },
+      {
+        word: 'All done, or finished',
+        how: 'Hold both hands up, palms toward you, fingers spread, then flip them over so the palms face away. Like shaking something off.',
+        hook: 'Shaking it off. Done with it.',
+        why: 'Gives them a way out of the high chair that is not throwing the bowl.',
+      },
+      {
+        word: 'Help',
+        how: 'Make a fist with your thumb sticking up, rest it on your flat other palm, and lift both together.',
+        hook: 'Giving somebody a lift up.',
+        why: 'The one that prevents the most frustration once they are trying to do things themselves.',
+      },
+    ],
+  },
+  {
+    id: 'daily',
+    label: 'Everyday words',
+    blurb: 'The next handful, for when the first five have landed.',
+    signs: [
+      {
+        word: 'Mom',
+        how: 'Open hand, fingers spread, tap your thumb on your chin.',
+        hook: 'Chin for the women in the family, forehead for the men. That split runs through a lot of family signs.',
+        why: '',
+      },
+      {
+        word: 'Dad',
+        how: 'Open hand, fingers spread, tap your thumb on your forehead.',
+        hook: 'Same hand as mom, higher up.',
+        why: '',
+      },
+      {
+        word: 'Water',
+        how: 'Make a W with your index, middle and ring fingers, and tap it on your chin.',
+        hook: 'W for water, at the mouth.',
+        why: 'Useful the moment they are on solids.',
+      },
+      {
+        word: 'Please',
+        how: 'Flat hand on your chest, circle it a few times.',
+        hook: 'Rubbing your heart while you ask.',
+        why: '',
+      },
+      {
+        word: 'Thank you',
+        how: 'Flat hand touching your chin near your lips, then move it forward and down toward the person.',
+        hook: 'Sending a kiss of thanks out from your mouth.',
+        why: '',
+      },
+      {
+        word: 'Sleep, or bed',
+        how: 'Flat hand against the side of your face, head tipped into it.',
+        hook: 'Resting your head on a pillow.',
+        why: 'Worth having for the whole of the bedtime routine.',
+      },
+      {
+        word: 'Play',
+        how: 'Both hands in a Y shape, thumb and pinky out, and twist them back and forth at the wrist.',
+        hook: 'Loose and waggly, the way playing feels.',
+        why: '',
+      },
+      {
+        word: 'Book',
+        how: 'Put your palms together, then open them like a book while the little fingers stay touching.',
+        hook: 'Opening a book.',
+        why: '',
+      },
+      {
+        word: 'Dog',
+        how: 'Pat your thigh twice. Some people snap their fingers after.',
+        hook: 'Calling a dog over.',
+        why: 'Animals are usually the signs children are most motivated to learn.',
+      },
+      {
+        word: 'Cat',
+        how: 'Pinch thumb and index finger at your cheek and pull outward, like drawing a whisker.',
+        hook: 'Whiskers.',
+        why: '',
+      },
+    ],
+  },
+  {
+    id: 'feelings',
+    label: 'Feelings and hard moments',
+    blurb: 'These are the ones that change how a difficult afternoon goes, because a child who can name it does not have to act it out.',
+    signs: [
+      {
+        word: 'Hurt, or pain',
+        how: 'Point both index fingers toward each other and jab them together twice. Do it near the part that hurts.',
+        hook: 'Two points meeting where it hurts.',
+        why: 'Worth teaching early. A toddler who can tell you it is their ear saves you both a lot.',
+      },
+      {
+        word: 'Sad',
+        how: 'Open hands in front of your face, fingers spread, and draw them slowly downward.',
+        hook: 'Your face falling.',
+        why: '',
+      },
+      {
+        word: 'Mad, or angry',
+        how: 'Claw your hand in front of your face and pull it sharply toward you, tensing.',
+        hook: 'A face screwing up.',
+        why: 'Naming anger is the first step out of it. Sign it for them while they are having it.',
+      },
+      {
+        word: 'Scared, or afraid',
+        how: 'Both hands in loose fists in front of your body, then open them suddenly toward your chest, like a flinch.',
+        hook: 'Jumping out of your skin.',
+        why: '',
+      },
+      {
+        word: 'Happy',
+        how: 'Flat hands brushing upward on your chest in circles.',
+        hook: 'Something bubbling up inside you.',
+        why: '',
+      },
+      {
+        word: 'Stop',
+        how: 'Bring the edge of one flat hand down sharply onto your other flat palm.',
+        hook: 'A gate coming down.',
+        why: 'Useful and worth pairing with a reason, since stop on its own is just a command.',
+      },
+      {
+        word: 'Wait',
+        how: 'Both hands up, palms up, fingers wiggling.',
+        hook: 'Fingers drumming while you wait.',
+        why: '',
+      },
+      {
+        word: 'I love you',
+        how: 'Index finger, pinky and thumb up, middle and ring fingers down.',
+        hook: 'It is the letters I, L and Y layered on one hand.',
+        why: 'Everybody learns this one first anyway, and it is worth knowing it is a real sign and not just a gesture.',
+      },
+    ],
+  },
+];
+
+const HOW_TO_PRACTICE = {
+  title: 'Making it stick',
+  headline: 'How to make it actually stick, for the adults more than for the child.',
+  tips: [
+    'Sign the word at the same time as you say it, every time. Consistency beats quantity by a long way.',
+    'Sign what is happening right now, in front of them. Signing milk while there is no milk anywhere teaches nothing.',
+    'Pick five and use those five for a month rather than learning fifty and using none.',
+    'Get their eyes first. A sign made while they are looking somewhere else did not happen.',
+    'Put the signs where you use them. Feeding signs on the fridge, bedtime signs by the cot, so whoever is on duty can see them.',
+    'Expect weeks of nothing. Receptive understanding comes long before they can make the shape with their hands.',
+    'Accept a sloppy version. Their hands are not built for precision yet and a rough approximation still counts as communication.',
+    'Everybody signs. Both parents, grandparents, the sitter, the older siblings. A language used by one person in the house is not a language.',
+  ],
+  ifYourChildIsDeaf:
+    'If your child is deaf or hard of hearing, take everything above and go much further with it. '
+    + 'Aim for a real class, a Deaf tutor, and immersion rather than a word list, and get the whole '
+    + 'family in. Many states fund family sign language instruction through early intervention and '
+    + 'a lot of families are never told.',
+};
+
+const WHERE_TO_LEARN = {
+  title: 'Where to actually learn it',
+  headline: 'Where to actually learn it, all of these free.',
+  note:
+    'You cannot learn a language from written descriptions, including the ones above. Those are to '
+    + 'get you started today. These are to get you somewhere.',
+  places: [
+    {
+      name: 'ASL University, sometimes called Lifeprint',
+      what: 'A free full ASL curriculum with video, run by a Deaf instructor. The closest thing to a real course at no cost.',
+      url: 'https://www.lifeprint.com/',
+    },
+    {
+      name: 'Handspeak',
+      what: 'A video dictionary with a good deal of grammar and culture alongside it.',
+      url: 'https://www.handspeak.com/',
+    },
+    {
+      name: 'Signing Savvy',
+      what: 'A large searchable video dictionary. Good for looking up one sign quickly.',
+      url: 'https://www.signingsavvy.com/',
+    },
+    {
+      name: 'Gallaudet University',
+      what: 'The world Deaf university. Resources for families, and the place to read about Deaf education and culture from the source.',
+      url: 'https://gallaudet.edu/',
+    },
+    {
+      name: 'Hands and Voices',
+      what: 'A parent led organization that takes no position on communication method, which is rarer than it sounds. Good for families weighing options and feeling pushed.',
+      url: 'https://www.handsandvoices.org/',
+    },
+    {
+      name: 'National Association of the Deaf',
+      what: 'Advocacy, rights, and what schools and employers are actually required to provide.',
+      url: 'https://www.nad.org/',
+    },
+    {
+      name: 'Your state early intervention program',
+      what: 'Often funds family sign language instruction, a Deaf mentor, and a teacher of the deaf. Ask by name, since it is rarely offered unprompted.',
+      url: 'https://www.cdc.gov/ncbddd/actearly/parents/states.html',
+    },
+  ],
+};
+
+const SIGN_MYTHS = [
+  {
+    myth: 'Signing will delay speech.',
+    truth: 'It does not. Children with early signed language tend to do better on spoken language, not worse, including children with cochlear implants.',
+  },
+  {
+    myth: 'Signing is only for deaf children.',
+    truth: 'It helps any baby, because the hands can make the shape months before the mouth can make the word. It reduces frustration for the whole house.',
+  },
+  {
+    myth: 'If we get an implant we will not need sign.',
+    truth: 'An implant is not instant and it is not total. It comes out at bath time and it does not fix a noisy room. Sign is what fills those, before and after.',
+  },
+  {
+    myth: 'We should wait and see how the hearing goes before starting.',
+    truth: 'Waiting costs language and there is nothing to gain by it. Starting to sign takes nothing away from any other path.',
+  },
+  {
+    myth: 'Sign language is universal.',
+    truth: 'It is not. ASL and British Sign Language are entirely different languages.',
+  },
+  {
+    myth: 'I need to be fluent before I start using it with my child.',
+    truth: 'No. Start with five signs today. Learning alongside them is how most hearing families do it and it works.',
+  },
+];
+
+const SIGN_SOURCES = [
+  { org: 'CDC', label: 'Hearing loss in children, treatment and intervention', url: 'https://www.cdc.gov/hearing-loss-children/treatment/' },
+  { org: 'NIDCD', label: 'American Sign Language', url: 'https://www.nidcd.nih.gov/health/american-sign-language' },
+  { org: 'AAP', label: 'Hearing loss and your baby', url: 'https://www.healthychildren.org/English/health-issues/conditions/ear-nose-throat/Pages/Hearing-Loss.aspx' },
+];
+
+function signGroup(id) {
+  return SIGN_GROUPS.filter((g) => g.id === id)[0] || SIGN_GROUPS[0];
+}
+
+function countSigns() {
+  return SIGN_GROUPS.reduce((n, g) => n + g.signs.length, 0);
+}
+
+
 /* ===== src/data/cycle.js ===== */
 /**
  * Ready Set Grow: Cycle And Dates
@@ -21172,6 +22322,7 @@ const RECAPTCHA_SITE_KEY = '6LcNxLktAAAAAF5_BPwH-X375etnffNZnhDmoaud';
 const ICON = {
   check:'<path d="M4.5 12.5 9.5 17.5 19.5 6.5"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',
+  hand:'<path d="M9 11.5V5.2a1.3 1.3 0 0 1 2.6 0v5.6"/><path d="M11.6 10.4V4.1a1.3 1.3 0 0 1 2.6 0v6.3"/><path d="M14.2 10.8V6a1.3 1.3 0 0 1 2.6 0v6.6"/><path d="M9 11.5V9a1.3 1.3 0 0 0-2.6 0v5.4c0 3.2 2.3 5.6 5.5 5.6s5.7-2.2 5.7-5.6"/>',
   circle:'<circle cx="12" cy="12" r="8.2"/>',
   info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><path d="M12 7.6v.4"/>',
   eye:'<path d="M2.2 12S5.8 5.8 12 5.8 21.8 12 21.8 12 18.2 18.2 12 18.2 2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="3.1"/>',
@@ -22141,6 +23292,9 @@ const store = {
      than not having one at all. The profile screen says so out loud. */
   parent: { name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '',
     photo: '',
+    /* Who they are to the child, and how the app should write about
+       them. Both optional. See CALLED_BY and REFERS_TO. */
+    calledBy: '', calledByOther: '', refersTo: '',
     /* Where she actually is, so the app stops showing her things that
        finished a while ago. See src/data/situation.js. */
     situation: { stages: [], path: '', roles: [], support: [] } },
@@ -22501,7 +23655,7 @@ function loadStore() {
      asks who you are before it asks about a child and lets you skip
      the child entirely. */
   if (saved && saved.parent) {
-    store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '', photo: '', situation: { stages: [], path: '', roles: [], support: [] } }, saved.parent);
+    store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '', photo: '', calledBy: '', calledByOther: '', refersTo: '', situation: { stages: [], path: '', roles: [], support: [] } }, saved.parent);
     store.parent.birthday = sanitizeStoredDate(store.parent.birthday, 0);
     store.parent.lastPeriod = sanitizeStoredDate(store.parent.lastPeriod, 0);
     store.parent.situation = normalizeSituation(store.parent.situation);
@@ -23039,6 +24193,11 @@ function msSet(id, st) {
    stepping back out of a couple of screens, not for replaying an
    afternoon. It is memory only, because a back stack restored from
    disk would send somebody back to yesterday. */
+/* The last markup written into the willow slot, so render() can tell
+   whether anything about her actually changed. Not read back out of
+   the DOM: see the comment where this is used. */
+let lastWillowHTML = null;
+
 const NAV_MAX = 12;
 let navStack = [];
 
@@ -23465,6 +24624,7 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'topics') html = screenTopics(c);
   else if (v && v.type === 'screen' && v.id === 'feeding') html = screenFeeding(c);
   else if (v && v.type === 'screen' && v.id === 'safety') html = screenSafety(c);
+  else if (v && v.type === 'screen' && v.id === 'signs') html = screenSigns(c);
   else if (v && v.type === 'screen' && v.id === 'plan') html = screenPlan(c);
   else if (v && v.type === 'screen' && v.id === 'sleep') html = screenSleep(c);
   else if (v && v.type === 'screen' && v.id === 'development') html = screenDevelopment(c);
@@ -23559,11 +24719,50 @@ function render() {
   const pendingSave = !!(v && v.type === 'screen' && v.id === 'milestones'
     && !willow.open && msChangeCount());
   if (willowSlot) {
-    /* Only rewritten when it actually differs. Replacing the markup
-       destroys the input she is typing in, so the cheapest fix is not
-       to replace it when nothing has changed. */
+    /* THE CHAT HAS ITS OWN SCROLLBAR AND IT HAS TO SURVIVE THIS.
+
+       .wbody scrolls independently of the page, so rewriting the slot
+       resets it to the top. Anything at all that repaints the app
+       while she is reading a long answer, a background line finishing,
+       a nudge appearing, a sync landing, sent her back to the first
+       word. Remembered here and put back below. */
+    const bodyBefore = document.getElementById('wbody');
+    const bodyScroll = bodyBefore ? bodyBefore.scrollTop : 0;
+
+    /* Only rewritten when it actually differs, because replacing the
+       markup destroys the box she is typing in.
+
+       COMPARED AGAINST WHAT WE LAST WROTE, NOT AGAINST innerHTML.
+       Reading innerHTML back gives the browser's own serialization of
+       the DOM, with attributes reordered and quoting normalized, and
+       that almost never matches the string we generated. So this guard
+       was always true and the panel was rebuilt on every repaint of
+       the whole app, which is most of what was wrong with the chat. */
     const willowHTML = bday || (pendingSave ? '' : nudgeBubble() + willowBubble() + willowPanel());
-    if (willowSlot.innerHTML !== willowHTML) willowSlot.innerHTML = willowHTML;
+    const replaced = lastWillowHTML !== willowHTML;
+    if (replaced) {
+      willowSlot.innerHTML = willowHTML;
+      lastWillowHTML = willowHTML;
+    }
+
+    const bodyAfter = document.getElementById('wbody');
+    if (bodyAfter) {
+      if (willow.stick) {
+        /* A new message just arrived, so the bottom is where she wants
+           to be. This is the only case that moves the view. */
+        bodyAfter.scrollTop = bodyAfter.scrollHeight;
+        willow.stick = false;
+      } else if (replaced) {
+        bodyAfter.scrollTop = bodyScroll;
+      }
+    }
+
+    /* The input's value is a property rather than an attribute, so it
+       is written here instead of in the markup. Guarded, because
+       assigning to value while she is typing moves the caret to the
+       end even when the text is identical. */
+    const wIn = document.getElementById('willowIn');
+    if (wIn && wIn.value !== (willow.input || '')) wIn.value = willow.input || '';
   }
   /* The canvas has to exist before anything can draw on it, so the
      confetti starts here rather than inside the function that writes the
@@ -23865,7 +25064,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-plan]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-plan]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -24097,6 +25296,23 @@ function initControls() {
     } else if (t.dataset.sitpath) {
       sitSetPath(t.dataset.sitpath);
       return;
+    } else if (t.dataset.calledby) {
+      /* Tapping a chip clears the typed word, since the two are the
+         same answer and showing both selected would be a lie about
+         which one the app is going to use. */
+      const was = store.parent.calledBy === t.dataset.calledby && !(store.parent.calledByOther || '').trim();
+      store.parent.calledBy = was ? '' : t.dataset.calledby;
+      store.parent.calledByOther = '';
+      store.parentUpdatedAt = Date.now();
+      saveStore();
+      render();
+      return;
+    } else if (t.dataset.refersto) {
+      store.parent.refersTo = store.parent.refersTo === t.dataset.refersto ? '' : t.dataset.refersto;
+      store.parentUpdatedAt = Date.now();
+      saveStore();
+      render();
+      return;
     } else if (t.dataset.arrival) {
       childArrivalToggle(t.dataset.arrivalfor, t.dataset.arrival);
       return;
@@ -24162,6 +25378,7 @@ function initControls() {
       update.dismissed = true;
     } else if (t.dataset.willow === 'open') {
       willow.open = true;
+      willow.stick = true;
       if (!willow.ready && !willow.loading) willowLoad().catch(() => {});
     } else if (t.dataset.willow === 'close') {
       willow.open = false;
@@ -25029,9 +26246,11 @@ function screenFeeding(c) {
   const milkHere = showsMilkContent(months, situation().stages);
   const tableHere = showsTableContent(months);
 
+
   const tabs = (newbornHere ? [{ id: 'newborn', label: 'The newborn rhythm' }] : [])
     .concat(milkHere ? [
       { id: 'stance', label: 'Fed is best' },
+      { id: 'latch', label: 'Latch and ties' },
       { id: 'milk', label: 'Milk' },
       { id: 'solids', label: 'Starting solids' },
       { id: 'how', label: 'Purees or baby led' },
@@ -25041,7 +26260,7 @@ function screenFeeding(c) {
 
   /* Whichever tab is actually answering their question. A four year
      old's parent should not land on a tab about first foods. */
-  if (!milkHere && ['stance', 'milk', 'solids', 'how', 'foods'].indexOf(tab) !== -1) tab = 'table';
+  if (!milkHere && ['stance', 'latch', 'milk', 'solids', 'how', 'foods'].indexOf(tab) !== -1) tab = 'table';
   if (!tabs.some((t) => t.id === tab)) tab = (tabs[0] || {}).id || 'table';
 
   return `
@@ -25081,6 +26300,91 @@ function screenFeeding(c) {
         <div class="callout" style="margin-top:10px">
           <p style="margin:0">${esc(FORMULA_FACTS.ifYouNeedHelpAffordingIt)}</p>
         </div>
+      </div>` : ''}
+
+    ${tab === 'latch' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(LATCH_INTRO)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>What you are seeing</h4>
+        <p class="tiny" style="margin:0 0 10px">${esc(LATCH_SIGNS.intro)}</p>
+        <p class="sect" style="margin-top:0">In your baby</p>
+        ${LATCH_SIGNS.inBaby.map((x) => `
+          <div class="quote">
+            <p class="sit">${icon('info', 12, 'var(--taupe)')} ${esc(x.sign)}</p>
+            <p class="why" style="margin-top:4px">${esc(x.means)}</p>
+          </div>`).join('')}
+        <p class="sect">In you</p>
+        ${LATCH_SIGNS.inYou.map((x) => `
+          <div class="quote">
+            <p class="sit">${icon('info', 12, 'var(--taupe)')} ${esc(x.sign)}</p>
+            <p class="why" style="margin-top:4px">${esc(x.means)}</p>
+          </div>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(DEEP_LATCH.title)}</h4>
+        <p class="bodytext" style="margin:0 0 8px">${esc(DEEP_LATCH.headline)}</p>
+        <p class="tiny" style="margin:0 0 10px">${esc(DEEP_LATCH.intro)}</p>
+        ${DEEP_LATCH.signs.map((x) => `
+          <div class="quote">
+            <p class="sit">${icon('check', 12, 'var(--sage)')} ${esc(x.sign)}</p>
+            <p class="why" style="margin-top:4px">${esc(x.why)}</p>
+          </div>`).join('')}
+        <div class="callout" style="margin-top:10px">
+          <p style="margin:0">${esc(DEEP_LATCH.bottleNote)}</p>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(USUAL_CAUSES.title)}</h4>
+        <p class="bodytext" style="margin:0 0 10px">${esc(USUAL_CAUSES.headline)}</p>
+        ${USUAL_CAUSES.causes.map((x) => `
+          <div class="quote">
+            <p class="sit">${esc(x.cause)}</p>
+            <p class="why" style="margin-top:4px">${esc(x.detail)}</p>
+          </div>`).join('')}
+        <div class="callout" style="margin-top:10px">
+          <p style="margin:0">${esc(USUAL_CAUSES.theGoodNews)}</p>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ABOUT_TIES.title)}</h4>
+        <p class="bodytext" style="margin:0 0 9px">${esc(ABOUT_TIES.headline)}</p>
+        <p class="bodytext" style="margin:0 0 10px">${esc(ABOUT_TIES.plain)}</p>
+        ${list(ABOUT_TIES.points)}
+        <p class="sect">What to ask before anyone releases anything</p>
+        <p class="tiny" style="margin:-2px 0 9px">${esc(ABOUT_TIES.askBeforeAProcedure.intro)}</p>
+        ${ABOUT_TIES.askBeforeAProcedure.questions.map((q) => `
+          <div class="quote"><p class="sit">${icon('info', 12, 'var(--taupe)')} ${esc(q)}</p></div>`).join('')}
+        <p class="tiny" style="margin-top:9px">${esc(ABOUT_TIES.askBeforeAProcedure.note)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(WHO_TO_ASK.title)}</h4>
+        <p class="bodytext" style="margin:0 0 9px">${esc(WHO_TO_ASK.headline)}</p>
+        ${WHO_TO_ASK.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout" style="margin-top:4px">
+          <p style="margin:0">${esc(WHO_TO_ASK.ifYouAreDoneTrying)}</p>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(LATCH_RED_FLAGS.title)}</h4>
+        ${list(LATCH_RED_FLAGS.items)}
+        <p class="bodytext" style="margin-top:6px;color:#7A4E40">${esc(LATCH_RED_FLAGS.urgent)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>Where this comes from</h4>
+        ${LATCH_SOURCES.map((sc) => `
+          <p class="tiny" style="margin:0 0 6px">
+            <strong style="color:var(--deep)">${esc(sc.org)}</strong>
+            <a href="${esc(sc.url)}" target="_blank" rel="noopener">${esc(sc.label)}</a>
+          </p>`).join('')}
       </div>` : ''}
 
     ${tab === 'milk' ? `
@@ -25348,6 +26652,151 @@ function breakingPointBlock(c) {
     </div>`}
 
     ${dsec('Where this comes from', sourceRows(BREAKING_SOURCES))}
+  </div>`;
+}
+
+/* -----------------------------------------------------------------
+   SIGNING
+
+   Two audiences on one screen, kept visibly apart. A hearing family
+   is here because baby sign is a nice thing that cuts down on
+   screaming, and they can take the signs and go. A family with a deaf
+   or hard of hearing child is here about language access, and that
+   half opens first for them and stays out of the way for everybody
+   else.
+
+   The signs are written rather than drawn on purpose. Video belongs
+   to the people who teach this properly and they are all linked at
+   the bottom. What a written sign can do is get five of them into a
+   kitchen tonight.
+   ----------------------------------------------------------------- */
+
+/* The row on the child profile changes its words when the lens is on,
+   because "Signing together" is the wrong title for a family whose
+   actual question is whether their child will have a language. */
+function signLensOn() {
+  return (state.lenses || []).indexOf('deafHoh') !== -1;
+}
+
+function signRowTitle() {
+  return signLensOn() ? 'Sign language and Deaf culture' : 'Signing together';
+}
+
+function signRowSub(months) {
+  if (signLensOn()) return 'Why it is not optional, the first signs, and where to learn properly';
+  if (typeof months === 'number' && months < 36) {
+    return 'Let them ask for milk months before they can say it';
+  }
+  return 'The first signs, what ASL actually is, and where to learn it';
+}
+
+function screenSigns(c) {
+  const months = c.months;
+  const lensOn = signLensOn();
+  /* The serious half leads for a family who has told us it applies,
+     and sits below the signs for everybody else, where it reads as
+     information rather than as a warning aimed at them. */
+  const deafFirst = lensOn;
+
+  const accessBlock = `
+    <div class="dsec">
+      <h4>${esc(WHY_IT_MATTERS.title)}</h4>
+      <p class="bodytext" style="margin:0 0 9px;font-weight:600;color:var(--deep)">${esc(WHY_IT_MATTERS.headline)}</p>
+      ${WHY_IT_MATTERS.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      <div class="callout" style="margin-top:4px">
+        <p style="margin:0">${esc(WHY_IT_MATTERS.theHardTruth)}</p>
+      </div>
+    </div>`;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">Signing</h1>
+    <p class="sub">${esc(countSigns())} signs to start with, and where to learn the rest.</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(SIGN_INTRO)}</p>
+    </div>
+
+    ${deafFirst ? accessBlock : ''}
+
+    ${SIGN_GROUPS.map((g) => `
+      <div class="dsec">
+        <h4>${esc(g.label)}</h4>
+        <p class="tiny" style="margin:0 0 10px">${esc(g.blurb)}</p>
+        ${g.note ? `<div class="callout" style="margin-bottom:10px"><p style="margin:0">${esc(g.note)}</p></div>` : ''}
+        ${g.signs.map((sg) => `
+          <div class="quote">
+            <p class="sit">${icon('hand', 12, 'var(--sage)')} ${esc(sg.word)}</p>
+            <p class="why" style="margin-top:4px">${esc(sg.how)}</p>
+            <p class="tiny" style="margin-top:5px"><strong style="color:var(--deep)">Remember it:</strong> ${esc(sg.hook)}</p>
+            ${sg.why ? `<p class="tiny" style="margin-top:3px">${esc(sg.why)}</p>` : ''}
+          </div>`).join('')}
+      </div>`).join('')}
+
+    <div class="dsec">
+      <h4>${esc(HOW_TO_PRACTICE.title)}</h4>
+      <p class="bodytext" style="margin:0 0 9px">${esc(HOW_TO_PRACTICE.headline)}</p>
+      ${list(HOW_TO_PRACTICE.tips)}
+      <div class="callout" style="margin-top:10px">
+        <p style="margin:0">${esc(HOW_TO_PRACTICE.ifYourChildIsDeaf)}</p>
+      </div>
+    </div>
+
+    ${deafFirst ? '' : accessBlock}
+
+    <div class="dsec">
+      <h4>${esc(ABOUT_ASL.title)}</h4>
+      <p class="bodytext" style="margin:0 0 9px">${esc(ABOUT_ASL.headline)}</p>
+      ${list(ABOUT_ASL.points)}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(DEAF_CULTURE.title)}</h4>
+      <p class="bodytext" style="margin:0 0 9px">${esc(DEAF_CULTURE.headline)}</p>
+      ${list(DEAF_CULTURE.points)}
+    </div>
+
+    <div class="dsec">
+      <h4>What people get told that is not true</h4>
+      ${SIGN_MYTHS.map((m) => `
+        <div class="quote">
+          <p class="sit">${icon('info', 12, 'var(--taupe)')} ${esc(m.myth)}</p>
+          <p class="why" style="margin-top:4px">${esc(m.truth)}</p>
+        </div>`).join('')}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(WHERE_TO_LEARN.title)}</h4>
+      <p class="bodytext" style="margin:0 0 6px">${esc(WHERE_TO_LEARN.headline)}</p>
+      <p class="tiny" style="margin:0 0 10px">${esc(WHERE_TO_LEARN.note)}</p>
+      ${WHERE_TO_LEARN.places.map((pl) => `
+        <div class="quote">
+          <p class="sit"><a href="${esc(pl.url)}" target="_blank" rel="noopener">${esc(pl.name)}</a></p>
+          <p class="why" style="margin-top:4px">${esc(pl.what)}</p>
+        </div>`).join('')}
+    </div>
+
+    ${!lensOn ? `
+    <div class="card flat" style="margin-top:10px">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} If this is about your child</p>
+      <p class="tiny" style="margin-top:4px">There is a support lens for deaf and hard of hearing
+      children that changes what this app puts in front of you, at every age. It is under
+      Understanding ${esc((c.child && c.child.name) || 'them')}.</p>
+      <button class="btn ghost sm" style="width:100%;margin-top:9px"
+        data-go="screen" data-id="understand">Open it</button>
+    </div>` : ''}
+
+    <div class="dsec">
+      <h4>Where this comes from</h4>
+      ${SIGN_SOURCES.map((sc) => `
+        <p class="tiny" style="margin:0 0 6px">
+          <strong style="color:var(--deep)">${esc(sc.org)}</strong>
+          <a href="${esc(sc.url)}" target="_blank" rel="noopener">${esc(sc.label)}</a>
+        </p>`).join('')}
+    </div>
   </div>`;
 }
 
@@ -28428,7 +29877,7 @@ async function doSignOut() {
        them, so this is a clear rather than a loss. */
     store.children = [];
     store.activeChildId = null;
-    store.parent = { name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '', photo: '', situation: { stages: [], path: '', roles: [], support: [] } };
+    store.parent = { name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '', photo: '', calledBy: '', calledByOther: '', refersTo: '', situation: { stages: [], path: '', roles: [], support: [] } };
     store.posts = [];
     store.postDraft = null;
     store.birthdaySeen = {};
@@ -28696,7 +30145,7 @@ function cornerMenu(who) {
     <button class="cmenu-row${who.id === 'me' ? ' on' : ''}" data-me="1">
       ${parentFace(26)}
       <span class="grow"><span class="cmenu-t">${esc(store.parent.name || 'You')}</span>
-      <span class="cmenu-s">Your profile</span></span>
+      <span class="cmenu-s">${esc(calledByLabel(store.parent) || 'Your profile')}</span></span>
     </button>
     ${store.children.map((k) => `
       <button class="cmenu-row${who.id === k.id ? ' on' : ''}" data-child="${esc(k.id)}">
@@ -29628,6 +31077,51 @@ function tickRow(on, label, help, attrs) {
   </button>`;
 }
 
+/* WHO THEY ARE TO THE CHILD.
+
+   One block, used in two places: the signup walkthrough and Settings.
+   Written once so the two can never drift apart, which is what
+   happened last time a question lived in both.
+
+   Chips rather than tick rows, because both of these are pick one and
+   a tick row implies you may pick several. */
+function caretakerBlock() {
+  const p = store.parent || {};
+  const custom = (p.calledByOther || '').trim();
+  return `
+  <p class="sect">What ${esc(onlyChildFirstName() || 'your child')} calls you</p>
+  <div class="card" style="margin-bottom:10px">
+    <div class="chips">
+      ${CALLED_BY.map((r) => `
+        <button class="chip${p.calledBy === r.id && !custom ? ' on' : ''}" data-calledby="${esc(r.id)}"
+          ${p.calledBy === r.id && !custom ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
+          >${esc(r.label)}</button>`).join('')}
+    </div>
+    <p class="eyebrow" style="margin-top:12px">Or your own word</p>
+    <input class="inp" type="text" data-obfield="calledByOther"
+      value="${esc(p.calledByOther || '')}" placeholder="Mimi, Bubba, Tata, anything"
+      autocomplete="off" style="margin-top:7px;width:100%" />
+    <p class="tiny" style="margin-top:8px">${esc(CALLED_BY_OTHER_NOTE)}</p>
+  </div>
+
+  <p class="sect">How we should write about you</p>
+  <div class="card" style="margin-bottom:10px">
+    ${REFERS_TO.map((r) => tickRow(p.refersTo === r.id, r.label, r.help,
+      `data-refersto="${esc(r.id)}"`)).join('')}
+    <p class="tiny" style="margin-top:9px">${esc(REFERS_TO_NOTE)}</p>
+  </div>`;
+}
+
+/* The first real child's first name, for the line above. Falls back to
+   nothing at all rather than to a placeholder name, since somebody
+   signing up before they have added a child should not be asked what
+   "your child" calls them by name. */
+function onlyChildFirstName() {
+  const real = (store.children || []).filter((k) => !isExampleChild(k));
+  if (real.length !== 1) return '';
+  return (real[0].name || '').trim().split(/\s+/)[0] || '';
+}
+
 function situationBlock() {
   const sit = situation();
   const showPath = hasStage(sit, 'expecting') || hasStage(sit, 'trying');
@@ -29664,6 +31158,8 @@ function situationBlock() {
     ${SUPPORT_SHAPE.map((r) => tickRow(sit.support.indexOf(r.id) !== -1, r.label, '',
       `data-sit="support" data-id="${esc(r.id)}"`)).join('')}
   </div>
+
+  ${caretakerBlock()}
 
   <p class="sect">Anything you live with</p>
   <p class="tiny" style="margin:-2px 0 8px">Ticking one turns on a log you would otherwise never be
@@ -31183,7 +32679,11 @@ function screenMyProfile() {
   <div class="sc-head">
     <div class="bigface">${faceHTML(v.photo, 96, 'me')}</div>
     <h1 class="title" style="margin-top:8px">${esc(p.name || 'Your profile')}</h1>
-    <p class="sub">${p.username ? '@' + esc(p.username) : 'Add a username in Settings'}</p>
+    <p class="sub">${calledByLabel(p) && store.children.length
+      ? esc(calledByLabel(p)) + ' to ' + esc(store.children.length === 1
+          ? (store.children[0].name || 'your child')
+          : String(store.children.length) + ' of them')
+      : (p.username ? '@' + esc(p.username) : 'Add a username in Settings')}</p>
   </div>
   <div class="sc">
 
@@ -31339,6 +32839,8 @@ function screenChild(c) {
           ? esc(getLenses(state.lenses).map((l) => l.label).join(', '))
           : 'Turn on what fits them, and read what it actually means',
         'data-go="screen" data-id="understand"')}
+      ${childRow('hand', signRowTitle(), signRowSub(months),
+        'data-go="screen" data-id="signs"')}
       ${state.lenses.length ? `
       <div class="card flat">
         <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Your active lenses</p>
@@ -32500,6 +34002,7 @@ function screenOnboard() {
       ${PARENT_ROLES.map((r) => tickRow((sit.roles || []).indexOf(r.id) !== -1, r.label, '',
         `data-sit="roles" data-id="${esc(r.id)}"`)).join('')}
     </div>
+    <div style="margin-top:14px">${caretakerBlock()}</div>
     <p class="tiny" style="margin-top:10px">${esc(SITUATION_PRIVACY)}</p>`;
   }
 
@@ -33683,7 +35186,7 @@ async function cloudFirstSync() {
   const localPt = Number(store.parentUpdatedAt) || 0;
   const remotePt = Number(remoteUser && remoteUser.updatedAt) || 0;
   if (remoteUser && remotePt > localPt) {
-    store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '', photo: '', situation: { stages: [], path: '', roles: [], support: [] } }, remoteUser.parent || {});
+    store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '', photo: '', calledBy: '', calledByOther: '', refersTo: '', situation: { stages: [], path: '', roles: [], support: [] } }, remoteUser.parent || {});
     store.parent.birthday = sanitizeStoredDate(store.parent.birthday, 0);
     store.parent.lastPeriod = sanitizeStoredDate(store.parent.lastPeriod, 0);
     store.parent.situation = normalizeSituation(store.parent.situation);
@@ -34193,6 +35696,11 @@ const willow = {
   open: false,
   busyKey: '',      // the child whose question is in flight, '' when idle
   input: '',
+  /* Set for exactly one repaint whenever a new message is added or the
+     panel is opened, and it is the only thing allowed to move where
+     she is reading. Every other repaint puts the conversation back
+     where it was. */
+  stick: false,
   threads: {},      // childId -> [ { who: 'you' | 'willow', text, sources: [], kind } ]
   ai: null,         // the model handle, once loaded
   loading: null,    // the in flight load promise
@@ -34290,6 +35798,11 @@ function willowMotherLine() {
     return m ? m.label : '';
   }).filter(Boolean);
   if (roleLabels.length) bits.push('She is: ' + roleLabels.join(', ') + '.');
+  /* What the child calls them, and which pronoun to use. Without this
+     Willow wrote to everybody as she, including the grandfather and
+     the adoptive dad. */
+  const careLine = caretakerLine(store.parent);
+  if (careLine) bits.push(careLine);
   if (!gaveBirthRecently()) bits.push('She did not give birth recently, so nothing about recovery '
     + 'from a birth applies to her unless she raises it.');
 
@@ -34332,6 +35845,10 @@ function willowMotherLine() {
 
 function willowSay(who, text, sources, kind, key) {
   willowThread(key).push({ who: who, text: text, sources: sources || [], kind: kind || '' });
+  /* A new message is the one and only time the conversation should
+     move on its own. Every other repaint leaves her exactly where she
+     was reading. See the willow slot in render(). */
+  willow.stick = true;
 }
 
 async function willowAsk(question) {
@@ -34855,6 +36372,14 @@ function birthdayDismiss() {
   flushStore();
 }
 
+/* NOTE ON THE INPUT AT THE BOTTOM: it carries no value attribute on
+   purpose. With value="${willow.input}" baked in, the panel's markup
+   changed on every keystroke, so render() saw a difference and rebuilt
+   the whole panel, throwing away the box she was typing in. On a phone
+   that drops the keyboard and breaks anything typed mid word. The
+   value is set as a property after paint instead, in render(), so
+   typing changes nothing about the markup and the box she is typing in
+   is the same box the whole way through. */
 function willowPanel() {
   if (!willow.open) return '';
   const key = willowThreadKey();
@@ -34904,7 +36429,7 @@ function willowPanel() {
 
     <div class="wfoot">
       <input id="willowIn" class="winput" type="text" autocomplete="off"
-        placeholder="Ask ${esc(WILLOW.name)} something" value="${esc(willow.input)}"
+        placeholder="Ask ${esc(WILLOW.name)} something"
         ${thinking ? 'disabled' : ''} />
       <button class="wsend" data-willow="send" aria-label="Send" ${thinking ? 'disabled' : ''}>
         ${icon('chev', 17, '#fff')}
