@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-19 15:34">
+<meta name="rsg-build" content="2026-09-19 16:04">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1541,7 +1541,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-19 15:34';
+const BUILD_STAMP = '2026-09-19 16:04';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -19438,7 +19438,8 @@ const REFERS_TO = [
 
 const REFERS_TO_NOTE =
   'This is only so the app writes about you correctly. It changes nothing about what you are shown, '
-  + 'and it is never shared with anybody.';
+  + 'and it is never shared with anybody. What you are shown is decided by a separate question, '
+  + 'because guessing that from a pronoun would be wrong in both directions.';
 
 /* The version that actually goes on the screen. The long one above is
    kept because the privacy page quotes this kind of thing properly,
@@ -19525,6 +19526,58 @@ const CHILD_ARRIVAL_NOTE =
  * One place, so no screen has to work it out for itself and no screen
  * can disagree with another about whether something is relevant.
  * ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------
+   DOES THE BODY HALF APPLY TO YOU
+
+   This app has a half that is about the parent's own body: periods,
+   cycles, pregnancy, and recovering from a birth. It was shown to
+   everybody, which meant a father opened the app and was invited to
+   log a period.
+
+   IT IS ASKED, NOT GUESSED
+   Guessing from a pronoun or from being called Dad would be wrong in
+   both directions and insulting in at least one of them. An adoptive
+   mother has no birth to recover from. A father may be the one
+   holding the app while his wife recovers. A trans man may want every
+   bit of it. There is no reliable inference here, there is only a
+   question, so the app asks once, plainly, and never again.
+
+   AND THE ANSWER IS NOT A GENDER
+   The question is about which screens are useful, not about who
+   somebody is. It is worded that way on purpose and stored that way
+   too, which is why this field is called bodyCare rather than sex.
+   ------------------------------------------------------------------ */
+const BODY_CARE_ASK = {
+  title: 'Is the body half of this for you',
+  body: 'Part of this app is about your own body rather than your child\u2019s. Periods and cycles, '
+    + 'pregnancy, and recovering after a birth. It is not right for everybody who uses this.',
+  yes: 'Yes, show me that',
+  no: 'Not for me',
+  after: 'You can change this whenever you like, on your own profile.',
+};
+
+const BODY_CARE_SETTING = {
+  title: 'The body half',
+  on: 'On. Cycles, pregnancy and recovery are on your Home.',
+  off: 'Off. None of that shows anywhere.',
+  note: 'This is about which screens are useful to you, not about who you are, which is why it is a '
+    + 'question rather than something the app works out from your name.',
+};
+
+/* '' not asked yet, 'yes' or 'no' once they have answered. */
+function bodyCare(parent) {
+  const v = String((parent || {}).bodyCare || '');
+  return (v === 'yes' || v === 'no') ? v : '';
+}
+
+function showsBodyHalf(parent) {
+  return bodyCare(parent) === 'yes';
+}
+
+function askedBodyHalf(parent) {
+  return bodyCare(parent) !== '';
+}
 
 function hasStage(situation, id) {
   const s = (situation && situation.stages) || [];
@@ -29463,6 +29516,10 @@ const store = {
     /* Who they are to the child, and how the app should write about
        them. Both optional. See CALLED_BY and REFERS_TO. */
     calledBy: '', calledByOther: '', refersTo: '',
+    /* Whether the half of the app about their own body applies to
+       them. Empty until asked. See BODY_CARE_ASK in situation.js for
+       why this is a question rather than something inferred. */
+    bodyCare: '',
     /* Where she actually is, so the app stops showing her things that
        finished a while ago. See src/data/situation.js. */
     situation: { stages: [], path: '', roles: [], support: [] } },
@@ -31391,7 +31448,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -31843,6 +31900,10 @@ function initControls() {
         store.growthCopied = true;
         setTimeout(() => { store.growthCopied = false; render(); }, 1800);
       }
+    } else if (t.dataset.bodycare) {
+      store.parent.bodyCare = t.dataset.bodycare === 'yes' ? 'yes' : 'no';
+      store.parentUpdatedAt = Date.now();
+      flushStore();
     } else if (t.dataset.signstage) {
       store.signStage = t.dataset.signstage;
       saveStore();
@@ -39074,6 +39135,13 @@ function caretakerBlock() {
     ${REFERS_TO.map((r) => tickRow(p.refersTo === r.id, r.label, r.help,
       `data-refersto="${esc(r.id)}"`)).join('')}
     <p class="tiny" style="margin-top:9px">${esc(REFERS_TO_SHORT)}</p>
+  </div>
+
+  <p class="sect">${esc(BODY_CARE_SETTING.title)}</p>
+  <div class="card" style="margin-bottom:10px">
+    ${tickRow(bodyCare(p) === 'yes', 'Show it', BODY_CARE_SETTING.on, 'data-bodycare="yes"')}
+    ${tickRow(bodyCare(p) === 'no', 'Leave it out', BODY_CARE_SETTING.off, 'data-bodycare="no"')}
+    <p class="tiny" style="margin-top:9px">${esc(BODY_CARE_SETTING.note)}</p>
   </div>`;
 }
 
@@ -39756,6 +39824,37 @@ function parentCircle() {
   </button>`;
 }
 
+/* THE ONE QUESTION, AND WHAT SITS WHERE THE ANSWER GOES.
+
+   Unanswered, this is a small card asking. Answered yes, it is the
+   cycle section. Answered no, there is nothing here at all and there
+   never will be again.
+
+   It does not guess. A father opening the app and being invited to log
+   a period is what this exists to stop, and guessing from his name or
+   his pronoun would have been wrong for an adoptive mother in the
+   other direction. */
+function bodyCareBlock() {
+  const p = store.parent;
+  if (bodyCare(p) === 'no') return '';
+  if (bodyCare(p) === 'yes') {
+    return `
+    <p class="sect">Your cycle</p>
+    ${cycleWidget()}`;
+  }
+  const a = BODY_CARE_ASK;
+  return `
+  <div class="card flat" style="margin-top:14px">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(a.title)}</p>
+    <p class="bodytext" style="margin-top:6px">${esc(a.body)}</p>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn" style="flex:1 1 130px" data-bodycare="yes">${esc(a.yes)}</button>
+      <button class="chip" style="flex:1 1 110px;justify-content:center" data-bodycare="no">${esc(a.no)}</button>
+    </div>
+    <p class="tiny" style="margin-top:9px">${esc(a.after)}</p>
+  </div>`;
+}
+
 function screenHome(c) {
   const hour = new Date().getHours();
   const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
@@ -39808,6 +39907,7 @@ function screenHome(c) {
       <button class="chip" style="margin-left:6px" data-me="1">See it</button>
     </p>` : ''}
 
+    ${showsBodyHalf(store.parent) ? `
     <button class="bigbtn" data-go="screen" data-id="momnow">
       <span class="bigbtn-ic">${icon('heart', 22, '#fff')}</span>
       <span class="grow">
@@ -39815,14 +39915,13 @@ function screenHome(c) {
         <span class="bigbtn-s">${esc(momNowBlurb())}</span>
       </span>
       ${icon('chev', 17, 'rgba(255,255,255,.8)')}
-    </button>
+    </button>` : ''}
 
     <p class="sect">Logs for you</p>
     ${momCheckinCard()}
     ${momLogCard()}
 
-    <p class="sect">Your cycle</p>
-    ${cycleWidget()}
+    ${bodyCareBlock()}
 
     ${memOnThisDay()}
 
