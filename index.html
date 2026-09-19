@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-19 17:20">
+<meta name="rsg-build" content="2026-09-19 17:27">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1573,7 +1573,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-19 17:20';
+const BUILD_STAMP = '2026-09-19 17:27';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -26490,7 +26490,123 @@ const VAX_SCHEDULE_SOURCES = [
   { label: 'Child and adolescent immunization schedule', org: 'Centers for Disease Control and Prevention', url: 'https://www.cdc.gov/vaccines/hcp/imz-schedules/child-adolescent-notes.html' },
   { label: 'Recommended childhood and adolescent immunization schedule, 2026', org: 'American Academy of Pediatrics', url: 'https://publications.aap.org/pediatrics/article/157/3/e2025075754/206175/Recommended-Childhood-and-Adolescent-Immunization' },
   { label: 'Where the two 2026 schedules differ', org: 'Contemporary Pediatrics', url: 'https://www.contemporarypediatrics.com/view/the-unharmonious-2026-child-and-adolescent-immunization-schedule' },
+  /* Their Vaccines on the Go app is being taken off the app stores
+     and will not be updated again. The same content, kept current by
+     the same people, moved to the website below, so that is what is
+     linked rather than the app. */
+  { label: 'Vaccine Education Center, plain English on every vaccine and the schedule', org: 'Children\u2019s Hospital of Philadelphia', url: 'https://www.chop.edu/parents-pack/vaccines-on-the-go' },
 ];
+
+/* ------------------------------------------------------------------
+ * THE SAME RECORD, BY APPOINTMENT
+ *
+ * WHY THIS EXISTS, IN HER WORDS: "are all the vaccine check offs by
+ * age?"
+ *
+ * The list above is organised by vaccine, which is how a schedule is
+ * printed and is the wrong way round for a parent. Nobody walks out of
+ * a pediatric office having had the third dose of four unrelated
+ * series. They walk out of the four month visit having had five shots,
+ * and the card in their hand is one line with a date on it.
+ *
+ * So this regroups exactly the same doses by the visit they are given
+ * at. Nothing new is recorded and nothing is duplicated. Ticking a
+ * dose here and ticking it in the list are the same tick, because both
+ * write the same key.
+ *
+ * THE RANGES OVERLAP THE REAL WORLD, NOT EACH OTHER
+ * Each bucket claims a stretch of months and every dose falls in
+ * exactly one, so no dose can go missing from this view or appear
+ * twice in it. The labels are the windows a card actually prints,
+ * which is why some of them are wide.
+ *
+ * WHAT IS NOT HERE
+ * Flu, COVID and RSV. They are yearly rather than one offs, they do
+ * not belong to a particular visit, and pinning them to one would be
+ * wrong. They stay in the list view and get one card of their own at
+ * the bottom of this one.
+ * ------------------------------------------------------------------ */
+const VAX_VISITS = [
+  { id: 'birth', label: 'In the hospital', when: 'At birth', from: -1, to: 0.9 },
+  { id: 'm1', label: 'The first month check', when: '1 to 2 months', from: 1, to: 1.9 },
+  { id: 'm2', label: 'The 2 month visit', when: 'Around 2 months', from: 2, to: 3.9 },
+  { id: 'm4', label: 'The 4 month visit', when: 'Around 4 months', from: 4, to: 5.9 },
+  { id: 'm6', label: 'The 6 month visit', when: 'Around 6 months', from: 6, to: 8.9 },
+  { id: 'm6to18', label: 'Any visit between 6 and 18 months', when: '6 to 18 months', from: 9, to: 12.9,
+    note: 'These two have a wide window on purpose. They get done at whichever visit falls inside it.' },
+  { id: 'm12', label: 'The 12 month visit', when: '12 to 15 months', from: 13, to: 15.9 },
+  { id: 'm15', label: 'The 15 to 18 month visit', when: '15 to 18 months', from: 16, to: 20.9 },
+  { id: 'm18', label: 'The second hepatitis A', when: 'At least 6 months after the first one', from: 21, to: 59.9 },
+  { id: 'y4', label: 'Before they start school', when: '4 to 6 years', from: 60, to: 137.9,
+    note: 'The big one. Four boosters together, and most states want them on the form before kindergarten.' },
+  { id: 'y11', label: 'The 11 to 12 year visit', when: '11 to 12 years', from: 138, to: 143.9 },
+  { id: 'y12', label: 'The follow up after that one', when: '6 to 12 months later', from: 144, to: 191.9 },
+  { id: 'y16', label: 'The 16 year visit', when: '16 years', from: 192, to: 195.9 },
+  { id: 'y17', label: 'The last of them', when: '16 to 18 years', from: 196, to: 400 },
+];
+
+/* Every one off dose that belongs to this visit, in the order the
+   series are listed, so the card reads the way the appointment goes. */
+function vaxVisitDoses(visit) {
+  const out = [];
+  if (!visit) return out;
+  VAX_SERIES.forEach((s) => {
+    if (s.seasonal) return;
+    s.doses.forEach((d) => {
+      if (d.at >= visit.from && d.at <= visit.to) out.push({ series: s, dose: d });
+    });
+  });
+  return out;
+}
+
+/* Done, of how many, for one visit, with declined series left out of
+   both numbers rather than counted as outstanding forever. */
+function vaxVisitCounts(visit, record, skipped) {
+  const skip = {};
+  (skipped || []).forEach((id) => { skip[id] = true; });
+  let given = 0, total = 0;
+  vaxVisitDoses(visit).forEach((x) => {
+    if (skip[x.series.id] || x.dose.optional) return;
+    total += 1;
+    if ((record || {})[vaxDoseKey(x.series.id, x.dose.n)]) given += 1;
+  });
+  return { given: given, total: total };
+}
+
+/* Where this child is relative to a visit. Same gentleness as a single
+   dose: nothing is ever missed, it was due a while ago. */
+function vaxVisitState(visit, months, counts) {
+  if (counts && counts.total && counts.given >= counts.total) return 'done';
+  if (months === null || months === undefined) return 'unknown';
+  if (months < visit.from - 1) return 'later';
+  if (months <= visit.to + 2) return 'about now';
+  return 'was due';
+}
+
+/* The visit to open first. The one they are at or coming up to, rather
+   than the top of the list, because a parent of a twelve year old
+   should not scroll past the newborn shots to find their place. */
+function vaxVisitNow(months) {
+  if (months === null || months === undefined) return VAX_VISITS[0].id;
+  let last = VAX_VISITS[0];
+  for (let i = 0; i < VAX_VISITS.length; i++) {
+    const v = VAX_VISITS[i];
+    if (months >= v.from && months <= v.to) return v.id;
+    if (months > v.to) last = v;
+  }
+  return last.id;
+}
+
+const VAX_VISITS_INTRO =
+  'The same record, grouped the way the appointments actually happen. Tick them off here or in the '
+  + 'list, it is the same record either way.';
+
+const VAX_SEASONAL_NOTE = {
+  title: 'The yearly ones',
+  body: 'Flu, COVID and RSV are not tied to a particular visit, because they are given every year '
+    + 'rather than once. Flu is from 6 months old. They are recorded by date in the list rather than '
+    + 'ticked off, since there is no end to the series.',
+};
 
 function vaxSeries(id) {
   return VAX_SERIES.filter((v) => v.id === id)[0] || null;
@@ -30358,7 +30474,8 @@ const store = {
      child's own. */
   signStage: '',
 
-  vaxTab: 'list',
+  vaxTab: 'visits',
+  vaxVisit: '',
   vaxOpen: '',
   vaxEdit: '',
   vaxError: '',
@@ -32578,6 +32695,8 @@ function initControls() {
       return;
     } else if (t.dataset.push === 'kind') {
       pushToggleKind(t.dataset.id);
+    } else if (t.dataset.vax === 'visit') {
+      store.vaxVisit = store.vaxVisit === t.dataset.id ? '' : t.dataset.id;
     } else if (t.dataset.vax === 'open') {
       store.vaxOpen = store.vaxOpen === t.dataset.id ? '' : t.dataset.id;
       store.vaxEdit = '';
@@ -45560,9 +45679,14 @@ function screenVaxRecord(c) {
   const months = childMonths(kid);
   const rec = vaxRecord(kid);
   const counts = vaxCounts(rec, vaxSkipped(kid));
-  const tab = store.vaxTab || 'list';
+  /* BY VISIT FIRST, AND BY DEFAULT.
+     The list by vaccine is how a schedule is printed. By visit is how
+     a parent lives it, which is the whole of her question: are all the
+     vaccine check offs by age. */
+  const tab = store.vaxTab || 'visits';
   const tabs = [
-    { id: 'list', label: 'The record' },
+    { id: 'visits', label: 'By visit' },
+    { id: 'list', label: 'By vaccine' },
     { id: 'schedule', label: 'Where things stand' },
   ];
 
@@ -45575,8 +45699,84 @@ function screenVaxRecord(c) {
   </div>
   <div class="sc">
     ${subTabs('vaxTab', tab, tabs)}
-    ${tab === 'schedule' ? vaxStandTab() : vaxListTab(kid, first, months, counts)}
+    ${tab === 'schedule' ? vaxStandTab() : ''}
+    ${tab === 'list' ? vaxListTab(kid, first, months, counts) : ''}
+    ${tab === 'visits' ? vaxVisitsTab(kid, first, months, counts) : ''}
   </div>`;
+}
+
+/* THE RECORD, BY APPOINTMENT.
+
+   Same doses, same ticks, same keys. The only thing that changes is
+   the grouping, and the grouping is the point: a parent remembers the
+   four month visit, not the third dose of Hib.
+
+   The visit this child is at opens by itself, so somebody with a
+   twelve year old does not scroll past the newborn shots to find their
+   place. Everything else is collapsed with its count on the row, which
+   is the whole answer at a glance for the visits already behind them. */
+function vaxVisitsTab(kid, first, months, counts) {
+  const rec = vaxRecord(kid);
+  const skipped = vaxSkipped(kid);
+  const here = vaxVisitNow(months);
+  const open = store.vaxVisit || here;
+
+  const tone = {
+    done: { word: 'All recorded', color: 'var(--sage)' },
+    'about now': { word: 'Around now', color: 'var(--attention, #B5793F)' },
+    'was due': { word: 'Usually done by now', color: 'var(--muted)' },
+    later: { word: 'Later on', color: 'var(--faint)' },
+    unknown: { word: '', color: 'var(--faint)' },
+  };
+
+  return `
+  <div class="card leafy">
+    <p class="bodytext" style="margin:0">${esc(VAX_VISITS_INTRO)}</p>
+    <p class="tiny" style="margin:8px 0 0">${esc(counts.given + ' of the ' + counts.total + ' one off doses recorded so far.')}</p>
+  </div>
+
+  ${VAX_VISITS.map((v) => {
+    const vc = vaxVisitCounts(v, rec, skipped);
+    const st = vaxVisitState(v, months, vc);
+    const isOpen = open === v.id;
+    const doses = vaxVisitDoses(v);
+    if (!doses.length) return '';
+    const t = tone[st] || tone.unknown;
+    return `
+    <div class="card flat vaxcard" style="padding:0;overflow:hidden${v.id === here ? ';border-left:3px solid var(--sage)' : ''}">
+      <button class="vaxhead" data-vax="visit" data-id="${esc(v.id)}">
+        <span class="grow">
+          <span class="vaxname">${esc(v.label)}${v.id === here ? ' (they are here now)' : ''}</span>
+          <span class="tiny" style="display:block;margin-top:2px">${esc(v.when)} &middot; ${esc(vc.given + ' of ' + vc.total + ' recorded')}${t.word ? esc(' \u00b7 ' + t.word) : ''}</span>
+        </span>
+        <span class="chev">${icon(isOpen ? 'chevdown' : 'chev', 15, 'var(--faint)')}</span>
+      </button>
+      ${isOpen ? `
+        <div class="vaxbody">
+          ${v.note ? `<p class="tiny" style="margin:0 0 10px">${esc(v.note)}</p>` : ''}
+          ${doses.map((x) => vaxIsSkipped(kid, x.series.id) ? `
+            <div class="vaxdose">
+              <span class="vaxtick" aria-hidden="true"></span>
+              <span class="grow">
+                <span class="vaxdname" style="color:var(--muted)">${esc(x.series.label)}</span>
+                <span class="tiny" style="display:block;margin-top:1px">Marked as not being given</span>
+              </span>
+            </div>` : `
+            <p class="sect" style="margin:10px 0 2px">${esc(x.series.label)}</p>
+            ${vaxDoseRow(kid, x.series, x.dose, months)}`).join('')}
+        </div>` : ''}
+    </div>`;
+  }).join('')}
+
+  <div class="dsec">
+    <h4>${esc(VAX_SEASONAL_NOTE.title)}</h4>
+    <p class="bodytext" style="margin:0 0 10px">${esc(VAX_SEASONAL_NOTE.body)}</p>
+    <button class="btn ghost" style="width:100%" data-sub="vaxTab" data-val="list">
+      ${icon('note', 14, 'var(--deep)')} Open the list by vaccine
+    </button>
+  </div>
+
+  <p class="tiny" style="margin-top:10px">${esc(VAX_RECORD_NOTE)}</p>`;
 }
 
 function vaxListTab(kid, first, months, counts) {
