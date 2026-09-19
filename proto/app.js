@@ -3725,14 +3725,7 @@ function screenNow(c) {
       <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
     </button>` : ''}
 
-    <button class="lrow" data-go="screen" data-id="support" style="align-items:flex-start">
-      <span class="licon" style="background:#F7E9E4">${icon('shield', 18)}</span>
-      <span class="grow">
-        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(SUP_TITLE)}</span>
-        <span class="tiny" style="display:block;margin-top:2px">A caseworker, somebody who frightens you, or somebody targeting your child. With a button that gets you off the screen in one tap.</span>
-      </span>
-      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-    </button>
+    ${supportRow()}
 
     ${askBlock(c)}
 
@@ -6208,6 +6201,22 @@ function supTabTraffick() {
     </div>
 
     ${dsec('Where this comes from', sourceRows(TRAF_SOURCES))}`;
+}
+
+/* The row that gets somebody here from the screens they are actually
+   standing on. It was reachable from the menu and from I need help,
+   and neither of those is where a parent looks, which is why she
+   opened the app twice and found nothing. */
+function supportRow() {
+  return `
+  <button class="lrow" data-go="screen" data-id="support" style="align-items:flex-start">
+    <span class="licon" style="background:#F7E9E4">${icon('shield', 18)}</span>
+    <span class="grow">
+      <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(SUP_TITLE)}</span>
+      <span class="tiny" style="display:block;margin-top:2px">A caseworker, somebody who frightens you, or somebody targeting your child. With a button that gets you off the screen in one tap.</span>
+    </span>
+    <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+  </button>`;
 }
 
 function screenSupport(c) {
@@ -11772,6 +11781,13 @@ function screenHome(c) {
       ${icon('chev', 17, 'rgba(255,255,255,.8)')}
     </button>` : ''}
 
+    ${/* OUTSIDE THE BODY CARE GATE ON PURPOSE.
+          The button above it is only for somebody who said the body half
+          is for them. This is for everybody, because a father, a
+          grandmother and an adoptive parent can all be the one in the
+          house this is written for. */ ''}
+    ${supportRow()}
+
     <p class="sect">Logs for you</p>
     ${momCheckinCard()}
     ${momLogCard()}
@@ -12805,7 +12821,10 @@ function screenChild(c) {
       ${sectHead('safety', months, 'If something happens')}
       ${childRow('heart', 'CPR, choking and staying safe',
         esc('For ' + getCprForAge(months).label.toLowerCase()) + ', plus what to do when you are at the end of it',
-        'data-go="screen" data-id="safety"')}`,
+        'data-go="screen" data-id="safety"')}
+      ${childRow('shield', SUP_TITLE,
+        'A caseworker, somebody who frightens you, or somebody targeting your child',
+        'data-go="screen" data-id="support"')}`,
 
     memories: () => (kid ? memSection(kid.id) : ''),
   };
