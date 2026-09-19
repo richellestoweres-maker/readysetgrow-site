@@ -1277,7 +1277,7 @@ const state = {};
     and nothing throws. That is exactly what happened to the Learning
     tabs, and to Jobs, Growth and the vaccine record with them. The
     build now refuses to finish if a data-sub key is not here. */
- 'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab',
+ 'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab',
  'logDraft', 'draftChildName', 'draftChildBday'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -2463,6 +2463,8 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'vaxrecord') html = screenVaxRecord(c);
   else if (v && v.type === 'screen' && v.id === 'notifications') html = screenPush();
   else if (v && v.type === 'screen' && v.id === 'support') html = screenSupport(c);
+  else if (v && v.type === 'screen' && v.id === 'online') html = screenOnline(c);
+  else if (v && v.type === 'screen' && v.id === 'growingup') html = screenGrowingUp(c);
   else if (v && v.type === 'screen' && v.id === 'plan') html = screenPlan(c);
   else if (v && v.type === 'screen' && v.id === 'sleep') html = screenSleep(c);
   else if (v && v.type === 'screen' && v.id === 'development') html = screenDevelopment(c);
@@ -2933,7 +2935,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3660,6 +3662,10 @@ function initControls() {
       } else {
         navBack();
       }
+    } else if (t.dataset.onlinestage) {
+      store.onlineStage = store.onlineStage === t.dataset.onlinestage ? '' : t.dataset.onlinestage;
+    } else if (t.dataset.growstage) {
+      store.growStage = store.growStage === t.dataset.growstage ? '' : t.dataset.growstage;
     } else if (t.dataset.exit) {
       quickExit();
       return;
@@ -6261,6 +6267,368 @@ function screenSupport(c) {
     ${tab === 'traffick' ? supTabTraffick() : ''}
 
     <p class="disclaimer">${esc(SUP_DISCLAIMER)}</p>
+  </div>`;
+}
+
+/* ==================================================================
+   PHONES, GAMES AND WHO IS ON THE OTHER SIDE
+
+   Everything about why this exists and why it is ordered the way it
+   is lives in src/data/onlineSafety.js. The short version: her fear
+   was a stranger in a parking lot, and the honest answer is that the
+   mechanism moved rather than that the fear was silly.
+
+   The age tab opens first, because a parent arriving here has a
+   particular child in mind and wants to know what to do about that
+   child this year, not a lecture on the internet.
+   ================================================================== */
+
+function onlineAgeBlock(months) {
+  const natural = onlineStageFor(months);
+  const picked = store.onlineStage
+    ? ONLINE_STAGES.filter((s) => s.id === store.onlineStage)[0]
+    : null;
+  const st = picked || natural || ONLINE_STAGES[0];
+  const off = natural && st.id !== natural.id;
+
+  return `
+  <div class="chips" style="margin-bottom:12px">
+    ${ONLINE_STAGES.map((s) => `
+      <button class="chip" data-onlinestage="${esc(s.id)}"
+        aria-pressed="${s.id === st.id}">${esc(s.label)}</button>`).join('')}
+  </div>
+
+  ${off ? `
+  <p class="tiny" style="margin:0 0 10px">Looking at ${esc(st.label.toLowerCase())}.
+    ${natural ? 'Yours is in ' + esc(natural.label.toLowerCase()) + '.' : ''}</p>` : ''}
+
+  <div class="card leafy">
+    <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} ${esc(st.label)}</p>
+    <p class="bodytext" style="margin-top:6px;font-size:15px;line-height:1.55">${esc(st.head)}</p>
+    <p class="bodytext" style="margin-top:9px">${esc(st.body)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>What to do at this age</h4>
+    ${list(st.doNow)}
+  </div>`;
+}
+
+/* A row that says something true about this child rather than one
+   generic line that is wrong at both ends of childhood. */
+function onlineRowSub(months) {
+  const st = onlineStageFor(months);
+  if (!st) return 'Screens, games, and the people on the other side of them';
+  if (months < 60) return 'Screen rules that are easy now and a fight at eleven';
+  if (months < 108) return 'Games with strangers in them, and what to set up first';
+  if (months < 144) return 'The years it changes, and the conversations to have before it does';
+  if (months < 192) return 'Phones, accounts, and the promise that makes them tell you';
+  return 'What to talk about when you are advising rather than controlling';
+}
+
+function growRowSub(months) {
+  if (months == null) return 'Their body, their privacy, and the conversations that work better early';
+  if (months < 60) return 'The right words, and nobody has to hug anybody';
+  if (months < 108) return 'Privacy, the rules about touch, and where babies come from';
+  if (months < 144) return 'Puberty, explained before it starts rather than after';
+  if (months < 192) return 'What their body is doing, and consent as a real thing';
+  return 'The practical things, and keeping the door open';
+}
+
+function screenOnline(c) {
+  const tab = state.onlineTab || 'age';
+  const months = c.months;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(ONLINE_TITLE)}</h1>
+    <p class="sub">${esc(ONLINE_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('onlineTab', tab, ONLINE_TABS)}
+
+    ${tab === 'age' ? onlineAgeBlock(months) : ''}
+
+    ${tab === 'real' ? `
+      <div class="card leafy">
+        <p class="eyebrow">${icon('info', 11, 'var(--sage)')} ${esc(ONLINE_HEAD)}</p>
+        ${ONLINE_INTRO.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ONLINE_NUMBERS.title)}</h4>
+        ${list(ONLINE_NUMBERS.items)}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(ONLINE_NUMBERS.note)}</p></div>
+      </div>
+
+      <div class="bpbox">
+        <p class="bpbox-t">${esc(ONLINE_PATTERN.title)}</p>
+        <p class="tiny" style="margin:8px 0 0">${esc(ONLINE_PATTERN.intro)}</p>
+        <ol class="bpsteps">
+          ${ONLINE_PATTERN.steps.map((x) => `<li>${esc(x)}</li>`).join('')}
+        </ol>
+        <p class="bpwarn">${esc(ONLINE_PATTERN.speed)}</p>
+        <p class="bpclose">${esc(ONLINE_PATTERN.offPlatform)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ONLINE_GROUPS.title)}</h4>
+        ${ONLINE_GROUPS.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout"><p style="margin:0">${esc(ONLINE_GROUPS.teach)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ONLINE_SEXTORTION.title)}</h4>
+        ${ONLINE_SEXTORTION.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout" style="border-left:3px solid var(--concern, #A85A44)">
+          <p style="margin:0">${esc(ONLINE_SEXTORTION.oneThing)}</p>
+        </div>
+        <button class="btn ghost" style="width:100%;margin-top:11px" data-go="screen" data-id="support">
+          ${icon('shield', 14, 'var(--deep)')} What to do in the first hour
+        </button>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ONLINE_HONEST.title)}</h4>
+        <p class="bodytext">${esc(ONLINE_HONEST.body)}</p>
+      </div>` : ''}
+
+    ${tab === 'apps' ? ONLINE_APPS.map((a) => `
+      <div class="dsec">
+        <div style="display:flex;align-items:baseline;gap:9px">
+          <h4 style="flex:1;margin:0">${esc(a.name)}</h4>
+          <span class="tiny">${esc(a.age)}</span>
+        </div>
+        <p class="bodytext" style="margin:9px 0 0">${esc(a.what)}</p>
+        ${a.changed ? `<p class="bodytext" style="margin:9px 0 0">${esc(a.changed)}</p>` : ''}
+        <p class="sect">What you can actually do</p>
+        ${list(a.canDo)}
+        <div class="callout" style="margin-top:10px">
+          <p style="margin:0"><strong style="color:var(--deep)">Worth knowing:</strong> ${esc(a.honest)}</p>
+        </div>
+      </div>`).join('') : ''}
+
+    ${tab === 'rules' ? `
+      <div class="bpbox">
+        <p class="bpbox-t">${esc(ONLINE_GAP.title)}</p>
+        ${ONLINE_GAP.body.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+        <p class="bpclose">${esc(ONLINE_GAP.what)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ONLINE_RULES.title)}</h4>
+        ${list(ONLINE_RULES.items)}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ONLINE_WORKS.title)}</h4>
+        <p class="tiny" style="margin:0 0 9px">${esc(ONLINE_WORKS.intro)}</p>
+        ${list(ONLINE_WORKS.items)}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(ONLINE_WORKS.note)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ONLINE_PHONE.title)}</h4>
+        ${ONLINE_PHONE.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <p class="sect">The everybody else has one problem</p>
+        <p class="bodytext" style="margin:0 0 9px">${esc(ONLINE_PHONE.together)}</p>
+        <p class="sect">The middle options people forget</p>
+        ${list(ONLINE_PHONE.middle)}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ONLINE_SCRIPTS.title)}</h4>
+        <p class="tiny" style="margin:0 0 9px">${esc(ONLINE_SCRIPTS.intro)}</p>
+        ${ONLINE_SCRIPTS.items.map((x) => `
+          <div class="quote"><p class="why" style="margin:0">${esc(x)}</p></div>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ONLINE_WRONG.title)}</h4>
+        <p class="bodytext" style="margin:0 0 9px">${esc(ONLINE_WRONG.body)}</p>
+        <p class="tiny" style="margin:0 0 10px">${esc(ONLINE_WRONG.link)}</p>
+        <button class="btn ghost" style="width:100%" data-go="screen" data-id="support">
+          ${icon('shield', 14, 'var(--deep)')} ${esc(SUP_TITLE)}
+        </button>
+      </div>` : ''}
+
+    ${dsec('Where this comes from', sourceRows(ONLINE_SOURCES))}
+    <p class="disclaimer">Checked September 2026. Apps change their settings constantly, so treat the
+      controls above as where to look rather than as a permanent map.</p>
+  </div>`;
+}
+
+/* ==================================================================
+   GROWING UP
+
+   Two tracks, bodies and people, both starting at two rather than at
+   thirteen. src/data/growingUp.js carries the reasoning and the rule
+   this is written under, which is to say how well a thing is known
+   rather than only what it says.
+   ================================================================== */
+
+function growNowBlock(months) {
+  const natural = growStageFor(months);
+  const picked = store.growStage
+    ? GROW_BY_AGE.filter((s) => s.id === store.growStage)[0]
+    : null;
+  const st = picked || natural || GROW_BY_AGE[0];
+  const off = natural && st.id !== natural.id;
+
+  return `
+  <div class="chips" style="margin-bottom:12px">
+    ${GROW_BY_AGE.map((s) => `
+      <button class="chip" data-growstage="${esc(s.id)}"
+        aria-pressed="${s.id === st.id}">${esc(s.label)}</button>`).join('')}
+  </div>
+
+  ${!natural && months !== null && months !== undefined ? `
+  <p class="tiny" style="margin:0 0 10px">Nothing here applies yet at this age. It is all here for
+    when it does.</p>` : ''}
+
+  ${off ? `
+  <p class="tiny" style="margin:0 0 10px">Looking at ${esc(st.label.toLowerCase())}.
+    ${natural ? 'Yours is in ' + esc(natural.label.toLowerCase()) + '.' : ''}</p>` : ''}
+
+  <div class="card leafy">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(st.label)}</p>
+    <p class="bodytext" style="margin-top:6px;font-size:15px;line-height:1.55">${esc(st.body)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>What this looks like</h4>
+    ${list(st.items)}
+  </div>`;
+}
+
+function screenGrowingUp(c) {
+  const tab = state.growTab || 'now';
+  const months = c.months;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(GROW_TITLE)}</h1>
+    <p class="sub">${esc(GROW_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('growTab', tab, GROW_TABS)}
+
+    ${tab === 'now' ? growNowBlock(months) : ''}
+
+    ${tab === 'body' ? `
+      <div class="dsec">
+        <h4>${esc(GROW_GIRLS.title)}</h4>
+        ${steps(GROW_GIRLS.order)}
+        <p class="sect">The first period</p>
+        <p class="bodytext" style="margin:0 0 9px">${esc(GROW_GIRLS.menarche)}</p>
+        <p class="sect">Early</p>
+        <p class="bodytext" style="margin:0 0 9px">${esc(GROW_GIRLS.early)}</p>
+        <p class="sect">Late</p>
+        <p class="bodytext">${esc(GROW_GIRLS.late)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(GROW_PERIODS.title)}</h4>
+        <p class="sect" style="margin-top:0">What normal looks like</p>
+        ${list(GROW_PERIODS.normal)}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(GROW_PERIODS.slower)}</p></div>
+        <p class="sect">${esc(GROW_PERIODS.red.title)}</p>
+        ${list(GROW_PERIODS.red.items, true)}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(GROW_PERIODS.before)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(GROW_BOYS.title)}</h4>
+        ${steps(GROW_BOYS.order)}
+        <p class="sect">Erections</p>
+        <p class="bodytext" style="margin:0 0 9px">${esc(GROW_BOYS.erections)}</p>
+        <p class="sect">Wet dreams</p>
+        <p class="bodytext" style="margin:0 0 9px">${esc(GROW_BOYS.wet)}</p>
+        <p class="sect">Early and late</p>
+        <p class="bodytext" style="margin:0 0 9px">${esc(GROW_BOYS.early)}</p>
+        <div class="callout"><p style="margin:0">${esc(GROW_BOYS.note)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(GROW_EARLY_RISK.title)}</h4>
+        ${GROW_EARLY_RISK.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <p class="sect">What helps</p>
+        ${list(GROW_EARLY_RISK.what)}
+      </div>` : ''}
+
+    ${tab === 'talking' ? `
+      <div class="card leafy">
+        <p class="eyebrow">${icon('heart', 11, 'var(--sage)')} ${esc(GROW_HEAD)}</p>
+        ${GROW_INTRO.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(GROW_EVIDENCE.title)}</h4>
+        ${list(GROW_EVIDENCE.items)}
+        <div class="callout" style="margin-top:10px">
+          <p style="margin:0"><strong style="color:var(--deep)">For fathers:</strong> ${esc(GROW_EVIDENCE.dads)}</p>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(GROW_CONSENT.title)}</h4>
+        <p class="tiny" style="margin:0 0 9px">${esc(GROW_CONSENT.intro)}</p>
+        ${GROW_CONSENT.bands.map((b) => `
+          <div class="quote">
+            <p class="sit">${esc(b.when)}</p>
+            <p class="why" style="margin-top:4px">${esc(b.what)}</p>
+          </div>`).join('')}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(GROW_CONSENT.note)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(GROW_SEXED.title)}</h4>
+        <p class="sect" style="margin-top:0">${esc(GROW_SEXED.strong.title)}</p>
+        ${list(GROW_SEXED.strong.items)}
+        <p class="sect">${esc(GROW_SEXED.weak.title)}</p>
+        <p class="bodytext" style="margin:0 0 9px">${esc(GROW_SEXED.weak.body)}</p>
+        <div class="callout"><p style="margin:0">${esc(GROW_SEXED.yours)}</p></div>
+      </div>` : ''}
+
+    ${tab === 'safe' ? `
+      <div class="dsec">
+        <h4>${esc(GROW_NAMES.title)}</h4>
+        ${GROW_NAMES.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout"><p style="margin:0">${esc(GROW_NAMES.verdict)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(GROW_BODY_RULES.title)}</h4>
+        ${GROW_BODY_RULES.items.map((x) => `
+          <div class="quote"><p class="why" style="margin:0">${esc(x)}</p></div>`).join('')}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(GROW_BODY_RULES.who)}</p></div>
+        <p class="sect">Your half of it</p>
+        <p class="bodytext">${esc(GROW_BODY_RULES.adults)}</p>
+      </div>
+
+      <div class="bpbox">
+        <p class="bpbox-t">${esc(GROW_DISCLOSE.title)}</p>
+        <ol class="bpsteps">
+          ${GROW_DISCLOSE.items.map((x) => `<li>${esc(x)}</li>`).join('')}
+        </ol>
+      </div>
+
+      <div class="dsec">
+        <h4>The online half of the same thing</h4>
+        <p class="bodytext" style="margin:0 0 10px">Everything above is about the people who can reach
+          your child in a room. Most of them now reach them through a screen instead, and the
+          groundwork is identical.</p>
+        <button class="btn ghost" style="width:100%" data-go="screen" data-id="online">
+          ${icon('shield', 14, 'var(--deep)')} ${esc(ONLINE_TITLE)}
+        </button>
+      </div>` : ''}
+
+    ${dsec('Where this comes from', sourceRows(GROW_SOURCES))}
+    <p class="disclaimer">${esc(GROW_DISCLAIMER)}</p>
   </div>`;
 }
 
@@ -12818,13 +13186,17 @@ function screenChild(c) {
         'data-go="screen" data-id="vaccines"')}
       ${childRow('pill', 'Something is wrong right now',
         'Fever, rashes, crying that will not stop, and when to call',
-        'data-go="screen" data-id="now"')}`,
+        'data-go="screen" data-id="now"')}
+      ${months != null && months >= 18 ? childRow('leaf', GROW_TITLE, growRowSub(months),
+        'data-go="screen" data-id="growingup"') : ''}`,
 
     safety: () => `
       ${sectHead('safety', months, 'If something happens')}
       ${childRow('heart', 'CPR, choking and staying safe',
         esc('For ' + getCprForAge(months).label.toLowerCase()) + ', plus what to do when you are at the end of it',
         'data-go="screen" data-id="safety"')}
+      ${months != null && months >= 12 ? childRow('note', ONLINE_TITLE, onlineRowSub(months),
+        'data-go="screen" data-id="online"') : ''}
       ${childRow('shield', SUP_TITLE,
         'A caseworker, somebody who frightens you, or somebody targeting your child',
         'data-go="screen" data-id="support"')}`,

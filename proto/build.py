@@ -89,6 +89,8 @@ order = [
     ('foryou',              SRC/'data/foryou.js'),
     ('breakingPoint',       SRC/'data/breakingPoint.js'),
     ('support',             SRC/'data/support.js'),
+    ('onlineSafety',        SRC/'data/onlineSafety.js'),
+    ('growingUp',           SRC/'data/growingUp.js'),
     ('eatingTogether',      SRC/'data/eatingTogether.js'),
     ('childSections',       SRC/'data/childSections.js'),
     ('signLanguage',        SRC/'data/signLanguage.js'),
