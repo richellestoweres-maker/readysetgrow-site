@@ -62,6 +62,59 @@ self.addEventListener('message', (ev) => {
   if (ev && ev.data === 'skip-waiting') self.skipWaiting();
 });
 
+/* ---------------- PUSH ----------------
+
+   The messages that arrive when the app is shut. Firebase normally
+   wants its own file called firebase-messaging-sw.js for this, but a
+   second service worker on the same scope is a fight nobody wins, so
+   the app registers this one with Firebase instead and the raw push
+   event is handled here by hand.
+
+   Handled by hand and not through the Firebase SDK on purpose: the
+   payload is three strings, the SDK is a hundred kilobytes, and a
+   service worker that pulls a hundred kilobytes off the network before
+   it can show a notification will sometimes not show one. */
+self.addEventListener('push', (ev) => {
+  let d = {};
+  try { d = ev.data ? ev.data.json() : {}; } catch (err) { d = {}; }
+  const n = d.notification || {};
+  const data = d.data || {};
+  const title = n.title || 'Ready Set Grow';
+  const body = n.body || '';
+  const url = data.url || n.click_action || '/';
+
+  ev.waitUntil(self.registration.showNotification(title, {
+    body: body,
+    icon: '/icon-192.png',
+    badge: '/favicon-32.png',
+    tag: data.tag || n.tag || 'rsg',
+    /* Never re alerts for something already on the screen. A lock
+       screen with six of these on it is how somebody turns the whole
+       feature off. */
+    renotify: false,
+    data: { url: url },
+  }));
+});
+
+/* Tapping one. If the app is already open somewhere, that window is
+   brought forward and told where to go, rather than a second copy
+   being opened next to it. */
+self.addEventListener('notificationclick', (ev) => {
+  ev.notification.close();
+  const url = (ev.notification.data && ev.notification.data.url) || '/';
+  ev.waitUntil((async () => {
+    const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const c of all) {
+      if (c.url.indexOf(self.location.origin) === 0) {
+        await c.focus();
+        try { c.postMessage({ rsg: 'open', url: url }); } catch (err) {}
+        return;
+      }
+    }
+    await self.clients.openWindow(url);
+  })());
+});
+
 function isPage(req) {
   if (req.mode === 'navigate') return true;
   const a = req.headers.get('accept') || '';

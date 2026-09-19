@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-19 14:42">
+<meta name="rsg-build" content="2026-09-19 14:50">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1066,6 +1066,10 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 }
 .updatebtn.ghost{background:transparent;color:var(--deep2);border-color:transparent}
 
+/* the quiet hours row, two selects that must both fit a 320px phone */
+.quietrow{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.quietrow .inp{flex:1 1 90px;min-width:0;padding:8px 9px}
+
 /* ---------- THE VACCINE RECORD ----------
    A folding list. Closed it is one line per vaccine, which is the view
    somebody wants when they are answering a question at a desk. Open it
@@ -1514,7 +1518,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-19 14:42';
+const BUILD_STAMP = '2026-09-19 14:50';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -26053,6 +26057,163 @@ function vaxCounts(record, skipped) {
 }
 
 
+/* ===== src/data/notifications.js ===== */
+/**
+ * Ready Set Grow: Notifications
+ * ------------------------------------------------------------------
+ * The app being able to say something while it is closed.
+ *
+ * WHY THIS NEEDS A SERVER AND MOST FEATURES DO NOT
+ * Everything else in this app runs in the browser. A notification
+ * cannot, because the whole point is that it arrives when the browser
+ * is not running. Something else has to be awake and decide to send
+ * it, and that something is a scheduled function on Firebase. So this
+ * file is the words and the rules, the app holds the permission and
+ * the token, and functions/index.js holds the part that is awake.
+ *
+ * NOTHING IS ASKED FOR UNTIL IT WOULD WORK
+ * WEB_PUSH_KEY below is empty until the project has a web push
+ * certificate. While it is empty the app never asks for permission,
+ * never shows the settings, and never mentions notifications, because
+ * a permission prompt that leads nowhere burns the one chance a site
+ * gets to ask. A browser that has been refused once is very hard to
+ * ask again.
+ *
+ * THE RULE FOR WHAT IS WORTH INTERRUPTING SOMEBODY FOR
+ * A parent of a newborn is asleep at unpredictable times and has a
+ * phone next to their head. Getting this wrong is worse than not
+ * having it. So: nothing is on by default except the things the
+ * parent themselves set up, nothing arrives between the quiet hours
+ * they choose, and anything that is not time critical waits and goes
+ * out together once a day rather than one at a time.
+ */
+
+/* The public half of the project's web push certificate, from the
+   Firebase console under Cloud Messaging. Public by design, the same
+   way the rest of the Firebase config is: it identifies the project to
+   the browser's push service and authorises nothing. Empty means the
+   whole feature stays asleep. */
+const WEB_PUSH_KEY = '';
+
+function pushConfigured() {
+  return typeof WEB_PUSH_KEY === 'string' && WEB_PUSH_KEY.length > 20;
+}
+
+const PUSH_TITLE = 'Notifications';
+const PUSH_SUB = 'What the app is allowed to interrupt you for.';
+
+const PUSH_INTRO =
+  'Nothing here is on unless you turn it on, and nothing arrives during the hours you mark as quiet.';
+
+/* WHAT CAN BE SENT.
+   Deliberately short. Every one of these is something a parent
+   actually asked for at some point, rather than a reason to re engage
+   them with the app. */
+const PUSH_KINDS = [
+  {
+    id: 'reply',
+    label: 'Somebody replies to you',
+    detail: 'A reply to one of your posts, or to a comment you left. Sent when it happens.',
+    instant: true,
+    defaultOn: true,
+  },
+  {
+    id: 'metoo',
+    label: 'Somebody lights up with you',
+    detail: 'When you have a firefly lit at night and another parent sends a me too. Sent when it happens, and only while yours is lit.',
+    instant: true,
+    defaultOn: true,
+  },
+  {
+    id: 'jobs',
+    label: 'The jobs left today',
+    detail: 'One message in the evening listing what is still unticked on the chart. Only if there is anything.',
+    instant: false,
+    defaultOn: false,
+    at: 18,
+  },
+  {
+    id: 'checkin',
+    label: 'The daily check in',
+    detail: 'A nudge to answer how the day went, once, at a time you pick. Thirty seconds.',
+    instant: false,
+    defaultOn: false,
+    at: 19,
+  },
+  {
+    id: 'appointment',
+    label: 'Something is coming up',
+    detail: 'A vaccine dose or a check that is due around now, sent a few days before rather than on the day.',
+    instant: false,
+    defaultOn: false,
+    at: 9,
+  },
+];
+
+const PUSH_QUIET = {
+  title: 'Quiet hours',
+  body: 'Nothing that is not a reply to you will arrive between these times. A reply still waits until '
+    + 'morning if it lands in the quiet hours, it does not jump the queue.',
+  defaultFrom: 21,
+  defaultTo: 7,
+};
+
+const PUSH_HOW = {
+  title: 'How it works and what it costs you',
+  items: [
+    'Your phone, not us, decides whether an app may interrupt you. Turning something on here only means the app will try.',
+    'On an iPhone this only works once the app is on your home screen. That is an Apple rule and there is no way around it.',
+    'You can turn the whole thing off in one tap here, and again in your phone settings, and we will not ask twice.',
+    'Nothing in a notification says anything about your child by name on a lock screen unless you turn that on.',
+  ],
+};
+
+const PUSH_NAMES = {
+  title: 'Names on the lock screen',
+  body: 'By default a notification says what happened without saying who it is about, because a lock '
+    + 'screen is read by whoever is standing near it. Turn this on if you would rather see the name.',
+};
+
+const PUSH_DENIED =
+  'Your phone has notifications blocked for this app. Nothing here can turn them back on, only you can, '
+  + 'in your phone settings under this app or this website.';
+
+const PUSH_NOT_YET =
+  'Notifications are not switched on for this app yet. When they are, this is where you will choose '
+  + 'what is worth interrupting you for.';
+
+const PUSH_IOS_NEEDS_INSTALL =
+  'On an iPhone, notifications only work once the app is on your home screen. Add it first and then '
+  + 'come back here.';
+
+function pushKind(id) {
+  return PUSH_KINDS.filter((k) => k.id === id)[0] || null;
+}
+
+function pushDefaults() {
+  const out = {};
+  PUSH_KINDS.forEach((k) => { out[k.id] = !!k.defaultOn; });
+  return out;
+}
+
+/* The shape written to the user's own document, which is all the
+   scheduled function ever reads. Deliberately small and deliberately
+   free of anything about a child. */
+function pushSettingsPayload(prefs, token, tz) {
+  const on = {};
+  PUSH_KINDS.forEach((k) => { on[k.id] = !!(prefs || {})[k.id]; });
+  return {
+    tokens: token ? [token] : [],
+    kinds: on,
+    quietFrom: Number((prefs || {}).quietFrom),
+    quietTo: Number((prefs || {}).quietTo),
+    useNames: !!(prefs || {}).useNames,
+    tz: tz || '',
+    updatedAt: Date.now(),
+  };
+}
+
+
 /* ===== src/data/breakingPoint.js ===== */
 /**
  * Ready Set Grow: When A Parent Is At The End Of It
@@ -28498,6 +28659,12 @@ const store = {
   /* Pounds and inches or kilograms and centimetres. A preference of the
      parent's, not of the child's, because a household reads one or the
      other and the numbers are stored metric either way. */
+  /* Notification settings. Kept locally as well as on the account so
+     the screen can draw before Firestore has answered. pushOn is the
+     one that means permission was granted and a token was saved. */
+  pushOn: false,
+  pushPrefs: {},
+
   vaxTab: 'list',
   vaxOpen: '',
   vaxEdit: '',
@@ -28711,6 +28878,8 @@ function flushStore() {
       choreAdults: store.choreAdults,
       choreStarsOn: store.choreStarsOn,
       growthUnits: store.growthUnits,
+      pushOn: store.pushOn,
+      pushPrefs: store.pushPrefs,
       installWaves: store.installWaves,
       onboard: store.onboard,
       nudge: store.nudge,
@@ -28825,6 +28994,8 @@ function loadStore() {
        default everywhere else. */
     store.choreStarsOn = saved.choreStarsOn === false ? false : true;
     store.growthUnits = saved.growthUnits === 'metric' ? 'metric' : 'us';
+    store.pushOn = !!saved.pushOn;
+    store.pushPrefs = (saved.pushPrefs && typeof saved.pushPrefs === 'object') ? saved.pushPrefs : {};
     store.installWaves = Number(saved.installWaves) || 0;
     store.deletedMemoryIds = Array.isArray(saved.deletedMemoryIds) ? saved.deletedMemoryIds : [];
     store.onboard = (saved.onboard && typeof saved.onboard === 'object')
@@ -29849,6 +30020,7 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'learning') html = screenLearning(c);
   else if (v && v.type === 'screen' && v.id === 'growth') html = screenGrowth(c);
   else if (v && v.type === 'screen' && v.id === 'vaxrecord') html = screenVaxRecord(c);
+  else if (v && v.type === 'screen' && v.id === 'notifications') html = screenPush();
   else if (v && v.type === 'screen' && v.id === 'plan') html = screenPlan(c);
   else if (v && v.type === 'screen' && v.id === 'sleep') html = screenSleep(c);
   else if (v && v.type === 'screen' && v.id === 'development') html = screenDevelopment(c);
@@ -30315,7 +30487,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -30672,6 +30844,14 @@ function initControls() {
       return;
     } else if (t.dataset.update === 'later') {
       update.dismissed = true;
+    } else if (t.dataset.push === 'on') {
+      pushEnable();
+      return;
+    } else if (t.dataset.push === 'off') {
+      pushDisable();
+      return;
+    } else if (t.dataset.push === 'kind') {
+      pushToggleKind(t.dataset.id);
     } else if (t.dataset.vax === 'open') {
       store.vaxOpen = store.vaxOpen === t.dataset.id ? '' : t.dataset.id;
       store.vaxEdit = '';
@@ -36891,6 +37071,12 @@ function cornerMenu(who) {
       <span class="grow"><span class="cmenu-t">${esc(SHARE_TITLE)}</span>
       <span class="cmenu-s">Let somebody else see and add to a child</span></span>
     </button>
+    ${pushConfigured() ? `
+    <button class="cmenu-row" data-go="screen" data-id="notifications">
+      <span class="cmenu-ic">${icon('info', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">${esc(PUSH_TITLE)}</span>
+      <span class="cmenu-s">${esc(store.pushOn ? 'On. What the app may interrupt you for.' : 'Off. Nothing will interrupt you.')}</span></span>
+    </button>` : ''}
     <button class="cmenu-row" data-menugo="situation">
       <span class="cmenu-ic">${icon('leaf', 15, 'var(--deep)')}</span>
       <span class="grow"><span class="cmenu-t">Where you are right now</span>
@@ -41681,6 +41867,7 @@ function newbornBlock(c) {
 
 const cloud = {
   mod: null,        // the Firestore module namespace
+  app: null,        // the initialised Firebase app, shared with messaging
   db: null,
   uid: null,
   unsub: null,      // the live listener, so signing out can stop it
@@ -41924,6 +42111,10 @@ function cloudSetStatus(s, err) {
 async function cloudStart(app, uid) {
   if (cloud.started && cloud.uid === uid) return;
   cloudStop();
+  /* Kept so notifications can attach to the same initialised app
+     rather than starting a second one, which Firebase tolerates and
+     then behaves oddly about. */
+  cloud.app = app;
   cloud.uid = uid;
   cloud.started = true;
   cloudSetStatus('loading');
@@ -42464,6 +42655,290 @@ function cloudStatusLine() {
   return { tone: 'plain', title: 'Saved on this device', text: 'Sign in to keep it on your account too.' };
 }
 
+
+/* =================================================================
+   NOTIFICATIONS
+
+   The client half. The app asks for permission, gets a token from
+   Firebase and writes it to the user's own document. The half that is
+   awake and decides to send anything is functions/index.js.
+
+   THE WHOLE THING STAYS ASLEEP UNTIL IT WOULD WORK
+   A site gets one chance to ask a browser for notification permission.
+   Refused once, it is very hard to ask again, and on an iPhone it is
+   effectively impossible. So nothing here appears at all until
+   WEB_PUSH_KEY has a value, which is to say until the server half
+   actually exists. See src/data/notifications.js.
+
+   AND IT IS NEVER ASKED FOR WITHOUT BEING ASKED FOR
+   No prompt on arrival, no prompt after three visits, no prompt when
+   somebody posts. The browser dialog only ever appears after a tap on
+   a button on this screen that says exactly what it is about to do.
+   ================================================================= */
+
+const push = {
+  mod: null,
+  messaging: null,
+  token: '',
+  busy: false,
+  error: '',
+};
+
+function pushSupported() {
+  return typeof window !== 'undefined'
+    && 'Notification' in window
+    && 'serviceWorker' in navigator
+    && 'PushManager' in window;
+}
+
+function pushPermission() {
+  try { return Notification.permission; } catch (err) { return 'default'; }
+}
+
+/* An iPhone can do this only from a home screen install. Saying so
+   before the button rather than after the failure. */
+function pushNeedsInstallFirst() {
+  return installPlatform() === 'ios' && !isInstalled();
+}
+
+function pushPrefs() {
+  const p = (store.pushPrefs && typeof store.pushPrefs === 'object') ? store.pushPrefs : {};
+  const out = Object.assign({}, pushDefaults(), p);
+  if (!isFinite(Number(out.quietFrom))) out.quietFrom = PUSH_QUIET.defaultFrom;
+  if (!isFinite(Number(out.quietTo))) out.quietTo = PUSH_QUIET.defaultTo;
+  return out;
+}
+
+async function pushLoad() {
+  if (push.messaging) return push.messaging;
+  const v = FIREBASE_SDK_VERSION;
+  const mod = await import(`https://www.gstatic.com/firebasejs/${v}/firebase-messaging.js`);
+  const supported = await mod.isSupported().catch(() => false);
+  if (!supported) throw new Error('This browser cannot do notifications.');
+  push.mod = mod;
+  push.messaging = mod.getMessaging(cloud.app || undefined);
+  return push.messaging;
+}
+
+/* Asking, once, out loud, in response to a tap. */
+async function pushEnable() {
+  if (push.busy) return;
+  push.busy = true;
+  push.error = '';
+  render();
+  try {
+    if (!cloud.uid) throw new Error('Sign in first, so the settings follow you to your other devices.');
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') {
+      push.error = perm === 'denied' ? PUSH_DENIED : 'Not switched on. You can tap again whenever you like.';
+      push.busy = false;
+      render();
+      return;
+    }
+    const messaging = await pushLoad();
+    /* Handed our own service worker rather than letting Firebase
+       register a second one. Two workers on one scope fight, and the
+       one that wins is not always the one with the push handler. */
+    const reg = await navigator.serviceWorker.ready;
+    const token = await push.mod.getToken(messaging, {
+      vapidKey: WEB_PUSH_KEY,
+      serviceWorkerRegistration: reg,
+    });
+    if (!token) throw new Error('The browser did not give us a token. Try again in a moment.');
+    push.token = token;
+    await pushSaveSettings(token);
+    store.pushOn = true;
+    saveStore();
+  } catch (err) {
+    push.error = String((err && err.message) || err);
+  }
+  push.busy = false;
+  render();
+}
+
+/* Writes to users/<uid>/private/push, which is the only document the
+   scheduled function ever reads. Nothing about a child goes in it. */
+async function pushSaveSettings(token) {
+  if (!cloud.db || !cloud.uid) return;
+  const fs = cloud.mod;
+  if (!fs) return;
+  let tz = '';
+  try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (err) {}
+  const payload = pushSettingsPayload(pushPrefs(), token || push.token, tz);
+  /* merge so a second device adds its token rather than replacing the
+     first one's. The tokens array is unioned for the same reason. */
+  await fs.setDoc(
+    fs.doc(cloud.db, 'users', cloud.uid, 'private', 'push'),
+    payload,
+    { merge: true },
+  ).catch((err) => { push.error = 'Could not save that. ' + String(err.message || err); });
+}
+
+async function pushDisable() {
+  push.busy = true;
+  render();
+  try {
+    if (cloud.db && cloud.uid && cloud.mod) {
+      const fs = cloud.mod;
+      await fs.setDoc(
+        fs.doc(cloud.db, 'users', cloud.uid, 'private', 'push'),
+        { tokens: [], kinds: {}, updatedAt: Date.now() },
+        { merge: true },
+      ).catch(() => {});
+    }
+    if (push.messaging && push.mod && push.mod.deleteToken) {
+      await push.mod.deleteToken(push.messaging).catch(() => {});
+    }
+  } catch (err) {}
+  push.token = '';
+  store.pushOn = false;
+  saveStore();
+  push.busy = false;
+  render();
+}
+
+function pushToggleKind(id) {
+  const p = pushPrefs();
+  p[id] = !p[id];
+  store.pushPrefs = p;
+  saveStore();
+  if (store.pushOn) pushSaveSettings().catch(() => {});
+}
+
+function pushSetQuiet(which, value) {
+  const p = pushPrefs();
+  p[which] = Math.max(0, Math.min(23, Number(value) || 0));
+  store.pushPrefs = p;
+  saveStore();
+  if (store.pushOn) pushSaveSettings().catch(() => {});
+}
+
+function hourLabel(h) {
+  const n = Number(h) || 0;
+  if (n === 0) return 'midnight';
+  if (n === 12) return 'noon';
+  return (n > 12 ? n - 12 : n) + (n >= 12 ? 'pm' : 'am');
+}
+
+function screenPush() {
+  const perm = pushPermission();
+  const p = pushPrefs();
+  const on = !!store.pushOn && perm === 'granted';
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(PUSH_TITLE)}</h1>
+    <p class="sub">${esc(PUSH_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${!pushConfigured() ? `
+      <div class="card leafy">
+        <p class="bodytext">${esc(PUSH_NOT_YET)}</p>
+      </div>
+      <div class="dsec">
+        <h4>${esc(PUSH_HOW.title)}</h4>
+        ${list(PUSH_HOW.items)}
+      </div>` : `
+      <div class="card leafy">
+        <p class="bodytext">${esc(PUSH_INTRO)}</p>
+      </div>
+
+      ${!pushSupported() ? `
+        <div class="card flat"><p class="bodytext">This browser cannot do notifications at all.</p></div>`
+    : pushNeedsInstallFirst() ? `
+        <div class="card flat">
+          <p class="bodytext">${esc(PUSH_IOS_NEEDS_INSTALL)}</p>
+          <button class="bigbtn" data-go="screen" data-id="install" style="margin-top:10px">Put it on my home screen</button>
+        </div>`
+      : perm === 'denied' ? `
+        <div class="card flat"><p class="bodytext">${esc(PUSH_DENIED)}</p></div>`
+        : `
+        <button class="bigbtn" data-push="${on ? 'off' : 'on'}"${push.busy ? ' disabled' : ''}>
+          ${esc(push.busy ? 'One moment' : (on ? 'Turn notifications off' : 'Turn notifications on'))}
+        </button>`}
+      ${push.error ? `<p class="tiny" style="color:var(--concern);margin:4px 0 10px">${esc(push.error)}</p>` : ''}
+
+      <div class="dsec">
+        <h4>What is worth interrupting you for</h4>
+        ${PUSH_KINDS.map((k) => `
+          <button class="lrow" data-push="kind" data-id="${esc(k.id)}">
+            <span class="chbox${p[k.id] ? ' on' : ''}" style="margin-top:2px">
+              ${p[k.id] ? icon('check', 13, '#fff') : ''}
+            </span>
+            <span class="grow">
+              <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(k.label)}</span>
+              <span class="tiny" style="display:block;margin-top:2px">${esc(k.detail)}</span>
+            </span>
+          </button>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PUSH_QUIET.title)}</h4>
+        <p class="tiny" style="margin:0 0 10px">${esc(PUSH_QUIET.body)}</p>
+        <div class="quietrow">
+          <span class="tiny">From</span>
+          <select class="inp" data-pushquiet="quietFrom">
+            ${[...Array(24).keys()].map((h) => `
+              <option value="${h}"${Number(p.quietFrom) === h ? ' selected' : ''}>${esc(hourLabel(h))}</option>`).join('')}
+          </select>
+          <span class="tiny">until</span>
+          <select class="inp" data-pushquiet="quietTo">
+            ${[...Array(24).keys()].map((h) => `
+              <option value="${h}"${Number(p.quietTo) === h ? ' selected' : ''}>${esc(hourLabel(h))}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PUSH_NAMES.title)}</h4>
+        <button class="lrow" data-push="kind" data-id="useNames">
+          <span class="chbox${p.useNames ? ' on' : ''}" style="margin-top:2px">
+            ${p.useNames ? icon('check', 13, '#fff') : ''}
+          </span>
+          <span class="grow"><span class="tiny">${esc(PUSH_NAMES.body)}</span></span>
+        </button>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PUSH_HOW.title)}</h4>
+        ${list(PUSH_HOW.items)}
+      </div>`}
+    ${privacyLine()}
+  </div>`;
+}
+
+/* A tap on a notification tells the open window where to go. Paired
+   with the postMessage in sw.js. */
+if (typeof navigator !== 'undefined' && navigator.serviceWorker && navigator.serviceWorker.addEventListener) {
+  navigator.serviceWorker.addEventListener('message', (ev) => {
+    const d = ev && ev.data;
+    if (!d || d.rsg !== 'open' || !d.url) return;
+    try {
+      const u = new URL(d.url, location.origin);
+      const open = u.searchParams.get('open');
+      if (open) { pushOpenTarget(open); render(); }
+    } catch (err) {}
+  });
+}
+
+/* A notification, or a link from one, naming where to land. Kept in
+   one place so the function and the app cannot drift on the names. */
+function pushOpenTarget(name) {
+  const map = {
+    chores: { type: 'screen', id: 'chores' },
+    checkin: { type: 'screen', id: 'checkins' },
+    vaxrecord: { type: 'screen', id: 'vaxrecord' },
+    community: null,
+    growth: { type: 'screen', id: 'growth' },
+  };
+  if (!(name in map)) return false;
+  if (name === 'community') { state.tab = 'community'; state.view = null; return true; }
+  state.tab = 'home';
+  state.view = map[name];
+  return true;
+}
 
 /* =================================================================
    THE VACCINE RECORD

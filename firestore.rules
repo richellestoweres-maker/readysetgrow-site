@@ -45,12 +45,151 @@ service cloud.firestore {
      * covers children, their logs and their milestones, because rules
      * do not cascade on their own.
      * --------------------------------------------------------------- */
+    /* ---------------------------------------------------------------
+     * TWO PARENTS, ONE CHILD
+     *
+     * A child's record stays exactly where it was, under the account
+     * that created it. Nothing moves and nothing migrates. What changes
+     * is that a second adult can be granted access to named children,
+     * one at a time, by that account.
+     *
+     * THREE PIECES, AND THE ORDER MATTERS:
+     *
+     *   invites/{code}     a short lived code the owner creates, naming
+     *                      which children it covers. Readable by any
+     *                      signed in account, because redeeming it is
+     *                      the only way to use it, so the code itself
+     *                      has to be long and short lived instead.
+     *
+     *   users/{owner}/shares/{viewer}
+     *                      the grant. Created by the VIEWER, but only
+     *                      by presenting a live invite, and only with
+     *                      exactly the children that invite named. The
+     *                      viewer cannot write themselves a better one.
+     *
+     *   links/{viewer}/from/{owner}
+     *                      the viewer's own index, so their app knows
+     *                      whose children to go and read. Same rule,
+     *                      same invite, written in the same moment.
+     *
+     * THE THING THIS IS BUILT TO PREVENT is one family reading another
+     * family's child, which is the worst bug this app could have. So
+     * the grant is never written from a value the viewer supplies. It
+     * is copied from the invite document by the rules themselves, and a
+     * mismatch is refused.
+     * --------------------------------------------------------------- */
+
+    function invitePath(code) {
+      return /databases/$(database)/documents/invites/$(code);
+    }
+
+    function inviteFor(code) {
+      return get(invitePath(code)).data;
+    }
+
+    /* A code that exists, has not expired, and has not been used. */
+    function inviteLive(code) {
+      return code is string
+        && code.size() >= 8
+        && exists(invitePath(code))
+        && inviteFor(code).expiresAt is number
+        && inviteFor(code).expiresAt > request.time.toMillis()
+        && inviteFor(code).usedBy == '';
+    }
+
+    /* Does this account hold a grant over this child. */
+    function sharedWithMe(ownerUid, childId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(ownerUid)/shares/$(request.auth.uid))
+        && childId in get(/databases/$(database)/documents/users/$(ownerUid)/shares/$(request.auth.uid)).data.childIds;
+    }
+
     match /users/{uid} {
+      /* The parent's own record, which is never shared. A co parent
+         gets the children, not the account. */
       allow read, write: if isOwner(uid);
+
+      /* Children are the one thing that can be shared. Named
+         explicitly and BEFORE the catch all below, because the catch
+         all would otherwise swallow it. */
+      /* NOTIFICATION SETTINGS.
+         Written by the owner, read by the scheduled function through
+         the admin SDK, which bypasses rules entirely. So nothing but
+         the owner ever needs read access here, and nothing else gets
+         it. Holds device tokens, which kinds were chosen and the quiet
+         hours. Nothing about a child is allowed anywhere near it. */
+      match /private/{docId} {
+        allow read, write: if isOwner(uid);
+      }
+
+      match /children/{childId} {
+        allow read, write: if isOwner(uid) || sharedWithMe(uid, childId);
+      }
+
+      /* Who this account has let in. The owner manages it. The viewer
+         may read and delete their own, so leaving is always possible
+         from either side. Creating one is the redemption, and it may
+         only ever say exactly what the invite said. */
+      match /shares/{viewerUid} {
+        allow read: if isOwner(uid) || request.auth.uid == viewerUid;
+        allow create: if signedIn()
+          && request.auth.uid == viewerUid
+          && request.resource.data.keys().hasOnly(['childIds', 'code', 'at'])
+          && inviteLive(request.resource.data.code)
+          && inviteFor(request.resource.data.code).ownerUid == uid
+          && request.resource.data.childIds == inviteFor(request.resource.data.code).childIds;
+        allow update: if isOwner(uid);
+        allow delete: if isOwner(uid) || request.auth.uid == viewerUid;
+      }
 
       match /{document=**} {
         allow read, write: if isOwner(uid);
       }
+    }
+
+    /* The viewer's own index of whose children to go and read. Written
+       at redemption under the same invite, readable and removable by
+       the viewer, and removable by the owner so revoking works from
+       both ends. */
+    match /links/{viewerUid}/from/{ownerUid} {
+      allow read: if request.auth.uid == viewerUid;
+      allow create: if signedIn()
+        && request.auth.uid == viewerUid
+        && request.resource.data.keys().hasOnly(['childIds', 'code', 'at'])
+        && inviteLive(request.resource.data.code)
+        && inviteFor(request.resource.data.code).ownerUid == ownerUid
+        && request.resource.data.childIds == inviteFor(request.resource.data.code).childIds;
+      allow delete: if request.auth.uid == viewerUid || request.auth.uid == ownerUid;
+    }
+
+    /* The invite itself. Made by the owner, naming their own children.
+       Readable by anybody signed in, which is only safe because the
+       code is long, short lived and single use. Marked used by the
+       viewer who redeems it, and by nobody else. */
+    match /invites/{code} {
+      allow read: if signedIn();
+
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['ownerUid', 'ownerName', 'childIds', 'childNames', 'expiresAt', 'usedBy', 'at'])
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.usedBy == ''
+        && request.resource.data.childIds is list
+        && request.resource.data.childIds.size() > 0
+        && request.resource.data.childIds.size() <= 12
+        && request.resource.data.expiresAt is number
+        && request.resource.data.expiresAt > request.time.toMillis()
+        /* Seven days at the outside. A code that lives forever is a
+           password that was written on a napkin. */
+        && request.resource.data.expiresAt <= request.time.toMillis() + 7 * 24 * 60 * 60 * 1000;
+
+      /* Burning the code. Only the account that just used it may do
+         it, only onto their own uid, and only from unused. */
+      allow update: if signedIn()
+        && resource.data.usedBy == ''
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usedBy'])
+        && request.resource.data.usedBy == request.auth.uid;
+
+      allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
     }
 
     /* ---------------------------------------------------------------
@@ -94,22 +233,61 @@ service cloud.firestore {
     /* ---------------------------------------------------------------
      * THE SHARED FEED
      *
-     * NOTHING IS PUBLIC UNTIL A PERSON APPROVES IT. That is the rule
-     * this whole block exists to enforce, and it is enforced here rather
-     * than in the app, because rules are the only place a promise about
-     * who can see what is actually kept.
+     * A PUBLIC POST GOES UP STRAIGHT AWAY. People decide for themselves
+     * what they share, and nothing waits in a queue for an owner to
+     * wake up.
      *
-     * A new post is created with status 'pending' and the rules refuse
-     * any other value on create, so an account cannot publish itself by
-     * sending a different field. A pending post is readable by its own
-     * author and by a moderator, and by nobody else. Only a moderator
-     * can move it to 'live', and only a moderator can move it to
-     * 'removed'.
+     * THE ONE EXCEPTION, AND WHY IT IS ENFORCED HERE.
+     * Two patterns are held back for a person to read first: a
+     * medication dose, and a phone number or email address. A dose from
+     * a stranger is the one thing in a parenting app that can put a
+     * child in hospital, and contact details in an open room are either
+     * harassment or a sales pitch waiting to happen.
+     *
+     * The app checks the same two patterns before it sends anything.
+     * They are ALSO checked here, because a check that only runs in the
+     * app is a suggestion: anybody can send a document straight to
+     * Firestore with whatever status they like. These lines are what
+     * make it a rule.
+     *
+     * Everything else, including every argument this app will ever host
+     * about sleep training, goes straight up and is handled by people
+     * reporting it. A filter that tried to judge tone would be wrong
+     * constantly and would quietly become the thing deciding what
+     * parents may say to each other.
      *
      * A post carries a username and never a child id, a birthday, or a
      * name. That is the structural half of the promise that a child's
      * record never becomes community content.
      * --------------------------------------------------------------- */
+
+    /* An email address anywhere in the body. */
+    function hasEmail(b) {
+      return b.matches('(?i).*[a-z0-9._%+-]+@[a-z0-9.-]+[.][a-z]{2,}.*');
+    }
+    /* Ten digits with anything or nothing between the groups, which
+       catches 555-123-4567, (555) 123 4567 and 5551234567 alike. */
+    function hasPhone(b) {
+      return b.matches('.*[0-9]{3}[^a-zA-Z0-9]?[0-9]{3}[^a-zA-Z0-9]?[0-9]{4}.*');
+    }
+    /* A number next to a unit medicine is measured in. Deliberately not
+       matching "2 doses" or "10 minutes". */
+    function hasDose(b) {
+      return b.matches('(?i).*[0-9][ ]?(mg|mcg|ml|cc)([^a-z]|$).*');
+    }
+    function mustBeHeld(b) {
+      return hasDose(b) || hasEmail(b) || hasPhone(b);
+    }
+
+    /* The rooms, mirrored from src/data/groups.js. Adding a room means
+       adding it in both places, which is the price of the server being
+       able to refuse one that does not exist. */
+    function groupOk(g) {
+      return g == ''
+        || g in ['nights', 'feeding', 'sleep', 'first', 'solo', 'bodies',
+                 'needs', 'big', 'blended', 'struggling', 'loss'];
+    }
+
     match /feed/{postId} {
       allow read: if signedIn() && (
         resource.data.status == 'live'
@@ -118,25 +296,38 @@ service cloud.firestore {
       );
 
       allow create: if isAuthor()
-        && request.resource.data.status == 'pending'
         && request.resource.data.body is string
         && request.resource.data.body.size() > 0
         && request.resource.data.body.size() <= 4000
         && request.resource.data.username is string
         && request.resource.data.username.size() > 0
+        /* Live is allowed only for a body that trips nothing. Anything
+           that does must arrive marked held, whatever the app sending it
+           would prefer. */
+        && (mustBeHeld(request.resource.data.body)
+              ? request.resource.data.status == 'held'
+              : (request.resource.data.status == 'live'
+                 || request.resource.data.status == 'held'))
+        /* The room it hangs in. One of the fixed list or the empty
+           string, which means the main feed. Checked here as well as
+           in the app so a modified client cannot invent a room that
+           nobody can moderate because nobody knows it exists. */
+        && request.resource.data.group is string
+        && groupOk(request.resource.data.group)
         && !('childId' in request.resource.data)
         && !('birthday' in request.resource.data)
         && !('childName' in request.resource.data);
 
-      /* A moderator decides what is live. An author may fix their own
-         wording while it is still waiting, and may not touch the status
-         while doing it. */
+      /* Only a moderator moves a post between statuses. An author may
+         fix their own wording, and may not put their own held post up
+         by editing it. */
       allow update: if isModerator()
         || (ownsExisting()
-            && resource.data.status == 'pending'
-            && request.resource.data.status == 'pending'
+            && request.resource.data.status == resource.data.status
             && request.resource.data.authorUid == resource.data.authorUid
-            && request.resource.data.body.size() <= 4000);
+            && request.resource.data.get('group', '') == resource.data.get('group', '')
+            && request.resource.data.body.size() <= 4000
+            && !mustBeHeld(request.resource.data.body));
 
       allow delete: if ownsExisting() || isModerator();
 
@@ -187,14 +378,69 @@ service cloud.firestore {
 
     /* ---------------------------------------------------------------
      * REPORTS
-     * Reports go in and nothing comes out. A person who reports a post
-     * must not be able to read other people's reports, and must not be
-     * able to edit their own after the fact.
+     * Reports go in, and only a moderator can read them. A person who
+     * reports a post must not be able to see other people's reports,
+     * must not be able to see who else reported, and must not be able
+     * to edit their own after the fact. Telling a reporter anything at
+     * all tells them who reported.
      * --------------------------------------------------------------- */
+    /* ---------------------------------------------------------------
+     * FIREFLIES
+     * The night sky. One document per account, keyed by the account id,
+     * so this collection can never grow past one row per person however
+     * many nights they are up.
+     *
+     * THE WHOLE DOCUMENT IS TWO NUMBERS: when the light goes out, and
+     * how many people have tapped it. The rules below enforce that it
+     * can never hold anything else, which is the point. No location, no
+     * name, no username, no child, no words, no activity. There is
+     * nothing here to moderate because there is nothing here.
+     *
+     * A light cannot be lit for longer than four hours, so a bad client
+     * cannot park one in the sky forever.
+     *
+     * The me too is the interesting rule. Anybody signed in may update
+     * somebody else's light, but ONLY the glow field, and ONLY upward
+     * by exactly one. That is the full extent of what a stranger can do
+     * to your light: add one to a number.
+     * --------------------------------------------------------------- */
+    function flyWindowOk(t) {
+      return t is number
+        && t > request.time.toMillis()
+        && t <= request.time.toMillis() + 4 * 60 * 60 * 1000;
+    }
+
+    function flyShapeOk() {
+      return request.resource.data.keys().hasOnly(['out', 'lit', 'glow'])
+        && flyWindowOk(request.resource.data.out);
+    }
+
+    match /fireflies/{uid} {
+      allow read: if signedIn();
+
+      allow create: if isOwner(uid) && flyShapeOk();
+
+      allow update: if
+        /* You, relighting or extending your own. Cannot touch glow,
+           because inflating your own me too count is exactly the sort
+           of pointless thing somebody would do. */
+        (isOwner(uid) && flyShapeOk()
+          && request.resource.data.get('glow', 0) == resource.data.get('glow', 0))
+        ||
+        /* Anybody else, saying me too. One field, one step up. */
+        (signedIn() && request.auth.uid != uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['glow'])
+          && request.resource.data.glow == resource.data.get('glow', 0) + 1);
+
+      allow delete: if isOwner(uid);
+    }
+
     match /reports/{reportId} {
       allow create: if signedIn()
         && request.resource.data.reporterUid == request.auth.uid;
-      allow read, update, delete: if false;
+      allow read: if isModerator();
+      allow delete: if isModerator();
+      allow update: if false;
     }
 
     /* ---------------------------------------------------------------
