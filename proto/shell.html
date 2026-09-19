@@ -126,9 +126,83 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 /* an affirmation sitting on its own soft shape */
 .affirm{position:absolute;pointer-events:none}
 .affirm svg{position:absolute;inset:0;width:100%;height:100%}
-.affirm span{position:absolute;font-family:var(--script);color:#A79A86;
-  line-height:1.34;display:block}
-.affirm .heart{position:absolute;color:#C4A79A;font-size:12px}
+.affirm span{font-family:var(--script);color:#A79A86;line-height:1.34;display:block}
+/* The words sit centred in their shape with the heart under them. One
+   box per shape rather than a hand placed offset for each. */
+.affirm .affirm-in{position:absolute;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:5px;text-align:center;padding:9% 11%}
+.affirm .affirm-lines{display:block}
+.affirm .heart{color:#C4A79A;font-size:11px;line-height:1}
+
+/* Emoji in the composer, and the reactions under a shared post. The
+   glyphs get a font stack of their own, because the script face the
+   affirmations use has no emoji in it and the browser would otherwise
+   pick something different on every platform. */
+.emo{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
+  font-style:normal;line-height:1;display:inline-block}
+.emotray{margin-top:10px;border:1px solid var(--line2);border-radius:14px;padding:10px 11px;
+  background:var(--paper2);max-height:214px;overflow-y:auto}
+.emogroup{margin:0 0 6px;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.emogroup:not(:first-child){margin-top:11px}
+.emogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:3px}
+.emobtn{border:0;background:transparent;border-radius:9px;padding:6px 0;font-size:20px;cursor:pointer;
+  line-height:1;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.emobtn:hover{background:var(--leaf2)}
+
+.reacts{margin-top:10px;border-top:1px solid var(--line2);padding-top:9px}
+.reacttally{display:flex;align-items:center;gap:6px;margin-bottom:7px}
+.reactfaces{display:inline-flex}
+.reactfaces .emo{font-size:14px;margin-right:-3px}
+.reactrow{display:flex;gap:5px;flex-wrap:wrap}
+.reactbtn{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line2);
+  background:var(--paper);border-radius:999px;padding:5px 11px;min-height:34px;cursor:pointer}
+.reactbtn .emo{font-size:16px}
+.reactbtn .reactn{font-size:12px;color:var(--body);font-weight:600}
+.reactbtn:hover{border-color:var(--leaf)}
+.reactbtn.on{background:var(--leaf2);border-color:var(--leaf)}
+.reactbtn.on .reactn{color:var(--deep)}
+
+/* A day she logged herself, marked apart from the days the app guessed. */
+.cal-d.logged{box-shadow:inset 0 0 0 2px var(--deep);font-weight:700;color:var(--deep)}
+button.cal-d{border:0;font-family:inherit;cursor:pointer;font-size:inherit}
+button.cal-d:hover{box-shadow:inset 0 0 0 2px var(--leaf)}
+.callegend i.k-logged{box-shadow:inset 0 0 0 2px var(--deep);background:transparent}
+.cychist{margin-top:10px;border-top:1px solid var(--line2);padding-top:4px}
+.cychrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line2)}
+.cychrow:last-child{border-bottom:0}
+.cychdate{display:block;font-size:13.5px;font-weight:600;color:var(--ink)}
+
+/* Looking back: a month with weight on the busy days, one day's rows,
+   and a plain line for a number that repeats. */
+.cal-d.has1{background:#EDF0E6}
+.cal-d.has2{background:#DCE5CE}
+.cal-d.has3{background:#C7D6B4}
+.cal-d.picked{box-shadow:inset 0 0 0 2px var(--deep);font-weight:700}
+button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:inherit}
+.callegend i.k-has1{background:#EDF0E6}
+.callegend i.k-has2{background:#DCE5CE}
+.callegend i.k-has3{background:#C7D6B4}
+.dayrow{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line2)}
+.dayrow:last-child{border-bottom:0}
+.dayrow-t{flex:0 0 62px;font-size:11.5px;color:var(--muted);padding-top:2px}
+.dayrow-l{display:block;font-size:13.5px;font-weight:600;color:var(--ink)}
+.spark{width:100%;height:44px;margin-top:10px;display:block}
+.notedcard{border-left:3px solid var(--leaf);background:var(--leaf2)}
+.durrow{display:flex;gap:10px;margin-top:7px}
+.durbit{flex:1;display:flex;flex-direction:column;gap:3px}
+.durbit .inp{width:100%}
+.durbit .tiny{text-align:center}
+/* memories */
+.memcard .memdate{display:block;font-size:13.5px;font-weight:600;color:var(--ink)}
+.memfiles{display:grid;gap:6px;margin-top:10px;grid-template-columns:1fr}
+.memfiles.n2,.memfiles.n3,.memfiles.n4{grid-template-columns:1fr 1fr}
+.memfile{position:relative;display:block;border-radius:12px;overflow:hidden;background:var(--paper2)}
+.memfile img,.memfile video{width:100%;display:block;max-height:340px;object-fit:cover}
+.memfile.audio{display:flex;align-items:center;gap:9px;padding:10px 12px}
+.memfile.audio audio{flex:1;min-width:0}
+.memup .bar{height:6px;border-radius:99px;background:var(--line2);overflow:hidden}
+.memup .bar i{display:block;height:100%;background:var(--leaf);border-radius:99px;transition:width .2s}
+.memday{border-left:3px solid var(--leaf)}
 
 /* brand wordmark, drawn rather than an image so it stays crisp */
 .mark{display:flex;flex-direction:column;align-items:center;position:relative;z-index:2}
@@ -211,6 +285,81 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .plan{background:var(--surface);border-radius:18px;padding:13px 14px;margin-bottom:9px;box-shadow:0 3px 12px rgba(107,101,80,.07);display:flex;gap:12px}
 .plan .picon{width:36px;height:36px;border-radius:50%;background:var(--leaf2);display:grid;place-items:center;flex:none}
 
+/* TICKING ONE OFF.
+   A real target rather than a small box, because this gets used with
+   one hand while the other is holding somebody. A done row fades
+   rather than striking through, since a plan that crosses things out
+   reads as a list of chores. */
+.plantick{
+  width:34px;height:34px;border-radius:50%;flex:none;margin-top:1px;cursor:pointer;
+  border:1.8px solid var(--line2);background:var(--surface);
+  display:grid;place-items:center;transition:background .15s,border-color .15s;
+}
+.plantick.on{background:var(--deep);border-color:var(--deep)}
+.plan.done{opacity:.62}
+.plan.done .h3{text-decoration:none;color:var(--muted)}
+
+/* A PARENT AT BREAKING POINT.
+   Warmer than the rest of the app and a little louder, because this is
+   read by somebody who is not really reading. Never alarming: red
+   borders and warning triangles tell a frightened person they are in
+   trouble, which is the opposite of what this page is for. */
+.bp{border-left:3px solid #C98B76;background:var(--surface)}
+.bpbox{
+  margin-top:13px;padding:13px 14px;border-radius:14px;
+  background:#FBF1EC;border:1px solid #EAD2C7;
+}
+.bpbox.surrender{background:#F1F4EB;border-color:var(--line2)}
+.bpbox-t{margin:0;font-size:14.5px;font-weight:600;color:#8A4E3B;line-height:1.35}
+.bpbox.surrender .bpbox-t{color:var(--deep)}
+.bpsteps{margin:9px 0 0;padding-left:20px}
+.bpsteps li{font-size:14px;line-height:1.55;color:var(--body);margin-bottom:7px}
+.bpwarn{
+  margin:11px 0 0;padding-top:10px;border-top:1px solid rgba(138,78,59,.22);
+  font-size:13.5px;line-height:1.5;color:#8A4E3B;font-weight:500;
+}
+.bpclose{margin:12px 0 0;font-size:14px;line-height:1.55;color:var(--ink);font-style:italic}
+.bpwho{padding:9px 0;border-top:1px solid rgba(0,0,0,.055)}
+.bpwho:first-of-type{border-top:0;padding-top:2px}
+.bpwho-w{display:block;font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.35}
+.bpwho-s{display:block;font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+.bpline{padding:10px 0;border-top:1px solid rgba(0,0,0,.055)}
+.bpline:first-of-type{border-top:0;padding-top:2px}
+.bpline-n{margin:0;font-size:13px;font-weight:600;color:var(--ink)}
+.bpline-c{display:block;font-size:19px;font-weight:600;color:#A85A44;text-decoration:none;margin-top:1px}
+
+/* THE WAY OFF THE SUPPORT SCREEN.
+
+   Fixed rather than scrolled, because it has to be in the same place
+   whether somebody is at the top of the page or four screens down, and
+   because the moment it is needed there is no time to look for it.
+
+   BOTTOM LEFT, not top right. The first version sat under the wordmark
+   and collided with it, and more importantly the top of a phone is the
+   one place a thumb cannot reach one handed. Willow sits bottom right,
+   so this mirrors her on the other side, at the same height, clear of
+   the tab bar at every width.
+
+   Red, when every other control in this app is green, so that somebody
+   scanning the screen in a hurry finds it without reading a word.
+
+   Deliberately not styled as a chip. A chip is a thing you consider.
+   This is a thing you hit. */
+.quickexit{
+  position:fixed;left:26px;bottom:108px;z-index:9;
+  display:inline-flex;align-items:center;gap:6px;
+  padding:11px 16px;border:0;border-radius:999px;cursor:pointer;
+  background:#A8352A;color:#fff;font-family:inherit;
+  font-size:14px;font-weight:700;letter-spacing:.2px;
+  box-shadow:0 4px 16px rgba(120,35,25,.38);
+}
+.quickexit:active{transform:translateY(1px)}
+.quickexit:focus-visible{outline:3px solid #fff;outline-offset:2px}
+@media (max-width:620px){.quickexit{left:14px;bottom:96px}}
+/* Inside the prototype's phone frame there is no viewport to pin to,
+   so it hangs off the frame instead. The website build has no .phone. */
+.phone .quickexit{position:absolute;left:18px;bottom:78px}
+
 /* progress */
 .bar{height:7px;border-radius:999px;background:#E0DED1;overflow:hidden;margin-top:6px;box-shadow:inset 0 1px 2px rgba(90,85,65,.09)}
 .bar > i{display:block;height:100%;border-radius:999px;background:var(--sage)}
@@ -238,6 +387,12 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .dlist li{font-size:13.5px;line-height:1.6;color:var(--body);padding-left:17px;position:relative}
 .dlist li::before{content:'';position:absolute;left:2px;top:8px;width:5px;height:5px;border-radius:50%;background:var(--sage)}
 .dlist.warn li::before{background:var(--taupe)}
+.btn.urgent{background:var(--concern);border-color:var(--concern)}
+/* numbered steps, for the do this first lists */
+.nlist{margin:0;padding:0;list-style:none;counter-reset:n;display:flex;flex-direction:column;gap:10px}
+.nlist li{font-size:13.5px;line-height:1.6;color:var(--body);padding-left:27px;position:relative;counter-increment:n}
+.nlist li::before{content:counter(n);position:absolute;left:0;top:1px;width:19px;height:19px;border-radius:50%;
+  background:var(--leaf2);color:var(--deep);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .callout{background:var(--taupe2);border-radius:14px;padding:12px 13px;font-size:12.5px;line-height:1.6;color:#6E5D4C}
 .disclaimer{font-size:11px;color:var(--muted);line-height:1.55;padding:14px 4px 4px;border-top:1px solid var(--line2);margin-top:16px}
 
@@ -377,6 +532,186 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .k-fertile{background:#E4EDDC}
 .k-ovul{background:#C9DDB6}
 
+/* A CHILD'S PROFILE, IN TWO HALVES.
+
+   Ten headings in a column reads as one undifferentiated list however
+   it is ordered, so the page has a top half you can feel and a bottom
+   half that gets out of the way. The top is what somebody touches
+   today. The bottom is everything they look up. */
+
+/* TODAY'S PLAN, drawn with some presence rather than as the ninth row
+   with a small grey label over it. */
+.todaycard{
+  display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
+  font:inherit;border:1px solid var(--leaf);background:var(--leaf3);
+}
+.todaycard-ic{
+  width:40px;height:40px;border-radius:50%;flex:none;
+  background:var(--deep);display:grid;place-items:center;
+}
+.todaycard-t{display:block;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.3}
+.todaycard-s{display:block;font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+
+/* The daily headings keep their weight. */
+.sect-day{color:var(--deep)}
+
+/* THE QUIET HALF. Tighter, smaller, less air between the rows, so the
+   change of weight is obvious without a rule across the page. */
+.restwrap{
+  margin-top:22px;padding-top:4px;
+  border-top:1px solid rgba(0,0,0,.07);
+}
+.rest-label{
+  margin-top:14px;color:var(--faint);
+}
+.restwrap .sect{margin-top:16px;margin-bottom:5px;font-size:10px}
+.restwrap .lrow{padding-top:9px;padding-bottom:9px}
+.restwrap .card{margin-bottom:7px}
+.restwrap .lrow span[style*="font-size:14"]{font-size:13.5px}
+
+/* WILLOW'S WALKTHROUGH.
+   Her bubble is drawn the same way her chat bubbles are, so she reads
+   as the same person here as she does in the corner of every screen. */
+.obtop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.obdots{display:flex;gap:6px;margin-top:12px}
+.obdot{
+  width:7px;height:7px;border-radius:50%;flex:none;
+  background:var(--line2);transition:background .2s,width .2s;
+}
+.obdot.done{background:var(--leaf2,#C9DDB6)}
+.obdot.on{background:var(--deep);width:20px;border-radius:4px}
+
+.obsay{display:flex;gap:11px;align-items:flex-start;margin-top:14px}
+.obsay-face{
+  width:30px;height:30px;border-radius:50%;flex:none;margin-top:2px;
+  background:var(--deep);display:grid;place-items:center;
+}
+.obsay-body{
+  /* Opaque on purpose. The affirmations in the background layer read
+     straight through anything translucent, and Willow talking over the
+     top of other words is exactly the mess she asked me to fix once
+     already. */
+  flex:1;min-width:0;background:#F1F4EB;
+  border:1px solid rgba(0,0,0,.05);
+  border-radius:4px 16px 16px 16px;padding:12px 14px;
+}
+.obsay-body p{
+  margin:0;font-size:14.5px;line-height:1.55;color:var(--body);
+}
+.obsay-body p + p{margin-top:9px}
+
+.obwhat{display:flex;gap:11px;align-items:flex-start;padding:9px 2px}
+.obwhat.sep{border-top:1px solid rgba(0,0,0,.055)}
+.obwhat:first-child{padding-top:2px}
+.obwhat-ic{
+  width:26px;height:26px;border-radius:8px;flex:none;margin-top:1px;
+  background:#F1F4EB;display:grid;place-items:center;
+}
+.obwhat-t{display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.35}
+.obwhat-b{display:block;font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+
+/* WILLOW ON TODAY, above the plan.
+   Her leaf beside it so it plainly reads as her voice rather than as
+   another block of app copy. */
+.planframe{display:flex;gap:11px;align-items:flex-start;background:#F1F4EB;border:1px solid var(--line2)}
+.planframe-face{
+  width:28px;height:28px;border-radius:50%;flex:none;margin-top:1px;
+  background:var(--deep);display:grid;place-items:center;
+}
+
+/* THE SHARED FEED. */
+.feedtabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.feedtabs .chip.on{background:var(--leaf2);border-color:var(--leaf);color:var(--deep);font-weight:600}
+
+/* ---------- FIREFLIES ----------
+   A night sky with a light in it for every parent who is awake. Dark
+   on purpose and dark at every hour, because the whole image is a
+   window at night, and because somebody opening this at 4am should
+   not be handed a white screen.
+
+   Each light is placed from a hash of the account id rather than at
+   random, so it sits in the same spot all night instead of jumping
+   around every repaint. See fireflySpot in src/data/fireflies.js. */
+.sky{
+  position:relative;width:100%;height:290px;border-radius:20px;overflow:hidden;
+  background:radial-gradient(120% 90% at 50% 108%, #2A3A26 0%, #1C2719 45%, #131B11 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 6px 18px rgba(28,39,25,.22);
+  margin-bottom:12px;
+  touch-action:manipulation;
+}
+/* A faint horizon so the sky has a bottom and the lights have somewhere
+   to be above. */
+.sky::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:52px;pointer-events:none;
+  background:linear-gradient(to top, rgba(10,16,8,.75), rgba(10,16,8,0));
+}
+.sky-count{
+  position:absolute;left:0;right:0;top:0;padding:13px 16px 0;z-index:3;
+  pointer-events:none;text-align:center;
+}
+.sky-n{display:block;font-family:var(--serif);font-size:19px;color:#E9F0DF;line-height:1.25}
+.sky-s{display:block;font-size:11.5px;color:#9DB18C;margin-top:3px}
+
+.ff{
+  position:absolute;border-radius:50%;border:0;padding:0;cursor:pointer;z-index:2;
+  background:#D9E8A6;
+  box-shadow:0 0 6px 2px rgba(206,228,140,.55), 0 0 16px 6px rgba(168,200,104,.22);
+  animation:ffglow var(--ffdur,5s) ease-in-out infinite;
+  animation-delay:var(--ffdelay,0s);
+  -webkit-tap-highlight-color:transparent;
+}
+/* The tap target is bigger than the light, because a 7px dot is not
+   something a thumb can hit at 3am. */
+.ff::before{content:"";position:absolute;inset:-13px;border-radius:50%}
+.ff:focus-visible{outline:2px solid #D9E8A6;outline-offset:5px}
+@keyframes ffglow{
+  0%,100%{opacity:.30;transform:translate(0,0) scale(.86)}
+  50%    {opacity:1;  transform:translate(2px,-3px) scale(1.08)}
+}
+/* Yours, so you can find yourself in the sky. A ring rather than a
+   brighter dot, since brighter just reads as nearer. */
+.ff.mine{
+  background:#F4F7E4;
+  box-shadow:0 0 0 2px rgba(244,247,228,.34), 0 0 10px 3px rgba(226,240,178,.65),
+             0 0 22px 9px rgba(168,200,104,.25);
+  animation-duration:4.2s;
+  cursor:default;
+}
+.ff.mine::before{display:none}
+/* The moment a me too lands, on the light you tapped. */
+.ff.sent{animation:ffsent .85s ease-out 1}
+@keyframes ffsent{
+  0%  {transform:scale(1);   box-shadow:0 0 6px 2px rgba(206,228,140,.55)}
+  35% {transform:scale(2.5); box-shadow:0 0 22px 12px rgba(226,240,178,.8)}
+  100%{transform:scale(1);   box-shadow:0 0 6px 2px rgba(206,228,140,.55)}
+}
+.ff.spent{opacity:.22;pointer-events:none;animation:none}
+.sky-empty{
+  position:absolute;inset:0;display:grid;place-items:center;padding:0 30px;z-index:1;
+  text-align:center;font-size:13.5px;line-height:1.55;color:#9DB18C;
+}
+.sky-toast{
+  position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:4;
+  background:rgba(233,240,223,.93);color:#1C2719;font-size:12px;font-weight:600;
+  padding:6px 13px;border-radius:999px;pointer-events:none;
+  animation:fftoast 1.5s ease-out forwards;
+}
+@keyframes fftoast{0%{opacity:0;transform:translate(-50%,6px)}18%{opacity:1;transform:translate(-50%,0)}75%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){
+  .ff{animation:none;opacity:.92}
+  .ff.sent{animation:none}
+  .sky-toast{animation:none}
+}
+
+.feedav{
+  width:36px;height:36px;border-radius:50%;flex:none;
+  background:var(--leaf3);display:grid;place-items:center;
+}
+.feedstatus{
+  margin-top:9px;padding-top:8px;border-top:1px solid rgba(0,0,0,.055);
+  display:flex;align-items:flex-start;gap:6px;
+}
+
 /* LEARNING CARD. */
 .learncard{
   display:block;width:100%;text-align:left;cursor:pointer;
@@ -422,8 +757,41 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .postpic-x{
   position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;
   background:rgba(0,0,0,.55);border:0;cursor:pointer;display:grid;place-items:center;
-  transform:rotate(45deg);
+  transform:rotate(45deg);z-index:2;
 }
+/* VIDEO AND VOICE IN A POST.
+   A video fills its tile the way a photo does. A voice memo has nothing
+   to look at, so it gets a row with the player in it rather than a
+   black rectangle pretending to be a picture. */
+.postpic.vid video{width:100%;height:100%;object-fit:cover;display:block;max-height:340px;background:#000}
+.postpics.draft .postpic.vid video{aspect-ratio:1;max-height:none}
+.postpic.aud{
+  display:flex;align-items:center;gap:9px;padding:10px 11px;
+  background:#F1F4EB;border:1px solid var(--line2);
+}
+.postpics.draft .postpic.aud{aspect-ratio:auto}
+.postpic.aud audio{flex:1;min-width:0;height:34px}
+.aud-x{
+  width:26px;height:26px;border-radius:50%;flex:none;border:1px solid var(--line2);
+  background:var(--surface);color:var(--muted);font-size:17px;line-height:1;
+  cursor:pointer;display:grid;place-items:center;
+}
+/* An audio row is a row, so it takes the width rather than a quarter
+   of it, whatever else is in the post. */
+.postpics .postpic.aud{grid-column:1 / -1}
+
+/* WHILE A FILE IS GOING UP.
+   A video on a phone connection is long enough that silence reads as
+   nothing happening. */
+.upbar{
+  position:relative;margin-top:9px;height:26px;border-radius:9px;overflow:hidden;
+  background:var(--leaf3);display:flex;align-items:center;
+}
+.upbar-fill{
+  position:absolute;inset:0 auto 0 0;background:var(--leaf);
+  transition:width .2s ease-out;
+}
+.upbar-t{position:relative;padding:0 10px;color:var(--deep);font-weight:600}
 
 .profstats{
   display:flex;gap:18px;justify-content:center;flex-wrap:wrap;
@@ -701,6 +1069,43 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .willowdot-name{font-size:14px;font-weight:600;letter-spacing:.01em}
 .willowdot:active{transform:translateY(1px)}
 
+/* WILLOW SPEAKING UP.
+   Sits directly above her pill so it is plainly her talking, not a
+   system message. It goes away on its own, and there is an x for
+   somebody who is in the middle of something. */
+.wnudge{
+  position:absolute;right:14px;bottom:calc(100% + 66px);z-index:8;
+  width:min(300px, calc(100vw - 34px));
+  background:#F1F4EB;border:1px solid var(--line2);
+  border-radius:18px 18px 4px 18px;
+  box-shadow:0 10px 28px -8px rgba(45,62,40,.3);
+  animation:wnudgein .28s ease-out both;
+}
+@keyframes wnudgein{
+  from{opacity:0;transform:translateY(8px) scale(.97)}
+  to{opacity:1;transform:none}
+}
+@media (prefers-reduced-motion:reduce){ .wnudge{animation:none} }
+.wnudge-x{
+  position:absolute;top:5px;right:7px;z-index:2;
+  width:24px;height:24px;border-radius:50%;border:0;background:none;
+  color:var(--muted);font-size:17px;line-height:1;cursor:pointer;
+  display:grid;place-items:center;
+}
+.wnudge-body{
+  display:block;width:100%;text-align:left;cursor:pointer;
+  border:0;background:none;font:inherit;padding:11px 30px 11px 13px;
+}
+.wnudge-t{
+  display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--sage);font-weight:600;
+}
+.wnudge-l{display:block;font-size:13.5px;line-height:1.5;color:var(--body);margin-top:4px}
+.wnudge-go{
+  display:inline-flex;align-items:center;gap:4px;margin-top:8px;
+  font-size:12px;font-weight:600;color:var(--deep);
+}
+
 .willowpanel{
   position:absolute;right:10px;left:10px;bottom:calc(100% + 10px);z-index:9;
   max-height:min(560px, 78vh);display:flex;flex-direction:column;
@@ -769,6 +1174,174 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
   min-height:30px;cursor:pointer;
 }
 .updatebtn.ghost{background:transparent;color:var(--deep2);border-color:transparent}
+
+/* a chip that is a label rather than a button, for the later signing
+   bands where the thing to work on is a concept and not a sign with a
+   picture of a hand next to it */
+.chip.plain{background:var(--surface2);border-style:dashed;color:var(--muted);cursor:default}
+
+.hoursrow{
+  display:flex;align-items:baseline;gap:10px;padding:9px 0;
+  border-bottom:1px solid var(--line2);font-size:13.5px;color:var(--ink);
+}
+.hoursrow:last-child{border-bottom:0}
+
+/* a hashtag inside a post. inline so it flows with the sentence, and
+   a real button so it is reachable by keyboard and by a screen reader
+   rather than a coloured span that only a mouse can find. */
+.taglink{
+  display:inline;padding:0;border:0;background:none;font:inherit;
+  color:var(--deep);font-weight:600;cursor:pointer;text-decoration:none;
+}
+.taglink:hover{text-decoration:underline}
+.tagn{opacity:.55;font-weight:600}
+.chip.on .tagn{opacity:.8}
+textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
+
+/* the quiet hours row, two selects that must both fit a 320px phone */
+.quietrow{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.quietrow .inp{flex:1 1 90px;min-width:0;padding:8px 9px}
+
+/* ---------- THE VACCINE RECORD ----------
+   A folding list. Closed it is one line per vaccine, which is the view
+   somebody wants when they are answering a question at a desk. Open it
+   is the doses with their dates. Nothing in here is ever red: a dose
+   that is behind says so in the same type as everything else. */
+.vaxcard{margin-bottom:8px}
+.vaxhead{
+  display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+  padding:12px 13px;background:none;border:0;font:inherit;cursor:pointer;min-height:52px;
+}
+.vaxname{display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3}
+.vaxbody{padding:0 13px 12px;border-top:1px solid var(--line2)}
+.vaxbody .bodytext{padding-top:10px}
+.vaxdose{
+  display:flex;align-items:center;gap:9px;padding:8px 0;
+  border-bottom:1px solid var(--line2);
+}
+.vaxdose:last-of-type{border-bottom:0}
+.vaxtick{
+  flex:none;width:22px;height:22px;border-radius:7px;
+  border:1.5px solid var(--sage);background:var(--surface);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
+}
+.vaxdose.on .vaxtick,.vaxtick.on{background:var(--deep);border-color:var(--deep)}
+.vaxdname{display:block;font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.3}
+.vaxdose.on .vaxdname{color:var(--muted)}
+.vaxdate{
+  flex:none;background:none;border:0;color:var(--deep);text-decoration:underline;
+  padding:6px 4px;cursor:pointer;min-height:34px;
+}
+.vaxedit{display:flex;gap:8px;align-items:center;padding:8px 0 10px;flex-wrap:wrap}
+.vaxedit .inp{flex:1 1 140px;min-width:0}
+
+/* ---------- THE GROWTH CHART ----------
+   The svg scales to whatever width it gets and keeps its shape, so the
+   curves stay readable on a 320px phone and do not stretch flat on a
+   tablet. */
+.gchart{
+  background:var(--surface);border-radius:16px;padding:10px 8px 6px;margin-bottom:11px;
+  box-shadow:0 3px 12px rgba(107,101,80,.06);
+}
+.gchart svg{display:block;width:100%;height:auto}
+.grow-form{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.grow-form label{margin-top:4px}
+.grow-form .inp{width:100%}
+.grow-pair{display:flex;gap:8px}
+.grow-pair .inp{flex:1 1 0;min-width:0}
+
+/* ---------- THE FAMILY CHORE CHART ----------
+   A tick row has to be comfortably tappable with one hand while
+   holding something else, so the box is 26px inside a 44px target and
+   the whole row is the button rather than just the box. */
+.chrow{
+  display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;
+  padding:11px 12px;margin-bottom:7px;border-radius:14px;
+  border:1px solid var(--line2);background:var(--surface);
+  font:inherit;cursor:pointer;min-height:48px;
+}
+.chrow.flat{background:var(--surface2);cursor:default}
+.chrow.done{background:var(--leaf3);border-color:var(--leaf)}
+.chrow.done .chlabel{color:var(--muted);text-decoration:line-through}
+.chbox{
+  flex:none;width:24px;height:24px;border-radius:8px;margin-top:1px;
+  border:1.5px solid var(--sage);background:var(--surface);
+  display:flex;align-items:center;justify-content:center;
+}
+.chrow.done .chbox{background:var(--deep);border-color:var(--deep)}
+.chbox.plus{border-style:dashed}
+.chrow.has .chbox.plus{background:var(--deep);border-color:var(--deep);border-style:solid}
+.chlabel{display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.35}
+.chstars{
+  flex:none;display:inline-flex;align-items:center;gap:3px;margin-top:2px;
+  font-size:11.5px;font-weight:700;color:var(--taupe);
+}
+.chx{
+  flex:none;width:30px;height:30px;border:0;background:none;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.chx:hover{background:var(--leaf3)}
+.chadd{
+  display:flex;align-items:center;gap:6px;width:100%;justify-content:center;
+  padding:10px;border-radius:12px;border:1px dashed var(--line);
+  background:none;color:var(--deep);font:inherit;font-size:12.5px;font-weight:600;
+  min-height:42px;cursor:pointer;
+}
+/* the seven days. they must fit across a 320px phone without scrolling,
+   which is why the label is three letters and the count sits under it. */
+.chdays{display:flex;gap:4px;margin:0 0 10px}
+.chdays.sm{margin:10px 0 0}
+.chday{
+  flex:1 1 0;min-width:0;padding:7px 2px;border-radius:11px;
+  border:1px solid var(--line2);background:var(--surface2);
+  font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;
+  min-height:40px;justify-content:center;
+}
+.chday.on{background:var(--deep);border-color:var(--deep)}
+.chday-l{font-size:11px;font-weight:700;color:var(--deep)}
+.chday.on .chday-l{color:#fff}
+.chday-n{font-size:10px;font-weight:600;color:var(--muted);min-height:12px}
+.chday.on .chday-n{color:var(--leaf)}
+.chorecard{border:0;cursor:pointer}
+
+/* ---------- THE LEARNING DAY ----------
+   Each block is a card with a number, so a parent running the morning
+   can see where they are without reading. */
+.lblock{
+  background:var(--surface);border-radius:16px;padding:13px 14px;margin-bottom:10px;
+  box-shadow:0 3px 12px rgba(107,101,80,.06);
+}
+.lblock-h{display:flex;align-items:flex-start;gap:9px;margin-bottom:8px}
+.lnum{
+  flex:none;width:22px;height:22px;border-radius:50%;background:var(--leaf2);
+  color:var(--deep);font-size:11.5px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.lblock-t{display:block;font-size:14.5px;font-weight:700;color:var(--ink);line-height:1.3}
+.lblock-s{display:block;font-size:10.5px;font-weight:700;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--taupe);margin-top:3px}
+
+/* THE ADD TO HOME SCREEN BANNER.
+   Sits inside the page rather than above the header, unlike the update
+   bar, because this one is a suggestion and that one is news. It is
+   quiet on purpose: a row, not a card, no shadow, and a cross that is
+   as easy to hit as the button. */
+.installbar{
+  display:flex;align-items:center;gap:9px;margin:0 0 12px;padding:10px 12px;
+  border:1px solid var(--line2);border-radius:16px;background:var(--surface2);
+  font-size:12.5px;line-height:1.5;color:var(--body);
+}
+.installic{flex:none;display:flex;align-items:center}
+.installgo{
+  flex:none;padding:6px 13px;border-radius:999px;border:1px solid var(--deep);
+  background:var(--deep);color:#fff;font:inherit;font-size:12px;font-weight:600;
+  min-height:32px;cursor:pointer;
+}
+.installx{
+  flex:none;width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  border:0;background:none;border-radius:50%;cursor:pointer;
+}
+.installx:hover{background:var(--leaf3)}
 
 /* The source badge holds a short code, not a logo, and some of those
    codes are words rather than three letters. It sizes to what is in it

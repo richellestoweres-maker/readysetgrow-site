@@ -6,6 +6,7 @@
 const ICON = {
   check:'<path d="M4.5 12.5 9.5 17.5 19.5 6.5"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',
+  hand:'<path d="M9 11.5V5.2a1.3 1.3 0 0 1 2.6 0v5.6"/><path d="M11.6 10.4V4.1a1.3 1.3 0 0 1 2.6 0v6.3"/><path d="M14.2 10.8V6a1.3 1.3 0 0 1 2.6 0v6.6"/><path d="M9 11.5V9a1.3 1.3 0 0 0-2.6 0v5.4c0 3.2 2.3 5.6 5.5 5.6s5.7-2.2 5.7-5.6"/>',
   circle:'<circle cx="12" cy="12" r="8.2"/>',
   info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><path d="M12 7.6v.4"/>',
   eye:'<path d="M2.2 12S5.8 5.8 12 5.8 21.8 12 21.8 12 18.2 18.2 12 18.2 2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="3.1"/>',
@@ -38,6 +39,7 @@ const ICON = {
   user:'<circle cx="12" cy="8" r="3.7"/><path d="M4.9 20.2a7.1 7.1 0 0 1 14.2 0"/>',
   gear:'<circle cx="12" cy="12" r="3.1"/><path d="M19.1 14.6a1.6 1.6 0 0 0 .3 1.8l.1.1a1.9 1.9 0 1 1-2.7 2.7l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5v.2a1.9 1.9 0 1 1-3.8 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a1.9 1.9 0 1 1-2.7-2.7l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1h-.2a1.9 1.9 0 1 1 0-3.8h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a1.9 1.9 0 1 1 2.7-2.7l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5v-.2a1.9 1.9 0 1 1 3.8 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a1.9 1.9 0 1 1 2.7 2.7l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1h.2a1.9 1.9 0 1 1 0 3.8h-.1a1.6 1.6 0 0 0-1.5 1Z"/>',
   camera:'<path d="M3.5 8.5h3l1.6-2.4h6.8L16.5 8.5h4a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5h-17A1.5 1.5 0 0 1 2 18v-8a1.5 1.5 0 0 1 1.5-1.5Z"/><circle cx="12" cy="13.6" r="3.4"/>',
+  close:'<path d="M6 6l12 12M18 6L6 18"/>',
   flower:'<circle cx="12" cy="10" r="2.1"/><path d="M12 7.9c0-2 .8-3.6 2-3.6s1.4 2 .4 3.3M12 7.9c0-2-.8-3.6-2-3.6s-1.4 2-.4 3.3M14.1 10c2 0 3.6.8 3.6 2s-2 1.4-3.3.4M9.9 10c-2 0-3.6.8-3.6 2s2 1.4 3.3.4M12 12.1V20M12 16c1.6 0 3-1 3.4-2"/>',
 };
 
@@ -138,12 +140,11 @@ function wordmark(big = true) {
 /* The data file returns arrays of lines. The web build joins them with
    <br>, the app joins them with a newline. Same source either way. */
 function pickAffirmations(seed) {
-  // Desktop has two wide gutters and room for six. The phone has room
-  // for three. Ask for six either way and let the layout use what fits,
-  // since the picker guarantees they are all different.
-  // Twelve, because a wide window has two columns of gutter each side
-  // and six leaves most of it bare. The layout uses what fits.
-  const picked = pickMarginLines(seed, 16);
+  /* Ask for one line per shape in the field, so a wide window never
+     shows the same words twice down the two gutters. The picker
+     guarantees they are all different, and it stops at however many
+     are written. */
+  const picked = pickMarginLines(seed, AFFIRM_SPOTS.length);
   const html = (m) => m.lines.join('<br>');
   const all = picked.map(html);
   return {
@@ -162,52 +163,25 @@ function pickAffirmations(seed) {
  */
 function affirmation(lines, o) {
   o = o || {};
+  /* The words sit in the middle of their shape with the heart under
+     them, rather than being placed by hand per shape. One box, centred,
+     so every bubble reads the same however many lines it holds. */
   return `
   <div class="affirm${o.cls ? ' ' + o.cls : ''}" style="${o.box || ''}">
     ${o.noShape ? '' : `<svg viewBox="0 0 190 150" preserveAspectRatio="none" aria-hidden="true">
       <path d="M22 8 C74 -10 150 2 172 44 C192 82 168 128 118 142 C68 156 8 132 2 88 C-3 52 2 20 22 8 Z"
         fill="${o.fill || '#E9EBDF'}"/></svg>`}
-    <span style="${o.text || ''}">${lines}</span>
-    ${o.heart === false ? '' : `<span class="heart" style="${o.heartPos || ''}">&#9829;</span>`}
+    <span class="affirm-in" style="${o.inset || 'inset:0'};${o.text || ''}">
+      <span class="affirm-lines">${lines}</span>
+      ${o.heart === false ? '' : `<span class="heart">&#9829;</span>`}
+    </span>
   </div>`;
 }
 
 /* Leaf sprigs down both edges, as in every mockup. On desktop they move
    out to the edges of the reading column instead of the phone frame. */
 function sprigsDesktop(sprig) {
-  /* Four narrow columns of sprigs sitting in the gaps the affirmation
-     shapes leave, two down each gutter. Kept narrow and hard against
-     the edges so they read as a frame rather than as clutter. */
-  return `
-  <svg class="leafart" style="top:244px;left:0;width:78px;height:120px" viewBox="0 0 78 120" aria-hidden="true">
-    ${sprig(30, 54, -22, 1.05, .85)}${sprig(14, 114, 10, .88, .65)}
-  </svg>
-  <svg class="leafart" style="top:494px;left:6px;width:78px;height:120px" viewBox="0 0 78 120" aria-hidden="true">
-    ${sprig(24, 48, 14, .98, .8)}${sprig(44, 112, -16, .86, .62)}
-  </svg>
-  <svg class="leafart" style="top:302px;right:2px;width:78px;height:124px" viewBox="0 0 78 124" aria-hidden="true">
-    ${sprig(48, 56, 16, 1.08, .85)}${sprig(28, 118, -12, .9, .66)}
-  </svg>
-  <svg class="leafart" style="top:552px;right:8px;width:78px;height:118px" viewBox="0 0 78 118" aria-hidden="true">
-    ${sprig(52, 52, -18, 1, .8)}${sprig(30, 112, 12, .86, .62)}
-  </svg>
-
-  <svg class="leafart leafart-wide" style="top:378px;left:calc(50% - 620px);width:74px;height:116px"
-    viewBox="0 0 74 116" aria-hidden="true">
-    ${sprig(28, 52, 16, 1, .78)}${sprig(48, 110, -14, .86, .6)}
-  </svg>
-  <svg class="leafart leafart-wide" style="top:604px;left:calc(50% - 600px);width:74px;height:112px"
-    viewBox="0 0 74 112" aria-hidden="true">
-    ${sprig(44, 50, -20, .96, .74)}${sprig(24, 106, 10, .84, .58)}
-  </svg>
-  <svg class="leafart leafart-wide" style="top:288px;right:calc(50% - 616px);width:74px;height:118px"
-    viewBox="0 0 74 118" aria-hidden="true">
-    ${sprig(46, 54, -16, 1.02, .78)}${sprig(26, 112, 14, .86, .6)}
-  </svg>
-  <svg class="leafart leafart-wide" style="top:548px;right:calc(50% - 598px);width:74px;height:114px"
-    viewBox="0 0 74 114" aria-hidden="true">
-    ${sprig(26, 50, 18, .96, .74)}${sprig(46, 108, -12, .84, .58)}
-  </svg>`;
+  return sprigField(sprig);
 }
 
 function sprigs() {
@@ -239,18 +213,18 @@ function pageHeader(large) {
   return `
   ${affirmation(a.topLeft, {
     box: 'top:-34px;left:-46px;width:172px;height:138px',
-    text: 'top:50px;left:50px;max-width:92px;font-size:14px;transform:rotate(-6deg)',
-    heartPos: 'top:110px;left:56px',
+    inset: 'inset:38px 10px 8px 52px',
+    text: 'font-size:13.5px;transform:rotate(-6deg)',
   })}
   ${affirmation(a.midLeft, {
     box: 'top:352px;left:-52px;width:146px;height:120px', fill: '#EDEADF',
-    text: 'top:32px;left:64px;max-width:76px;font-size:12.5px;transform:rotate(-7deg)',
-    heartPos: 'top:98px;left:68px',
+    inset: 'inset:10px 10px 10px 58px',
+    text: 'font-size:12.5px;transform:rotate(-7deg)',
   })}
   ${affirmation(a.right, {
     box: 'top:368px;right:4px;width:118px;height:104px', noShape: true,
-    text: 'top:12px;right:8px;max-width:76px;font-size:12.5px;text-align:right;transform:rotate(-6deg)',
-    heartPos: 'top:84px;right:14px',
+    inset: 'inset:8px 6px 8px 6px',
+    text: 'font-size:12.5px;transform:rotate(-6deg)',
   })}
   ${sprigs()}
   <div class="corner-right">Brighter<br>Tomorrows<br>Together<span class="corner-rule"></span></div>
@@ -277,61 +251,150 @@ function pageHeader(large) {
  * Fills alternate so the shapes do not read as a repeated stamp, and a
  * few carry no shape at all, which is what stops it looking like a grid.
  */
-const AFFIRM_SPOTS = [
-  // Phone. Three, hanging off the edges behind the content.
-  { tier: 'mob', side: 'left',  x: '-54px', y: '86px',  w: 172, h: 138, fill: '#E9EBDF', tx: 'top:48px;left:60px;max-width:92px;font-size:13.5px;transform:rotate(-6deg)', hp: 'top:106px;left:66px' },
-  { tier: 'mob', side: 'right', x: '-48px', y: '352px', w: 152, h: 124, fill: '#EDEADF', tx: 'top:34px;right:56px;max-width:80px;font-size:12.5px;text-align:right;transform:rotate(5deg)', hp: 'top:94px;right:62px' },
-  { tier: 'mob', side: 'left',  x: '-44px', y: '600px', w: 154, h: 124, fill: '#E6EBDC', tx: 'top:40px;left:54px;max-width:84px;font-size:12.5px;transform:rotate(-5deg)', hp: 'top:98px;left:60px' },
+/* The field of shapes, generated rather than hand placed.
+ *
+ * Two columns of shapes down each side, half a step out of phase with
+ * each other, and a cluster of sprouts in every gap between them. So
+ * going down either gutter you get shape, sprouts, shape, sprouts, and
+ * the two columns interlock rather than lining up in rows.
+ *
+ * Vertical positions are a share of the window height, because the
+ * background is pinned to the viewport and has to fill whatever size
+ * window she has open rather than a fixed page.
+ *
+ * Tiers decide when a column appears as the window narrows:
+ *   mob    no gutter yet, three shapes bleeding off the edges
+ *   core   the outer column, once there is any gutter at all
+ *   extra  the rest of the outer column
+ *   wide   the inner column, anchored to the reading column with calc
+ */
 
-  // Outer column, left. Four down the side.
-  { tier: 'core',  side: 'left', x: '18px', y: '80px',  w: 162, h: 132, fill: '#E9EBDF', tx: 'top:44px;left:42px;max-width:92px;font-size:14px;transform:rotate(-6deg)', hp: 'top:100px;left:48px' },
-  { tier: 'core',  side: 'left', x: '26px', y: '268px', w: 146, h: 120, fill: '#EDEADF', tx: 'top:32px;left:54px;max-width:78px;font-size:12.5px;transform:rotate(-7deg)', hp: 'top:92px;left:58px' },
-  { tier: 'extra', side: 'left', x: '12px', y: '456px', w: 154, h: 124, fill: '#E6EBDC', tx: 'top:38px;left:44px;max-width:86px;font-size:13px;transform:rotate(-4deg)', hp: 'top:96px;left:50px' },
-  { tier: 'extra', side: 'left', x: '24px', y: '632px', w: 148, h: 120, noShape: true, tx: 'top:14px;left:6px;max-width:126px;font-size:13px;transform:rotate(5deg)', hp: 'top:84px;left:12px' },
+const AFFIRM_FILLS = ['#E9EBDF', '#EDEADF', '#E6EBDC', '#EAECE0', '#EBE9DD'];
+const AFFIRM_TILTS = [-5, 4, -3, 6, -4, 3, -6, 5];
 
-  // Outer column, right. The promise line owns the very top corner.
-  { tier: 'core',  side: 'right', x: '18px', y: '168px', w: 148, h: 120, fill: '#EAECE0', tx: 'top:32px;right:22px;max-width:96px;font-size:13px;text-align:right;transform:rotate(5deg)', hp: 'top:90px;right:28px' },
-  { tier: 'extra', side: 'right', x: '22px', y: '352px', w: 142, h: 116, noShape: true, tx: 'top:10px;right:6px;max-width:112px;font-size:13px;text-align:right;transform:rotate(-5deg)', hp: 'top:82px;right:12px' },
-  { tier: 'extra', side: 'right', x: '14px', y: '520px', w: 150, h: 122, fill: '#EDEADF', tx: 'top:36px;right:20px;max-width:94px;font-size:12.5px;text-align:right;transform:rotate(6deg)', hp: 'top:94px;right:26px' },
-  { tier: 'extra', side: 'right', x: '26px', y: '676px', w: 144, h: 116, fill: '#E9EBDF', tx: 'top:34px;right:22px;max-width:90px;font-size:12.5px;text-align:right;transform:rotate(-4deg)', hp: 'top:90px;right:28px' },
+/* THE DECORATIVE FIELD
+ *
+ * Columns of shapes right across the window, not only down the sides.
+ * The cards sit on top of the middle ones and hide most of them, and
+ * what shows through the gaps between cards is the point: the page
+ * reads as one continuous field with the app laid over it, rather than
+ * as a white strip with decoration pushed out to the margins.
+ *
+ * Every column is placed as a percentage of the window, so the spacing
+ * opens and closes with the window instead of drifting. Sprouts sit in
+ * the channel immediately to the right of each column, in ground no
+ * shape ever occupies, which is what keeps a leaf off a word.
+ *
+ * Vertical positions are a share of window height, because the
+ * background is pinned to the viewport and has to fill whatever size
+ * window is open.
+ */
 
-  // Inner column, anchored to the reading column.
-  { tier: 'wide', side: 'left', x: 'calc(50% - 566px)', y: '140px', w: 170, h: 136, fill: '#EAECE0', tx: 'top:44px;left:44px;max-width:96px;font-size:13.5px;transform:rotate(-5deg)', hp: 'top:102px;left:50px' },
-  { tier: 'wide', side: 'left', x: 'calc(50% - 550px)', y: '326px', w: 156, h: 124, noShape: true, tx: 'top:14px;left:8px;max-width:130px;font-size:13px;transform:rotate(4deg)', hp: 'top:86px;left:14px' },
-  { tier: 'wide', side: 'left', x: 'calc(50% - 574px)', y: '504px', w: 164, h: 130, fill: '#EDEADF', tx: 'top:42px;left:40px;max-width:96px;font-size:13px;transform:rotate(-7deg)', hp: 'top:100px;left:46px' },
-  { tier: 'wide', side: 'left', x: 'calc(50% - 556px)', y: '672px', w: 150, h: 120, fill: '#E6EBDC', tx: 'top:34px;left:44px;max-width:88px;font-size:12.5px;transform:rotate(6deg)', hp: 'top:92px;left:50px' },
+const AFFIRM_WIDTHS = [118, 128, 122, 126, 120, 124];
+const AFFIRM_HEIGHTS = [92, 100, 96, 104, 94, 98];
+/* Six steps down the window, starting above the top edge so the field
+   runs up behind the wordmark rather than starting under it, and
+   carrying on to the bottom, where the solid tab bar covers whatever
+   reaches it. */
+const AFFIRM_ROWS = [-2, 13, 28, 43, 58, 73];
+const AFFIRM_ROWS_ALT = [5.5, 20.5, 35.5, 50.5, 65.5, 80.5];
 
-  { tier: 'wide', side: 'right', x: 'calc(50% - 570px)', y: '96px',  w: 166, h: 132, fill: '#E6EBDC', tx: 'top:42px;right:26px;max-width:100px;font-size:13.5px;text-align:right;transform:rotate(6deg)', hp: 'top:100px;right:32px' },
-  { tier: 'wide', side: 'right', x: 'calc(50% - 554px)', y: '284px', w: 158, h: 126, noShape: true, tx: 'top:14px;right:8px;max-width:132px;font-size:13px;text-align:right;transform:rotate(-4deg)', hp: 'top:88px;right:14px' },
-  { tier: 'wide', side: 'right', x: 'calc(50% - 578px)', y: '470px', w: 162, h: 130, fill: '#EAECE0', tx: 'top:42px;right:24px;max-width:98px;font-size:13px;text-align:right;transform:rotate(5deg)', hp: 'top:100px;right:30px' },
-  { tier: 'wide', side: 'right', x: 'calc(50% - 560px)', y: '650px', w: 152, h: 122, fill: '#EDEADF', tx: 'top:36px;right:22px;max-width:92px;font-size:12.5px;text-align:right;transform:rotate(-6deg)', hp: 'top:94px;right:28px' },
+/* Four columns across at any desktop width, and four more slotted
+   between them once the window is wide enough that they do not crowd. */
+const AFFIRM_COLS = [
+  { pct: 3,  tier: 'core', rows: AFFIRM_ROWS },
+  { pct: 15, tier: 'wide', rows: AFFIRM_ROWS_ALT },
+  { pct: 27, tier: 'core', rows: AFFIRM_ROWS },
+  { pct: 39, tier: 'wide', rows: AFFIRM_ROWS_ALT },
+  { pct: 51, tier: 'core', rows: AFFIRM_ROWS },
+  { pct: 63, tier: 'wide', rows: AFFIRM_ROWS_ALT },
+  { pct: 75, tier: 'core', rows: AFFIRM_ROWS },
+  { pct: 87, tier: 'wide', rows: AFFIRM_ROWS_ALT },
 ];
 
-/* The y values in AFFIRM_SPOTS were tuned against a roughly 880px tall
-   window while the background still scrolled with the content. Pinned to
-   the viewport they have to stretch or squash with the window instead,
-   or every spot below the fold would simply never be seen on a laptop.
-   So the px is converted to a share of viewport height against that same
-   reference, which keeps the spacing she approved and makes it fit any
-   window. */
-const AFFIRM_REF_HEIGHT = 880;
+function buildAffirmSpots() {
+  const out = [];
 
-function affirmTop(y) {
-  const px = parseFloat(String(y));
-  if (!isFinite(px)) return `top:${y}`;
-  const vh = (px / AFFIRM_REF_HEIGHT) * 100;
-  return `top:${vh.toFixed(2)}vh`;
+  /* Phone. Three, hanging off the edges behind the content. */
+  out.push({ tier: 'mob', side: 'left', x: '-54px', top: 'top:86px', w: 172, h: 138,
+    fill: '#E9EBDF', tilt: -6, size: 13, inset: 'inset:12px 10px 10px 60px' });
+  out.push({ tier: 'mob', side: 'right', x: '-48px', top: 'top:352px', w: 152, h: 124,
+    fill: '#EDEADF', tilt: 5, size: 12.5, inset: 'inset:10px 56px 10px 10px' });
+  out.push({ tier: 'mob', side: 'left', x: '-44px', top: 'top:600px', w: 154, h: 124,
+    fill: '#E6EBDC', tilt: -5, size: 12.5, inset: 'inset:10px 10px 10px 50px' });
+
+  let n = 0;
+  AFFIRM_COLS.forEach((col) => {
+    col.rows.forEach((topVh, r) => {
+      /* The promise line owns the top right corner and Willow sits in
+         the bottom right, so the last column steps around both. */
+      if (col.pct >= 87 && (r === 0 || r === col.rows.length - 1)) return;
+      /* Nothing behind the wordmark. The sprout growing out of the O is
+         the one thing on the page that has to stay crisp, and since the
+         columns are placed by percentage the clear zone has to be wide
+         enough to hold at every window width. */
+      if (col.pct >= 27 && col.pct <= 63 && topVh < 16) return;
+      out.push({
+        tier: col.tier,
+        /* The band the cards sit over is painted quieter, so the field
+           carries right across the window but never competes with the
+           circles, the headings or anything she has to read. */
+        hush: col.pct >= 27 && col.pct <= 63,
+        side: 'left',
+        x: col.pct + '%',
+        top: 'top:' + topVh + 'vh',
+        w: AFFIRM_WIDTHS[n % AFFIRM_WIDTHS.length],
+        h: AFFIRM_HEIGHTS[n % AFFIRM_HEIGHTS.length],
+        /* Every fourth one carries no shape, just the words, so the
+           field does not read as a grid of identical stamps. */
+        noShape: n % 4 === 3,
+        fill: AFFIRM_FILLS[n % AFFIRM_FILLS.length],
+        tilt: AFFIRM_TILTS[n % AFFIRM_TILTS.length],
+        size: 12.5,
+      });
+      n++;
+    });
+  });
+  return out;
+}
+
+const AFFIRM_SPOTS = buildAffirmSpots();
+
+/* The sprouts. One narrow channel to the right of every column, in the
+   strip of ground no shape reaches, on the rows that column is not
+   using so they never sit level with its words either. */
+const SPRIG_OFFSET = 134;   // px past a column's left edge, clear of its widest shape
+const SPRIG_W = 40;
+
+function sprigField(sprig) {
+  let out = '';
+  let n = 0;
+  AFFIRM_COLS.forEach((col) => {
+    const rows = col.rows === AFFIRM_ROWS ? AFFIRM_ROWS_ALT : AFFIRM_ROWS;
+    rows.forEach((topVh) => {
+      const h = 68;
+      const hush = col.pct >= 27 && col.pct <= 63 ? ' leafart-hush' : '';
+      out += `
+      <svg class="leafart leafart-${col.tier}${hush}" aria-hidden="true"
+        style="top:${topVh}vh;left:calc(${col.pct}% + ${SPRIG_OFFSET}px);width:${SPRIG_W}px;height:${h}px"
+        viewBox="0 0 ${SPRIG_W} ${h}">
+        ${sprig(SPRIG_W * 0.4, 27, n % 2 ? -16 : 15, .88, .74)}${sprig(SPRIG_W * 0.6, 58, n % 2 ? 13 : -14, .72, .5)}
+      </svg>`;
+      n++;
+    });
+  });
+  return out;
 }
 
 function desktopHeader(a) {
   const lines = a.all || [];
   const shapes = AFFIRM_SPOTS.map((sp, i) => affirmation(lines[i % lines.length], {
-    box: `${sp.side}:${sp.x};${affirmTop(sp.y)};width:${sp.w}px;height:${sp.h}px`,
+    box: `${sp.side}:${sp.x};${sp.top};width:${sp.w}px;height:${sp.h}px`,
     fill: sp.fill,
     noShape: sp.noShape,
-    cls: 'affirm-' + sp.tier,
-    text: sp.tx,
-    heartPos: sp.hp,
+    cls: 'affirm-' + sp.tier + (sp.hush ? ' affirm-hush' : ''),
+    inset: sp.inset,
+    text: `font-size:${sp.size}px;transform:rotate(${sp.tilt}deg)`,
   })).join('');
 
   return `
@@ -592,6 +655,10 @@ const crop = {
 };
 
 const CROP_VIEW = 264;   // the square she is looking at, in CSS pixels
+
+/* Where the caret should land after the next repaint, set when an emoji
+   is dropped into the middle of what she has written. */
+let postCaret = null;
 
 function cropBase() {
   if (!crop.w || !crop.h) return 1;
@@ -897,6 +964,21 @@ function newChildRecord(name, birthday) {
     wakeTime: '06:30',
     napOverride: null,
     routineInclude: [],
+    /* What has been given, keyed series:dose to a date, plus
+       season:<id> to a list of dates for the yearly ones. vaxSkip is
+       the series this family has decided against, which is a settled
+       state rather than a permanently outstanding one. See
+       src/data/vaccineRecord.js. */
+    vax: {},
+    vaxSkip: [],
+    /* Which set of growth curves to plot them on. Empty until asked,
+       and asked only on the growth screen, which is the one place it
+       is needed. See screenGrowth. */
+    sex: '',
+    /* Weights, lengths and head measurements, one entry per occasion,
+       always stored in kilograms and centimetres whatever the parent
+       reads. See src/data/growth.js. */
+    growth: [],
     /* Logs belong to the child rather than to the app, which is what
        structurally stops one child's feeds turning up under a sibling. */
     logs: [],
@@ -910,6 +992,13 @@ const store = {
      than not having one at all. The profile screen says so out loud. */
   parent: { name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '',
     photo: '',
+    /* Who they are to the child, and how the app should write about
+       them. Both optional. See CALLED_BY and REFERS_TO. */
+    calledBy: '', calledByOther: '', refersTo: '',
+    /* Whether the half of the app about their own body applies to
+       them. Empty until asked. See BODY_CARE_ASK in situation.js for
+       why this is a question rather than something inferred. */
+    bodyCare: '',
     /* Where she actually is, so the app stops showing her things that
        finished a while ago. See src/data/situation.js. */
     situation: { stages: [], path: '', roles: [], support: [] } },
@@ -919,9 +1008,112 @@ const store = {
   postDraft: null,
   postOpen: false,
 
+  /* Memories. Photos, videos, voice memos and little things said, kept
+     for every child and for her. Nothing here ever expires on its own,
+     so this list only ever shrinks when somebody deletes something. */
+  memories: [],
+  memDraft: null,
+
+  /* Willow's walkthrough. Only ever opened by a deliberate flag, never
+     by the app deciding an account looks empty. See the section that
+     builds it for why that distinction matters. */
+  onboard: { open: false, done: false, step: 'hello', line: '', lineFrom: '' },
+
+  /* The last time Willow decided something was worth speaking up about,
+     and how many times she has today. Persisted so closing the app does
+     not reset her restraint. */
+  nudge: {},
+
+  /* Willow's framing for today's plan, one per child, thrown away at
+     midnight when the plan itself changes. Never synced: it is a day
+     old at most and regenerating it costs less than carrying it. */
+  planLift: null,
+
+  /* Accounts she has blocked in the feed. Kept on her own record and
+     filtered on her own device, because a query cannot say "not in this
+     list" and who somebody has blocked is nobody else's business. */
+  blocked: [],
+  feedError: '',
+  feedThanks: false,
+
+  /* The day the project last ran out of AI quota. Everything Willow
+     writes in the background stands down for the rest of that day so
+     the chat keeps whatever is left. */
+  liftQuotaDay: '',
+  liftQuotaHit: false,
+
+  /* The day the "a year ago today" card was waved away, so it stays
+     away until tomorrow rather than coming back on the next reload. */
+  memDayHidden: '',
+  /* Memories that were deliberately deleted. Without this, the other
+     device would push its old copy straight back and the thing she
+     removed would reappear. */
+  deletedMemoryIds: [],
+
   /* The corner menu. Never persisted: a menu left open across a reload
      would be a small haunting. */
   menuOpen: false,
+
+  /* THE FAMILY CHORE CHART.
+     choreJobs is the chart itself: one entry per job per person, with
+     the days it falls on. choreDone is what has actually been ticked,
+     keyed by date then by job, and trimmed to about ten weeks so a
+     family who uses this for years does not carry every tick forever.
+     choreAdults is anybody on the chart who is not the parent and not
+     a child, such as a partner or a grandparent. */
+  choreJobs: [],
+  choreDone: {},
+  choreAdults: [],
+  choreStarsOn: true,
+  choreTab: 'today',
+  choreDay: null,
+  chorePick: null,
+
+  /* Which age band of the learning day is being looked at, when it is
+     not simply the active child's own. */
+  learnBand: '',
+  learnTab: 'day',
+
+  /* Pounds and inches or kilograms and centimetres. A preference of the
+     parent's, not of the child's, because a household reads one or the
+     other and the numbers are stored metric either way. */
+  /* Notification settings. Kept locally as well as on the account so
+     the screen can draw before Firestore has answered. pushOn is the
+     one that means permission was granted and a token was saved. */
+  pushOn: false,
+  pushPrefs: {},
+
+  /* Willow's draft for today, and whether it has been sent. Keyed by
+     the day so yesterday's cannot be posted by accident. */
+  willowPost: null,
+  /* Whether the invite link was copied rather than shared, so the
+     button can say so. Never persisted. */
+  shareLinkCopied: false,
+
+  /* Which signing band is being looked at, when it is not simply the
+     child's own. */
+  signStage: '',
+
+  vaxTab: 'list',
+  vaxOpen: '',
+  vaxEdit: '',
+  vaxError: '',
+  vaxCopied: false,
+
+  growthUnits: 'us',
+  growthTab: 'chart',
+  growthMeasure: 'weight',
+  growthDraft: {},
+  growthError: '',
+  growthCopied: false,
+
+  /* The day the add to home screen banner was waved away. It comes back
+     a week later rather than never, because somebody who says not now
+     in a hospital car park genuinely might say yes on the sofa, and
+     somebody who never wants it will wave it away twice and then it
+     stops for good. */
+  installHidden: '',
+  installWaves: 0,
 
   /* Which month the cycle calendar is showing, 0 being this one. */
   calMonth: 0,
@@ -967,6 +1159,9 @@ const store = {
 
   /* Parent scoped. These follow the mother, not any child. */
   bagChecked: [],
+  outChecked: [],   // the packing checklist, ticked per trip and per child
+  outTrip: 'day',   // which kind of trip she is packing for
+  daycareHours: 0,  // hours in daycare, for the diaper estimate
   pumpTab: 'flange',
   pumpGoal: 'exclusive',
   pumpProblem: null,
@@ -1014,6 +1209,7 @@ const store = {
 
   /* Sub tabs on the feeding and safety screens. */
   feedTab: 'stance',
+  outTab: null,
   safetyTab: 'cpr',
 
   /* Profile screen drafts, so a half typed child does not vanish on
@@ -1066,12 +1262,21 @@ const state = {};
   });
 });
 
-['parent', 'children', 'activeChildId', 'bagChecked', 'birthdaySeen', 'profileWho', 'posts', 'postDraft',
+['parent', 'children', 'activeChildId', 'bagChecked', 'outChecked', 'outTrip', 'daycareHours', 'birthdaySeen', 'profileWho', 'posts', 'postDraft',
  'postOpen', 'menuOpen', 'calMonth',
  'profileEdit', 'msEdit', 'ciEdit', 'ciOpen', 'photoBusy', 'photoError',
  'liftUsed', 'liftDate', 'pumpTab', 'pumpGoal',
  'pumpProblem', 'flangeMm', 'ppTab', 'ppStage', 'askQuery', 'askAsked',
- 'tab', 'view', 'undGroup', 'lensBand', 'feedTab', 'safetyTab',
+ 'tab', 'view', 'undGroup', 'lensBand', 'feedTab', 'outTab', 'safetyTab',
+ /* EVERY SUB TAB KEY HAS TO BE IN THIS LIST.
+    The one handler for every tab strip writes state[key], and state is
+    a view onto store for the names below and a plain object for
+    anything else. A key that is missing gets written to a property
+    nothing reads, so the tab lights up, the screen does not change,
+    and nothing throws. That is exactly what happened to the Learning
+    tabs, and to Jobs, Growth and the vaccine record with them. The
+    build now refuses to finish if a data-sub key is not here. */
+ 'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab',
  'logDraft', 'draftChildName', 'draftChildBday'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -1096,8 +1301,32 @@ function flushStore() {
       children: store.children,
       activeChildId: store.activeChildId,
       bagChecked: store.bagChecked,
+      outChecked: store.outChecked,
+      outTrip: store.outTrip,
+      daycareHours: store.daycareHours,
       birthdaySeen: store.birthdaySeen,
       posts: store.posts,
+      /* Memories live here too, or a voice memo saved this morning
+         would be gone by the afternoon. */
+      memories: store.memories,
+      memDayHidden: store.memDayHidden,
+      installHidden: store.installHidden,
+      choreJobs: store.choreJobs,
+      choreDone: store.choreDone,
+      choreAdults: store.choreAdults,
+      choreStarsOn: store.choreStarsOn,
+      growthUnits: store.growthUnits,
+      pushOn: store.pushOn,
+      pushPrefs: store.pushPrefs,
+      willowPost: store.willowPost,
+      installWaves: store.installWaves,
+      onboard: store.onboard,
+      nudge: store.nudge,
+      planLift: store.planLift,
+      blocked: store.blocked,
+      liftQuotaDay: store.liftQuotaDay,
+      liftQuotaHit: store.liftQuotaHit,
+      deletedMemoryIds: store.deletedMemoryIds,
       postDraft: store.postDraft,
       msEdit: store.msEdit,
       ciEdit: store.ciEdit,
@@ -1193,29 +1422,78 @@ function loadStore() {
     store.ciEdit = (saved.ciEdit && typeof saved.ciEdit === 'object' && saved.ciEdit.childId)
       ? saved.ciEdit : null;
     store.posts = Array.isArray(saved.posts) ? saved.posts : [];
+    store.memories = Array.isArray(saved.memories) ? saved.memories : [];
+    store.memDayHidden = typeof saved.memDayHidden === 'string' ? saved.memDayHidden : '';
+    store.installHidden = typeof saved.installHidden === 'string' ? saved.installHidden : '';
+    store.choreJobs = Array.isArray(saved.choreJobs) ? saved.choreJobs : [];
+    store.choreDone = (saved.choreDone && typeof saved.choreDone === 'object') ? saved.choreDone : {};
+    store.choreAdults = Array.isArray(saved.choreAdults) ? saved.choreAdults : [];
+    /* Only a saved false turns stars off. A store from before this
+       existed has neither, and those families get stars, which is the
+       default everywhere else. */
+    store.choreStarsOn = saved.choreStarsOn === false ? false : true;
+    store.growthUnits = saved.growthUnits === 'metric' ? 'metric' : 'us';
+    store.pushOn = !!saved.pushOn;
+    store.pushPrefs = (saved.pushPrefs && typeof saved.pushPrefs === 'object') ? saved.pushPrefs : {};
+    store.willowPost = (saved.willowPost && typeof saved.willowPost === 'object') ? saved.willowPost : null;
+    store.installWaves = Number(saved.installWaves) || 0;
+    store.deletedMemoryIds = Array.isArray(saved.deletedMemoryIds) ? saved.deletedMemoryIds : [];
+    store.onboard = (saved.onboard && typeof saved.onboard === 'object')
+      ? saved.onboard : { open: false, done: false, step: 'hello', line: '', lineFrom: '' };
+    store.nudge = (saved.nudge && typeof saved.nudge === 'object') ? saved.nudge : {};
+    store.planLift = (saved.planLift && typeof saved.planLift === 'object') ? saved.planLift : null;
+    store.blocked = Array.isArray(saved.blocked) ? saved.blocked : [];
+    store.liftQuotaDay = typeof saved.liftQuotaDay === 'string' ? saved.liftQuotaDay : '';
+    store.liftQuotaHit = !!saved.liftQuotaHit;
     store.postDraft = (saved.postDraft && typeof saved.postDraft === 'object') ? saved.postDraft : null;
   }
 
-  if (saved && Array.isArray(saved.children) && saved.children.length) {
-    store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '', photo: '', situation: { stages: [], path: '', roles: [], support: [] } }, saved.parent || {});
+  /* SHE COMES BACK WHETHER OR NOT THERE ARE CHILDREN YET.
+
+     This used to sit inside the children check below, which meant an
+     account with no child on it lost her name, username, email,
+     birthday and everything she had ticked about her situation on
+     every single reload. Somebody who signed up, told the app who they
+     were, and had not added a child yet got an empty profile back.
+     Willow's walkthrough makes that path far more likely, since it now
+     asks who you are before it asks about a child and lets you skip
+     the child entirely. */
+  if (saved && saved.parent) {
+    store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '', photo: '', calledBy: '', calledByOther: '', refersTo: '', situation: { stages: [], path: '', roles: [], support: [] } }, saved.parent);
     store.parent.birthday = sanitizeStoredDate(store.parent.birthday, 0);
     store.parent.lastPeriod = sanitizeStoredDate(store.parent.lastPeriod, 0);
     store.parent.situation = normalizeSituation(store.parent.situation);
+    store.bagChecked = Array.isArray(saved.bagChecked) ? saved.bagChecked : [];
+    store.outChecked = Array.isArray(saved.outChecked) ? saved.outChecked : [];
+    store.outTrip = typeof saved.outTrip === 'string' ? saved.outTrip : 'day';
+    store.daycareHours = Number(saved.daycareHours) || 0;
+    store.parentUpdatedAt = Number(saved.parentUpdatedAt) || 0;
+  }
+
+  if (saved && Array.isArray(saved.children) && saved.children.length) {
     // Fill in any field an older saved record is missing, so a profile
     // written by a previous version cannot crash a newer screen.
     store.children = saved.children.map((k) => Object.assign(normalizeChild(k), {
       birthday: sanitizeStoredDate(k.birthday, 2) || null,
     }));
-    store.bagChecked = Array.isArray(saved.bagChecked) ? saved.bagChecked : [];
     /* Reopen whoever was open last. Three of the five tabs are about one
        child, so dropping back to the picker on every refresh would make
        the app feel like it forgot. With one child there is nothing to
        choose, so that one opens itself. */
-    store.parentUpdatedAt = Number(saved.parentUpdatedAt) || 0;
     const was = saved.activeChildId;
     const stillThere = was && store.children.some((k) => k.id === was);
     store.activeChildId = stillThere ? was
       : (store.children.length === 1 ? store.children[0].id : null);
+    return true;
+  }
+
+  /* An account that exists but has no child on it yet. Her own details
+     have already been restored above, and seeding the example child
+     into a real account would put somebody else's child on it. */
+  if (saved && saved.parent && (saved.hadSession || saved.guest
+      || (saved.parent.name || saved.parent.email || saved.parent.username))) {
+    store.children = [];
+    store.activeChildId = null;
     return true;
   }
 
@@ -1263,22 +1541,101 @@ function ctx() {
    SCREENS
    ----------------------------------------------------------------- */
 
-function buildPlan(c) {
-  /* A screen called Today's Plan has to actually change today.
-   *
-   * The seed is the date plus this child's id, which gives three things
-   * at once. It moves on at midnight, so a parent opening the app on
-   * Tuesday does not get Monday back. Two children get different plans
-   * on the same day, which matters in a house where one of them is
-   * listening. And it holds still while somebody is reading it, because
-   * the same seed always produces the same answer, so nothing reshuffles
-   * under them when the screen redraws.
-   *
-   * None of this needs a server or an API key. It is arithmetic on the
-   * date. What it cannot do is invent an activity that is not in the
-   * library, which is a content problem rather than a code one. */
+/* THE WORDS AROUND THE PLAN.
+
+   The activities are the library's, the framing is Willow's. See
+   src/data/planFraming.js for why it is split that way. Cached per
+   child per day, so opening the plan eleven times is one piece of
+   writing, and it rewrites itself at midnight along with the plan. */
+function planLift() {
+  const day = ciToday();
+  if (!store.planLift || typeof store.planLift !== 'object' || store.planLift.day !== day) {
+    store.planLift = { day: day, byChild: {} };
+  }
+  if (!store.planLift.byChild || typeof store.planLift.byChild !== 'object') {
+    store.planLift.byChild = {};
+  }
+  return store.planLift;
+}
+
+function planFraming(c, p) {
   const kid = activeChild();
-  const seed = hashSeed(todayKey() + ':' + (kid ? kid.id : 'none'));
+  const id = kid ? kid.id : 'none';
+  const pl = planLift();
+  let entry = pl.byChild[id];
+
+  if (!entry) {
+    entry = {
+      text: writtenFraming(c.months, pl.day + id),
+      from: 'written',
+    };
+    pl.byChild[id] = entry;
+
+    /* Willow is given the titles the library actually chose, which is
+       the only reason this is worth a call: she can say something about
+       these three today rather than something generic about parenting. */
+    const items = [p.morning, p.learning, p.move]
+      .filter(Boolean).map((a) => a.title);
+    liftWrite('planframe:' + id + ':' + pl.day, {
+      childName: (c.child && c.child.name) || '',
+      ageLabel: (c.summary && c.summary.label) || '',
+      items: items,
+      focus: c.content && c.content[0] ? c.content[0].title : '',
+    }, (text) => {
+      const line = String(text || '').trim();
+      /* A wall of text at the top of a plan would push the plan itself
+         off the screen, which is the opposite of the point. */
+      if (!line || line.length > 420) return;
+      const cur = planLift();
+      if (cur.day !== pl.day) return;
+      cur.byChild[id] = { text: line, from: 'willow' };
+    });
+  }
+  return entry;
+}
+
+/* HOW MANY THINGS THE PLAN CAN REMEMBER OFFERING.
+
+   Capped so a small age band cannot run itself dry. If the library only
+   holds twelve activities for a nine month old and the plan remembered
+   all twelve, there would be nothing left to offer on day five and it
+   would start refusing to fill slots. So the list is always kept a few
+   shorter than the pool it is drawn from. */
+function planRecentCap(poolSize) {
+  /* Leave four spare: three slots plus one, so there is always
+     something fresh for every slot and the fallback is never needed. */
+  return Math.max(0, Math.min(40, poolSize - 4));
+}
+
+function planRecent(kid) {
+  if (!kid) return [];
+  if (!Array.isArray(kid.planRecent)) kid.planRecent = [];
+  return kid.planRecent;
+}
+
+/* Today's plan for this child, built once and then left alone.
+
+   It used to be recomputed on every render from a seed. That was fine
+   for showing, and no use at all for ticking: a tick has to attach to a
+   specific thing, and a thing that is recalculated on every repaint is
+   not specific. So it is built once a day, saved on the child, and the
+   ticks hang off it.
+
+   THREE THINGS IT HAS TO GET RIGHT, ALL OF WHICH SHE ASKED FOR:
+   it changes every day, it is different for each child on the same day,
+   and it does not keep offering the same activity it offered on Tuesday.
+   The first two come from the seed, which is the date plus the child's
+   id. The third needs an actual memory, which is planRecent. */
+function buildPlan(c) {
+  const kid = activeChild();
+  const day = ciToday();
+  const kept = kid && kid.plan && kid.plan.day === day ? kid.plan : null;
+
+  /* Already built today. Hand back what the ticks are attached to
+     rather than building a second, different plan. */
+  if (kept) return planHydrate(kept, c);
+
+  const seed = hashSeed(day + ':' + (kid ? kid.id : 'none'));
 
   /* Rotate the list by the seed before choosing, rather than always
      taking the first match. Same candidates, different starting point
@@ -1289,45 +1646,134 @@ function buildPlan(c) {
     return list.slice(n).concat(list.slice(0, n));
   };
 
-  const used = new Set();
-  const pickFrom = (fn, offset) => {
-    const candidates = rotate(c.activities.filter((a) => fn(a) && !used.has(a.id)), offset);
-    const chosen = candidates[0] || null;
-    if (chosen) used.add(chosen.id);
-    return chosen;
-  };
-  const anyLeft = (offset) => {
-    const rest = rotate(c.activities.filter((a) => !used.has(a.id)), offset);
-    const chosen = rest[0] || null;
-    if (chosen) used.add(chosen.id);
-    return chosen;
-  };
+  /* Everything offered in the last few days, so the plan stops handing
+     back Tuesday's activity on Thursday. */
+  const seenList = planRecent(kid);
+  const seen = {};
+  seenList.forEach((id) => { seen[id] = true; });
 
-  const morning = pickFrom(
+  const used = {};
+  /* THE ORDER OF PREFERENCE, WHICH IS THE WHOLE TRICK.
+
+     Each slot has a category it wants, such as something physical for
+     the movement slot. Those categories are small: an age band might
+     hold fourteen activities in total but only four that are physical.
+     Preferring the right category above all else means the movement
+     slot cycles through its four and starts repeating by Thursday,
+     while ten perfectly good activities sit unused.
+
+     So a FRESH activity from anywhere beats a REPEAT from the right
+     category. A parent notices being handed the same thing twice in a
+     week. Nobody notices that today's movement suggestion came out of
+     the learning drawer.
+
+     Age is never in question at any point here: c.activities only ever
+     holds what the library has for this child's months, and nothing
+     below can reach outside it. */
+  const pick = (fn, offset) => {
+    const free = c.activities.filter((a) => !used[a.id]);
+    const wanted = free.filter(fn);
+    const order = [
+      wanted.filter((a) => !seen[a.id]),   // right category, not seen lately
+      free.filter((a) => !seen[a.id]),     // anything at all, not seen lately
+      wanted,                              // right category, seen lately
+      free,                                // whatever is left
+    ];
+    const pool = order.filter((list) => list.length)[0] || [];
+    const chosen = rotate(pool, offset)[0] || null;
+    if (chosen) used[chosen.id] = true;
+    return chosen;
+  };
+  const anyLeft = (offset) => pick(() => true, offset);
+
+  const morning = pick(
     (a) => a.skills.includes('regulation') || a.skills.includes('socialEmotional'), seed
   ) || anyLeft(seed);
 
-  const learning = pickFrom(
+  const learning = pick(
     (a) => a.skills.some((sk) => ['cognitive', 'literacy', 'numeracy', 'language'].includes(sk)), seed + 3
   ) || anyLeft(seed + 3);
 
-  const move = pickFrom(
+  const move = pick(
     (a) => a.skills.includes('grossMotor') || a.setting === 'outdoor', seed + 7
   ) || anyLeft(seed + 7);
 
   const script = c.scripts.length ? c.scripts[seed % c.scripts.length] : null;
   const mins = c.months == null ? 10 : c.months < 12 ? 5 : c.months < 36 ? 10 : c.months < 72 ? 15 : 20;
-  return { morning, learning, move, script, mins };
+
+  const record = {
+    day: day,
+    morningId: morning ? morning.id : '',
+    learningId: learning ? learning.id : '',
+    moveId: move ? move.id : '',
+    scriptId: script ? script.id : '',
+    mins: mins,
+    done: {},
+  };
+
+  if (kid) {
+    kid.plan = record;
+    /* Newest first, so the oldest fall off the end as the list fills. */
+    const fresh = [record.morningId, record.learningId, record.moveId].filter(Boolean);
+    const next = fresh.concat(planRecent(kid).filter((id) => fresh.indexOf(id) === -1));
+    kid.planRecent = next.slice(0, planRecentCap(c.activities.length));
+    kid.updatedAt = Date.now();
+    saveStore();
+  }
+
+  return planHydrate(record, c);
+}
+
+/* The saved plan holds ids. The screen needs the actual entries, looked
+   up fresh each time so a change to the library shows up rather than
+   being frozen into somebody's Tuesday. */
+function planHydrate(record, c) {
+  const byId = {};
+  c.activities.forEach((a) => { byId[a.id] = a; });
+  const script = (c.scripts || []).filter((x) => x.id === record.scriptId)[0] || null;
+  return {
+    morning: byId[record.morningId] || null,
+    learning: byId[record.learningId] || null,
+    move: byId[record.moveId] || null,
+    script: script,
+    mins: record.mins,
+    done: record.done || {},
+    day: record.day,
+  };
+}
+
+/* Ticking one. Kept on the child, keyed by the slot rather than by the
+   activity, so the reading and evening rows can be ticked too even
+   though they are not library entries. */
+function planTick(slot) {
+  const kid = activeChild();
+  if (!kid || !kid.plan) return;
+  if (!kid.plan.done || typeof kid.plan.done !== 'object') kid.plan.done = {};
+  if (kid.plan.done[slot]) delete kid.plan.done[slot];
+  else kid.plan.done[slot] = true;
+  kid.updatedAt = Date.now();
+  flushStore();
+  render();
 }
 
 function screenPlan(c) {
   if (c.months == null) return emptyScreen('Add a birthday to see a plan.');
   const p = buildPlan(c);
   const focus = c.content[0];
+  const frame = planFraming(c, p);
+  const done = p.done || {};
 
-  const item = (eyebrow, ic, title, text, btn, go) => `
-    <div class="plan">
-      <span class="picon">${icon(ic, 17)}</span>
+  /* Every row is tickable now, because "did we do it" is the question a
+     parent actually has about a plan, and a plan you cannot answer that
+     about is a list of suggestions. The tick is the whole row rather
+     than a small box beside it, since this gets used one handed. */
+  const item = (slot, eyebrow, ic, title, text, btn, go) => `
+    <div class="plan${done[slot] ? ' done' : ''}">
+      <button class="plantick${done[slot] ? ' on' : ''}" data-plan="tick" data-slot="${esc(slot)}"
+        aria-pressed="${done[slot] ? 'true' : 'false'}"
+        aria-label="${done[slot] ? 'Did this, tap to undo' : 'Mark as done'}">
+        ${done[slot] ? icon('check', 14, '#fff') : ''}
+      </button>
       <div class="grow">
         <p class="eyebrow">${eyebrow}</p>
         <h3 class="h3">${esc(title)}</h3>
@@ -1335,6 +1781,11 @@ function screenPlan(c) {
         ${btn ? `<button class="btn ghost sm" style="margin-top:9px" ${go}>${btn}</button>` : ''}
       </div>
     </div>`;
+
+  const slots = ['morning', 'learning', 'reading', 'move', 'evening']
+    .filter((k) => k === 'reading' || k === 'evening'
+      || (k === 'morning' && p.morning) || (k === 'learning' && p.learning) || (k === 'move' && p.move));
+  const ticked = slots.filter((k) => done[k]).length;
 
   return `
   ${cornerLeaves()}
@@ -1344,6 +1795,14 @@ function screenPlan(c) {
     <p class="sub">${esc(c.child.name)} &middot; ${esc(c.summary.label)}</p>
   </div>
   <div class="sc">
+    <div class="card planframe">
+      <span class="planframe-face">${icon('leaf', 14, '#fff')}</span>
+      <div class="grow">
+        <p class="eyebrow">${esc(PLAN_FRAMING_LABEL)}</p>
+        <p class="bodytext" style="margin-top:4px">${esc(frame.text)}</p>
+      </div>
+    </div>
+
     ${focus ? `
     <div class="card leafy">
       <p class="eyebrow">Today's Development Focus</p>
@@ -1351,12 +1810,12 @@ function screenPlan(c) {
       <p class="bodytext" style="margin-top:5px">${esc(focus.summary)}</p>
     </div>` : ''}
 
-    ${p.morning ? item('Morning Activity', 'sun', p.morning.title, p.morning.description, 'Let\'s do it', `data-go="activity" data-id="${esc(p.morning.id)}"`) : ''}
-    ${p.learning ? item('Learning Moment', 'book', p.learning.title, p.learning.description, 'Try this', `data-go="activity" data-id="${esc(p.learning.id)}"`) : ''}
+    ${p.morning ? item('morning', 'Morning Activity', 'sun', p.morning.title, p.morning.description, 'Let\'s do it', `data-go="activity" data-id="${esc(p.morning.id)}"`) : ''}
+    ${p.learning ? item('learning', 'Learning Moment', 'book', p.learning.title, p.learning.description, 'Try this', `data-go="activity" data-id="${esc(p.learning.id)}"`) : ''}
 
-    ${item('Reading Time', 'book', `Read together for ${p.mins} minutes`, 'Ask what they think happens next. Questions build more language than reading straight through.', '', '')}
+    ${item('reading', 'Reading Time', 'book', `Read together for ${p.mins} minutes`, 'Ask what they think happens next. Questions build more language than reading straight through.', '', '')}
 
-    ${p.move ? item('Outdoor / Movement', 'run', p.move.title, p.move.description, 'Get moving', `data-go="activity" data-id="${esc(p.move.id)}"`) : ''}
+    ${p.move ? item('move', 'Outdoor / Movement', 'run', p.move.title, p.move.description, 'Get moving', `data-go="activity" data-id="${esc(p.move.id)}"`) : ''}
 
     ${p.script ? `
     <p class="sect">Parent Script</p>
@@ -1366,7 +1825,15 @@ function screenPlan(c) {
       <p class="why">${esc(p.script.why)}</p>
     </div>` : ''}
 
-    ${item('Evening Wind Down', 'moon', 'Gratitude and Good Night', 'Share one thing that went well, one feeling you noticed, and end with: tomorrow is a new day, and I am so proud of you.', '', '')}
+    ${item('evening', 'Evening Wind Down', 'moon', 'Gratitude and Good Night', 'Share one thing that went well, one feeling you noticed, and end with: tomorrow is a new day, and I am so proud of you.', '', '')}
+
+    ${/* Said once, at the bottom, quietly. A plan that counts what you
+          did not do is a plan that makes a hard day worse. */ ''}
+    <p class="tiny" style="text-align:center;margin-top:12px">
+      ${ticked
+        ? esc(ticked + ' of ' + slots.length + ' ticked off. Tomorrow brings a different plan either way.')
+        : 'Tick anything you get to. Nothing here is a requirement, and a new plan arrives tomorrow whatever happens with this one.'}
+    </p>
     <p class="disclaimer">${esc(CONTENT_DISCLAIMER)}</p>
   </div>`;
 }
@@ -1518,6 +1985,50 @@ function msSet(id, st) {
   else store.msEdit.statuses[id] = next;
   if (!Object.keys(store.msEdit.statuses).length) store.msEdit = null;
   flushStore();
+}
+
+/* WHERE BACK ACTUALLY GOES.
+
+   Back used to mean "clear the view", which drops to whatever tab is
+   underneath. From an activity opened out of Today's Plan that is the
+   child's profile, two steps back rather than one, and the plan she was
+   reading is gone.
+
+   So there is a stack now. Going deeper remembers where you were,
+   Back returns there, and running out of stack behaves the way it
+   always did and drops to the tab. Deliberately short: this is for
+   stepping back out of a couple of screens, not for replaying an
+   afternoon. It is memory only, because a back stack restored from
+   disk would send somebody back to yesterday. */
+/* The last markup written into the willow slot, so render() can tell
+   whether anything about her actually changed. Not read back out of
+   the DOM: see the comment where this is used. */
+let lastWillowHTML = null;
+
+/* Which part of Settings to scroll to on the next paint, set by the
+   account menu and cleared as soon as it has been used once. */
+let settingsJump = null;
+
+const NAV_MAX = 12;
+let navStack = [];
+
+function navPush() {
+  navStack.push({ tab: state.tab, view: state.view });
+  if (navStack.length > NAV_MAX) navStack.shift();
+}
+
+function navBack() {
+  const prev = navStack.pop();
+  if (!prev) { state.view = null; return; }
+  state.tab = prev.tab;
+  state.view = prev.view;
+}
+
+/* Anything that jumps sideways rather than deeper, such as a tab, makes
+   the stack meaningless. Better an empty stack than one that sends
+   somebody somewhere they were never coming from. */
+function navClear() {
+  navStack = [];
 }
 
 function msChangeCount() {
@@ -1771,8 +2282,18 @@ function tabList() {
     { id: 'community', label: 'Community', icon: 'people' },
     { id: 'logs', label: 'Logs', icon: 'note' },
     { id: 'home', label: 'Home', icon: 'home', center: true },
+    /* Sixth tab, which means Home is no longer exactly in the middle.
+       Worth it: going places is a whole category of thing this app
+       had nothing to say about, and buried two screens down nobody
+       would ever find it. */
+    { id: 'outings', label: 'Outings', icon: 'bag' },
     { id: 'profile', label: 'Profile', icon: 'user' },
-    { id: 'settings', label: 'Settings', icon: 'gear' },
+    /* Settings used to sit here and it made six, which is too many
+       across a phone. It is not a daily destination, it is the place
+       you go once a month to change something, so it moved into the
+       menu behind your own face at the top, the way every app with an
+       account does it. Nothing was removed, it just stopped taking a
+       sixth of the bottom of the screen. */
   ];
 }
 
@@ -1797,8 +2318,18 @@ function routeKey() {
     v ? v.type + ':' + v.id : '-',
     store.activeChildId || '-',
     store.profileWho || '-',
-    state.feedTab, state.safetyTab, state.ppTab, state.pumpTab,
-    state.undGroup, state.lensBand,
+    state.feedTab, state.outTab, state.safetyTab, state.ppTab, state.pumpTab,
+    /* Which room of Community she is in. Here so switching to the sky
+       starts at the top of the sky rather than partway down the feed
+       she was reading. */
+    feed.view, String(feed.room),
+    /* undGroup is NOT here on purpose. It is the accordion on the
+       Understanding page, which opens a group in place rather than
+       going anywhere, and including it meant every tap counted as a new
+       screen and threw her back to the top. A sub tab that replaces the
+       whole body belongs in this key. Something that expands where she
+       is standing does not. */
+    state.lensBand,
   ].join('|');
 }
 
@@ -1871,6 +2402,26 @@ function render() {
   }
   document.body.classList.remove('locked');
   paintBackground();
+
+  /* Willow's walkthrough takes the whole window. The tabs come off for
+     the duration, because a guided flow you can wander out of halfway
+     is not a guided flow, and every step carries its own way out. */
+  if (onboardShouldOpen(onboard())) {
+    const obHtml = screenOnboard();
+    /* The wordmark only. The corner chip opens a menu that leads out of
+       the flow, and every step already carries its own way out. */
+    const obBar = document.getElementById('topbar');
+    if (obBar) { obBar.innerHTML = topBar(true); screen.innerHTML = obHtml; }
+    else screen.innerHTML = topBar(true) + obHtml;
+    const obTabs = document.getElementById('tabs');
+    if (obTabs) obTabs.innerHTML = '';
+    const obW = document.getElementById('willow');
+    if (obW) obW.innerHTML = '';
+    restoreFocus();
+    saveStore();
+    return;
+  }
+
   /* Screens that only make sense inside one child. Reaching one with no
      child open sends you to the picker rather than to an empty screen. */
   const CHILD_SCOPED = ['milestones', 'activities', 'topics', 'understand', 'feeding',
@@ -1879,6 +2430,15 @@ function render() {
     v = null; state.view = null; state.tab = 'home';
   }
   if (v && v.type === 'log' && !activeChild()) { v = null; state.view = null; state.tab = 'home'; }
+  /* An old link, a back button, or a reminder left over from before a
+     birthday. Development guidance is what this child actually has, so
+     that is where it goes rather than to an empty screen. */
+  if (v && v.type === 'screen' && v.id === 'milestones' && !getAgeSummary({
+    name: (activeChild() || {}).name, birthday: (activeChild() || {}).birthday,
+  }).checkpoint) {
+    v = { type: 'screen', id: 'development' };
+    state.view = v;
+  }
 
   if (v && v.type === 'content') html = viewContent(c, v.id);
   else if (v && v.type === 'activity') html = viewActivity(c, v.id);
@@ -1889,6 +2449,19 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'topics') html = screenTopics(c);
   else if (v && v.type === 'screen' && v.id === 'feeding') html = screenFeeding(c);
   else if (v && v.type === 'screen' && v.id === 'safety') html = screenSafety(c);
+  else if (v && v.type === 'screen' && v.id === 'signs') html = screenSigns(c);
+  else if (v && v.type === 'screen' && v.id === 'sharing') html = screenSharing(c);
+  else if (v && v.type === 'screen' && v.id === 'diaperplan') html = screenDiapers(c);
+  else if (v && v.type === 'screen' && v.id === 'privacy') html = screenPrivacy(c);
+  else if (v && v.type === 'screen' && v.id === 'rules') html = screenRules(c);
+  else if (v && v.type === 'screen' && v.id === 'about') html = screenAbout(c);
+  else if (v && v.type === 'screen' && v.id === 'install') html = screenInstall();
+  else if (v && v.type === 'screen' && v.id === 'chores') html = screenChores();
+  else if (v && v.type === 'screen' && v.id === 'learning') html = screenLearning(c);
+  else if (v && v.type === 'screen' && v.id === 'growth') html = screenGrowth(c);
+  else if (v && v.type === 'screen' && v.id === 'vaxrecord') html = screenVaxRecord(c);
+  else if (v && v.type === 'screen' && v.id === 'notifications') html = screenPush();
+  else if (v && v.type === 'screen' && v.id === 'support') html = screenSupport(c);
   else if (v && v.type === 'screen' && v.id === 'plan') html = screenPlan(c);
   else if (v && v.type === 'screen' && v.id === 'sleep') html = screenSleep(c);
   else if (v && v.type === 'screen' && v.id === 'development') html = screenDevelopment(c);
@@ -1902,6 +2475,8 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'learnall') html = screenLearnAll();
   else if (v && v.type === 'screen' && v.id === 'checkins') html = screenCheckins(c);
   else if (v && v.type === 'screen' && v.id === 'addchild') html = screenAddChild();
+  /* One child's logs, opened from their profile, with a way back to it. */
+  else if (v && v.type === 'screen' && v.id === 'childlogs') html = screenLogsHub(c, { page: true });
   /* Every old link that said "profile" meant her own, so it still lands
      there rather than on a dead route. */
   else if (v && v.type === 'screen' && v.id === 'profile') {
@@ -1913,13 +2488,24 @@ function render() {
   else if (v && v.type === 'lens') html = viewLens(c, v.id);
   else if (v && v.type === 'infection') html = viewInfection(v.id);
   else if (v && v.type === 'screen' && v.id === 'now') html = screenNow(c);
+  else if (v && v.type === 'screen' && v.id === 'momnow') html = screenMomNow();
+  /* There used to be a second screen listing her logs, reached from
+     Home. Two screens doing one job is how somebody logs a thing and
+     lands somewhere that is not where they started, so the old one now
+     simply hands over to the Logs tab. */
+  else if (v && v.type === 'caretaker') html = viewCaretaker(v.id);
+  else if (v && v.type === 'screen' && v.id === 'momlogs') {
+    state.view = null; state.tab = 'logs'; store.logWho = 'me'; html = screenLogsHub(c);
+  }
+  else if (v && v.type === 'momnow') html = screenMomNowOne(v.id);
   else if (state.tab === 'welcome') html = screenWelcome(c);
   else if (state.tab === 'settings') html = screenSettings();
   /* Profile shows whoever is selected. Her own face in the corner puts
      her here, a child's circle on Home puts them here. */
   else if (state.tab === 'profile') html = screenProfileTab(c);
   else if (state.tab === 'community') html = screenCommunity(c);
-  else if (state.tab === 'logs') html = activeChild() ? screenLogs(c) : screenPickChild('Logs');
+  else if (state.tab === 'outings') html = screenOutings(c);
+  else if (state.tab === 'logs') html = screenLogsHub(c);
   /* Home is hers and never asks which child you mean, which is the whole
      point of it being the middle tab. */
   else html = screenHome(c);
@@ -1927,7 +2513,16 @@ function render() {
   // Inputs inside the screen are destroyed by this swap, so remember where
   // the caret was and put it back, or typing loses focus every keystroke.
   const act = document.activeElement;
-  const keepId = act && screen.contains(act) && act.id ? act.id : null;
+  /* Willow and the top bar live outside the screen but are rewritten by
+     this same repaint, so anything focused in them has to be put back
+     too. Without this, a repaint while she is mid sentence to Willow
+     throws her out of the box and sends the caret to the start. */
+  const willowSlotNow = document.getElementById('willow');
+  const barSlotNow = document.getElementById('topbar');
+  const inRewritten = !!act && (screen.contains(act)
+    || (willowSlotNow && willowSlotNow.contains(act))
+    || (barSlotNow && barSlotNow.contains(act)));
+  const keepId = act && inRewritten && act.id ? act.id : null;
   // Some input types report selectionStart as null. Falling back to the
   // end of the value keeps typing in order instead of reversing it.
   let keepStart = null;
@@ -1962,7 +2557,50 @@ function render() {
   const pendingSave = !!(v && v.type === 'screen' && v.id === 'milestones'
     && !willow.open && msChangeCount());
   if (willowSlot) {
-    willowSlot.innerHTML = bday || (pendingSave ? '' : willowBubble() + willowPanel());
+    /* THE CHAT HAS ITS OWN SCROLLBAR AND IT HAS TO SURVIVE THIS.
+
+       .wbody scrolls independently of the page, so rewriting the slot
+       resets it to the top. Anything at all that repaints the app
+       while she is reading a long answer, a background line finishing,
+       a nudge appearing, a sync landing, sent her back to the first
+       word. Remembered here and put back below. */
+    const bodyBefore = document.getElementById('wbody');
+    const bodyScroll = bodyBefore ? bodyBefore.scrollTop : 0;
+
+    /* Only rewritten when it actually differs, because replacing the
+       markup destroys the box she is typing in.
+
+       COMPARED AGAINST WHAT WE LAST WROTE, NOT AGAINST innerHTML.
+       Reading innerHTML back gives the browser's own serialization of
+       the DOM, with attributes reordered and quoting normalized, and
+       that almost never matches the string we generated. So this guard
+       was always true and the panel was rebuilt on every repaint of
+       the whole app, which is most of what was wrong with the chat. */
+    const willowHTML = bday || (pendingSave ? '' : nudgeBubble() + willowBubble() + willowPanel());
+    const replaced = lastWillowHTML !== willowHTML;
+    if (replaced) {
+      willowSlot.innerHTML = willowHTML;
+      lastWillowHTML = willowHTML;
+    }
+
+    const bodyAfter = document.getElementById('wbody');
+    if (bodyAfter) {
+      if (willow.stick) {
+        /* A new message just arrived, so the bottom is where she wants
+           to be. This is the only case that moves the view. */
+        bodyAfter.scrollTop = bodyAfter.scrollHeight;
+        willow.stick = false;
+      } else if (replaced) {
+        bodyAfter.scrollTop = bodyScroll;
+      }
+    }
+
+    /* The input's value is a property rather than an attribute, so it
+       is written here instead of in the markup. Guarded, because
+       assigning to value while she is typing moves the caret to the
+       end even when the text is identical. */
+    const wIn = document.getElementById('willowIn');
+    if (wIn && wIn.value !== (willow.input || '')) wIn.value = willow.input || '';
   }
   /* The canvas has to exist before anything can draw on it, so the
      confetti starts here rather than inside the function that writes the
@@ -1970,6 +2608,18 @@ function render() {
   if (bday) bdayStartArt(); else bdayStopArt();
   /* The cropper has to exist before its gesture can be attached. */
   if (crop.on) cropWire();
+  /* THE SKY STOPS LISTENING THE MOMENT IT IS OFF SCREEN.
+
+     Fireflies uses a live Firestore listener, which is what makes
+     watching a light come on work at all. A listener left running
+     behind a screen nobody is looking at is a bill and a battery, so
+     it is torn down here, from the one place that knows what is
+     actually painted. */
+  const skyOnScreen = (state.tab === 'community'
+    || (v && v.type === 'screen' && v.id === 'community'))
+    && feed.view === 'flies';
+  if (!skyOnScreen) fliesUnwatch();
+
   /* Computed after every redirect above has had its say, so the key
      describes the screen that was actually painted. */
   const nowRoute = routeKey();
@@ -1977,7 +2627,18 @@ function render() {
   lastRoute = nowRoute;
   screen.scrollTop = (keepId || sameRoute) ? keepScroll : 0;
 
-  if (keepId) restoreFocus(keepId, keepStart, keepEnd);
+  if (settingsJump) {
+    const target = document.getElementById(settingsJump);
+    settingsJump = null;
+    if (target && target.scrollIntoView) {
+      try { target.scrollIntoView({ block: 'start' }); screen.scrollTop = Math.max(0, screen.scrollTop - 12); } catch (err) {}
+    }
+  }
+
+  if (postCaret != null) {
+    restoreFocus('postIn', postCaret, postCaret);
+    postCaret = null;
+  } else if (keepId) restoreFocus(keepId, keepStart, keepEnd);
 
   document.getElementById('tabs').innerHTML = tabList().map((t) => {
     const on = state.tab === t.id && !state.view;
@@ -2062,6 +2723,12 @@ function initControls() {
     if (e.target.matches('[data-wake]')) { state.wakeTime = e.target.value || '06:30'; render(); }
     else if (e.target.id === 'askIn') { state.askQuery = e.target.value; }
     else if (e.target.id === 'willowIn') { willow.input = e.target.value; }
+    else if (e.target.matches('[data-sharefield]')) {
+      /* No repaint while she types, or the caret jumps. The value is
+         read back off the element when she presses the button. */
+      share.joinInput = e.target.value;
+      share.error = '';
+    }
     else if (e.target.id === 'flangeIn') {
       const digits = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
       e.target.value = digits;
@@ -2086,6 +2753,59 @@ function initControls() {
     }
     else if (e.target.matches('[data-postfield]')) {
       postDraft().text = e.target.value;
+      /* No repaint here, or the caret jumps on every keystroke. That
+         means the Post button would keep whatever state it was painted
+         with, so it is switched by hand. Without this, typing a post
+         with no photo leaves Post greyed out and nothing happens. */
+      const saveBtn = document.querySelector('[data-post="save"]');
+      if (saveBtn) saveBtn.disabled = !postHasContent();
+      saveStore();
+    }
+    else if (e.target.matches('[data-obfield]')) {
+      const f = e.target.dataset.obfield;
+      const v = e.target.value;
+      /* No repaint while she types, so the Add button on the child step
+         is switched by hand. Third time this pattern has been needed. */
+      if (f === 'child') {
+        store.draftChildName = v;
+        const b = document.querySelector('[data-ob="addchild"]');
+        if (b) b.disabled = !(v.trim() || store.draftChildBday);
+      } else {
+        store.parent[f] = v;
+        store.parentUpdatedAt = Date.now();
+      }
+      saveStore();
+    }
+    else if (e.target.matches('[data-memfield]')) {
+      memDraft().text = e.target.value;
+      saveStore();
+      const b = document.querySelector('[data-memsave]');
+      if (b) b.disabled = !!store.memBusy;
+    }
+    else if (e.target.matches('[data-durfield]')) {
+      const id = e.target.dataset.durfield;
+      const row = e.target.closest('.durrow');
+      const get = (part) => {
+        const box = row && row.querySelector('[data-durpart="' + part + '"]');
+        return box ? Number(box.value) || 0 : 0;
+      };
+      const total = get('h') * 60 + get('m');
+      const d = state.logDraft && state.logDraft.typeId ? state.logDraft : ensureDraft();
+      if (d) {
+        if (!d.values) d.values = {};
+        d.values[id] = total ? String(total) : '';
+        store.logDraft = d;
+        saveStore();
+      }
+      /* Same reason the post button needed this: no repaint while she
+         types, so anything depending on the value is switched by hand. */
+      const saveBtn = document.querySelector('[data-logsave]');
+      if (saveBtn && saveBtn.dataset.logsave && isMomLog(saveBtn.dataset.logsave)) {
+        saveBtn.disabled = false;
+      }
+    }
+    else if (e.target.matches('[data-momcinote]')) {
+      momCiDraft().note = e.target.value;
       saveStore();
     }
     else if (e.target.matches('[data-cinote]')) {
@@ -2193,12 +2913,26 @@ function initControls() {
     }
     /* Escape closes her, which is what everybody tries first. */
     if (e.key === 'Escape' && willow.open) { willow.open = false; render(); }
+    /* On the support screen, Escape is the keyboard version of the
+       Leave now button. Checked after Willow, so closing her never
+       throws somebody off the page by accident. */
+    if (e.key === 'Escape' && !willow.open && onSupportScreen()) { quickExit(); }
   });
 
   document.addEventListener('click', (e) => {
+    /* A word about something she just logged clears as soon as she does
+       the next thing, the same as the posted note. */
+    if (store.noted && e.target.closest('[data-tab],[data-go],[data-back],[data-logwho],[data-me],[data-child]')) {
+      store.noted = null;
+    }
+    /* The "it is on your profile" line lasts until she goes anywhere,
+       which is what a note about something that just happened should do. */
+    if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
+      store.justPosted = false;
+    }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -2231,6 +2965,10 @@ function initControls() {
       else if (a === 'guest') {
         auth.guest = true;
         store.guest = true;
+        /* Somebody looking around without an account is also seeing this
+           for the first time, and they are the ones most likely to give
+           up on an empty screen. */
+        if (!onboard().done) onboardStart();
         flushStore();
         state.tab = IS_DESKTOP ? 'home' : 'welcome';
       }
@@ -2243,6 +2981,7 @@ function initControls() {
     } else if (t.dataset.profilebtn) {
       state.view = { type: 'screen', id: 'profile' };
     } else if (t.dataset.child) {
+      navClear();
       // Opening a child switches every child scoped screen at once, which
       // is the whole reason profiles are separate in the first place.
       selectChild(t.dataset.child);
@@ -2284,17 +3023,208 @@ function initControls() {
       const how = t.dataset.post;
       if (how === 'open') { store.postOpen = true; postDraft(); }
       else if (how === 'save') postSave();
-      else if (how === 'discard') { store.postDraft = null; store.postOpen = false; store.photoError = ''; flushStore(); }
+      else if (how === 'discard') {
+        /* Anything already uploaded for a post that is being thrown
+           away is a file nobody will ever see. */
+        const dropped = postDraft().files.slice();
+        store.postDraft = null; store.postOpen = false; store.photoError = ''; store.emojiOpen = false;
+        flushStore();
+        deleteStoredFiles(dropped);
+      }
       else if (how === 'unpic') postPhotoRemove(t.dataset.i);
+      else if (how === 'unfile') postFileRemove(t.dataset.i);
+      else if (how === 'pick') { postPick(t.dataset.kind); return; }
       else if (how === 'vis') { postSetVisibility(t.dataset.id || 'draft', t.dataset.vis); return; }
+      else if (how === 'group') {
+        const g = t.dataset.g || '';
+        /* Tapping the one already picked puts it back in the main feed,
+           the same as every other chip in this app. */
+        postDraft().group = (postDraft().group === g) ? '' : g;
+        flushStore();
+        render();
+        return;
+      }
       else if (how === 'del') { postDelete(t.dataset.id); return; }
+      else if (how === 'react') { postReact(t.dataset.id, t.dataset.r); return; }
+      else if (how === 'emojis') { store.emojiOpen = !store.emojiOpen; flushStore(); }
+      else if (how === 'emoji') { postEmoji(t.dataset.ch); return; }
       render();
+      return;
+    } else if (t.dataset.memopen !== undefined && t.dataset.memopen) {
+      memOpen(t.dataset.memopen, 'words');
+      return;
+    } else if (t.dataset.memclose) {
+      memClose();
+      return;
+    } else if (t.dataset.memkind) {
+      memSetKind(t.dataset.memkind);
+      return;
+    } else if (t.dataset.mempick) {
+      memPick();
+      return;
+    } else if (t.dataset.memsave) {
+      memSave();
+      return;
+    } else if (t.dataset.memdel) {
+      memDelete(t.dataset.memdel);
+      return;
+    } else if (t.dataset.memvis) {
+      memSetVisibilityOn(t.dataset.memvis, t.dataset.vis);
+      return;
+    } else if (t.dataset.memvisdraft) {
+      memSetVisibility(t.dataset.memvisdraft);
+      return;
+    } else if (t.dataset.memdrop !== undefined) {
+      memDropFile(t.dataset.memdrop);
+      return;
+    } else if (t.dataset.memall !== undefined) {
+      store.memAll = t.dataset.memall || null;
+      flushStore();
+    } else if (t.dataset.fly) {
+      const a = t.dataset.fly;
+      if (a === 'light') flyLight();
+      else if (a === 'out') flyOut();
+      else if (a === 'glow') flyGlow(t.dataset.id);
+      return;
+    } else if (t.dataset.feed) {
+      const a = t.dataset.feed;
+      if (a === 'view') { feed.view = t.dataset.v || 'feed'; render(); }
+      else if (a === 'room') {
+        const g = t.dataset.g;
+        feed.room = (g === '__all') ? null : (g || '');
+        feed.view = 'feed';
+        render();
+      }
+      else if (a === 'retry') { feed.tried = false; feedLoad(true); }
+      else if (a === 'react') feedReact(t.dataset.id, t.dataset.r);
+      else if (a === 'reportopen') { feed.reporting = t.dataset.id; render(); }
+      else if (a === 'reportclose') { feed.reporting = ''; render(); }
+      else if (a === 'report') feedReport(t.dataset.id, t.dataset.reason);
+      else if (a === 'block') { feedBlock(t.dataset.id); }
+      else if (a === 'unblock') feedUnblock(t.dataset.id);
+      else if (a === 'approve') modDecide(t.dataset.id, FEED_STATUS.live);
+      else if (a === 'reject') modDecide(t.dataset.id, FEED_STATUS.removed);
+      else if (a === 'clearreports') modClearReports(t.dataset.id);
+      else if (a === 'thanksok') { store.feedThanks = false; flushStore(); render(); }
+      else if (a === 'errok') { store.feedError = ''; flushStore(); render(); }
+      return;
+    } else if (t.dataset.nudge) {
+      if (t.dataset.nudge === 'open') nudgeTake(); else nudgeDismiss();
+      return;
+    } else if (t.dataset.ob) {
+      const a = t.dataset.ob;
+      if (a === 'restart') { onboardStart(); render(); }
+      else if (a === 'next') onboardGo(onboardNext(onboard().step));
+      else if (a === 'back') onboardGo(onboardBack(onboard().step));
+      else if (a === 'skip') onboardSkip();
+      else if (a === 'done') onboardFinish();
+      else if (a === 'addchild') {
+        const nm = (store.draftChildName || '').trim();
+        const bd = store.draftChildBday || '';
+        if (nm || bd) {
+          const kid = newChildRecord(nm, bd || null);
+          store.children.push(kid);
+          store.draftChildName = '';
+          store.draftChildBday = '';
+          selectChild(kid.id);
+          /* Stays on this step rather than jumping to their profile,
+             because the walkthrough is not finished yet. */
+          flushStore();
+          render();
+        }
+      }
+      return;
+    } else if (t.dataset.memhide) {
+      store.memDayHidden = ciToday();
+      flushStore();
+    } else if (t.dataset.logwho) {
+      store.logWho = t.dataset.logwho;
+      /* Also the way in from Home, so this has to land on the tab and
+         not only decide whose logs it would show once you got there. */
+      state.tab = 'logs';
+      state.view = null;
+      /* Opening somebody's logs makes them the one the rest of the app
+         is talking about, so a tap on a log lands on the right record. */
+      if (t.dataset.logwho !== 'me') selectChild(t.dataset.logwho);
+      store.logDay = null;
+      store.logCal = 0;
+      flushStore();
+    } else if (t.dataset.logday) {
+      store.logDay = t.dataset.logday;
+      flushStore();
+    } else if (t.dataset.logcal) {
+      store.logCal = (store.logCal || 0) + Number(t.dataset.logcal);
+      flushStore();
+    } else if (t.dataset.momci) {
+      const how = t.dataset.momci;
+      if (how === 'open') { store.momCiOpen = true; momCiDraft(); flushStore(); }
+      else if (how === 'set') { momCiSet(t.dataset.row, t.dataset.val); return; }
+      else if (how === 'save') { momCiSave(); return; }
+      else if (how === 'cancel') { store.momCi = null; store.momCiOpen = false; flushStore(); }
+    } else if (t.dataset.delmomlog) {
+      momLogDelete(t.dataset.delmomlog);
+      return;
+    } else if (t.dataset.momexport) {
+      momExport();
+      return;
+    } else if (t.dataset.cycle) {
+      const how = t.dataset.cycle;
+      if (how === 'edit') { store.cycleEdit = true; flushStore(); }
+      else if (how === 'done') { store.cycleEdit = false; flushStore(); }
+      else if (how === 'history') { store.cycleHistory = !store.cycleHistory; flushStore(); }
+      else if (how === 'today') { periodToggle(ciToday()); return; }
+    } else if (t.dataset.period) {
+      periodToggle(t.dataset.period);
+      return;
+    } else if (t.dataset.periodDel) {
+      periodToggle(t.dataset.periodDel);
       return;
     } else if (t.dataset.sit) {
       sitToggle(t.dataset.sit, t.dataset.id);
       return;
     } else if (t.dataset.sitpath) {
       sitSetPath(t.dataset.sitpath);
+      return;
+    } else if (t.dataset.menugo) {
+      /* The account menu opens Settings at the part she pressed rather
+         than at the top, because Settings is long and hunting for the
+         password section is exactly the annoyance this was meant to
+         remove. */
+      const where = t.dataset.menugo;
+      store.menuOpen = false;
+      if (where === 'password' && !auth.user) {
+        /* No account yet, so the useful thing behind this row is the
+           front door rather than a password field that cannot exist. */
+        auth.guest = false;
+        store.guest = false;
+        auth.mode = 'signup';
+        auth.error = '';
+        flushStore();
+        render();
+        return;
+      }
+      navClear();
+      state.tab = 'settings';
+      state.view = null;
+      settingsJump = 'set-' + where;
+      render();
+      return;
+    } else if (t.dataset.calledby) {
+      /* Tapping a chip clears the typed word, since the two are the
+         same answer and showing both selected would be a lie about
+         which one the app is going to use. */
+      const was = store.parent.calledBy === t.dataset.calledby && !(store.parent.calledByOther || '').trim();
+      store.parent.calledBy = was ? '' : t.dataset.calledby;
+      store.parent.calledByOther = '';
+      store.parentUpdatedAt = Date.now();
+      saveStore();
+      render();
+      return;
+    } else if (t.dataset.refersto) {
+      store.parent.refersTo = store.parent.refersTo === t.dataset.refersto ? '' : t.dataset.refersto;
+      store.parentUpdatedAt = Date.now();
+      saveStore();
+      render();
       return;
     } else if (t.dataset.arrival) {
       childArrivalToggle(t.dataset.arrivalfor, t.dataset.arrival);
@@ -2359,8 +3289,161 @@ function initControls() {
       return;
     } else if (t.dataset.update === 'later') {
       update.dismissed = true;
+    } else if (t.dataset.share === 'link') {
+      inviteSend(t.dataset.code);
+      return;
+    } else if (t.dataset.feedtag) {
+      feed.tag = t.dataset.feedtag === '__clear' ? '' : t.dataset.feedtag;
+      feed.view = 'foryou';
+      state.tab = 'community';
+      state.view = null;
+    } else if (t.dataset.wpost === 'write') {
+      willowWriteDaily();
+      return;
+    } else if (t.dataset.wpost === 'post') {
+      willowPostIt();
+      return;
+    } else if (t.dataset.wpost === 'bin') {
+      store.willowPost = { day: ciToday(), text: '', posted: true };
+      saveStore();
+    } else if (t.dataset.push === 'on') {
+      pushEnable();
+      return;
+    } else if (t.dataset.push === 'off') {
+      pushDisable();
+      return;
+    } else if (t.dataset.push === 'kind') {
+      pushToggleKind(t.dataset.id);
+    } else if (t.dataset.vax === 'open') {
+      store.vaxOpen = store.vaxOpen === t.dataset.id ? '' : t.dataset.id;
+      store.vaxEdit = '';
+      store.vaxError = '';
+    } else if (t.dataset.vax === 'tick') {
+      const kid = activeChild();
+      if (kid) {
+        const bits = t.dataset.id.split(':');
+        /* A tick records today, which is right the overwhelming
+           majority of the time because it is tapped in the car park.
+           Change is there for the rest. */
+        const has = !!vaxRecord(kid)[t.dataset.id];
+        vaxSetDose(kid, bits[0], Number(bits[1]), has ? '' : ciToday());
+      }
+    } else if (t.dataset.vax === 'edit') {
+      store.vaxEdit = store.vaxEdit === t.dataset.id ? '' : t.dataset.id;
+      store.vaxError = '';
+    } else if (t.dataset.vax === 'savedate') {
+      const kid = activeChild();
+      if (kid) vaxSaveDate(kid, t.dataset.id);
+    } else if (t.dataset.vax === 'clear') {
+      const kid = activeChild();
+      if (kid) {
+        const bits = t.dataset.id.split(':');
+        vaxSetDose(kid, bits[0], Number(bits[1]), '');
+        store.vaxEdit = '';
+      }
+    } else if (t.dataset.vax === 'skip') {
+      const kid = activeChild();
+      if (kid) vaxToggleSkip(kid, t.dataset.id);
+    } else if (t.dataset.vax === 'addseason') {
+      const kid = activeChild();
+      const el = document.getElementById('vaxseasonin');
+      if (kid && el && el.value) vaxAddSeasonal(kid, t.dataset.id, el.value);
+    } else if (t.dataset.vax === 'delseason') {
+      const kid = activeChild();
+      if (kid) vaxRemoveSeasonal(kid, t.dataset.id, t.dataset.date);
+    } else if (t.dataset.vax === 'export') {
+      const kid = activeChild();
+      if (kid) {
+        copyText(vaxExportText(kid));
+        store.vaxCopied = true;
+        setTimeout(() => { store.vaxCopied = false; render(); }, 1800);
+      }
+    } else if (t.dataset.growthm) {
+      store.growthMeasure = t.dataset.growthm;
+      store.growthError = '';
+    } else if (t.dataset.growth === 'sex') {
+      const kid = activeChild();
+      if (kid) { kid.sex = t.dataset.id === 'f' ? 'f' : 'm'; kid.updatedAt = Date.now(); saveStore(); }
+    } else if (t.dataset.growth === 'save') {
+      growthSave(t.dataset.id);
+    } else if (t.dataset.growth === 'units') {
+      store.growthUnits = growthUs() ? 'metric' : 'us';
+      store.growthError = '';
+      saveStore();
+    } else if (t.dataset.growth === 'del') {
+      const kid = activeChild();
+      if (kid) {
+        kid.growth = (kid.growth || []).filter((e) => e.id !== t.dataset.id);
+        kid.updatedAt = Date.now();
+        saveStore();
+      }
+    } else if (t.dataset.growth === 'export') {
+      const kid = activeChild();
+      if (kid) {
+        copyText(growthExportText(kid));
+        store.growthCopied = true;
+        setTimeout(() => { store.growthCopied = false; render(); }, 1800);
+      }
+    } else if (t.dataset.bodycare) {
+      store.parent.bodyCare = t.dataset.bodycare === 'yes' ? 'yes' : 'no';
+      store.parentUpdatedAt = Date.now();
+      flushStore();
+    } else if (t.dataset.signstage) {
+      store.signStage = t.dataset.signstage;
+      saveStore();
+    } else if (t.dataset.learnband) {
+      store.learnBand = t.dataset.learnband;
+      saveStore();
+    } else if (t.dataset.chore === 'tick') {
+      choreToggle(t.dataset.id);
+    } else if (t.dataset.chore === 'day') {
+      store.choreDay = Number(t.dataset.id);
+    } else if (t.dataset.chore === 'pick') {
+      store.chorePick = {
+        personId: t.dataset.id,
+        day: t.dataset.day === undefined ? choreTodayIndex() : Number(t.dataset.day),
+      };
+    } else if (t.dataset.chore === 'donepick') {
+      store.chorePick = null;
+    } else if (t.dataset.chore === 'add') {
+      choreAdd(t.dataset.id, t.dataset.who, Number(t.dataset.day));
+    } else if (t.dataset.chore === 'offday') {
+      choreSetDay(t.dataset.id, Number(t.dataset.day), false);
+    } else if (t.dataset.chore === 'toggleday') {
+      const job = choreJobs().filter((j) => j.id === t.dataset.id)[0];
+      const d = Number(t.dataset.day);
+      choreSetDay(t.dataset.id, d, !(job && (job.days || []).indexOf(d) !== -1));
+    } else if (t.dataset.chore === 'remove') {
+      choreRemove(t.dataset.id);
+    } else if (t.dataset.chore === 'stars') {
+      store.choreStarsOn = !choreStarsOn();
+      saveStore();
+    } else if (t.dataset.chore === 'deladult') {
+      choreRemoveAdult(t.dataset.id);
+    } else if (t.dataset.chore === 'addadult') {
+      /* Read straight off the field rather than keeping the name in the
+         store as it is typed. A value in the markup rebuilds the input
+         on every keystroke, which is what broke the Willow chat. */
+      const f = document.getElementById('choreadult');
+      if (f && f.value.trim()) { choreAddAdult(f.value); f.value = ''; }
+    } else if (t.dataset.install === 'go') {
+      doInstall();
+      return;
+    } else if (t.dataset.install === 'open') {
+      /* Tapping through counts as a wave for the same reason saying not
+         now does. Either way the question has been put and answered, and
+         the banner does not need to ask again this week. */
+      store.installHidden = ciToday();
+      store.installWaves = (store.installWaves || 0) + 1;
+      navPush();
+      state.view = { type: 'screen', id: 'install' };
+    } else if (t.dataset.install === 'later') {
+      store.installHidden = ciToday();
+      store.installWaves = (store.installWaves || 0) + 1;
+      saveStore();
     } else if (t.dataset.willow === 'open') {
       willow.open = true;
+      willow.stick = true;
       if (!willow.ready && !willow.loading) willowLoad().catch(() => {});
     } else if (t.dataset.willow === 'close') {
       willow.open = false;
@@ -2369,6 +3452,34 @@ function initControls() {
       return;
     } else if (t.dataset.willow === 'try') {
       willowAsk(t.dataset.q);
+      return;
+    } else if (t.dataset.willow === 'copyerr') {
+      const text = willow.lastError || '';
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text);
+        } else {
+          /* Older iOS Safari has no clipboard API on a plain page, and
+             a Copy button that silently does nothing is worse than no
+             Copy button. */
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        store.willowCopied = true;
+      } catch (err) { store.willowCopied = false; }
+      render();
+      setTimeout(() => { store.willowCopied = false; render(); }, 3000);
+      return;
+    } else if (t.dataset.willow === 'clearerr') {
+      willow.lastError = '';
+      store.willowCopied = false;
+      render();
       return;
     } else if (t.dataset.combinechild) {
       combineDuplicateChildren(t.dataset.combinechild);
@@ -2392,6 +3503,7 @@ function initControls() {
       if (i === -1) arr.push(t.dataset.val); else arr.splice(i, 1);
       d.values[f] = arr;
     } else if (t.dataset.logsave) {
+      if (isMomLog(t.dataset.logsave)) { momLogSave(t.dataset.logsave); return; }
       saveLog(t.dataset.logsave);
     } else if (t.dataset.dellog) {
       const k = activeChild();
@@ -2411,6 +3523,61 @@ function initControls() {
       const key = t.dataset.sub;
       const val = t.dataset.val;
       state[key] = val === '' ? null : val;
+    } else if (t.dataset.out) {
+      if (!Array.isArray(store.outChecked)) store.outChecked = [];
+      const id = t.dataset.out;
+      const at = store.outChecked.indexOf(id);
+      if (at === -1) store.outChecked.push(id); else store.outChecked.splice(at, 1);
+      store.parentUpdatedAt = Date.now();
+      flushStore();
+      render();
+      return;
+    } else if (t.dataset.daycare !== undefined) {
+      store.daycareHours = Number(t.dataset.daycare) || 0;
+      store.parentUpdatedAt = Date.now();
+      flushStore();
+      render();
+      return;
+    } else if (t.dataset.share) {
+      const a = t.dataset.share;
+      if (a === 'pick') {
+        const id = t.dataset.id;
+        const at = share.pickIds.indexOf(id);
+        if (at === -1) share.pickIds.push(id); else share.pickIds.splice(at, 1);
+        render();
+      }
+      else if (a === 'make') shareMakeCode();
+      else if (a === 'join') shareJoin();
+      else if (a === 'revoke') shareRevoke(t.dataset.id);
+      else if (a === 'leave') shareLeave(t.dataset.id);
+      else if (a === 'dropcode') shareDropCode(t.dataset.code);
+      else if (a === 'joinedok') { share.joined = ''; render(); }
+      else if (a === 'copy') {
+        const code = t.dataset.code || '';
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code);
+        } catch (err) {}
+        store.shareCopied = true;
+        render();
+        setTimeout(() => { store.shareCopied = false; render(); }, 1800);
+      }
+      return;
+    } else if (t.dataset.outtrip) {
+      store.outTrip = t.dataset.outtrip;
+      store.parentUpdatedAt = Date.now();
+      flushStore();
+      render();
+      return;
+    } else if (t.dataset.outclear) {
+      /* One button per list rather than one for the whole page, since
+         packing for one child is finished at a different moment from
+         packing for another. */
+      const prefix = t.dataset.outclear + ':';
+      store.outChecked = (store.outChecked || []).filter((x) => x.indexOf(prefix) !== 0);
+      store.parentUpdatedAt = Date.now();
+      flushStore();
+      render();
+      return;
     } else if (t.dataset.bag) {
       const id = t.dataset.bag;
       const i = state.bagChecked.indexOf(id);
@@ -2445,9 +3612,9 @@ function initControls() {
       if (i !== -1) { delete state.lensOptions[id]; delete state.lensNumbers[id]; }
       t.setAttribute('aria-pressed', i === -1);
     } else if (t.dataset.tab) {
-      state.tab = t.dataset.tab; state.view = null;
+      state.tab = t.dataset.tab; state.view = null; navClear();
     } else if (t.dataset.go === 'tab') {
-      state.tab = t.dataset.id; state.view = null;
+      state.tab = t.dataset.id; state.view = null; navClear();
     } else if (t.dataset.go) {
       if (t.tagName === 'A') return; // source links open normally
       // Following one of her links means you want to read it, not keep chatting.
@@ -2462,10 +3629,40 @@ function initControls() {
       // Opening a different lens starts from the child's real age again,
       // rather than inheriting whichever band was last looked at.
       if (t.dataset.go === 'lens') state.lensBand = null;
+      /* store.logWho persists, so without this, looking at her own logs
+         and then opening Stetson's would show hers with his name on the
+         button that got you there. */
+      if (t.dataset.go === 'screen' && t.dataset.id === 'childlogs') {
+        store.logWho = store.profileWho || store.activeChildId || 'me';
+        store.logDay = ciToday();
+        store.logCal = 0;
+      }
+      navPush();
       state.view = { type: t.dataset.go, id: t.dataset.id };
     } else if (t.dataset.back) {
       const to = t.dataset.back;
-      state.view = to && to !== '1' ? { type: 'screen', id: to } : null;
+      if (to === 'offchild') {
+        /* Coming back off a child's profile means going where she tapped
+           their circle from, which is her own Home. */
+        store.profileWho = 'me';
+        store.profileEdit = null;
+        state.tab = 'home';
+        state.view = null;
+        navClear();
+      } else if (to && to !== '1') {
+        /* A screen that names where Back should land still wins, since
+           it knows something the stack does not. */
+        state.view = { type: 'screen', id: to };
+        navClear();
+      } else {
+        navBack();
+      }
+    } else if (t.dataset.exit) {
+      quickExit();
+      return;
+    } else if (t.dataset.plan === 'tick') {
+      planTick(t.dataset.slot);
+      return;
     } else if (t.dataset.ms) {
       msSet(t.dataset.ms, t.dataset.st);
     } else if (t.dataset.msave) {
@@ -3161,13 +4358,44 @@ function screenFeeding(c) {
      it exists it goes first, because a parent of a nine day old is not
      on this screen to read about avocado. */
   const newbornHere = newbornRhythmIsRelevant(months);
-  const tabs = (newbornHere ? [{ id: 'newborn', label: 'The newborn rhythm' }] : []).concat([
-    { id: 'stance', label: 'Fed is best' },
-    { id: 'milk', label: 'Milk' },
-    { id: 'solids', label: 'Starting solids' },
-    { id: 'how', label: 'Purees or baby led' },
-    { id: 'foods', label: 'First foods' },
-  ]);
+
+  /* THE MILK HALF HAS AN END DATE.
+
+     Stetson is four and this screen was still opening on formula and
+     breastfeeding. Past two that is history for most families, and
+     still the live question for anybody nursing or pumping, so the opt
+     in is not another switch to hunt for: it is the breastfeeding and
+     pumping boxes already on her own profile. See eatingTogether.js. */
+  const milkHere = showsMilkContent(months, situation().stages);
+  const tableHere = showsTableContent(months);
+
+
+  const tabs = (newbornHere ? [{ id: 'newborn', label: 'The newborn rhythm' }] : [])
+    .concat(milkHere ? [
+      { id: 'stance', label: 'Fed is best' },
+      { id: 'latch', label: 'Latch and ties' },
+      { id: 'weight', label: 'Weight and transfer' },
+      { id: 'bottles', label: 'Bottles and pacifiers' },
+      { id: 'milk', label: 'Milk' },
+    ] : [])
+    /* SOLIDS ARRIVE WHEN SOLIDS ARRIVE.
+
+       A parent of a four week old does not need three tabs about
+       avocado, and the same rule that hides milestones past six and
+       hides development guidance when there is nothing behind it
+       applies here. Shown from three months, which is early enough to
+       read ahead and late enough not to be noise on day nine. */
+    .concat(milkHere && (months == null || months >= 3) ? [
+      { id: 'solids', label: 'Starting solids' },
+      { id: 'how', label: 'Purees or baby led' },
+      { id: 'foods', label: 'First foods' },
+    ] : [])
+    .concat(tableHere ? [{ id: 'table', label: 'Eating together' }] : []);
+
+  /* Whichever tab is actually answering their question. A four year
+     old's parent should not land on a tab about first foods. */
+  if (!milkHere && ['stance', 'latch', 'weight', 'bottles', 'milk', 'solids', 'how', 'foods'].indexOf(tab) !== -1) tab = 'table';
+  if (!tabs.some((t) => t.id === tab)) tab = (tabs[0] || {}).id || 'table';
 
   return `
   ${cornerLeaves()}
@@ -3206,6 +4434,247 @@ function screenFeeding(c) {
         <div class="callout" style="margin-top:10px">
           <p style="margin:0">${esc(FORMULA_FACTS.ifYouNeedHelpAffordingIt)}</p>
         </div>
+      </div>` : ''}
+
+    ${tab === 'latch' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(LATCH_INTRO)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>What you are seeing</h4>
+        <p class="tiny" style="margin:0 0 10px">${esc(LATCH_SIGNS.intro)}</p>
+        <p class="sect" style="margin-top:0">In your baby</p>
+        ${LATCH_SIGNS.inBaby.map((x) => `
+          <div class="quote">
+            <p class="sit">${icon('info', 12, 'var(--taupe)')} ${esc(x.sign)}</p>
+            <p class="why" style="margin-top:4px">${esc(x.means)}</p>
+          </div>`).join('')}
+        <p class="sect">In you</p>
+        ${LATCH_SIGNS.inYou.map((x) => `
+          <div class="quote">
+            <p class="sit">${icon('info', 12, 'var(--taupe)')} ${esc(x.sign)}</p>
+            <p class="why" style="margin-top:4px">${esc(x.means)}</p>
+          </div>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(DEEP_LATCH.title)}</h4>
+        <p class="bodytext" style="margin:0 0 8px">${esc(DEEP_LATCH.headline)}</p>
+        <p class="tiny" style="margin:0 0 10px">${esc(DEEP_LATCH.intro)}</p>
+        ${DEEP_LATCH.signs.map((x) => `
+          <div class="quote">
+            <p class="sit">${icon('check', 12, 'var(--sage)')} ${esc(x.sign)}</p>
+            <p class="why" style="margin-top:4px">${esc(x.why)}</p>
+          </div>`).join('')}
+        <div class="callout" style="margin-top:10px">
+          <p style="margin:0">${esc(DEEP_LATCH.bottleNote)}</p>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(USUAL_CAUSES.title)}</h4>
+        <p class="bodytext" style="margin:0 0 10px">${esc(USUAL_CAUSES.headline)}</p>
+        ${USUAL_CAUSES.causes.map((x) => `
+          <div class="quote">
+            <p class="sit">${esc(x.cause)}</p>
+            <p class="why" style="margin-top:4px">${esc(x.detail)}</p>
+          </div>`).join('')}
+        <div class="callout" style="margin-top:10px">
+          <p style="margin:0">${esc(USUAL_CAUSES.theGoodNews)}</p>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ABOUT_TIES.title)}</h4>
+        <p class="bodytext" style="margin:0 0 9px">${esc(ABOUT_TIES.headline)}</p>
+        <p class="bodytext" style="margin:0 0 10px">${esc(ABOUT_TIES.plain)}</p>
+        ${list(ABOUT_TIES.points)}
+        <p class="sect">What to ask before anyone releases anything</p>
+        <p class="tiny" style="margin:-2px 0 9px">${esc(ABOUT_TIES.askBeforeAProcedure.intro)}</p>
+        ${ABOUT_TIES.askBeforeAProcedure.questions.map((q) => `
+          <div class="quote"><p class="sit">${icon('info', 12, 'var(--taupe)')} ${esc(q)}</p></div>`).join('')}
+        <p class="tiny" style="margin-top:9px">${esc(ABOUT_TIES.askBeforeAProcedure.note)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(WHO_TO_ASK.title)}</h4>
+        <p class="bodytext" style="margin:0 0 9px">${esc(WHO_TO_ASK.headline)}</p>
+        ${WHO_TO_ASK.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout" style="margin-top:4px">
+          <p style="margin:0">${esc(WHO_TO_ASK.ifYouAreDoneTrying)}</p>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(LATCH_RED_FLAGS.title)}</h4>
+        ${list(LATCH_RED_FLAGS.items)}
+        <p class="bodytext" style="margin-top:6px;color:#7A4E40">${esc(LATCH_RED_FLAGS.urgent)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>Where this comes from</h4>
+        ${LATCH_SOURCES.map((sc) => `
+          <p class="tiny" style="margin:0 0 6px">
+            <strong style="color:var(--deep)">${esc(sc.org)}</strong>
+            <a href="${esc(sc.url)}" target="_blank" rel="noopener">${esc(sc.label)}</a>
+          </p>`).join('')}
+      </div>` : ''}
+
+    ${tab === 'weight' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(GAIN_HEADLINE)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(GAIN_NUMBERS.title)}</h4>
+        ${GAIN_NUMBERS.rows.map((r) => `
+          <div class="quote">
+            <p class="sit">${icon('clock', 12, 'var(--taupe)')} ${esc(r.when)}</p>
+            <p class="why" style="margin-top:4px">${esc(r.what)}</p>
+          </div>`).join('')}
+        <p class="tiny" style="margin-top:9px">${esc(GAIN_NUMBERS.note)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(GAIN_SLOW.title)}</h4>
+        <p class="bodytext" style="margin:0 0 10px">${esc(GAIN_SLOW.intro)}</p>
+        <p class="sect" style="margin-top:0">${esc(GAIN_SLOW.fine.label)}</p>
+        ${list(GAIN_SLOW.fine.items)}
+        <p class="sect">${esc(GAIN_SLOW.notFine.label)}</p>
+        ${list(GAIN_SLOW.notFine.items)}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(WEIGHED_FEED.title)}</h4>
+        ${WEIGHED_FEED.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <p class="tiny" style="margin-top:2px">${esc(WEIGHED_FEED.note)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TRIPLE_TITLE)}</h4>
+        <p class="bodytext" style="margin:0 0 10px;font-weight:600;color:var(--deep)">${esc(TRIPLE_HEADLINE)}</p>
+        <p class="sect" style="margin-top:0">${esc(TRIPLE_WHAT.title)}</p>
+        ${TRIPLE_WHAT.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout" style="margin-top:4px"><p style="margin:0">${esc(TRIPLE_WHAT.why)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TRIPLE_HONEST.title)}</h4>
+        ${TRIPLE_HONEST.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout" style="margin-top:4px"><p style="margin:0">${esc(TRIPLE_HONEST.permission)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TRIPLE_EXIT.title)}</h4>
+        <p class="tiny" style="margin:0 0 10px">${esc(TRIPLE_EXIT.intro)}</p>
+        ${TRIPLE_EXIT.ways.map((w) => `
+          <div class="quote">
+            <p class="sit">${esc(w.way)}</p>
+            <p class="why" style="margin-top:4px">${esc(w.how)}</p>
+          </div>`).join('')}
+        <p class="bodytext" style="margin-top:9px">${esc(TRIPLE_EXIT.thenThePump)}</p>
+        <p class="sect">Ask these at every visit</p>
+        ${TRIPLE_EXIT.askEveryVisit.map((q) => `
+          <div class="quote"><p class="sit">${icon('info', 12, 'var(--taupe)')} ${esc(q)}</p></div>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TRIPLE_EASIER.title)}</h4>
+        ${list(TRIPLE_EASIER.items)}
+      </div>
+
+      <div class="dsec">
+        <h4>Where this comes from</h4>
+        ${FEEDING_DEEP_SOURCES.map((sc) => `
+          <p class="tiny" style="margin:0 0 6px">
+            <strong style="color:var(--deep)">${esc(sc.org)}</strong>
+            <a href="${esc(sc.url)}" target="_blank" rel="noopener">${esc(sc.label)}</a>
+          </p>`).join('')}
+      </div>` : ''}
+
+    ${tab === 'bottles' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(FLOW_HEADLINE)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(FLOW_TITLE)}</h4>
+        ${list(FLOW_FACTS)}
+        <p class="sect">${esc(FLOW_WHAT_TO_DO.title)}</p>
+        ${list(FLOW_WHAT_TO_DO.items)}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PACED_TITLE)}</h4>
+        <p class="bodytext" style="margin:0 0 10px;font-weight:600;color:var(--deep)">${esc(PACED_HEADLINE)}</p>
+        ${PACED_WHY.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <p class="sect">${esc(PACED_HOW.title)}</p>
+        ${PACED_HOW.steps.map((x, i) => `
+          <div class="quote">
+            <p class="sit">${esc(String(i + 1))}</p>
+            <p class="why" style="margin-top:4px">${esc(x)}</p>
+          </div>`).join('')}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(PACED_HOW.target)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(BOTTLE_TITLE)}</h4>
+        <p class="sect" style="margin-top:0">${esc(BOTTLE_MARKETING.title)}</p>
+        ${BOTTLE_MARKETING.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <p class="sect">${esc(BOTTLE_WHAT_MATTERS.title)}</p>
+        ${list(BOTTLE_WHAT_MATTERS.items)}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(BOTTLE_WHAT_PEOPLE_USE.title)}</h4>
+        <p class="tiny" style="margin:0 0 10px">${esc(BOTTLE_WHAT_PEOPLE_USE.intro)}</p>
+        ${BOTTLE_WHAT_PEOPLE_USE.bottles.map((b) => `
+          <div class="quote">
+            <p class="sit">${esc(b.name)}</p>
+            <p class="why" style="margin-top:4px">${esc(b.why)}</p>
+            <p class="tiny" style="margin-top:5px"><strong style="color:var(--deep)">The honest bit:</strong> ${esc(b.honest)}</p>
+          </div>`).join('')}
+        <div class="callout" style="margin-top:10px">
+          <p style="margin:0">${esc(BOTTLE_WHAT_PEOPLE_USE.theRealAdvice)}</p>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PACI_TITLE)}</h4>
+        <p class="sect" style="margin-top:0">${esc(PACI_EVIDENCE.title)}</p>
+        ${list(PACI_EVIDENCE.items)}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PACI_SHAPE.title)}</h4>
+        ${PACI_SHAPE.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout" style="margin-top:4px"><p style="margin:0">${esc(PACI_SHAPE.soWhat)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PACI_WHAT_PEOPLE_USE.title)}</h4>
+        ${PACI_WHAT_PEOPLE_USE.paci.map((b) => `
+          <div class="quote">
+            <p class="sit">${esc(b.name)}</p>
+            <p class="why" style="margin-top:4px">${esc(b.why)}</p>
+            <p class="tiny" style="margin-top:5px"><strong style="color:var(--deep)">The honest bit:</strong> ${esc(b.honest)}</p>
+          </div>`).join('')}
+        <p class="tiny" style="margin-top:9px">${esc(PACI_WHAT_PEOPLE_USE.sizing)}</p>
+      </div>
+
+      <div class="card flat" style="margin-top:10px">
+        <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} Nothing here is sponsored</p>
+        <p class="tiny" style="margin-top:4px">${esc(FEEDING_DEEP_DISCLOSURE)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>Where this comes from</h4>
+        ${FEEDING_DEEP_SOURCES.map((sc) => `
+          <p class="tiny" style="margin:0 0 6px">
+            <strong style="color:var(--deep)">${esc(sc.org)}</strong>
+            <a href="${esc(sc.url)}" target="_blank" rel="noopener">${esc(sc.label)}</a>
+          </p>`).join('')}
       </div>` : ''}
 
     ${tab === 'milk' ? `
@@ -3331,7 +4800,53 @@ function screenFeeding(c) {
         ${list(FIRST_FOODS.howToCutIt)}
       </div>` : ''}
 
-    ${dsec('Sources', sourceRows(FEEDING_SOURCES))}
+    ${tab === 'table' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(TABLE_HEADLINE)}</p>
+        ${TABLE_INTRO.map((p) => `<p class="bodytext" style="margin-top:10px">${esc(p)}</p>`).join('')}
+      </div>
+
+      ${!milkHere ? `
+      <p class="tiny" style="margin:10px 0 0">${icon('info', 10, 'var(--taupe)')} ${esc(MILK_GONE_NOTE)}</p>` : ''}
+
+      <div class="dsec">
+        <h4>${esc(TABLE_WHAT_WORKS.title)}</h4>
+        ${list(TABLE_WHAT_WORKS.items)}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TABLE_WHAT_BACKFIRES.title)}</h4>
+        ${TABLE_WHAT_BACKFIRES.items.map((x) => `
+          <div class="quote">
+            <p class="sit">${icon('info', 12, 'var(--taupe)')} ${esc(x.what)}</p>
+            <p class="why" style="margin-top:4px">${esc(x.why)}</p>
+          </div>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TABLE_PICKY.title)}</h4>
+        ${TABLE_PICKY.body.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+        <p class="sect" style="margin-top:4px">Worth mentioning at an appointment</p>
+        ${list(TABLE_PICKY.whenToAsk)}
+        <div class="callout" style="margin-top:10px">
+          <p style="margin:0">${esc(TABLE_PICKY.whenToAskNote)}</p>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TABLE_CHOKING.title)}</h4>
+        <p class="tiny" style="margin:0 0 9px">${esc(TABLE_CHOKING.intro)}</p>
+        ${list(TABLE_CHOKING.items)}
+        <p class="sect" style="margin-top:10px">Every time, whatever is being eaten</p>
+        ${list(TABLE_CHOKING.rules)}
+      </div>
+
+      ${dsec('Sources', sourceRows(TABLE_SOURCES))}` : ''}
+
+    ${milkHere && months != null && months >= MILK_ENDS_MONTHS ? `
+    <p class="tiny" style="margin:12px 0 0">${icon('leaf', 10, 'var(--sage)')} ${esc(MILK_KEPT_NOTE)}</p>` : ''}
+
+    ${milkHere ? dsec('Sources', sourceRows(FEEDING_SOURCES)) : ''}
     <p class="disclaimer">
       Educational information, not medical advice. Your pediatrician knows your child and this app does not.
     </p>
@@ -3345,6 +4860,1388 @@ function screenFeeding(c) {
  * carries the guideline year, flags what changed in 2025, and says
  * plainly that reading it is not the same as taking the class.
  * ------------------------------------------------------------------ */
+
+/* THE PART FOR A PARENT WHO HAS RUN OUT OF ROOM.
+
+   Everything about why this exists and why the wording is what it is
+   lives in src/data/breakingPoint.js. The short version: a parent
+   looking for permission to walk out of the house will not open a
+   screen called Support, they will open the one about leaving a child
+   alone, so this is what they find there.
+
+   Not one line of it scolds. Somebody reading this is already certain
+   they are a bad person, and anything that agrees with them makes the
+   worst outcome likelier. */
+function breakingPointBlock(c) {
+  const phone = (l) => {
+    const digits = String(l.contact || '').replace(/[^\d]/g, '');
+    const dial = (digits.length >= 10 || digits.length === 3) ? 'tel:' + digits : '';
+    return `
+    <div class="bpline">
+      <p class="bpline-n">${esc(l.name)}</p>
+      ${dial
+        ? `<a class="bpline-c" href="${esc(dial)}">${esc(l.contact)}</a>`
+        : `<span class="bpline-c">${esc(l.contact)}</span>`}
+      <p class="tiny" style="margin:2px 0 0">${esc(l.detail)}</p>
+      <a class="tiny" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"
+        style="text-decoration:underline">Their website</a>
+    </div>`;
+  };
+
+  return `
+  <div class="card bp">
+    <p class="eyebrow">${icon('heart', 11, '#A85A44')} ${esc(BREAKING_HEADLINE)}</p>
+    ${BREAKING_INTRO.map((p) => `<p class="bodytext" style="margin-top:9px">${esc(p)}</p>`).join('')}
+
+    <div class="bpbox">
+      <p class="bpbox-t">${esc(BREAKING_RIGHT_NOW.title)}</p>
+      <ol class="bpsteps">
+        ${BREAKING_RIGHT_NOW.steps.map((x) => `<li>${esc(x)}</li>`).join('')}
+      </ol>
+      <p class="bpwarn">${esc(BREAKING_RIGHT_NOW.note)}</p>
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(BREAKING_WHO_TO_CALL.title)}</h4>
+      <p class="tiny" style="margin:0 0 9px">${esc(BREAKING_WHO_TO_CALL.intro)}</p>
+      ${BREAKING_WHO_TO_CALL.people.map((p) => `
+        <div class="bpwho">
+          <span class="bpwho-w">${esc(p.who)}</span>
+          <span class="bpwho-s">${esc(p.say)}</span>
+        </div>`).join('')}
+    </div>
+
+    <div class="dsec">
+      <h4>Somebody who will pick up, any hour</h4>
+      ${BREAKING_LINES.map(phone).join('')}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(BREAKING_NEVER.title)}</h4>
+      ${BREAKING_NEVER.items.map((n) => `
+        <div class="bpwho">
+          <span class="bpwho-w">${esc(n.what)}</span>
+          <span class="bpwho-s">${esc(n.why)}</span>
+        </div>`).join('')}
+    </div>
+
+    ${showsSafeSurrender(c.months) ? `
+    <div class="bpbox surrender">
+      <p class="bpbox-t">${esc(SAFE_SURRENDER.title)}</p>
+      ${SAFE_SURRENDER.intro.map((p) => `<p class="bodytext" style="margin-top:8px">${esc(p)}</p>`).join('')}
+      <ul class="dlist" style="margin-top:10px">
+        ${SAFE_SURRENDER.facts.map((f) => `<li>${esc(f)}</li>`).join('')}
+      </ul>
+      <p class="bodytext" style="margin-top:10px">${esc(SAFE_SURRENDER.varies)}</p>
+      <p class="bpclose">${esc(SAFE_SURRENDER.closing)}</p>
+    </div>` : `
+    <div class="bpbox surrender">
+      <p class="bpbox-t">If you cannot keep going, there is still a way that harms nobody</p>
+      <p class="bodytext" style="margin-top:8px">${esc(SAFE_SURRENDER.ifOlder)}</p>
+      <p class="bpclose">${esc(SAFE_SURRENDER.closing)}</p>
+    </div>`}
+
+    <div class="dsec">
+      <h4>If the problem is not the child</h4>
+      <p class="bodytext" style="margin:0 0 10px">Everything above assumes the hard part is being
+        worn out by a person you love. If the hard part is another adult, or a caseworker, or
+        somebody who has got hold of your child, that is written down too, and it has a button that
+        gets you off the screen in one tap.</p>
+      <button class="btn ghost" style="width:100%" data-go="screen" data-id="support">
+        ${icon('shield', 14, 'var(--deep)')} ${esc(SUP_TITLE)}
+      </button>
+    </div>
+
+    ${dsec('Where this comes from', sourceRows(BREAKING_SOURCES))}
+  </div>`;
+}
+
+/* -----------------------------------------------------------------
+   SIGNING
+
+   Two audiences on one screen, kept visibly apart. A hearing family
+   is here because baby sign is a nice thing that cuts down on
+   screaming, and they can take the signs and go. A family with a deaf
+   or hard of hearing child is here about language access, and that
+   half opens first for them and stays out of the way for everybody
+   else.
+
+   The signs are written rather than drawn on purpose. Video belongs
+   to the people who teach this properly and they are all linked at
+   the bottom. What a written sign can do is get five of them into a
+   kitchen tonight.
+   ----------------------------------------------------------------- */
+
+/* The row on the child profile changes its words when the lens is on,
+   because "Signing together" is the wrong title for a family whose
+   actual question is whether their child will have a language. */
+function signLensOn() {
+  return (state.lenses || []).indexOf('deafHoh') !== -1;
+}
+
+function signRowTitle() {
+  return signLensOn() ? 'Sign language and Deaf culture' : 'Signing together';
+}
+
+function signRowSub(months) {
+  if (signLensOn()) return 'Why it is not optional, the first signs, and where to learn properly';
+  if (typeof months === 'number' && months < 36) {
+    return 'Let them ask for milk months before they can say it';
+  }
+  return 'The first signs, what ASL actually is, and where to learn it';
+}
+
+/* WHERE THIS CHILD IS NOW, AND WHAT COMES NEXT.
+
+   The word list on its own answered neither of the two questions a
+   parent asks, which are when do I start and what happens after these
+   twenty three. This puts their own age at the top, with the band
+   either side reachable, so somebody can look forward without being
+   told their four year old is behind. */
+function signStageBlock(months) {
+  const natural = signStageFor(months);
+  const picked = store.signStage ? signStageById(store.signStage) : null;
+  const st = picked || natural || SIGN_STAGES[0];
+  const off = natural && st.id !== natural.id;
+
+  return `
+  <div class="dsec">
+    <h4>${esc(SIGN_STAGE_TITLE)}</h4>
+    <p class="tiny" style="margin:0 0 10px">${esc(SIGN_STAGE_INTRO)}</p>
+    <div class="chips" style="margin-bottom:12px">
+      ${SIGN_STAGES.map((x) => `
+        <button class="chip" data-signstage="${esc(x.id)}" aria-pressed="${x.id === st.id}">${esc(x.label)}</button>`).join('')}
+    </div>
+    ${off && natural ? `
+      <p class="tiny" style="margin:0 0 10px">Looking at ${esc(st.label.toLowerCase())}.
+      <button class="tiny" data-signstage="${esc(natural.id)}"
+        style="background:none;border:0;padding:0;color:var(--deep);text-decoration:underline">Back to their age</button></p>` : ''}
+
+    <div class="card leafy">
+      <p class="bodytext" style="margin:0 0 6px"><strong>${esc(st.label)}</strong></p>
+      <p class="bodytext" style="margin:0">${esc(st.expect)}</p>
+      <p class="tiny" style="margin:8px 0 0">${esc(st.howMany)}</p>
+    </div>
+
+    ${st.focus.length ? `
+      <p class="tiny" style="margin:0 0 8px">Signs to be working on</p>
+      <div class="chips" style="margin-bottom:12px">
+        ${st.focus.map((w) => `<span class="chip">${esc(w)}</span>`).join('')}
+      </div>` : ''}
+    ${(st.alsoLearn || []).length ? `
+      <p class="tiny" style="margin:0 0 8px">${esc(st.focus.length ? 'And the parts that are not one sign' : 'What this band is about')}</p>
+      <div class="chips" style="margin-bottom:12px">
+        ${st.alsoLearn.map((w) => `<span class="chip plain">${esc(w)}</span>`).join('')}
+      </div>` : ''}
+
+    ${list(st.doThis)}
+
+    ${st.focus.map((w) => signByWord(w)).filter(Boolean).map((sg) => `
+      <div class="quote" style="margin-top:9px">
+        <p class="sit">${icon('hand', 12, 'var(--sage)')} ${esc(sg.word)}</p>
+        <p class="why" style="margin-top:4px">${esc(sg.how)}</p>
+        <p class="tiny" style="margin-top:5px"><strong style="color:var(--deep)">Remember it:</strong> ${esc(sg.hook)}</p>
+      </div>`).join('')}
+
+    ${st.next ? `<p class="tiny" style="margin-top:10px">Next: ${esc(st.next)}</p>` : ''}
+    <p class="tiny" style="margin-top:8px">${esc(SIGN_STAGE_NOT_LATE)}</p>
+  </div>`;
+}
+
+function screenSigns(c) {
+  const months = c.months;
+  const lensOn = signLensOn();
+  /* The serious half leads for a family who has told us it applies,
+     and sits below the signs for everybody else, where it reads as
+     information rather than as a warning aimed at them. */
+  const deafFirst = lensOn;
+
+  const accessBlock = `
+    <div class="dsec">
+      <h4>${esc(WHY_IT_MATTERS.title)}</h4>
+      <p class="bodytext" style="margin:0 0 9px;font-weight:600;color:var(--deep)">${esc(WHY_IT_MATTERS.headline)}</p>
+      ${WHY_IT_MATTERS.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      <div class="callout" style="margin-top:4px">
+        <p style="margin:0">${esc(WHY_IT_MATTERS.theHardTruth)}</p>
+      </div>
+    </div>`;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">Signing</h1>
+    <p class="sub">${esc(countSigns())} signs to start with, and where to learn the rest.</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(SIGN_INTRO)}</p>
+    </div>
+
+    ${deafFirst ? accessBlock : ''}
+
+    ${signStageBlock(months)}
+
+    ${SIGN_GROUPS.map((g) => `
+      <div class="dsec">
+        <h4>${esc(g.label)}</h4>
+        <p class="tiny" style="margin:0 0 10px">${esc(g.blurb)}</p>
+        ${g.note ? `<div class="callout" style="margin-bottom:10px"><p style="margin:0">${esc(g.note)}</p></div>` : ''}
+        ${g.signs.map((sg) => `
+          <div class="quote">
+            <p class="sit">${icon('hand', 12, 'var(--sage)')} ${esc(sg.word)}</p>
+            <p class="why" style="margin-top:4px">${esc(sg.how)}</p>
+            <p class="tiny" style="margin-top:5px"><strong style="color:var(--deep)">Remember it:</strong> ${esc(sg.hook)}</p>
+            ${sg.why ? `<p class="tiny" style="margin-top:3px">${esc(sg.why)}</p>` : ''}
+          </div>`).join('')}
+      </div>`).join('')}
+
+    <div class="dsec">
+      <h4>${esc(HOW_TO_PRACTICE.title)}</h4>
+      <p class="bodytext" style="margin:0 0 9px">${esc(HOW_TO_PRACTICE.headline)}</p>
+      ${list(HOW_TO_PRACTICE.tips)}
+      <div class="callout" style="margin-top:10px">
+        <p style="margin:0">${esc(HOW_TO_PRACTICE.ifYourChildIsDeaf)}</p>
+      </div>
+    </div>
+
+    ${deafFirst ? '' : accessBlock}
+
+    <div class="dsec">
+      <h4>${esc(ABOUT_ASL.title)}</h4>
+      <p class="bodytext" style="margin:0 0 9px">${esc(ABOUT_ASL.headline)}</p>
+      ${list(ABOUT_ASL.points)}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(DEAF_CULTURE.title)}</h4>
+      <p class="bodytext" style="margin:0 0 9px">${esc(DEAF_CULTURE.headline)}</p>
+      ${list(DEAF_CULTURE.points)}
+    </div>
+
+    <div class="dsec">
+      <h4>What people get told that is not true</h4>
+      ${SIGN_MYTHS.map((m) => `
+        <div class="quote">
+          <p class="sit">${icon('info', 12, 'var(--taupe)')} ${esc(m.myth)}</p>
+          <p class="why" style="margin-top:4px">${esc(m.truth)}</p>
+        </div>`).join('')}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(WHERE_TO_LEARN.title)}</h4>
+      <p class="bodytext" style="margin:0 0 6px">${esc(WHERE_TO_LEARN.headline)}</p>
+      <p class="tiny" style="margin:0 0 10px">${esc(WHERE_TO_LEARN.note)}</p>
+      ${WHERE_TO_LEARN.places.map((pl) => `
+        <div class="quote">
+          <p class="sit"><a href="${esc(pl.url)}" target="_blank" rel="noopener">${esc(pl.name)}</a></p>
+          <p class="why" style="margin-top:4px">${esc(pl.what)}</p>
+        </div>`).join('')}
+    </div>
+
+    ${!lensOn ? `
+    <div class="card flat" style="margin-top:10px">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} If this is about your child</p>
+      <p class="tiny" style="margin-top:4px">There is a support lens for deaf and hard of hearing
+      children that changes what this app puts in front of you, at every age. It is under
+      Understanding ${esc((c.child && c.child.name) || 'them')}.</p>
+      <button class="btn ghost sm" style="width:100%;margin-top:9px"
+        data-go="screen" data-id="understand">Open it</button>
+    </div>` : ''}
+
+    <div class="dsec">
+      <h4>Where this comes from</h4>
+      ${SIGN_SOURCES.map((sc) => `
+        <p class="tiny" style="margin:0 0 6px">
+          <strong style="color:var(--deep)">${esc(sc.org)}</strong>
+          <a href="${esc(sc.url)}" target="_blank" rel="noopener">${esc(sc.label)}</a>
+        </p>`).join('')}
+    </div>
+  </div>`;
+}
+
+/* -----------------------------------------------------------------
+   OUTINGS
+
+   Its own tab, because going places with a child is a whole category
+   this app had nothing to say about, and because it was the thing she
+   had not thought of and immediately recognised as missing.
+
+   The order of the tabs is deliberate. What not to carry comes before
+   what to carry, because renting at the other end changes the shape of
+   every other decision. And sleeping away from home leads for a parent
+   of a baby, because that is the one where improvising is dangerous
+   rather than just annoying.
+   ----------------------------------------------------------------- */
+
+/* THE PACKING LIST IS A LIST PER CHILD, NOT A LIST PER APP.
+
+   It used to read the active child and show one age band, so a mother
+   of four opened Outings and got the twelve year old's list because he
+   happened to be the child selected. Of course she did. Outings hangs
+   off her, not off one of them.
+
+   So: one ticked list for everyone, then one ticked list per child, in
+   age order, each at that child's own band. Ticks are saved and they
+   survive leaving the screen, because a packing list you cannot tick
+   is just an article about packing. */
+
+function outTicked(id) {
+  return (store.outChecked || []).indexOf(id) !== -1;
+}
+
+/* Which trip she is packing for. Kept in the store rather than in
+   state, because it belongs to her rather than to a child, and because
+   coming back to a half packed cruise list and finding it reset to the
+   day bag would be maddening. */
+function outTrip() {
+  const id = store.outTrip || 'day';
+  return outTripById(id);
+}
+
+/* The tick key carries the trip, so packing for a cruise does not
+   quietly tick off the day bag. */
+function outKey(trip, listId, i) {
+  return trip + '|' + outItemId(listId, i);
+}
+
+function outRow(trip, listId, i, label) {
+  const id = outKey(trip, listId, i);
+  const on = outTicked(id);
+  return `
+  <button class="lrow" data-out="${esc(id)}" style="align-items:flex-start;padding:10px 6px">
+    <span style="width:22px;height:22px;border-radius:6px;margin-top:1px;flex:0 0 auto;
+      display:flex;align-items:center;justify-content:center;
+      background:${on ? 'var(--sage)' : 'transparent'};
+      border:${on ? 'none' : '1.5px solid var(--line)'}">
+      ${on ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>' : ''}
+    </span>
+    <span class="grow" style="margin-left:11px">
+      <span style="display:block;font-size:14px;line-height:1.4;
+        color:${on ? 'var(--faint)' : 'var(--ink)'};
+        text-decoration:${on ? 'line-through' : 'none'}">${esc(label)}</span>
+    </span>
+  </button>`;
+}
+
+/* One block, which may be several groups of items under one heading
+   with one running count. The groups are what lets a child's own list
+   say "and these because of their lenses" without becoming a second
+   list with a second count. */
+function outBlock(trip, listId, heading, sub, groups) {
+  const all = groups.reduce((n, g) => n + g.items.length, 0);
+  if (!all) return '';
+  let at = 0;
+  const body = groups.map((g) => {
+    const head = g.label ? `
+      <p class="tiny" style="margin:10px 8px 2px;color:var(--taupe);font-weight:600">${esc(g.label)}</p>` : '';
+    const rows = g.items.map((x) => outRow(trip, listId, at++, x)).join('');
+    return head + rows;
+  }).join('');
+
+  let done = 0;
+  for (let i = 0; i < all; i++) if (outTicked(outKey(trip, listId, i))) done++;
+
+  return `
+  <div class="dsec">
+    <h4>${esc(heading)}</h4>
+    <div style="display:flex;align-items:baseline;gap:9px;margin:0 0 8px;flex-wrap:wrap">
+      <p class="tiny" style="margin:0;flex:1 1 auto">${esc(sub)}</p>
+      <span class="tiny" style="color:${done === all ? 'var(--sage)' : 'var(--muted)'};font-weight:600">
+        ${esc(String(done))} of ${esc(String(all))}
+      </span>
+      ${done ? `<button class="chip" data-outclear="${esc(trip + '|' + listId)}"
+        style="padding:3px 10px;font-size:11px">Clear</button>` : ''}
+    </div>
+    <div class="card" style="padding:4px 10px">${body}</div>
+  </div>`;
+}
+
+function outPacking() {
+  const trip = outTrip();
+  const kids = (store.children || [])
+    .filter((k) => !isExampleChild(k))
+    .map((k) => {
+      const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+      return {
+        id: k.id,
+        name: (k.name || 'Your child'),
+        months: sum && sum.age ? sum.age.totalMonths : null,
+        label: sum && sum.label ? sum.label : '',
+        lenses: Array.isArray(k.lenses) ? k.lenses : [],
+      };
+    })
+    .sort((a, b) => (a.months == null ? 9999 : a.months) - (b.months == null ? 9999 : b.months));
+
+  const anyLens = kids.some((k) => outLensPack(k.lenses).length);
+
+  return `
+    <div class="chips" style="margin-bottom:10px">
+      ${OUT_TRIPS.map((t) => `
+        <button class="chip${t.id === trip.id ? ' on' : ''}" data-outtrip="${esc(t.id)}"
+          ${t.id === trip.id ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
+          >${esc(t.label)}</button>`).join('')}
+    </div>
+
+    <div class="card leafy" style="margin-bottom:12px">
+      <p style="font-family:var(--serif);font-size:17px;color:var(--ink);margin:0">${esc(trip.label)}</p>
+      <p class="bodytext" style="margin-top:5px">${esc(trip.blurb)}</p>
+      <p class="tiny" style="margin-top:8px">Tick as you pack. It remembers, and each trip keeps its
+      own list.</p>
+    </div>
+
+    ${outBlock(trip.id, 'everyone', OUT_SHARED.label, 'Packed once, whoever is coming.', [
+      { label: '', items: OUT_SHARED.items },
+      { label: trip.everyone.length ? (trip.everyoneLabel || 'For this trip') : '',
+        items: trip.everyone },
+    ])}
+
+    ${kids.length ? kids.map((k) => {
+      const b = outBagForAge(k.months);
+      const lens = outLensPack(k.lenses);
+      return outBlock(trip.id, k.id, 'For ' + k.name,
+        b.label + (k.label ? ', ' + k.label : ''), [
+          { label: '', items: b.items },
+          { label: trip.perChild.length ? 'For this trip' : '', items: trip.perChild },
+          { label: lens.length ? outLensLabels(k.lenses).join('. ') : '', items: lens },
+        ]);
+    }).join('') : `
+      ${outBlock(trip.id, 'nokid', 'For your child',
+        'A general one, until there is somebody to make it for.', [
+          { label: '', items: OUT_BAGS[1].items },
+          { label: trip.perChild.length ? 'For this trip' : '', items: trip.perChild },
+        ])}
+      <p class="tiny" style="text-align:center;margin-top:-4px">Add a child and this becomes a list
+      for each of them, at their own age and their own needs.</p>`}
+
+    ${trip.note ? `
+    <div class="callout" style="margin-top:2px"><p style="margin:0">${esc(trip.note)}</p></div>` : ''}
+
+    ${anyLens ? `
+    <p class="tiny" style="margin-top:12px">${esc(OUT_LENS_NOTE)}</p>` : `
+    <p class="tiny" style="margin-top:12px">${esc(OUT_LENS_NONE)}</p>`}
+
+    <div class="dsec">
+      <h4>The other ages, if you want to look ahead</h4>
+      ${OUT_BAGS.map((b) => `
+        <div class="quote">
+          <p class="sit">${esc(b.label)}</p>
+          <p class="why" style="margin-top:4px">${esc(b.items.slice(0, 3).join('. '))}.</p>
+        </div>`).join('')}
+    </div>`;
+}
+
+function screenOutings(c) {
+  const months = c.months;
+
+  const tabs = [
+    { id: 'bag', label: 'What to bring' },
+    { id: 'rent', label: 'Rent, do not haul' },
+    { id: 'sleep', label: 'Sleeping away' },
+    { id: 'fly', label: 'Flying' },
+    { id: 'road', label: 'Road trips' },
+    { id: 'cruise', label: 'Cruises' },
+    { id: 'stay', label: 'Hotels and rentals' },
+    { id: 'days', label: 'Days out' },
+  ];
+  let tab = state.outTab || outFirstTab(months);
+  if (!tabs.some((t) => t.id === tab)) tab = 'bag';
+
+  const sourceBlock = `
+    <div class="dsec">
+      <h4>Where this comes from</h4>
+      <p class="tiny" style="margin:0 0 9px">${esc(OUT_NOT_SPONSORED)}</p>
+      ${OUT_SOURCES.map((sc) => `
+        <p class="tiny" style="margin:0 0 6px">
+          <strong style="color:var(--deep)">${esc(sc.org)}</strong>
+          <a href="${esc(sc.url)}" target="_blank" rel="noopener">${esc(sc.label)}</a>
+        </p>`).join('')}
+    </div>`;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <p class="eyebrow">${esc(OUT_TITLE)}</p>
+    <h1 class="title">Going places with them.</h1>
+    <p class="sub">${esc(OUT_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(OUT_INTRO)}</p>
+    </div>
+
+    <div class="chips" style="margin:12px 0">
+      ${tabs.map((t) => `
+        <button class="chip" data-sub="outTab" data-val="${esc(t.id)}"
+                aria-pressed="${t.id === tab}">${esc(t.label)}</button>`).join('')}
+    </div>
+
+    ${tab === 'bag' ? outPacking() : ''}
+
+    ${tab === 'rent' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(OUT_RENT.headline)}</p>
+      </div>
+      <div class="dsec">
+        <h4>${esc(OUT_RENT.title)}</h4>
+        ${OUT_RENT.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <p class="sect">Worth renting rather than carrying</p>
+        ${list(OUT_RENT.worthRenting)}
+        <p class="sect">Bring these anyway</p>
+        ${list(OUT_RENT.bringAnyway)}
+      </div>
+      ${sourceBlock}` : ''}
+
+    ${tab === 'sleep' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(OUT_SLEEP.headline)}</p>
+      </div>
+      <div class="dsec">
+        <h4>${esc(OUT_SLEEP.theRule.label)}</h4>
+        ${OUT_SLEEP.theRule.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+      <div class="dsec">
+        <h4>${esc(OUT_SLEEP.thePod.label)}</h4>
+        ${OUT_SLEEP.thePod.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+      <div class="dsec">
+        <h4>${esc(OUT_SLEEP.darkness.label)}</h4>
+        ${OUT_SLEEP.darkness.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+      <div class="dsec">
+        <h4>${esc(OUT_SLEEP.theRoom.label)}</h4>
+        ${OUT_SLEEP.theRoom.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout" style="margin-top:4px"><p style="margin:0">${esc(OUT_SLEEP.hotelCribs)}</p></div>
+      </div>
+      ${sourceBlock}` : ''}
+
+    ${tab === 'fly' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(OUT_FLY.headline)}</p>
+      </div>
+      <div class="dsec">
+        <h4>${esc(OUT_FLY.milkAndFormula.label)}</h4>
+        ${list(OUT_FLY.milkAndFormula.items)}
+      </div>
+      <div class="dsec">
+        <h4>${esc(OUT_FLY.carSeat.label)}</h4>
+        ${list(OUT_FLY.carSeat.items)}
+      </div>
+      <div class="dsec">
+        <h4>${esc(OUT_FLY.practical.label)}</h4>
+        ${list(OUT_FLY.practical.items)}
+      </div>
+      ${sourceBlock}` : ''}
+
+    ${tab === 'road' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(OUT_ROAD.headline)}</p>
+      </div>
+      <div class="dsec">
+        <h4>The car seat part, which does not relax</h4>
+        ${list(OUT_ROAD.safety)}
+      </div>
+      <div class="dsec">
+        <h4>Making the drive work</h4>
+        ${list(OUT_ROAD.practical)}
+      </div>
+      <button class="btn ghost sm" style="width:100%;margin-top:4px" data-go="screen" data-id="safety">
+        CPR, choking and what to do if something happens
+      </button>` : ''}
+
+    ${tab === 'cruise' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(OUT_CRUISE.headline)}</p>
+      </div>
+      <div class="dsec">
+        <h4>The rules that are enforced at the terminal</h4>
+        ${list(OUT_CRUISE.rules)}
+      </div>
+      <div class="dsec">
+        <h4>What the ship already has</h4>
+        ${list(OUT_CRUISE.provided)}
+      </div>
+      <div class="dsec">
+        <h4>Worth knowing</h4>
+        ${list(OUT_CRUISE.worthKnowing)}
+      </div>
+      ${sourceBlock}` : ''}
+
+    ${tab === 'stay' ? `
+      <div class="dsec">
+        <h4>${esc(OUT_STAY.ask.label)}</h4>
+        ${list(OUT_STAY.ask.items)}
+      </div>
+      <div class="dsec">
+        <h4>${esc(OUT_STAY.babyproof.label)}</h4>
+        ${list(OUT_STAY.babyproof.items)}
+      </div>` : ''}
+
+    ${tab === 'days' ? `
+      <div class="dsec">
+        <h4>${esc(OUT_DAYS.title)}</h4>
+        ${list(OUT_DAYS.items)}
+      </div>` : ''}
+  </div>`;
+}
+
+/* -----------------------------------------------------------------
+   PRIVACY
+
+   One page, so that no other screen has to keep announcing how careful
+   it is being. See the header of src/data/privacy.js for what this
+   replaced and why.
+   ----------------------------------------------------------------- */
+
+/* The rules, and what this app is. Both used to be blocks sitting on
+   other screens announcing themselves. They are real pages now, in the
+   menu behind her own face, which is where somebody actually goes
+   looking for them. */
+
+function screenRules(c) {
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">Community rules</h1>
+    <p class="sub">Short, because a long list of rules is a list nobody reads.</p>
+  </div>
+  <div class="sc">
+    <div class="dsec">
+      <h4>How the rooms work</h4>
+      ${list(COMMUNITY_RULES)}
+    </div>
+
+    <div class="dsec">
+      <h4>What gets a post held</h4>
+      <p class="bodytext" style="margin:0 0 9px">Posts go up straight away. Three things are held
+      back for a person to read first, and they are held rather than deleted.</p>
+      ${list([
+        'A medication dose. A wrong number passed between strangers is the one mistake here that can actually hurt a child.',
+        'A phone number.',
+        'An email address. Both of those because they move a conversation somewhere with none of the protections this room has.',
+      ])}
+      <p class="tiny" style="margin-top:8px">If yours is held you will see it on your own Yours tab,
+      with what happened to it. Nothing disappears without being accounted for.</p>
+    </div>
+
+    <div class="dsec">
+      <h4>Reporting and blocking</h4>
+      ${list([
+        'Anything can be reported, and a person reads every report.',
+        'Anybody can be blocked, and blocking is kept on your own device rather than anywhere we can see.',
+        'Reporting somebody is not a complaint about you and nobody is told you did it.',
+      ])}
+    </div>
+
+    ${privacyLine()}
+  </div>`;
+}
+
+function screenAbout(c) {
+  const stamp = buildStamp();
+  const notDoctor = PRIV_SECTIONS.filter((x) => x.id === 'notdoctor')[0];
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">About this app</h1>
+    <p class="sub">What it is for, and what it is not.</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="bodytext" style="font-size:15px;line-height:1.55">Ready Set Grow follows your child
+      rather than a calendar, and it is built for the parent as much as for the child. It was made by
+      one mother who wanted it to exist.</p>
+    </div>
+
+    ${notDoctor ? `
+    <div class="dsec">
+      <h4>${esc(notDoctor.title)}</h4>
+      ${notDoctor.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+    </div>` : ''}
+
+    <div class="dsec">
+      <h4>This copy of it</h4>
+      <p class="bodytext" style="margin:0 0 9px">
+        ${stamp ? 'Built ' + esc(stamp) + '.' : 'This copy does not carry a build stamp.'}
+        ${update.available ? ' A newer one is ready.' : ' It is up to date.'}
+      </p>
+      ${update.available
+        ? `<button class="btn" data-update="go">Load the new version</button>`
+        : `<button class="chip" data-update="check">Check again</button>`}
+    </div>
+
+    <div class="dsec">
+      <h4>Where the guidance comes from</h4>
+      <p class="bodytext">Everything clinical in this app is written against published guidance from
+      the American Academy of Pediatrics, the CDC and equivalent bodies, and the pages that lean on a
+      specific document link to it at the bottom. Where the evidence is weaker than the packaging
+      suggests, the app says so rather than repeating the claim.</p>
+    </div>
+
+    ${privacyLine()}
+  </div>`;
+}
+
+function screenDiapers(c) {
+  const months = c.months;
+  const band = diaperBandFor(months);
+  const name = (c.child && c.child.name) ? c.child.name : 'them';
+  const hours = Number(store.daycareHours) || 0;
+  const sums = diaperDayTotal(months, hours);
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">${esc(DIAPER_TITLE)}</h1>
+    <p class="sub">${esc(DIAPER_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="bodytext">${esc(DIAPER_INTRO)}</p>
+    </div>
+
+    ${months != null ? `
+    <div class="card" style="margin-top:11px;text-align:center;padding:20px 16px">
+      <p class="eyebrow">${esc(name)}, right now</p>
+      <p style="font-family:var(--serif);font-size:32px;color:var(--ink);margin:8px 0 0">
+        ${esc(band.perDay)}
+      </p>
+      <p class="tiny" style="margin-top:2px">a day, so ${esc(band.perMonth)} a month</p>
+      <p class="bodytext" style="margin-top:10px">${esc(band.note)}</p>
+    </div>` : ''}
+
+    <div class="dsec">
+      <h4>${esc(DIAPER_DAYCARE.title)}</h4>
+      <p class="bodytext" style="margin:0 0 10px;font-weight:600;color:var(--deep)">
+        ${esc(DIAPER_DAYCARE.headline)}</p>
+      <div class="card" style="margin-bottom:11px">
+        <p class="eyebrow">Hours they are there</p>
+        <div class="chips" style="margin-top:9px">
+          ${[0, 4, 6, 8, 9, 10, 12].map((h) => `
+            <button class="chip${hours === h ? ' on' : ''}" data-daycare="${h}"
+              ${hours === h ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
+              >${h ? h + ' hours' : 'Not in daycare'}</button>`).join('')}
+        </div>
+        ${hours ? `
+        <div style="margin-top:14px;padding-top:13px;border-top:1px solid var(--line2)">
+          <p style="font-family:var(--serif);font-size:24px;color:var(--ink);margin:0">
+            Send ${esc(String(sums.away))} a day
+          </p>
+          <p class="tiny" style="margin-top:4px">
+            About ${esc(String(Math.max(1, sums.away - 2)))} used on the schedule and for poops, plus two spare.
+          </p>
+          <p class="bodytext" style="margin-top:8px">
+            Another ${esc(sums.home)} at home, which is ${esc(sums.total)} across the whole day.
+          </p>
+        </div>` : ''}
+      </div>
+      ${DIAPER_DAYCARE.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      <p class="sect">Send these too</p>
+      ${list(DIAPER_DAYCARE.alsoSend)}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(DIAPER_RULE.title)}</h4>
+      ${DIAPER_RULE.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+    </div>
+
+    <div class="dsec">
+      <h4>Every age, so you can see it coming</h4>
+      ${DIAPER_BANDS.map((b) => `
+        <div class="quote"${b.id === band.id ? ' style="border-left-color:var(--sage)"' : ''}>
+          <p class="sit">${esc(b.label)}${b.id === band.id ? ', which is where you are' : ''}</p>
+          <p class="why" style="margin-top:4px"><strong style="color:var(--deep)">${esc(b.perDay)} a day</strong>, ${esc(b.perMonth)} a month. ${esc(b.note)}</p>
+        </div>`).join('')}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(DIAPER_PACKING.title)}</h4>
+      <p class="bodytext" style="margin:0 0 9px;font-weight:600;color:var(--deep)">
+        ${esc(DIAPER_PACKING.headline)}</p>
+      ${DIAPER_PACKING.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      ${DIAPER_PACKING.trips.map((x) => `
+        <div class="quote">
+          <p class="sit">${esc(x.what)}</p>
+          <p class="why" style="margin-top:4px">${esc(x.how)}</p>
+        </div>`).join('')}
+      <div class="callout" style="margin-top:10px">
+        <p style="margin:0">${esc(DIAPER_PACKING.alsoNote)}</p>
+      </div>
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(DIAPER_BUYING.title)}</h4>
+      ${list(DIAPER_BUYING.items)}
+      <p class="sect">${esc(DIAPER_BUYING.sizeUp.title)}</p>
+      ${list(DIAPER_BUYING.sizeUp.items)}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(DIAPER_NIGHT.title)}</h4>
+      ${list(DIAPER_NIGHT.items)}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(DIAPER_COST.title)}</h4>
+      ${DIAPER_COST.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+    </div>
+
+    <div class="card flat" style="margin-top:6px">
+      <p class="eyebrow">${icon('info', 11, 'var(--sage)')} One of these is medical</p>
+      <p class="tiny" style="margin-top:4px">${esc(DIAPER_HEALTH_NOTE)}</p>
+      <button class="btn ghost sm" style="width:100%;margin-top:10px"
+        data-go="screen" data-id="feeding" data-asksub="feedTab" data-asksubval="newborn">
+        Open the newborn rhythm
+      </button>
+    </div>
+
+    <div class="dsec">
+      <h4>Where these numbers come from</h4>
+      <p class="bodytext" style="margin:0 0 10px">${esc(DIAPER_SOURCE_NOTE)}</p>
+      ${DIAPER_SOURCES.map((sc) => `
+        <p class="tiny" style="margin:0 0 6px">
+          <strong style="color:var(--deep)">${esc(sc.org)}</strong>
+          <a href="${esc(sc.url)}" target="_blank" rel="noopener">${esc(sc.label)}</a>
+        </p>`).join('')}
+    </div>
+  </div>`;
+}
+
+function screenSharing(c) {
+  const signedIn = !!auth.user;
+  if (signedIn && !share.loaded && !share.busy) setTimeout(() => shareLoad(), 0);
+
+  const mine = store.children.filter((k) => !isExampleChild(k) && !k.sharedFrom);
+  const made = share.made;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">${esc(SHARE_TITLE)}</h1>
+    <p class="sub">${esc(SHARE_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="bodytext">${esc(SHARE_INTRO)}</p>
+    </div>
+
+    ${!signedIn ? `
+    <div class="card flat" style="margin-top:11px">
+      <p class="bodytext">${esc(SHARE_ERRORS.noAccount)}</p>
+      <button class="btn" style="width:100%;margin-top:11px" data-auth="account">Create an account</button>
+    </div>` : ''}
+
+    ${signedIn ? `
+    ${share.error ? `
+    <div class="card" style="border-left:3px solid var(--attention);margin-top:11px">
+      <p class="bodytext">${esc(share.error)}</p>
+    </div>` : ''}
+
+    ${share.joined ? `
+    <div class="card leafy" style="margin-top:11px">
+      <p class="bodytext">${esc(share.joined)}</p>
+      <button class="chip" style="margin-top:9px" data-share="joinedok">Close</button>
+    </div>` : ''}
+
+    ${made ? `
+    <div class="dsec">
+      <h4>Their code</h4>
+      <p class="tiny" style="margin:0 0 10px">For ${esc(made.names.join(', '))}.</p>
+      <div class="card" style="padding:18px 16px">
+        <p class="bodytext" style="margin:0 0 10px">${esc(SHARE_LINK_NOTE)}</p>
+        <button class="btn" style="width:100%" data-share="link" data-code="${esc(made.code)}">
+          ${esc(store.shareLinkCopied ? SHARE_LINK_COPIED : SHARE_LINK_BTN)}
+        </button>
+        <p class="tiny" style="margin:14px 0 8px;text-align:center">Or read them the code.</p>
+        <p style="font-family:var(--serif);font-size:30px;letter-spacing:3px;color:var(--ink);margin:0;text-align:center">
+          ${esc(prettyCode(made.code))}
+        </p>
+        <p class="tiny" style="margin-top:8px;text-align:center">${esc(codeLeft(made.at + CODE_HOURS * 3600000, Date.now()))}</p>
+        <button class="chip" style="margin-top:12px;width:100%" data-share="copy" data-code="${esc(made.code)}">
+          ${esc(store.shareCopied ? 'Copied' : 'Copy just the code')}
+        </button>
+        <button class="chip" style="margin-top:9px" data-share="dropcode" data-code="${esc(made.code)}">
+          Cancel this code
+        </button>
+      </div>
+      <p class="tiny" style="margin-top:9px">${esc(SHARE_CODE_NOTE)}</p>
+    </div>` : `
+    <div class="dsec">
+      <h4>Give somebody access</h4>
+      <p class="tiny" style="margin:0 0 10px">Pick which children. Only the ones you tick.</p>
+      ${mine.length ? `
+        <div class="card" style="margin-bottom:10px">
+          ${mine.map((k) => tickRow(share.pickIds.indexOf(k.id) !== -1, k.name || 'Your child',
+            childAgeLabel(k), `data-share="pick" data-id="${esc(k.id)}"`)).join('')}
+        </div>
+        <button class="btn" style="width:100%"
+          data-share="make" ${share.pickIds.length && !share.busy ? '' : 'disabled'}>
+          ${esc(share.pickIds.length ? 'Make a code' : 'Pick a child first')}
+        </button>
+      ` : `
+        <div class="card flat"><p class="bodytext">Add a child first, and then you can share them.</p></div>
+      `}
+    </div>`}
+
+    <div class="dsec">
+      <h4>${esc(SHARE_JOIN_TITLE)}</h4>
+      <p class="tiny" style="margin:0 0 10px">${esc(SHARE_JOIN_HELP)}</p>
+      <div class="card">
+        <input class="inp" type="text" id="shareIn" data-sharefield="1" autocomplete="off"
+          autocapitalize="characters" spellcheck="false"
+          placeholder="ABCDE 12345" style="width:100%;text-align:center;letter-spacing:2px;font-size:18px" />
+        <button class="btn" style="width:100%;margin-top:11px"
+          data-share="join" ${share.busy ? 'disabled' : ''}>Use this code</button>
+      </div>
+    </div>
+
+    <div class="dsec">
+      <h4>Who can see your children</h4>
+      ${share.shares.length ? share.shares.map((row) => {
+        const names = (row.childIds || []).map((id) => {
+          const k = store.children.filter((x) => x.id === id)[0];
+          return (k && k.name) || 'A child';
+        });
+        return `
+        <div class="quote">
+          <p class="sit">${icon('user', 12, 'var(--taupe)')} Somebody with the code ${esc(String(row.code || '').slice(0, 5))}</p>
+          <p class="why" style="margin-top:4px">Can see ${esc(names.join(', ') || 'nothing')}.</p>
+          <button class="chip" style="margin-top:8px" data-share="revoke" data-id="${esc(row.viewerUid)}"
+            ${share.busy ? 'disabled' : ''}>Take it back</button>
+        </div>`;
+      }).join('') : `
+        <div class="card flat"><p class="bodytext">${esc(SHARE_EMPTY_OWNER)}</p></div>`}
+      ${share.shares.length ? `<p class="tiny" style="margin-top:9px">${esc(SHARE_REVOKE_NOTE)}</p>` : ''}
+    </div>
+
+    <div class="dsec">
+      <h4>Children shared with you</h4>
+      ${share.links.length ? share.links.map((row) => {
+        const names = (row.childIds || []).map((id) => {
+          const k = store.children.filter((x) => x.id === id)[0];
+          return (k && k.name) || 'A child';
+        });
+        return `
+        <div class="quote">
+          <p class="sit">${icon('people', 12, 'var(--sage)')} ${esc(names.join(', ') || 'A child')}</p>
+          <p class="why" style="margin-top:4px">Shared with you by somebody else.</p>
+          <button class="chip" style="margin-top:8px" data-share="leave" data-id="${esc(row.ownerUid)}"
+            ${share.busy ? 'disabled' : ''}>Leave</button>
+        </div>`;
+      }).join('') : `
+        <div class="card flat"><p class="bodytext">${esc(SHARE_EMPTY_JOINED)}</p></div>`}
+      ${share.links.length ? `<p class="tiny" style="margin-top:9px">${esc(SHARE_LEAVE_NOTE)}</p>` : ''}
+    </div>
+
+    <div class="dsec">
+      <h4>How it works</h4>
+      ${SHARE_STEPS.map((x, i) => `
+        <div class="quote">
+          <p class="sit">${esc(String(i + 1))}</p>
+          <p class="why" style="margin-top:4px">${esc(x)}</p>
+        </div>`).join('')}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(SHARE_WHAT_THEY_GET.title)}</h4>
+      <p class="sect" style="margin-top:0">They can</p>
+      ${list(SHARE_WHAT_THEY_GET.can)}
+      <p class="sect">They cannot</p>
+      ${list(SHARE_WHAT_THEY_GET.cannot)}
+    </div>
+
+    ${privacyLine()}
+    ` : ''}
+
+    <div class="dsec">
+      <h4>If you are sharing with somebody you are not sure about</h4>
+      <p class="bodytext" style="margin:0 0 10px">Sharing is a live view of what gets logged about a
+        child, including when it was logged. In most families that is the whole point. In some it is
+        not, and it is worth knowing exactly what the other person can see and what taking it back
+        looks like from their end.</p>
+      <button class="btn ghost" style="width:100%" data-go="screen" data-id="support">
+        ${icon('shield', 14, 'var(--deep)')} What this app can give away
+      </button>
+    </div>
+
+  </div>`;
+}
+
+function screenPrivacy(c) {
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">${esc(PRIV_TITLE)}</h1>
+    <p class="sub">${esc(PRIV_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="bodytext">${esc(PRIV_INTRO)}</p>
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(PRIV_SHORT.title)}</h4>
+      ${list(PRIV_SHORT.items)}
+    </div>
+
+    ${PRIV_SECTIONS.map((sec) => `
+      <div class="dsec">
+        <h4>${esc(sec.title)}</h4>
+        ${sec.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>`).join('')}
+
+    <div class="dsec">
+      <h4>${esc(PRIV_CONTACT.title)}</h4>
+      <p class="bodytext">${esc(PRIV_CONTACT.body)}</p>
+    </div>
+
+    <p class="tiny" style="margin-top:6px">${esc(PRIV_FOOTER)}</p>
+  </div>`;
+}
+
+/* The one line any other screen may use, small and at the bottom. */
+function privacyLine() {
+  return `
+  <button class="tiny" data-go="screen" data-id="privacy"
+    style="display:block;width:100%;text-align:center;margin-top:14px;padding:8px;
+           background:none;border:0;color:var(--muted);text-decoration:underline">
+    ${esc(PRIV_LINK_LINE)}
+  </button>`;
+}
+
+/* ==================================================================
+   THE HARD PART
+
+   Child protective services, somebody at home who frightens you, and
+   somebody who is targeting your child.
+
+   Everything about why this screen exists and why the wording is what
+   it is lives in src/data/support.js. What lives here is the two
+   pieces of behaviour that the content cannot do on its own.
+
+   THE FIRST is the way out. It is fixed to the corner so it is in the
+   same place no matter how far down somebody has scrolled, it takes
+   one tap with no confirmation, and it puts the app back on Home on
+   the way past so that reopening it later does not land on this page
+   in front of the wrong person. Escape does the same thing on a
+   keyboard.
+
+   THE SECOND is that this screen never becomes the thing the app
+   reopens on. Nothing about visiting it is written anywhere that
+   syncs, and the tab it was left on is reset the moment somebody
+   leaves through the corner.
+   ================================================================== */
+
+/* Somebody may be on a phone that another person picks up, so this has
+   to be quick and it has to be quiet. No confirmation, no animation,
+   no history entry left pointing back at it. */
+function quickExit() {
+  /* Home first, and flushed, so that reopening Ready Set Grow later
+     shows the ordinary app rather than this page. */
+  try {
+    state.view = null;
+    state.tab = 'home';
+    store.supportTab = 'safe';
+    store.menuOpen = false;
+    flushStore();
+  } catch (e) { /* storage can be blocked, and that must not stop the exit */ }
+  /* Strips anything in the address bar, then leaves by replacing the
+     current entry rather than adding one, so Back does not come here. */
+  try { history.replaceState(null, '', '/'); } catch (e) { /* ignore */ }
+  const away = 'https://weather.com/';
+  try { location.replace(away); } catch (e) { location.href = away; }
+}
+
+function onSupportScreen() {
+  const v = state.view;
+  return !!(v && v.type === 'screen' && v.id === 'support');
+}
+
+/* The corner button. Red on purpose, because every other control in
+   this app is green and somebody scanning for the way out should find
+   it without reading. */
+function exitButton() {
+  return `
+  <button class="quickexit" data-exit="1" aria-label="${esc(EXIT_BTN)}, leaves this page immediately">
+    ${esc(EXIT_BTN)}
+  </button>`;
+}
+
+/* A phone line, shared by all three tabs. Tappable where the device
+   can dial, plain text where it cannot. */
+function supLine(l) {
+  const digits = String(l.contact || '').replace(/[^\d]/g, '');
+  const dial = (digits.length >= 10 || digits.length === 3) ? 'tel:' + digits : '';
+  return `
+  <div class="bpline">
+    <p class="bpline-n">${esc(l.name)}</p>
+    ${dial
+      ? `<a class="bpline-c" href="${esc(dial)}">${esc(l.contact)}</a>`
+      : `<span class="bpline-c">${esc(l.contact)}</span>`}
+    <p class="tiny" style="margin:2px 0 0">${esc(l.detail)}</p>
+    <a class="tiny" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"
+      style="text-decoration:underline">Their website</a>
+  </div>`;
+}
+
+/* A right and its catch, the shape the whole child protection tab is
+   built out of. A rights list without the catches attached is how a
+   parent stands in a doorway and makes things worse. */
+function rightRow(r) {
+  return `
+  <div class="quote">
+    <p class="sit">${icon('shield', 12, 'var(--sage)')} ${esc(r.right)}</p>
+    <p class="why" style="margin-top:4px">${esc(r.catch)}</p>
+  </div>`;
+}
+
+function supTabSafe() {
+  return `
+    <div class="card leafy">
+      <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} ${esc(EXIT_TITLE)}</p>
+      ${EXIT_WHAT.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(EXIT_CANNOT.title)}</h4>
+      ${list(EXIT_CANNOT.items, true)}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(EXIT_SAFER.title)}</h4>
+      ${list(EXIT_SAFER.items)}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(SUP_APP_RISK.title)}</h4>
+      ${SUP_APP_RISK.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      <p class="sect">How to check who has access</p>
+      ${list(SUP_APP_RISK.check)}
+      <div class="callout" style="margin-top:10px">
+        <p style="margin:0">${esc(SUP_APP_RISK.warn)}</p>
+      </div>
+      <button class="btn ghost" style="width:100%;margin-top:11px" data-go="screen" data-id="sharing">
+        ${icon('people', 14, 'var(--deep)')} See who can open your children
+      </button>
+      <p class="sect">What this app does not do</p>
+      ${list(SUP_APP_RISK.doesNot)}
+    </div>`;
+}
+
+function supTabDv() {
+  return `
+    <div class="card leafy">
+      <p class="eyebrow">${icon('heart', 11, '#A85A44')} ${esc(DV_HEAD)}</p>
+      ${DV_INTRO.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+    </div>
+
+    <div class="dsec">
+      <h4>Somebody who will pick up, any hour</h4>
+      ${DV_LINES.map(supLine).join('')}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(DV_LOOKS_LIKE.title)}</h4>
+      <p class="tiny" style="margin:0 0 9px">${esc(DV_LOOKS_LIKE.intro)}</p>
+      ${list(DV_LOOKS_LIKE.items)}
+    </div>
+
+    <div class="bpbox">
+      <p class="bpbox-t">${esc(DV_STRANGLE.title)}</p>
+      ${DV_STRANGLE.body.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+      <p class="bpwarn">${esc(DV_STRANGLE.medical)}</p>
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(DV_RISK.title)}</h4>
+      <p class="tiny" style="margin:0 0 9px">${esc(DV_RISK.intro)}</p>
+      ${list(DV_RISK.items)}
+      <div class="callout" style="margin-top:10px">
+        <p style="margin:0">${esc(DV_RISK.note)}</p>
+      </div>
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(DV_CHILDREN.title)}</h4>
+      ${DV_CHILDREN.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      <p class="sect">${esc(DV_CHILDREN.cpsFear.title)}</p>
+      ${DV_CHILDREN.cpsFear.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      <button class="btn ghost" style="width:100%;margin-top:4px" data-sub="supportTab" data-val="cps">
+        ${icon('info', 14, 'var(--deep)')} What happens if a caseworker does get involved
+      </button>
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(DV_STAYING.title)}</h4>
+      <p class="tiny" style="margin:0 0 9px">${esc(DV_STAYING.intro)}</p>
+      ${list(DV_STAYING.items)}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(DV_LEAVING.title)}</h4>
+      <p class="bodytext" style="margin:0 0 9px">${esc(DV_LEAVING.head)}</p>
+      ${list(DV_LEAVING.items)}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(DV_BAG.title)}</h4>
+      <p class="tiny" style="margin:0 0 9px">${esc(DV_BAG.intro)}</p>
+      ${list(DV_BAG.items)}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(DV_IF_ITS_YOU.title)}</h4>
+      <p class="bodytext">${esc(DV_IF_ITS_YOU.body)}</p>
+    </div>
+
+    ${dsec('Where this comes from', sourceRows(DV_SOURCES))}`;
+}
+
+function supTabCps() {
+  return `
+    <div class="card leafy">
+      <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} ${esc(CPS_HEAD)}</p>
+      ${CPS_INTRO.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(CPS_RIGHTS.title)}</h4>
+      <p class="tiny" style="margin:0 0 9px">${esc(CPS_RIGHTS.intro)}</p>
+      ${CPS_RIGHTS.items.map(rightRow).join('')}
+      <div class="callout" style="margin-top:10px">
+        <p style="margin:0">${esc(CPS_RIGHTS.varies)}</p>
+      </div>
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(CPS_POVERTY.title)}</h4>
+      ${CPS_POVERTY.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(CPS_HELPS.title)}</h4>
+      ${list(CPS_HELPS.items)}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(CPS_HURTS.title)}</h4>
+      ${list(CPS_HURTS.items, true)}
+    </div>
+
+    <div class="bpbox">
+      <p class="bpbox-t">${esc(CPS_REMOVED.title)}</p>
+      <ol class="bpsteps">
+        ${CPS_REMOVED.items.map((x) => `<li>${esc(x)}</li>`).join('')}
+      </ol>
+      <p class="bpclose">${esc(CPS_REMOVED.note)}</p>
+    </div>
+
+    <div class="dsec">
+      <h4>Somebody to call</h4>
+      ${CPS_LINES.map(supLine).join('')}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(CPS_WORRIED.title)}</h4>
+      <p class="bodytext">${esc(CPS_WORRIED.body)}</p>
+    </div>
+
+    ${dsec('Where this comes from', sourceRows(CPS_SOURCES))}`;
+}
+
+function supTabTraffick() {
+  return `
+    <div class="card leafy">
+      <p class="eyebrow">${icon('info', 11, 'var(--sage)')} ${esc(TRAF_HEAD)}</p>
+      ${TRAF_INTRO.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+    </div>
+
+    <div class="bpbox">
+      <p class="bpbox-t">${esc(TRAF_SEXTORTION.title)}</p>
+      ${TRAF_SEXTORTION.body.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+      <p class="sect" style="color:var(--deep)">${esc(TRAF_SEXTORTION.rules.title)}</p>
+      <ol class="bpsteps">
+        ${TRAF_SEXTORTION.rules.items.map((x) => `<li>${esc(x)}</li>`).join('')}
+      </ol>
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(TRAF_SIGNS.title)}</h4>
+      <p class="tiny" style="margin:0 0 9px">${esc(TRAF_SIGNS.intro)}</p>
+      ${list(TRAF_SIGNS.items)}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(TRAF_IF_ALREADY.title)}</h4>
+      ${list(TRAF_IF_ALREADY.items)}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(TRAF_PREVENT.title)}</h4>
+      <p class="tiny" style="margin:0 0 9px">${esc(TRAF_PREVENT.intro)}</p>
+      ${TRAF_PREVENT.items.map((x) => `
+        <div class="quote">
+          <p class="why" style="margin:0">${esc(x)}</p>
+        </div>`).join('')}
+      <div class="callout" style="margin-top:10px">
+        <p style="margin:0">${esc(TRAF_PREVENT.note)}</p>
+      </div>
+    </div>
+
+    <div class="dsec">
+      <h4>Somebody to call</h4>
+      ${TRAF_LINES.map(supLine).join('')}
+    </div>
+
+    ${dsec('Where this comes from', sourceRows(TRAF_SOURCES))}`;
+}
+
+function screenSupport(c) {
+  /* NOTHING ABOUT THIS SCREEN IS SAVED, AND THAT IS DELIBERATE.
+     Neither supportSeen nor supportTab is in the list flushStore
+     writes, so which tab somebody was reading never reaches
+     localStorage and never reaches the cloud copy. It lasts as long as
+     the app is open and no longer, which also means every fresh open
+     starts on the tab about reading this safely. */
+  const tab = state.supportTab || supportFirstTab(!!store.supportSeen);
+  if (!store.supportSeen) { store.supportSeen = true; }
+
+  return `
+  ${cornerLeaves()}
+  ${exitButton()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">${esc(SUP_TITLE)}</h1>
+    <p class="sub">${esc(SUP_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="card flat">
+      <p class="bodytext">${esc(SUP_INTRO)}</p>
+    </div>
+
+    <div class="chips" style="margin:12px 0 0">
+      ${SUP_TABS.map((t) => `
+        <button class="chip" data-sub="supportTab" data-val="${esc(t.id)}"
+                aria-pressed="${t.id === tab}">${esc(t.label)}</button>`).join('')}
+    </div>
+
+    <div class="callout" style="margin:12px 0 4px;border-left:3px solid var(--concern, #A85A44)">
+      <p style="margin:0">${esc(SUP_911)}</p>
+    </div>
+
+    ${tab === 'safe' ? supTabSafe() : ''}
+    ${tab === 'dv' ? supTabDv() : ''}
+    ${tab === 'cps' ? supTabCps() : ''}
+    ${tab === 'traffick' ? supTabTraffick() : ''}
+
+    <p class="disclaimer">${esc(SUP_DISCLAIMER)}</p>
+  </div>`;
+}
 
 function screenSafety(c) {
   const months = c.months;
@@ -3464,10 +6361,27 @@ function screenSafety(c) {
       })()}` : ''}
 
     ${tab === 'alone' ? `
+      ${/* THE ANSWER FIRST, WHICHEVER ANSWER APPLIES.
+
+            Home alone used to appear only from seven, on the reasoning
+            that it is not a question before then. She pointed out that
+            it is: babies get left unattended, and left in cars, and the
+            parent who does it is usually not a monster, they are a
+            person who has run out of room. So the tab is there at every
+            age now, and below seven it answers the real question
+            instead of the stated one. */ ''}
+      ${showsHomeAloneReadiness(c.months) ? `
       <div class="card leafy">
         <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(HOME_ALONE.headline)}</p>
-      </div>
+      </div>` : `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(HOME_ALONE_TOO_YOUNG.headline)}</p>
+        <p class="bodytext" style="margin-top:10px">${esc(HOME_ALONE_TOO_YOUNG.body)}</p>
+      </div>`}
 
+      ${breakingPointBlock(c)}
+
+      ${showsHomeAloneReadiness(c.months) ? `
       <div class="dsec">
         <h4>What the law actually says</h4>
         ${list(HOME_ALONE.theLegalPart)}
@@ -3495,7 +6409,7 @@ function screenSafety(c) {
       <div class="dsec">
         <h4>Leaving them in charge of a sibling</h4>
         <div class="callout"><p style="margin:0">${esc(HOME_ALONE.siblings)}</p></div>
-      </div>` : ''}
+      </div>` : ''}` : ''}
 
     ${dsec('Sources', sourceRows(EMERGENCY_SOURCES))}
     <p class="disclaimer">
@@ -4602,22 +7516,869 @@ const COMMUNITY_RULES = [
   'Report anything that worries you. A person reads every report.',
 ];
 
+/* =================================================================
+   THE SHARED FEED
+
+   The part that makes "Share to Community" true. Everything about why
+   it works this way is in src/data/feed.js, and the rule it rests on
+   is in firestore.rules: nothing is public until a person approves it.
+
+   THIS LAYER NEVER DECIDES WHO CAN SEE WHAT. It asks, and the rules
+   answer. An app that enforced its own visibility would be one bug away
+   from a private post in front of strangers.
+   ================================================================= */
+
+const feed = {
+  posts: [],        // live ones, from everybody
+  mine: [],         // this account's own, whatever their status
+  queue: [],        // held by the filter, moderators only
+  reported: [],     // already up, but somebody reported it
+  loaded: false,
+  loading: false,
+  error: '',
+  isMod: false,
+  modChecked: false,
+  busy: '',         // the id of whatever is mid flight
+  reporting: '',    // the id being reported, so the reasons show
+  view: 'feed',     // feed | flies | rooms | mine | queue
+  room: null,       // null means everything, '' means the main feed, otherwise a group id
+  /* THE THING THAT STOPS THE ROOM EATING ITSELF.
+
+     The screen asks for the feed whenever it is not loaded and not
+     already loading. A failed load used to leave both of those false,
+     so the next repaint asked again, which set loading, which
+     repainted, which failed, which repainted. The room flickered
+     between "Loading" and an error several times a second and taps on
+     the tabs landed on buttons that were destroyed before the click
+     finished. That is what "I cannot select another tab" was.
+
+     Once a load has been tried, it is not tried again on its own.
+     Trying again is a button. */
+  tried: false,
+  /* The topic being looked at, or empty for everything. Lives on feed
+     rather than in the store because a topic is where you are right
+     now, not a setting. */
+  tag: '',
+};
+
+/* -----------------------------------------------------------------
+   FIREFLIES
+
+   The night sky. See src/data/fireflies.js for what is deliberately
+   not in it, which is the more important half.
+
+   ONE DOCUMENT PER ACCOUNT, keyed by the account id, holding two
+   numbers: when the light goes out, and how many people have tapped
+   it. Relighting overwrites that document rather than adding another,
+   so the collection can never grow past one row per person however
+   many nights they are up.
+   ----------------------------------------------------------------- */
+
+const fly = {
+  rows: [],         // every light currently on, including yours
+  mine: null,       // your own row, or null
+  loaded: false,
+  loading: false,
+  error: '',
+  busy: false,
+  stop: null,       // the live listener's unsubscribe, while the sky is open
+  sent: {},         // ids tapped this session, so a light is only tapped once
+  toast: '',        // "Sent." for a second and a half
+  toastAt: 0,
+};
+
+function fliesOn() {
+  return !!(cloud.started && cloud.db && cloud.mod && myUid());
+}
+
+/* Live rather than polled, because watching a light come on while you
+   are sitting there is most of the point. Torn down the moment the
+   screen is left, in render(), so it is never listening in the
+   background. */
+function fliesWatch() {
+  if (!fliesOn() || fly.stop) return;
+  const fs = cloud.mod;
+  fly.loading = true;
+  try {
+    const q = fs.query(
+      fs.collection(cloud.db, 'fireflies'),
+      fs.where('out', '>', Date.now()),
+      fs.orderBy('out', 'desc'),
+      fs.limit(FIREFLY_LIMIT)
+    );
+    fly.stop = fs.onSnapshot(q, (snap) => {
+      const rows = [];
+      snap.forEach((d) => rows.push({ id: d.id, out: Number(d.data().out) || 0, glow: Number(d.data().glow) || 0 }));
+      fly.rows = rows;
+      fly.mine = rows.filter((r) => r.id === myUid())[0] || null;
+      fly.loaded = true;
+      fly.loading = false;
+      fly.error = '';
+      render();
+    }, (err) => {
+      fly.loading = false;
+      fly.error = FIREFLY_OFFLINE;
+      fly.stop = null;
+      render();
+    });
+  } catch (err) {
+    fly.loading = false;
+    fly.error = FIREFLY_OFFLINE;
+  }
+}
+
+function fliesUnwatch() {
+  if (!fly.stop) return;
+  try { fly.stop(); } catch (err) {}
+  fly.stop = null;
+}
+
+async function flyLight() {
+  if (!fliesOn() || fly.busy) return;
+  fly.busy = true;
+  render();
+  const fs = cloud.mod;
+  try {
+    const out = Date.now() + FIREFLY_LIT_MINUTES * 60000;
+    /* merge, so relighting keeps the glow count from earlier tonight
+       rather than resetting it to zero and losing the me toos. */
+    await fs.setDoc(fs.doc(cloud.db, 'fireflies', myUid()), { out: out, lit: Date.now() }, { merge: true });
+    /* Somebody who just lit their light is awake, alone, and reached
+       for a screen to feel less like the only one. That is the exact
+       moment Willow should say something. */
+    flyNudge();
+  } catch (err) {
+    fly.error = FIREFLY_OFFLINE;
+  }
+  fly.busy = false;
+  render();
+}
+
+/* Willow's check in after the light goes up. Same machinery as every
+   other nudge she makes: a written line on screen at once, rewritten
+   by her in the background if she can manage it. It respects the daily
+   nudge count, because three of these in one night would be somebody
+   pestering rather than somebody there. */
+function flyNudge() {
+  try {
+    if (nudgeCountToday() >= NUDGE_DAILY_MAX) return;
+    const n = nudgeState();
+    n.lastAt = Date.now();
+    n.count = nudgeCountToday() + 1;
+    n.at = Date.now();
+    n.gone = false;
+    n.reason = 'lit';
+    n.text = nudgeWritten('lit', ciToday() + String(Date.now()));
+    n.from = 'written';
+    n.opener = NUDGE_OPENERS.lit || '';
+    flushStore();
+    if (typeof liftWrite === 'function') {
+      liftWrite('nudge:lit:' + Date.now(), {
+        reason: 'lit',
+        label: '',
+        parentName: (store.parent.name || '').trim().split(/\s+/)[0] || '',
+      }, (text) => {
+        const line = String(text || '').trim().replace(/^["']|["']$/g, '');
+        if (!line || line.length > 200) return;
+        const cur = nudgeState();
+        if (cur.reason !== 'lit') return;
+        cur.text = line;
+        cur.from = 'willow';
+      });
+    }
+  } catch (err) { /* the written line is already there */ }
+}
+
+async function flyOut() {
+  if (!fliesOn() || fly.busy) return;
+  fly.busy = true;
+  render();
+  try {
+    /* Deleted rather than expired, so putting it out is immediate and
+       so nothing is left sitting in the collection afterwards. */
+    await cloud.mod.deleteDoc(cloud.mod.doc(cloud.db, 'fireflies', myUid()));
+    fly.mine = null;
+  } catch (err) {
+    fly.error = FIREFLY_OFFLINE;
+  }
+  fly.busy = false;
+  render();
+}
+
+/* The me too. One number going up by one, which is the entire payload,
+   and the reason there is nothing here to moderate. */
+async function flyGlow(id) {
+  if (!fliesOn() || !id || id === myUid() || fly.sent[id]) return;
+  fly.sent[id] = true;
+  fly.toast = FIREFLY_SENT;
+  fly.toastAt = Date.now();
+  render();
+  try {
+    await cloud.mod.updateDoc(cloud.mod.doc(cloud.db, 'fireflies', id), {
+      glow: cloud.mod.increment(1),
+    });
+  } catch (err) {
+    /* A light that went out between painting and tapping is the common
+       case here, and it does not need an error in her face. */
+  }
+  setTimeout(() => { if (Date.now() - fly.toastAt >= 1400) { fly.toast = ''; render(); } }, 1500);
+}
+
+function skyBlock() {
+  const now = Date.now();
+  const rows = fly.rows.filter((r) => r.out > now);
+  const mine = rows.filter((r) => r.id === myUid())[0] || null;
+  const others = rows.filter((r) => r.id !== myUid());
+
+  return `
+  <div class="sky" id="sky">
+    <div class="sky-count">
+      <span class="sky-n">${others.length
+        ? esc(firefliesLine(others.length))
+        : esc(mine ? 'Yours is lit.' : 'The sky is dark.')}</span>
+      ${others.length ? `<span class="sky-s">Tap a light to say me too</span>` : ''}
+    </div>
+
+    ${!others.length ? `
+      <p class="sky-empty">${esc(mine ? FIREFLY_ALONE : FIREFLY_DARK)}</p>` : ''}
+
+    ${others.map((r, i) => {
+      const sp = fireflySpot(r.id, i);
+      return `<button class="ff${fly.sent[r.id] ? ' spent' : ''}"
+        data-fly="glow" data-id="${esc(r.id)}"
+        aria-label="Say me too to somebody who is awake"
+        style="left:${sp.left}%;top:${sp.top}%;width:${sp.size}px;height:${sp.size}px;
+               --ffdelay:${sp.delay}s;--ffdur:${sp.dur}s"></button>`;
+    }).join('')}
+
+    ${mine ? (() => {
+      const sp = fireflySpot(mine.id, 0);
+      return `<span class="ff mine" aria-label="Your light"
+        style="left:${sp.left}%;top:${sp.top}%;width:${(sp.size + 2).toFixed(1)}px;height:${(sp.size + 2).toFixed(1)}px;
+               --ffdelay:${sp.delay}s"></span>`;
+    })() : ''}
+
+    ${fly.toast ? `<span class="sky-toast">${esc(fly.toast)}</span>` : ''}
+  </div>`;
+}
+
+function fliesBlock() {
+  if (!auth.user) {
+    return `
+    <div class="card flat">
+      <p class="bodytext">${esc(FIREFLY_GUEST)}</p>
+      <button class="btn" style="width:100%;margin-top:11px" data-auth="account">Create an account</button>
+    </div>`;
+  }
+
+  const now = Date.now();
+  const mine = fly.mine && fly.mine.out > now ? fly.mine : null;
+  const left = mine ? firefliesMinutesLeft(mine.out, now) : 0;
+
+  return `
+    ${fly.error ? `
+    <div class="card flat" style="margin-bottom:10px">
+      <p class="bodytext">${esc(fly.error)}</p>
+    </div>` : ''}
+
+    ${skyBlock()}
+
+    <div class="card" style="margin-bottom:10px">
+      ${mine ? `
+        <p style="font-family:var(--serif);font-size:17px;color:var(--ink);margin:0">
+          ${esc(fireflyAfterLine(String(mine.out)))}</p>
+        <p class="bodytext" style="margin-top:6px">${esc(firefliesMineLine(left))}</p>
+        <p class="tiny" style="margin-top:4px">${esc(firefliesGlowLine(mine.glow))}</p>
+        <button class="btn ghost" style="width:100%;margin-top:12px"
+          data-fly="out" ${fly.busy ? 'disabled' : ''}>${esc(FIREFLY_OUT)}</button>
+      ` : `
+        ${FIREFLY_WHAT.map((t) => `<p class="bodytext" style="margin:0 0 7px">${esc(t)}</p>`).join('')}
+        <button class="btn" style="width:100%;margin-top:11px"
+          data-fly="light" ${fly.busy ? 'disabled' : ''}>${esc(FIREFLY_LIGHT)}</button>
+      `}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(FIREFLY_NIGHT.title)}</h4>
+      ${FIREFLY_NIGHT.body.map((t) => `<p class="bodytext" style="margin:0 0 9px">${esc(t)}</p>`).join('')}
+    </div>
+
+    <p class="tiny" style="text-align:center;margin-top:12px">${esc(FIREFLY_QUIET_NOTE)}</p>
+    ${privacyLine()}`;
+}
+
+function feedOn() {
+  return !!(cloud.started && cloud.db && cloud.mod && myUid());
+}
+
+function blockedList() {
+  if (!Array.isArray(store.blocked)) store.blocked = [];
+  return store.blocked;
+}
+
+/* Is this account allowed to approve things. Asked once per session,
+   and a refusal is the normal answer for almost everybody, so it is
+   never shown as an error. */
+async function feedCheckMod() {
+  if (feed.modChecked || !feedOn()) return;
+  feed.modChecked = true;
+  const fs = cloud.mod;
+  try {
+    const snap = await fs.getDoc(fs.doc(cloud.db, 'moderators', myUid()));
+    feed.isMod = snap.exists();
+    if (feed.isMod) feedLoadQueue();
+  } catch (err) {
+    feed.isMod = false;
+  }
+  render();
+}
+
+/* A FIRESTORE QUERY THAT DOES NOT DIE WHEN AN INDEX IS MISSING.
+
+   A where plus an orderBy on a different field needs a composite index,
+   which is a thing somebody has to go and create by hand in the
+   console. Until it exists the query does not return slowly or return
+   less, it throws failed-precondition, and the whole screen behind it
+   is dead.
+
+   That is exactly what happened to the community room: the feed had
+   never had its index built, so the room threw on every attempt.
+
+   So every ordered query in here goes through this. It tries the
+   proper ordered version first, and if the only thing wrong is a
+   missing index it drops the orderBy, takes a bigger slice, and sorts
+   in the browser instead. The result is the same content in the same
+   order for any feed small enough to fit in that slice, which is every
+   feed this app has. What it buys is that a missing index is a
+   slightly less efficient query rather than a screen that does not
+   work. */
+async function feedQuery(coll, wheres, orderField, dir, cap) {
+  const fs = cloud.mod;
+  try {
+    const q = fs.query(
+      fs.collection(cloud.db, coll),
+      ...wheres.map((w) => fs.where(w[0], w[1], w[2])),
+      fs.orderBy(orderField, dir),
+      fs.limit(cap)
+    );
+    const snap = await fs.getDocs(q);
+    const rows = [];
+    snap.forEach((d) => rows.push(Object.assign({ id: d.id }, d.data())));
+    return rows;
+  } catch (err) {
+    const code = String((err && (err.code || err.message)) || '');
+    if (!/failed-precondition|requires an index|index/i.test(code)) throw err;
+    /* No index. Same query without the ordering, which needs nothing
+       built, then sort here. */
+    const q2 = fs.query(
+      fs.collection(cloud.db, coll),
+      ...wheres.map((w) => fs.where(w[0], w[1], w[2])),
+      fs.limit(Math.max(cap * 5, 200))
+    );
+    const snap2 = await fs.getDocs(q2);
+    const rows = [];
+    snap2.forEach((d) => rows.push(Object.assign({ id: d.id }, d.data())));
+    rows.sort((a, b) => (dir === 'asc'
+      ? (Number(a[orderField]) || 0) - (Number(b[orderField]) || 0)
+      : (Number(b[orderField]) || 0) - (Number(a[orderField]) || 0)));
+    return rows.slice(0, cap);
+  }
+}
+
+async function feedLoad(force) {
+  if (!feedOn()) { feed.error = ''; return; }
+  if (feed.loading) return;
+  if (feed.loaded && !force) return;
+  /* Asked once. After that it takes the Try again button, or a force,
+     because the alternative is the repaint loop described on
+     feed.tried. */
+  if (feed.tried && !force) return;
+  feed.tried = true;
+  feed.loading = true;
+  feed.error = '';
+  render();
+
+  const fs = cloud.mod;
+  try {
+    feed.posts = await feedQuery('feed', [['status', '==', FEED_STATUS.live]], 'at', 'desc', FEED_PAGE);
+
+    /* Her own, including the ones still waiting, so she can see what
+       happened to something she shared rather than wondering. */
+    const mine = await feedQuery('feed', [['authorUid', '==', myUid()]], 'at', 'desc', FEED_PAGE);
+    feed.mine = mine;
+
+    feed.loaded = true;
+
+    /* Carry what happened back onto her own copies, so her profile can
+       say "up in Community" or "not put up" rather than guessing. */
+    const byId = {};
+    mine.forEach((m) => { byId[m.id] = m.status; });
+    (store.posts || []).forEach((p) => {
+      if (!p.sharedId) return;
+      const st = byId[p.sharedId];
+      /* Gone from the feed entirely means a moderator deleted it, which
+         is not the same as leaving it down. Either way it is not up. */
+      p.sharedStatus = st || FEED_STATUS.removed;
+    });
+    flushStore();
+  } catch (err) {
+    feed.error = 'The feed would not load just now. It is worth trying again in a moment.';
+  }
+  feed.loading = false;
+  render();
+  feedCheckMod();
+}
+
+/* What actually needs a person. Two short lists, and both are usually
+   empty: the handful the filter held, and anything somebody reported.
+   Nothing in the room is waiting on either of them. */
+async function feedLoadQueue() {
+  if (!feedOn() || !feed.isMod) return;
+  const fs = cloud.mod;
+  try {
+    feed.queue = await feedQuery('feed', [['status', '==', FEED_STATUS.held]], 'at', 'asc', FEED_PAGE);
+  } catch (err) { /* the rest of the screen still works */ }
+
+  /* Reports, grouped by the post they are about, so five people
+     reporting the same thing is one row rather than five. */
+  try {
+    const rq = fs.query(fs.collection(cloud.db, 'reports'), fs.limit(200));
+    const rsnap = await fs.getDocs(rq);
+    const byPost = {};
+    rsnap.forEach((d) => {
+      const r = d.data();
+      if (!r || !r.postId) return;
+      const e = byPost[r.postId] || (byPost[r.postId] = { postId: r.postId, n: 0, reasons: {}, ids: [] });
+      e.n += 1;
+      e.reasons[r.reason] = (e.reasons[r.reason] || 0) + 1;
+      e.ids.push(d.id);
+    });
+    const ids = Object.keys(byPost);
+    const posts = [];
+    for (let i = 0; i < ids.length; i++) {
+      try {
+        const snap2 = await fs.getDoc(fs.doc(cloud.db, 'feed', ids[i]));
+        if (!snap2.exists()) continue;
+        const data = snap2.data();
+        /* Already taken down, so it is not a decision any more. */
+        if (data.status === FEED_STATUS.removed) continue;
+        posts.push(Object.assign({ id: ids[i] }, data, { report: byPost[ids[i]] }));
+      } catch (err) { /* skip the one that would not load */ }
+    }
+    feed.reported = posts;
+  } catch (err) { /* reports are readable by moderators only, so this is the normal failure */ }
+  render();
+}
+
+/* SHARING ONE. Called when a post on her profile is switched to public.
+   It goes up as pending, which is the only status the rules will take
+   on a create. */
+async function feedShare(post) {
+  if (!feedOn()) {
+    store.feedError = 'Sharing needs an account and a connection. This one has stayed private.';
+    render();
+    return false;
+  }
+  /* The stage band is attached here rather than at write time, so an
+     old post shared later still carries the stage the family is in
+     now, which is the one that matters for who should see it. */
+  const withBand = Object.assign({}, post, { band: post.band || myFeedBand() });
+  const doc = feedDocFrom(withBand, post.username || store.parent.username, myUid());
+  const refuse = feedRefuseReason(doc, post);
+  if (refuse) { store.feedError = refuse; render(); return false; }
+
+  feed.busy = post.id;
+  store.feedError = '';
+  render();
+  const fs = cloud.mod;
+  try {
+    const ref = await fs.addDoc(fs.collection(cloud.db, 'feed'), doc);
+    post.sharedId = ref.id;
+    post.sharedStatus = doc.status;
+    /* Said at the moment she presses share rather than left for her to
+       discover later, and it says which of the two patterns it was. */
+    if (doc.status === FEED_STATUS.held) {
+      store.feedError = filterReason(filterVerdict(doc.body));
+    }
+    store.parentUpdatedAt = Date.now();
+    feed.loaded = false;
+    feed.tried = false;
+    flushStore();
+  } catch (err) {
+    store.feedError = 'That would not go up. It has stayed private, so nothing was lost.';
+    feed.busy = '';
+    render();
+    return false;
+  }
+  feed.busy = '';
+  render();
+  return true;
+}
+
+/* TAKING ONE BACK DOWN. Hers to take, whatever its status. */
+async function feedUnshare(post) {
+  if (!post.sharedId || !feedOn()) return;
+  feed.busy = post.id;
+  render();
+  const fs = cloud.mod;
+  try {
+    await fs.deleteDoc(fs.doc(cloud.db, 'feed', post.sharedId));
+  } catch (err) { /* it may already be gone. Either way it is not hers any more. */ }
+  post.sharedId = '';
+  post.sharedStatus = '';
+  store.parentUpdatedAt = Date.now();
+  feed.loaded = false;
+  feed.tried = false;
+  feed.busy = '';
+  flushStore();
+  render();
+}
+
+/* One document per person per post, so nobody can overwrite everybody
+   else's reactions by writing a map. */
+async function feedReact(id, r) {
+  if (!feedOn()) return;
+  const fs = cloud.mod;
+  const post = feed.posts.filter((p) => p.id === id)[0];
+  if (!post) return;
+  if (!post.myReaction) post.myReaction = '';
+  const next = post.myReaction === r ? '' : r;
+  post.myReaction = next;
+  render();
+  try {
+    const ref = fs.doc(cloud.db, 'feed', id, 'reactions', myUid());
+    if (next) await fs.setDoc(ref, { r: next, at: Date.now() });
+    else await fs.deleteDoc(ref);
+  } catch (err) { /* the tap already showed. A lost one is not worth a dialog. */ }
+}
+
+async function feedReport(id, reason) {
+  feed.reporting = '';
+  store.feedThanks = true;
+  render();
+  if (!feedOn()) return;
+  const fs = cloud.mod;
+  try {
+    await fs.addDoc(fs.collection(cloud.db, 'reports'), {
+      reporterUid: myUid(),
+      postId: id,
+      reason: String(reason || 'other'),
+      at: Date.now(),
+    });
+  } catch (err) { /* nothing comes back out of reports, including errors */ }
+}
+
+/* Blocking is kept on her own account and filtered on her own device.
+   A query cannot say "not in this list", and who somebody has blocked
+   is nobody else's business. */
+function feedBlock(uid) {
+  if (!uid) return;
+  const list = blockedList();
+  if (list.indexOf(uid) === -1) list.push(uid);
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+function feedUnblock(uid) {
+  store.blocked = blockedList().filter((x) => x !== uid);
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+async function modDecide(id, status) {
+  if (!feedOn() || !feed.isMod) return;
+  feed.busy = id;
+  render();
+  const fs = cloud.mod;
+  try {
+    await fs.updateDoc(fs.doc(cloud.db, 'feed', id), {
+      status: status,
+      decidedAt: Date.now(),
+      decidedBy: myUid(),
+    });
+    feed.queue = feed.queue.filter((p) => p.id !== id);
+    feed.reported = feed.reported.filter((p) => p.id !== id);
+    feed.loaded = false;
+    feed.tried = false;
+  } catch (err) { /* it stays in the list, which is the safe way round */ }
+  feed.busy = '';
+  render();
+}
+
+/* Reports read and dealt with. Clearing them is separate from deciding
+   about the post, because "I looked and it is fine" is a real answer
+   and the post should not have to move for her to give it. */
+async function modClearReports(postId) {
+  if (!feedOn() || !feed.isMod) return;
+  const entry = (feed.reported.filter((p) => p.id === postId)[0] || {}).report;
+  if (!entry) return;
+  feed.busy = postId;
+  render();
+  const fs = cloud.mod;
+  try {
+    await Promise.all(entry.ids.map((rid) =>
+      fs.deleteDoc(fs.doc(cloud.db, 'reports', rid)).catch(() => null)));
+    feed.reported = feed.reported.filter((p) => p.id !== postId);
+  } catch (err) { /* it stays listed, which is the safe way round */ }
+  feed.busy = '';
+  render();
+}
+
+/* ------------------------------------------------------------------
+ * WHAT IT ALL LOOKS LIKE
+ * ------------------------------------------------------------------ */
+
+function feedFileBlock(f) {
+  if (!f || !f.url) return '';
+  if (f.kind === 'video') {
+    return `<span class="postpic vid"><video src="${esc(f.url)}" controls preload="metadata" playsinline></video></span>`;
+  }
+  if (f.kind === 'audio') {
+    return `<span class="postpic aud">${icon('note', 16, 'var(--deep)')}<audio src="${esc(f.url)}" controls preload="metadata"></audio></span>`;
+  }
+  return `<span class="postpic"><img src="${esc(f.url)}" alt="" loading="lazy" /></span>`;
+}
+
+function feedCard(p, opts) {
+  const o = opts || {};
+  const mine = p.authorUid === myUid();
+  const line = statusLine(p.status);
+
+  return `
+  <div class="card postcard">
+    <div style="display:flex;gap:10px;align-items:center">
+      <span class="feedav">${icon('user', 16, 'var(--deep)')}</span>
+      <span class="grow">
+        <span class="post-who">${esc(p.username || 'A parent')}${mine ? ' (you)' : ''}</span>
+        <span class="post-when">${esc(postWhen(p.at))}</span>
+      </span>
+      ${o.queue ? `<span class="post-vis">${icon('clock', 11, 'var(--muted)')} Waiting</span>` : ''}
+    </div>
+
+    ${p.body ? `<p class="bodytext" style="margin-top:9px;white-space:pre-wrap">${bodyWithTags(p.body)}</p>` : ''}
+
+    ${(p.files || []).length ? `
+    <div class="postpics n${Math.min(4, p.files.length)}">
+      ${p.files.map(feedFileBlock).join('')}
+    </div>` : ''}
+
+    ${line ? `<p class="tiny feedstatus">${icon(p.status === FEED_STATUS.removed ? 'info' : 'clock', 11, 'var(--muted)')} ${esc(line)}</p>` : ''}
+
+    ${o.report ? `
+    <p class="tiny feedstatus">
+      ${icon('info', 11, 'var(--attention)')}
+      Reported by ${o.report.n} ${o.report.n === 1 ? 'person' : 'people'}:
+      ${esc(Object.keys(o.report.reasons).map((k) => {
+        const r = REPORT_REASONS.filter((x) => x.id === k)[0];
+        return (r ? r.label : k) + (o.report.reasons[k] > 1 ? ' (' + o.report.reasons[k] + ')' : '');
+      }).join(', '))}
+    </p>` : ''}
+
+    ${o.queue ? `
+    <div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap">
+      <button class="btn" data-feed="approve" data-id="${esc(p.id)}"
+        ${feed.busy === p.id ? 'disabled' : ''}
+        style="width:auto;flex:none;padding:9px 18px">Put it up</button>
+      <button class="chip" data-feed="reject" data-id="${esc(p.id)}"
+        ${feed.busy === p.id ? 'disabled' : ''}>Leave it down</button>
+    </div>` : ''}
+
+    ${o.report ? `
+    <div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap">
+      <button class="chip" data-feed="clearreports" data-id="${esc(p.id)}"
+        ${feed.busy === p.id ? 'disabled' : ''}>Looked, it is fine</button>
+      <button class="btn ghost sm" data-feed="reject" data-id="${esc(p.id)}"
+        ${feed.busy === p.id ? 'disabled' : ''}
+        style="width:auto;flex:none;padding:9px 16px">Take it down</button>
+    </div>` : ''}
+
+    ${o.live ? `
+    <div class="reacts">
+      <div class="reactrow">
+        ${POST_REACTIONS.map((r) => `
+          <button class="reactbtn${p.myReaction === r.id ? ' on' : ''}" data-feed="react"
+            data-id="${esc(p.id)}" data-r="${esc(r.id)}" title="${esc(r.label)}" aria-label="${esc(r.label)}">
+            <span class="emo">${r.glyph}</span>
+          </button>`).join('')}
+      </div>
+    </div>
+
+    ${mine ? '' : `
+    <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap">
+      <button class="chip tiny" data-feed="reportopen" data-id="${esc(p.id)}">Report</button>
+      <button class="chip tiny" data-feed="block" data-id="${esc(p.authorUid)}">Block ${esc(p.username || 'them')}</button>
+    </div>`}
+
+    ${feed.reporting === p.id ? `
+    <div class="card flat" style="margin-top:9px">
+      <p class="eyebrow">What is wrong with it</p>
+      ${REPORT_REASONS.map((r) => `
+        <button class="lrow" data-feed="report" data-id="${esc(p.id)}" data-reason="${esc(r.id)}">
+          <span class="grow" style="font-size:13.5px;color:var(--ink)">${esc(r.label)}</span>
+          <span class="chev">${icon('chev', 15, 'var(--faint)')}</span>
+        </button>`).join('')}
+      <button class="chip" style="margin-top:8px" data-feed="reportclose">Never mind</button>
+    </div>` : ''}` : ''}
+  </div>`;
+}
+
 function screenCommunity(c) {
-  /* Deterministic from the date so the number holds still while someone
-     is reading, rather than jumping on every render. */
-  const awake = 180 + (hashSeed(todayKey()) % 90);
-  const pumping = 20 + (hashSeed(todayKey() + 'p') % 40);
+  const signedIn = !!auth.user;
+  const blocked = blockedList();
+  const all = visibleFeed(feed.posts, blocked);
+  /* Sorted in the browser rather than queried, so no composite index
+     has to be created by hand in the console for the rooms to work.
+     See inGroup in src/data/groups.js for when that stops being the
+     right trade. */
+  const live = inGroup(all, feed.room);
+  const counts = groupCounts(all);
+  const waiting = (feed.mine || []).filter((p) => p.status !== FEED_STATUS.live);
+
+  /* Asked for as soon as somebody opens the room, rather than on a
+     button, because a feed you have to press load on reads as broken. */
+  if (signedIn && !feed.loaded && !feed.loading && !feed.tried) {
+    setTimeout(() => feedLoad(), 0);
+  }
+
+  const tab = feed.view === 'queue' && feed.isMod ? 'queue'
+    : feed.view === 'mine' ? 'mine'
+    : feed.view === 'flies' ? 'flies'
+    : feed.view === 'rooms' ? 'rooms'
+      : feed.view === 'foryou' ? 'foryou' : 'feed';
+
+  /* The sky is live while it is on screen and listening to nothing at
+     all when it is not. Started here, torn down in render(). */
+  if (tab === 'flies' && signedIn && !fly.stop) setTimeout(() => fliesWatch(), 0);
 
   return `
   ${cornerLeaves()}
   <div class="sc-head">
     <p class="eyebrow">Community</p>
-    <h1 class="title">You are not the only one awake.</h1>
-    <p class="sub">Rooms for what you are actually in the middle of, and people who are in it too.</p>
+    ${tab === 'flies' ? `
+      <h1 class="title">${esc(FIREFLY_SUB)}</h1>
+      <p class="sub">Every light is somebody up with a child.</p>
+    ` : `
+      <h1 class="title">${esc(FEED_TITLE)}</h1>
+      <p class="sub">${esc(FEED_SUB)}</p>
+    `}
   </div>
   <div class="sc">
 
-    <button class="lrow" data-go="screen" data-id="wisdom" style="align-items:flex-start">
+    ${signedIn ? `
+    <div class="feedtabs">
+      <button class="chip${tab === 'flies' ? ' on' : ''}" data-feed="view" data-v="flies">${esc(FIREFLY_TITLE)}</button>
+      <button class="chip${tab === 'foryou' ? ' on' : ''}" data-feed="view" data-v="foryou">${esc(FORYOU_TITLE)}</button>
+      <button class="chip${tab === 'feed' ? ' on' : ''}" data-feed="view" data-v="feed">Everyone</button>
+      <button class="chip${tab === 'rooms' ? ' on' : ''}" data-feed="view" data-v="rooms">${esc(GROUPS_TITLE)}</button>
+      <button class="chip${tab === 'mine' ? ' on' : ''}" data-feed="view" data-v="mine">
+        Yours${waiting.length ? ' (' + waiting.length + ' held)' : ''}
+      </button>
+      ${feed.isMod ? `
+      <button class="chip${tab === 'queue' ? ' on' : ''}" data-feed="view" data-v="queue">
+        Needs a look${(feed.queue.length + feed.reported.length)
+          ? ' (' + (feed.queue.length + feed.reported.length) + ')' : ''}
+      </button>` : ''}
+    </div>` : `
+    <div class="card flat">
+      <p class="bodytext">${esc(FEED_GUEST)}</p>
+    </div>`}
+
+    ${tab === 'flies' ? fliesBlock() : ''}
+    ${tab === 'foryou' ? willowPostBlock() : ''}
+
+    ${store.feedThanks ? `
+    <div class="card leafy">
+      <p class="bodytext">${esc(REPORT_THANKS)}</p>
+      <button class="chip" style="margin-top:9px" data-feed="thanksok">Close</button>
+    </div>` : ''}
+
+    ${store.feedError ? `
+    <div class="card" style="border-left:3px solid var(--attention)">
+      <p class="bodytext">${esc(store.feedError)}</p>
+      <button class="chip" style="margin-top:9px" data-feed="errok">Close</button>
+    </div>` : ''}
+
+    ${feed.error ? `
+    <div class="card flat">
+      <p class="bodytext">${esc(feed.error)}</p>
+      <button class="chip" style="margin-top:9px" data-feed="retry">Try again</button>
+    </div>` : ''}
+
+    ${tab === 'foryou' ? forYouBlock() : `
+    ${tab === 'queue' ? `
+      <p class="sect">${esc(MOD_TITLE)}</p>
+      <p class="tiny" style="margin:-4px 0 10px">${esc(MOD_NOTE)}</p>
+
+      ${!feed.queue.length && !feed.reported.length ? `
+      <div class="card flat"><p class="bodytext">${esc(MOD_EMPTY)}</p></div>` : ''}
+
+      ${feed.queue.length ? `
+      <p class="sect">${esc(MOD_HELD_TITLE)}</p>
+      <p class="tiny" style="margin:-4px 0 10px">${esc(MOD_HELD_NOTE)}</p>
+      ${feed.queue.map((p) => feedCard(p, { queue: true })).join('')}` : ''}
+
+      ${feed.reported.length ? `
+      <p class="sect">${esc(MOD_REPORTED_TITLE)}</p>
+      <p class="tiny" style="margin:-4px 0 10px">${esc(MOD_REPORTED_NOTE)}</p>
+      ${feed.reported.map((p) => feedCard(p, { report: p.report })).join('')}` : ''}
+    ` : tab === 'rooms' ? `
+      <p class="sect">${esc(GROUPS_TITLE)}</p>
+      <p class="tiny" style="margin:-4px 0 10px">${esc(GROUPS_INTRO)}</p>
+      ${GROUPS.map((g) => `
+        <button class="lrow" data-feed="room" data-g="${esc(g.id)}" style="align-items:flex-start">
+          <span class="licon">${icon(g.heavy ? 'heart' : 'people', 17, g.heavy ? 'var(--taupe)' : 'var(--sage)')}</span>
+          <span class="grow">
+            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(g.label)}</span>
+            <span class="tiny" style="display:block;margin-top:2px">${esc(g.blurb)}</span>
+            <span class="tiny" style="display:block;margin-top:3px;color:var(--faint)">
+              ${counts[g.id] ? esc(counts[g.id] + (counts[g.id] === 1 ? ' post' : ' posts') + ' right now') : 'Quiet in here'}
+            </span>
+          </span>
+          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+        </button>`).join('')}
+    ` : tab === 'mine' ? `
+      <p class="sect">What you have shared</p>
+      ${(feed.mine || []).length
+        ? feed.mine.map((p) => feedCard(p, { live: p.status === FEED_STATUS.live })).join('')
+        : `<div class="card flat"><p class="bodytext">${esc(FEED_HOW)}</p></div>`}
+    ` : `
+      ${feed.room != null ? (() => {
+        const g = groupById(feed.room);
+        return `
+        <div class="card leafy" style="margin-bottom:11px">
+          <p class="eyebrow">${icon('people', 11, 'var(--sage)')} ${esc(GROUPS_TITLE)}</p>
+          <p style="font-size:16px;color:var(--ink);margin:6px 0 0;font-family:var(--serif)">
+            ${esc(g ? g.label : GROUP_GENERAL_LABEL)}</p>
+          ${g ? `<p class="bodytext" style="margin-top:6px">${esc(g.about)}</p>` : ''}
+          ${g && g.note ? `<div class="callout" style="margin-top:9px"><p style="margin:0">${esc(g.note)}</p></div>` : ''}
+          <button class="chip" style="margin-top:10px" data-feed="room" data-g="__all">
+            ${esc(GROUP_ALL_LABEL)}</button>
+        </div>`;
+      })() : ''}
+
+      ${feed.loading ? `
+      <div class="card flat"><p class="bodytext">Loading the room.</p></div>` : ''}
+
+      ${!feed.loading && !live.length ? `
+      <div class="card" style="text-align:center;padding:30px 22px">
+        ${growthSVG(2, 58)}
+        <p style="margin:12px 0 0;font-size:14.5px;font-weight:600;color:var(--ink)">
+          Nobody has shared anything yet
+        </p>
+        <p class="bodytext" style="margin-top:7px">${esc(feed.room != null ? GROUP_EMPTY : FEED_EMPTY)}</p>
+        ${signedIn ? `
+        <button class="chip" data-tab="home" style="margin-top:14px">Write something on Home</button>` : ''}
+      </div>` : ''}
+
+      ${live.map((p) => feedCard(p, { live: true })).join('')}
+
+      ${live.length ? `
+      <p class="tiny" style="text-align:center;margin-top:10px">${esc(FEED_HOW)}</p>` : ''}
+    `}`}
+
+    <button class="lrow" data-go="screen" data-id="wisdom" style="align-items:flex-start;margin-top:14px">
       <span class="licon">${icon('bulb', 18, 'var(--sage)')}</span>
       <span class="grow">
         <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">What worked for us</span>
@@ -4626,55 +8387,20 @@ function screenCommunity(c) {
       <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
     </button>
 
-    <div class="card leafy">
-      <p class="eyebrow">${icon('moon', 11, 'var(--sage)')} You are not doing this alone</p>
-      <p class="bodytext" style="margin-top:7px">
-        Somebody else is awake right now for the same reason you are. Pick the room that matches
-        what you are in the middle of.
-      </p>
-    </div>
-
-    <p class="sect">Rooms</p>
-    ${COMMUNITY_ROOMS.map((r) => `
-      <button class="lrow" data-room="${esc(r.id)}" style="align-items:flex-start">
-        <span class="licon">${icon(r.icon, 18)}</span>
-        <span class="grow">
-          <span style="display:block;font-size:14.5px;font-weight:600;color:var(--ink)">${esc(r.label)}</span>
-          <span class="tiny" style="display:block;margin-top:2px">${esc(r.blurb)}</span>
-        </span>
-        <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-      </button>`).join('')}
-
-    <div class="card" style="text-align:center;padding:30px 22px">
-      ${growthSVG(2, 58)}
-      <p style="margin:12px 0 0;font-size:14.5px;font-weight:600;color:var(--ink)">
-        Nobody has posted in here yet
-      </p>
-      <p class="bodytext" style="margin-top:7px">
-        Somebody has to be first, and being first in a quiet room is how every good one started.
-        Say what you are in the middle of tonight.
-      </p>
-      <button class="chip" data-go="screen" data-id="wisdom" style="margin-top:14px">
-        Read what has worked for other parents
-      </button>
-    </div>
-
-    <p class="sect">How this room works</p>
+    ${blocked.length ? `
+    <p class="sect">People you have blocked</p>
     <div class="card">
-      <ul class="dlist">${COMMUNITY_RULES.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>
-    </div>
+      ${blocked.map((uid) => `
+      <div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-top:1px solid rgba(0,0,0,.055)">
+        <span class="grow tiny">${esc(uid.slice(0, 8))}</span>
+        <button class="chip" data-feed="unblock" data-id="${esc(uid)}">Unblock</button>
+      </div>`).join('')}
+    </div>` : ''}
 
-    <div class="card flat">
-      <p class="eyebrow">${icon('people', 11, 'var(--sage)')} How your privacy works here</p>
-      <p class="bodytext" style="margin-top:5px">
-        You post under a username, never your child's name, birthday or photo. Your children's
-        profiles, milestones and notes stay in your account and never become community content.
-        Reports go to a person, not a queue nobody reads.
-      </p>
-    </div>
+    ${privacyLine()}
 
     <p class="disclaimer">
-      Other parents are not a substitute for your pediatrician. Anything in a community room is one
+      Other parents are not a substitute for your pediatrician. Anything in here is one
       person’s experience, not medical advice, and what worked for their child may not be right
       for yours.
     </p>
@@ -5173,11 +8899,7 @@ function screenPickChild(what) {
     <p class="sub">${esc(what)} is different for every age, so pick whose you want to see.</p>
   </div>
   <div class="sc">
-    ${store.children.length
-      ? store.children.map((k) => childCard(k, false)).join('')
-      : `<div class="card flat">
-           <p class="bodytext">No child profiles yet. Add one and this fills in straight away.</p>
-         </div>`}
+    ${store.children.map((k) => childCard(k, false)).join('')}
     <button class="lrow" data-go="screen" data-id="profile">
       <span class="licon">${icon('plus', 18, 'var(--sage)')}</span>
       <span class="grow"><span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Add a child</span></span>
@@ -5279,6 +9001,10 @@ function applyDateField(target, iso) {
     k.updatedAt = Date.now();
   } else if (parts[0] === 'draft') {
     store.draftChildBday = iso;
+  } else if (parts[0] === 'memory') {
+    /* When the memory HAPPENED, which is not the same as when she got
+       round to typing it, and is the date it comes back on. */
+    memDraft().at = iso;
   }
   flushStore();
   render();
@@ -5441,8 +9167,35 @@ function screenSettings() {
       </div>
     `}
 
-    <p class="sect">Password</p>
+    <p class="sect" id="set-password">Password</p>
     ${passwordBlock()}
+
+    <p class="sect">Willow</p>
+    <button class="card learncard" data-ob="restart" style="width:100%;text-align:left">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Show me around again</p>
+      <p class="bodytext" style="margin-top:5px">
+        Willow walks you through what the app does and what it can hold for you. Nothing you have
+        already set is changed by running it again.
+      </p>
+    </button>
+
+    ${/* Only ever here, and only after something has actually failed.
+          Willow tells a parent what went wrong in plain words and that
+          is all they need. This is the line underneath it, for whoever
+          has to fix it, because "something went wrong" with the real
+          reason thrown away is how an evening disappears. */ ''}
+    ${willow.lastError ? `
+    <div class="card flat" style="border-left:3px solid var(--attention)">
+      <p class="eyebrow">${icon('info', 11, 'var(--attention)')} What Willow ran into last time</p>
+      <p class="tiny" style="margin-top:6px;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">
+        ${esc(willow.lastError)}
+      </p>
+      <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap">
+        <button class="chip" data-willow="copyerr">Copy it</button>
+        <button class="chip" data-willow="clearerr">Clear</button>
+      </div>
+      ${store.willowCopied ? '<p class="tiny" style="margin-top:6px">Copied.</p>' : ''}
+    </div>` : ''}
 
     ${situationBlock()}
 
@@ -5483,17 +9236,17 @@ function screenSettings() {
       </span>
     </button>
 
-    <p class="sect">Your children</p>
+    <p class="sect" id="set-children">Your children</p>
     ${duplicateCard()}
-    ${kids.length ? kids.map(settingsChildRow).join('') : `
-      <div class="card flat">
-        <p class="bodytext">No profiles yet. Add one from Home and the whole app reshapes around
-        their age.</p>
-      </div>`}
+    ${kids.map(settingsChildRow).join('')}
     ${childRow('plus', 'Add a child', 'Name and birthday is all it takes to start',
       'data-go="screen" data-id="addchild"')}
+    ${childRow('people', esc(SHARE_TITLE), 'Give somebody else access to one of them, or use a code',
+      'data-go="screen" data-id="sharing"')}
 
     <p class="sect">This app</p>
+    ${childRow('shield', esc(PRIV_TITLE), esc(PRIV_SUB),
+      'data-go="screen" data-id="privacy"')}
     ${(() => {
       const stamp = buildStamp();
       return `
@@ -5777,6 +9530,14 @@ function hasAccess() {
   return !!auth.user || auth.guest;
 }
 
+/* Who this account is, to Firebase. Read through one function rather
+   than reaching into auth.user.uid all over the place, because a guest
+   has no user at all and every one of those reads would have to
+   remember that. */
+function myUid() {
+  return (auth.user && auth.user.uid) || '';
+}
+
 /* Loads the Firebase SDK the first time it is needed, rather than on
    every page load, so someone reading the public site never pays for a
    library they did not use. */
@@ -5867,6 +9628,10 @@ async function doSignUp() {
       store.parent.name = auth.form.name.trim();
     }
     store.parent.email = auth.form.email.trim();
+    /* A brand new account is the one moment we KNOW somebody has never
+       seen this app before, so it is the only place the walkthrough is
+       opened automatically. */
+    onboardStart();
     flushStore();
     auth.form.password = '';
   } catch (err) {
@@ -5907,7 +9672,7 @@ async function doSignOut() {
        them, so this is a clear rather than a loss. */
     store.children = [];
     store.activeChildId = null;
-    store.parent = { name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '', photo: '', situation: { stages: [], path: '', roles: [], support: [] } };
+    store.parent = { name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '', photo: '', calledBy: '', calledByOther: '', refersTo: '', situation: { stages: [], path: '', roles: [], support: [] } };
     store.posts = [];
     store.postDraft = null;
     store.birthdaySeen = {};
@@ -5966,6 +9731,8 @@ function screenAuth() {
       : 'Everything is where you left it.'}</p>
   </div>
   <div class="sc" style="max-width:430px">
+
+    ${inviteDoorBlock()}
 
     <div class="chips" style="margin-bottom:16px">
       <button class="chip" data-auth="mode" data-val="signup" aria-pressed="${signup}">Create account</button>
@@ -6065,6 +9832,8 @@ function saveLog(typeId) {
     values: values,
   });
   if (k.logs.length > 500) k.logs.length = 500;
+  notedSet(typeId);
+  nudgeMaybe(typeId, values);
   store.logDraft = { typeId: null, values: {} };
   if (store.logFrom) {
     state.tab = store.logFrom.tab;
@@ -6130,11 +9899,14 @@ function topBar(markOnly) {
   const mark = IS_DESKTOP ? `<div class="mark-holder">${wordmark(false)}</div>` : '';
   if (markOnly) return updateBar() + `<div class="topbar mark-only">${mark}</div>`;
   const who = whoIsOpen();
-  const deep = !!state.view;
+  /* Every deep screen carries its own Back, so the chip would make two.
+     The one place nothing goes back is a child's profile, reached by
+     tapping their circle, and that is what this is for. */
+  const deep = !state.view && !!store.profileWho && store.profileWho !== 'me';
   return updateBar() + `
   <div class="topbar">
     <div class="topbar-left">
-      ${deep ? `<button class="backchip" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>` : ''}
+      ${deep ? `<button class="backchip" data-back="offchild">${icon('back', 15, 'var(--deep)')} Back</button>` : ''}
     </div>
     ${mark}
     <div class="me-slot">
@@ -6170,7 +9942,7 @@ function cornerMenu(who) {
     <button class="cmenu-row${who.id === 'me' ? ' on' : ''}" data-me="1">
       ${parentFace(26)}
       <span class="grow"><span class="cmenu-t">${esc(store.parent.name || 'You')}</span>
-      <span class="cmenu-s">Your profile</span></span>
+      <span class="cmenu-s">${esc(calledByLabel(store.parent) || 'Your profile')}</span></span>
     </button>
     ${store.children.map((k) => `
       <button class="cmenu-row${who.id === k.id ? ' on' : ''}" data-child="${esc(k.id)}">
@@ -6180,13 +9952,71 @@ function cornerMenu(who) {
       </button>`).join('')}
 
     <div class="cmenu-rule"></div>
+    <p class="cmenu-h">Your account</p>
     <button class="cmenu-row" data-tab="settings">
-      <span class="cmenu-ic">${icon('gear', 15, 'var(--deep)')}</span>
-      <span class="grow"><span class="cmenu-t">Settings</span></span>
+      <span class="cmenu-ic">${icon('user', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">Your details</span>
+      <span class="cmenu-s">Name, username, email and birthday</span></span>
     </button>
+    <button class="cmenu-row" data-menugo="password">
+      <span class="cmenu-ic">${icon('shield', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">${esc(auth.user ? 'Password' : 'Create an account')}</span>
+      <span class="cmenu-s">${esc(auth.user ? 'Change it, or reset it by email' : 'Keeps everything safe and on every device')}</span></span>
+    </button>
+    <button class="cmenu-row" data-menugo="children">
+      <span class="cmenu-ic">${icon('people', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">Your children</span>
+      <span class="cmenu-s">${esc(store.children.length === 1 ? 'One child' : store.children.length + ' children')}, and how each of them arrived</span></span>
+    </button>
+    <button class="cmenu-row" data-go="screen" data-id="sharing">
+      <span class="cmenu-ic">${icon('people', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">${esc(SHARE_TITLE)}</span>
+      <span class="cmenu-s">Let somebody else see and add to a child</span></span>
+    </button>
+    ${pushConfigured() ? `
+    <button class="cmenu-row" data-go="screen" data-id="notifications">
+      <span class="cmenu-ic">${icon('info', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">${esc(PUSH_TITLE)}</span>
+      <span class="cmenu-s">${esc(store.pushOn ? 'On. What the app may interrupt you for.' : 'Off. Nothing will interrupt you.')}</span></span>
+    </button>` : ''}
+    <button class="cmenu-row" data-menugo="situation">
+      <span class="cmenu-ic">${icon('leaf', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">Where you are right now</span>
+      <span class="cmenu-s">What the app brings forward and what it puts away</span></span>
+    </button>
+    <button class="cmenu-row" data-go="screen" data-id="support">
+      <span class="cmenu-ic">${icon('shield', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">${esc(SUP_TITLE)}</span>
+      <span class="cmenu-s">A caseworker, somebody who frightens you, or somebody targeting your child</span></span>
+    </button>
+
+    <div class="cmenu-rule"></div>
+    <p class="cmenu-h">The rules and the small print</p>
+    <button class="cmenu-row" data-go="screen" data-id="privacy">
+      <span class="cmenu-ic">${icon('shield', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">${esc(PRIV_TITLE)}</span>
+      <span class="cmenu-s">${esc(PRIV_SUB)}</span></span>
+    </button>
+    <button class="cmenu-row" data-go="screen" data-id="rules">
+      <span class="cmenu-ic">${icon('people', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">Community rules</span>
+      <span class="cmenu-s">How the rooms work, and what gets a post taken down</span></span>
+    </button>
+    <button class="cmenu-row" data-go="screen" data-id="install">
+      <span class="cmenu-ic">${icon('home', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">${esc(isInstalled() ? 'On your home screen' : INSTALL_TITLE)}</span>
+      <span class="cmenu-s">${esc(isInstalled() ? 'Already installed on this device' : 'One tap to open, and it works with no signal')}</span></span>
+    </button>
+    <button class="cmenu-row" data-go="screen" data-id="about">
+      <span class="cmenu-ic">${icon('info', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">About this app</span>
+      <span class="cmenu-s">What it is for, what it is not, and which version you have</span></span>
+    </button>
+
+    <div class="cmenu-rule"></div>
     <button class="cmenu-row" data-auth="signout">
       <span class="cmenu-ic">${icon('back', 15, 'var(--deep)')}</span>
-      <span class="grow"><span class="cmenu-t">Sign out</span></span>
+      <span class="grow"><span class="cmenu-t">${esc(auth.user ? 'Sign out' : 'Leave this device')}</span></span>
     </button>
   </div>`;
 }
@@ -6206,7 +10036,13 @@ function pendingNotices() {
       });
     }
   });
-  if (msChangeCount()) {
+  /* A draft can only belong to a child young enough to have a
+     checkpoint, but a birthday can pass while one is sitting there, and
+     a reminder pointing at a screen this child no longer has is a dead
+     end with a number on it. */
+  if (msChangeCount() && getAgeSummary({
+    name: (activeChild() || {}).name, birthday: (activeChild() || {}).birthday,
+  }).checkpoint) {
     out.push({
       icon: 'chart',
       title: msChangeCount() + ' milestone' + (msChangeCount() === 1 ? '' : 's') + ' not saved',
@@ -6247,7 +10083,53 @@ function pendingNotices() {
 
 const CYCLE_BLEED_DAYS = 5;
 
-function cycleCalendar(info, monthOffset) {
+/* ---------- HER PERIOD HISTORY ----------
+
+   One date gave an estimate. A list of them gives her her own numbers,
+   and a record she can read back to a provider rather than trying to
+   remember in the room.
+
+   Every date lives on the parent record, so it syncs with everything
+   else. lastPeriod is kept as the newest entry so every existing screen
+   and the pregnancy maths carry on working untouched. */
+
+function periods() {
+  const p = store.parent || {};
+  let list = Array.isArray(p.periods) ? p.periods : [];
+  /* Somebody who used the app before this existed has one date and no
+     list. Carry it in rather than losing it. */
+  if (!list.length && p.lastPeriod) list = [p.lastPeriod];
+  return normalizePeriods(list);
+}
+
+function periodsSet(list) {
+  const clean = normalizePeriods(list);
+  store.parent.periods = clean;
+  store.parent.lastPeriod = clean[0] || '';
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+function periodToggle(date) {
+  const list = periods();
+  const at = list.indexOf(date);
+  if (at === -1) list.push(date);
+  else list.splice(at, 1);
+  periodsSet(list);
+}
+
+/* Her own average once she has two dates, the textbook figure until
+   then, so the calendar is never drawing nothing. */
+function cycleLen() {
+  return predictLength(periods(), store.parent.cycleLength);
+}
+
+function cycleInfoNow(ref) {
+  return cycleInfo(store.parent.lastPeriod, ref, cycleLen());
+}
+
+function cycleCalendar(info, monthOffset, editing) {
   if (!info) return '';
   const today = ciToday();
   const parts = today.split('-');
@@ -6265,7 +10147,10 @@ function cycleCalendar(info, monthOffset) {
      us, so the month either side reads correctly too. */
   const start = info.lastPeriod;
   const len = info.cycleLength;
+  const logged = periods();
   const marks = {};
+  /* The estimate first, projected forward and back so the months either
+     side read correctly. */
   for (let c = -2; c <= 3; c++) {
     const s0 = ciDayBefore(start, -c * len);
     for (let i = 0; i < CYCLE_BLEED_DAYS; i++) marks[ciDayBefore(s0, -i)] = 'bleed';
@@ -6276,6 +10161,13 @@ function cycleCalendar(info, monthOffset) {
     }
     marks[ov] = 'ovul';
   }
+  /* Then anything she actually logged, painted over the top, because a
+     day she recorded beats a day the app guessed. */
+  const starts = {};
+  logged.forEach((d0) => {
+    starts[d0] = 1;
+    for (let i = 0; i < CYCLE_BLEED_DAYS; i++) marks[ciDayBefore(d0, -i)] = 'bleed';
+  });
 
   const cells = [];
   for (let i = 0; i < lead; i++) cells.push('<span class="cal-pad"></span>');
@@ -6283,7 +10175,15 @@ function cycleCalendar(info, monthOffset) {
     const k = key(d);
     const mark = marks[k] || '';
     const isToday = k === today;
-    cells.push(`<span class="cal-d ${mark}${isToday ? ' today' : ''}">${d}</span>`);
+    const isStart = !!starts[k];
+    const cls = `cal-d ${mark}${isToday ? ' today' : ''}${isStart ? ' logged' : ''}`;
+    if (editing) {
+      cells.push(`<button class="${cls}" data-period="${esc(k)}"
+        aria-label="${esc(cycleDateLabelWithYear(k))}${isStart ? ', logged, tap to remove' : ', tap to log a period start'}"
+        aria-pressed="${isStart ? 'true' : 'false'}">${d}</button>`);
+    } else {
+      cells.push(`<span class="${cls}">${d}</span>`);
+    }
   }
 
   return `
@@ -6301,7 +10201,10 @@ function cycleCalendar(info, monthOffset) {
       <span><i class="k-bleed"></i> Period</span>
       <span><i class="k-fertile"></i> Fertile window</span>
       <span><i class="k-ovul"></i> Ovulation</span>
+      <span><i class="k-logged"></i> You logged it</span>
     </div>
+    ${editing ? `<p class="tiny" style="margin-top:7px;text-align:center">
+      Tap the day a period started. Tap it again to take it off.</p>` : ''}
   </div>`;
 }
 
@@ -6310,9 +10213,11 @@ function cycleCalendar(info, monthOffset) {
 function cycleWidget() {
   const p = store.parent;
   const mode = cycleMode(situation());
+  const list = periods();
+  const stats = cycleStats(list);
 
   if (mode === 'pregnant') {
-    const info = cycleInfo(p.lastPeriod, null, p.cycleLength);
+    const info = cycleInfoNow();
     return `
     <div class="card">
       <p class="eyebrow">${icon('heart', 11, 'var(--sage)')} Your pregnancy</p>
@@ -6321,24 +10226,32 @@ function cycleWidget() {
         <p class="tiny" style="margin-top:4px">Due ${esc(cycleDateLabelWithYear(info.dueDate))}, counted from your last period.
         A dating scan beats this and always wins.</p>
       ` : `
-        <p class="bodytext" style="margin-top:5px">Add the first day of your last period in Settings
-        and the app can work out how far along you are.</p>`}
+        <p class="bodytext" style="margin-top:5px">Log the first day of your last period below and
+        the app can work out how far along you are.</p>
+        <button class="btn ghost sm" style="width:100%;margin-top:10px" data-cycle="edit">Log a period</button>`}
     </div>`;
   }
 
-  const info = cycleInfo(p.lastPeriod, null, p.cycleLength);
+  const info = cycleInfoNow();
+  const editing = !!store.cycleEdit;
+
+  /* Nothing logged yet. One button, and it opens the calendar she is
+     going to use every month anyway rather than sending her to
+     Settings to type a date. */
   if (!info) {
     return `
-    <button class="lrow" data-tab="settings" style="align-items:flex-start">
-      <span class="licon">${icon('calendar', 18)}</span>
-      <span class="grow">
-        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Track your cycle</span>
-        <span class="tiny" style="display:block;margin-top:2px">
-          Add the first day of your last period in Settings and the calendar fills itself in
-        </span>
-      </span>
-      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-    </button>`;
+    <div class="card">
+      <p class="eyebrow">${icon('calendar', 11, 'var(--sage)')} Your cycle</p>
+      <p class="bodytext" style="margin-top:5px">
+        Tap the day your last period started and this fills itself in. Log each one as it comes and
+        the app works out your own average rather than assuming twenty eight days.
+      </p>
+      ${editing ? cycleCalendar(
+        { lastPeriod: ciToday(), cycleLength: CYCLE_AVERAGE_LENGTH }, store.calMonth || 0, true) : ''}
+      <button class="btn${editing ? ' ghost' : ''}" style="width:100%;margin-top:11px" data-cycle="${editing ? 'done' : 'edit'}">
+        ${editing ? 'Done' : 'Log a period'}
+      </button>
+    </div>`;
   }
 
   const lead = info.isLate
@@ -6346,6 +10259,8 @@ function cycleWidget() {
     : info.daysToNext === 0 ? 'The estimate lands today'
     : info.inFertileWindow ? 'Inside the estimated fertile window'
     : 'About ' + info.daysToNext + ' day' + (info.daysToNext === 1 ? '' : 's') + ' to the next one';
+
+  const rows = periodHistoryRows(list);
 
   return `
   <div class="card">
@@ -6357,12 +10272,48 @@ function cycleWidget() {
       <span class="grow">
         <span class="eyebrow" style="display:block">Your cycle</span>
         <span style="display:block;font-size:14px;font-weight:600;color:var(--ink);margin-top:2px">${esc(lead)}</span>
+        <span class="tiny" style="display:block;margin-top:3px">
+          ${stats.cycles
+            ? esc(cycleLengthLine(stats))
+            : 'Counting from the one date so far. Log the next one and this becomes your own average.'}
+        </span>
         ${mode === 'trying' ? `<span class="tiny" style="display:block;margin-top:3px">
           Fertile window ${esc(cycleDateLabel(info.fertileStart))} to ${esc(cycleDateLabel(info.fertileEnd))}</span>` : ''}
       </span>
     </div>
-    ${cycleCalendar(info, store.calMonth || 0)}
-    <p class="tiny" style="margin-top:9px">Estimates from one date, not a test and not birth control.</p>
+
+    ${cycleCalendar(info, store.calMonth || 0, editing)}
+
+    <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+      <button class="chip${editing ? ' on' : ''}" data-cycle="${editing ? 'done' : 'edit'}"
+        ${editing ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}>
+        ${icon(editing ? 'check' : 'calendar', 12, 'var(--deep)')} ${editing ? 'Done logging' : 'Log a period'}
+      </button>
+      <button class="chip" data-cycle="today">Started today</button>
+      ${rows.length ? `<button class="chip" data-cycle="history">
+        ${store.cycleHistory ? 'Hide' : 'All ' + rows.length + ' logged'}
+      </button>` : ''}
+    </div>
+
+    ${stats.note ? `
+    <p class="tiny" style="margin-top:9px">${icon('chart', 10, 'var(--sage)')} ${esc(stats.note)}</p>` : ''}
+
+    ${store.cycleHistory && rows.length ? `
+    <div class="cychist">
+      ${rows.map((r) => `
+        <div class="cychrow">
+          <span class="grow">
+            <span class="cychdate">${esc(cycleDateLabelWithYear(r.date))}</span>
+            <span class="tiny">${r.gap
+              ? esc(r.gap + ' days after the one before')
+              : 'The earliest one you have logged'}</span>
+          </span>
+          <button class="chip" data-period-del="${esc(r.date)}" aria-label="Remove ${esc(cycleDateLabel(r.date))}">Remove</button>
+        </div>`).join('')}
+    </div>` : ''}
+
+    <p class="tiny" style="margin-top:9px">Estimates from the dates you logged, not a test and not
+    birth control.</p>
   </div>`;
 }
 
@@ -6382,6 +10333,32 @@ function cycleWidget() {
    time, because that is the one that cannot be taken back.
    ----------------------------------------------------------------- */
 
+/* The reactions a public post can collect. Hers are the five she named,
+   plus laughing, which is the one people actually reach for on a post
+   about a good day.
+
+   Stored on the post as { whoever: 'like' }, one each, the way Facebook
+   does it, so the counts are just a tally of that map. Posts ride along
+   in the parent record, so a reaction syncs to her other devices with
+   everything else. */
+const POST_REACTIONS = [
+  { id: 'like', glyph: '\uD83D\uDC4D', label: 'Like' },
+  { id: 'love', glyph: '\u2764\uFE0F', label: 'Love' },
+  { id: 'haha', glyph: '\uD83D\uDE04', label: 'Haha' },
+  { id: 'sad', glyph: '\uD83D\uDE22', label: 'Sad' },
+  { id: 'angry', glyph: '\uD83D\uDE20', label: 'Angry' },
+  { id: 'dislike', glyph: '\uD83D\uDC4E', label: 'Dislike' },
+];
+
+/* A small keyboard for the composer. Grouped the way somebody writing
+   about their child would reach for them, rather than alphabetically. */
+const POST_EMOJI = [
+  { group: 'Faces', chars: ['\uD83D\uDE0A', '\uD83D\uDE02', '\uD83E\uDD70', '\uD83D\uDE0D', '\uD83D\uDE2D', '\uD83D\uDE05', '\uD83D\uDE34', '\uD83D\uDE47', '\uD83E\uDD74', '\uD83D\uDE4C', '\uD83D\uDC4F', '\uD83E\uDD17'] },
+  { group: 'Love', chars: ['\u2764\uFE0F', '\uD83E\uDDE1', '\uD83D\uDC9B', '\uD83D\uDC9A', '\uD83D\uDC99', '\uD83D\uDC9C', '\uD83E\uDD0D', '\uD83D\uDC96', '\uD83D\uDC95', '\uD83D\uDCAF', '\u2728', '\uD83C\uDF1F'] },
+  { group: 'Them', chars: ['\uD83D\uDC76', '\uD83D\uDC67', '\uD83D\uDC66', '\uD83E\uDDD2', '\uD83C\uDF7C', '\uD83E\uDDF8', '\uD83C\uDFA8', '\u26BD', '\u26BE', '\uD83C\uDFC0', '\uD83D\uDCDA', '\uD83C\uDF93'] },
+  { group: 'Days', chars: ['\uD83C\uDF89', '\uD83C\uDF82', '\uD83C\uDF88', '\uD83C\uDF81', '\u2600\uFE0F', '\uD83C\uDF19', '\uD83C\uDF08', '\uD83C\uDF3F', '\uD83C\uDF3B', '\uD83C\uDF3C', '\u2615', '\uD83C\uDFE1'] },
+];
+
 const POST_VISIBILITY = [
   { id: 'private', label: 'Just me', help: 'Nobody else ever sees this.' },
   { id: 'public', label: 'Share to Community', help: 'Other parents see this under your username.' },
@@ -6389,27 +10366,152 @@ const POST_VISIBILITY = [
 
 function postDraft() {
   if (!store.postDraft || typeof store.postDraft !== 'object') {
-    store.postDraft = { text: '', photos: [], visibility: 'private', childId: '' };
+    store.postDraft = { text: '', photos: [], files: [], visibility: 'private', childId: '', group: '' };
   }
+  /* photos is the old shape, a list of data URLs sitting on the record
+     itself. Everything new goes into files, which holds links to
+     Storage instead. Both are read, only files is written, and posts
+     she made before this build keep working untouched. */
   if (!Array.isArray(store.postDraft.photos)) store.postDraft.photos = [];
+  if (!Array.isArray(store.postDraft.files)) store.postDraft.files = [];
+  /* Drafts saved before rooms existed have no group. Empty means the
+     main feed, which is the right place for them. */
+  if (typeof store.postDraft.group !== 'string') store.postDraft.group = '';
   return store.postDraft;
 }
 
 function postHasContent() {
   const d = postDraft();
-  return !!(String(d.text || '').trim() || d.photos.length);
+  return !!(String(d.text || '').trim() || d.photos.length || d.files.length);
+}
+
+/* THE PICKER, appended to the body once at boot.
+
+   Same reason as the photo one and the memory one: an input living
+   inside the part of the page that gets rebuilt on every repaint does
+   not survive a phone backgrounding the app while the camera roll is
+   open, and the file comes back to an element that no longer exists.
+   That is how Stetson's photo went missing the first time. */
+let postInput = null;
+let postKind = 'photo';
+
+function ensurePostInput() {
+  if (postInput && postInput.isConnected) return postInput;
+  const el = document.createElement('input');
+  el.type = 'file';
+  el.id = 'rsgPostIn';
+  el.style.position = 'fixed';
+  el.style.left = '-9999px';
+  el.setAttribute('aria-hidden', 'true');
+  el.addEventListener('change', () => {
+    const file = el.files && el.files[0];
+    el.value = '';
+    if (!file) return;
+    postTakeFile(file, postKind);
+  });
+  document.body.appendChild(el);
+  postInput = el;
+  return el;
+}
+
+function postPick(kind) {
+  const d = postDraft();
+  const k = postMediaKind(kind);
+  if (!k) return;
+  if (d.photos.length + d.files.length >= POST_MAX_FILES) {
+    store.photoError = 'That is ' + POST_MAX_FILES + ' already, which is as many as one post holds.';
+    render();
+    return;
+  }
+  postKind = kind;
+  const el = ensurePostInput();
+  el.accept = k.accept;
+  store.photoError = '';
+  try { el.click(); } catch (err) {
+    store.photoError = 'This browser would not open the picker.';
+    render();
+  }
+}
+
+async function postTakeFile(file, kind) {
+  const big = tooBigMessage(kind, file.size || 0);
+  if (big) { store.photoError = big; render(); return; }
+
+  store.photoBusy = 1;
+  store.photoError = '';
+  /* The box has to be open to show the progress, and picking a file
+     from the folded composer is a real way in. */
+  store.postOpen = true;
+  render();
+
+  try {
+    const saved = await uploadFile(file, kind, (pct) => {
+      store.photoBusy = Math.max(1, pct);
+      render();
+    });
+    const cur = postDraft();
+    cur.files.push(saved);
+    store.photoBusy = 0;
+    flushStore();
+    render();
+  } catch (err) {
+    store.photoBusy = 0;
+    store.photoError = 'That did not upload. ' + (navigator.onLine === false
+      ? 'You are offline at the moment, so it is worth trying again when you are back.'
+      : 'Worth trying again, and if it keeps failing tell me and I will look at it.');
+    render();
+  }
+}
+
+function postFileRemove(i) {
+  const d = postDraft();
+  const gone = d.files.splice(Number(i), 1);
+  flushStore();
+  render();
+  /* Nothing has been posted yet, so a file dropped here is a file
+     nobody will ever see and no reason to keep paying for. */
+  deleteStoredFiles(gone);
+}
+
+/* One block, whatever the file turns out to be. Kept beside the memory
+   version rather than merged with it, because a post plays inline and
+   a memory sits in a card, and forcing one function to do both is how
+   both end up slightly wrong. */
+function postFileBlock(f, i, editing) {
+  if (!f) return '';
+  const x = editing
+    ? `<button class="postpic-x" data-post="unfile" data-i="${i}" aria-label="Remove">${icon('plus', 14, '#fff')}</button>`
+    : '';
+  if (f.kind === 'video') {
+    return `<span class="postpic vid"><video src="${esc(f.url)}" controls preload="metadata" playsinline></video>${x}</span>`;
+  }
+  if (f.kind === 'audio') {
+    /* The remove button sits at the end of the row rather than floating
+       over the corner, because a voice memo row is wide and a corner
+       button lands on top of the player's own controls. */
+    const audX = editing
+      ? `<button class="aud-x" data-post="unfile" data-i="${i}" aria-label="Remove">&times;</button>`
+      : '';
+    return `<span class="postpic aud">${icon('note', 16, 'var(--deep)')}<audio src="${esc(f.url)}" controls preload="metadata"></audio>${audX}</span>`;
+  }
+  return `<span class="postpic"><img src="${esc(f.url)}" alt="" loading="lazy" />${x}</span>`;
 }
 
 function postSave() {
   const d = postDraft();
   const text = String(d.text || '').trim();
-  if (!text && !d.photos.length) return;
+  if (!text && !d.photos.length && !d.files.length) return;
+  /* Posting while a video is still going up would save a post with a
+     hole in it, so the button is off until the upload lands. */
+  if (store.photoBusy) return;
   store.posts = Array.isArray(store.posts) ? store.posts : [];
   store.posts.unshift({
     id: 'p' + Date.now() + Math.floor(Math.random() * 1000),
     text: text,
-    photos: d.photos.slice(0, 4),
+    photos: d.photos.slice(0, POST_MAX_FILES),
+    files: d.files.slice(0, POST_MAX_FILES),
     visibility: d.visibility === 'public' ? 'public' : 'private',
+    group: isGroupId(d.group || '') ? (d.group || '') : '',
     childId: d.childId || '',
     at: Date.now(),
   });
@@ -6422,14 +10524,86 @@ function postSave() {
      go through. */
   store.postOpen = false;
   store.photoError = '';
+  store.emojiOpen = false;
+  /* Home holds only the box she writes in, so without this she would
+     press Post and watch nothing happen. */
+  store.justPosted = true;
   store.parentUpdatedAt = Date.now();
   flushStore();
   render();
 }
 
 function postDelete(id) {
+  const post = (store.posts || []).filter((p) => p.id === id)[0];
   store.posts = (store.posts || []).filter((p) => p.id !== id);
   store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+  /* The files go after the record, so the screen never waits on the
+     network to show that the post is gone. */
+  if (post) deleteStoredFiles(post.files);
+}
+
+/* Who is reacting. One person on this account today, but the map is
+   keyed by person from the start, so when the Community is live the
+   same posts count everybody's without being rebuilt. */
+function reactorId() {
+  return myUid() || (store.parent && store.parent.username) || 'me';
+}
+
+function postReactions(p) {
+  return (p && p.reactions && typeof p.reactions === 'object') ? p.reactions : {};
+}
+
+function reactionCounts(p) {
+  const out = {};
+  const map = postReactions(p);
+  Object.keys(map).forEach((who) => {
+    const r = map[who];
+    if (!r) return;
+    out[r] = (out[r] || 0) + 1;
+  });
+  return out;
+}
+
+function reactionTotal(p) {
+  const c = reactionCounts(p);
+  return Object.keys(c).reduce((n, k) => n + c[k], 0);
+}
+
+function myReaction(p) {
+  return postReactions(p)[reactorId()] || '';
+}
+
+/* Tapping the one already chosen takes it off again, which is what
+   every one of these does and what everybody expects. */
+function postReact(id, rid) {
+  const p = (store.posts || []).filter((x) => x.id === id)[0];
+  if (!p || p.visibility !== 'public') return;
+  if (!p.reactions || typeof p.reactions !== 'object') p.reactions = {};
+  const me = reactorId();
+  if (p.reactions[me] === rid) delete p.reactions[me];
+  else p.reactions[me] = rid;
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+/* Emoji land where the caret is rather than on the end, so one can go
+   in the middle of a sentence she has already written. */
+function postEmoji(ch) {
+  const d = postDraft();
+  const el = document.getElementById('postIn');
+  /* Only trust the caret if she was actually typing in the box. An
+     unfocused textarea reports nought, which would drop every emoji in
+     front of the first word. */
+  let at = String(d.text || '').length;
+  if (el && document.activeElement === el) {
+    try { if (el.selectionStart != null) at = el.selectionStart; } catch (err) {}
+  }
+  const t = String(d.text || '');
+  d.text = t.slice(0, at) + ch + t.slice(at);
+  postCaret = at + ch.length;
   flushStore();
   render();
 }
@@ -6438,6 +10612,24 @@ function postSetVisibility(id, vis) {
   if (id === 'draft') { postDraft().visibility = vis; flushStore(); render(); return; }
   const p = (store.posts || []).filter((x) => x.id === id)[0];
   if (!p) return;
+
+  /* Switching a post to public is now a real thing that happens
+     somewhere else, rather than a word on her own record. It goes up
+     waiting to be read, and it only counts as public once it is. */
+  if (vis === 'public' && !p.sharedId) {
+    feedShare(p).then((ok) => {
+      if (!ok) return;
+      p.visibility = 'public';
+      store.parentUpdatedAt = Date.now();
+      flushStore();
+      render();
+    });
+    return;
+  }
+  if (vis !== 'public' && p.sharedId) {
+    feedUnshare(p);
+  }
+
   p.visibility = vis;
   store.parentUpdatedAt = Date.now();
   flushStore();
@@ -6491,6 +10683,7 @@ function postComposer() {
   }
 
   const vis = d.visibility === 'public' ? 'public' : 'private';
+  const full = (d.photos.length + d.files.length) >= POST_MAX_FILES;
   return `
   <div class="card composer">
     <div style="display:flex;gap:10px;align-items:flex-start">
@@ -6499,7 +10692,7 @@ function postComposer() {
         placeholder="What is on your mind${first ? ', ' + esc(first) : ''}?">${esc(d.text || '')}</textarea>
     </div>
 
-    ${d.photos.length ? `
+    ${d.photos.length || d.files.length ? `
     <div class="postpics draft">
       ${d.photos.map((p, i) => `
         <span class="postpic">
@@ -6508,19 +10701,37 @@ function postComposer() {
             ${icon('plus', 14, '#fff')}
           </button>
         </span>`).join('')}
+      ${d.files.map((f, i) => postFileBlock(f, i, true)).join('')}
+    </div>` : ''}
+
+    ${store.photoBusy ? `
+    <div class="upbar" role="status">
+      <span class="upbar-fill" style="width:${Math.max(4, Math.min(100, Number(store.photoBusy) || 4))}%"></span>
+      <span class="tiny upbar-t">Uploading, ${Math.min(100, Number(store.photoBusy) || 0)}%</span>
     </div>` : ''}
 
     <div class="composer-bar">
-      <button class="chip" data-photopick="post" ${d.photos.length >= 4 || store.photoBusy ? 'disabled' : ''}>
-        ${icon('camera', 13, 'var(--deep)')} ${store.photoBusy ? 'Working on it' : 'Photo'}
+      ${POST_MEDIA.map((k) => `
+        <button class="chip" data-post="pick" data-kind="${esc(k.id)}"
+          ${full || store.photoBusy ? 'disabled' : ''}>
+          ${icon(k.id === 'video' ? 'eye' : k.id === 'audio' ? 'note' : 'camera', 13, 'var(--deep)')}
+          ${esc(k.label)}
+        </button>`).join('')}
+      <button class="chip${store.emojiOpen ? ' on' : ''}" data-post="emojis"
+        ${store.emojiOpen ? 'style="background:var(--leaf2);border-color:var(--leaf)"' : ''}>
+        <span class="emo">\uD83D\uDE0A</span> Emoji
       </button>
-      ${store.children.length ? `
-        <select class="dsel" data-postchild style="flex:0 1 auto;max-width:150px">
-          <option value="">Not about anyone</option>
-          ${store.children.map((k) => `
-            <option value="${esc(k.id)}"${d.childId === k.id ? ' selected' : ''}>${esc(k.name || 'Unnamed')}</option>`).join('')}
-        </select>` : ''}
     </div>
+
+    ${store.emojiOpen ? `
+    <div class="emotray">
+      ${POST_EMOJI.map((g) => `
+        <p class="emogroup">${esc(g.group)}</p>
+        <div class="emogrid">
+          ${g.chars.map((ch) => `
+            <button class="emobtn" data-post="emoji" data-ch="${esc(ch)}" aria-label="${esc(ch)}">${ch}</button>`).join('')}
+        </div>`).join('')}
+    </div>` : ''}
 
     <div class="vispick">
       ${POST_VISIBILITY.map((v) => `
@@ -6528,17 +10739,61 @@ function postComposer() {
           ${vis === v.id ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
           >${v.id === 'private' ? icon('shield', 12, 'var(--deep)') : icon('people', 12, 'var(--deep)')} ${esc(v.label)}</button>`).join('')}
     </div>
+    ${vis === 'public' ? `
+    <p class="sect" style="margin-top:13px">${esc(GROUP_PICK_LABEL)}</p>
+    <div class="chips">
+      <button class="chip${!d.group ? ' on' : ''}" data-post="group" data-g=""
+        ${!d.group ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
+        >${esc(GROUP_GENERAL_LABEL)}</button>
+      ${GROUPS.map((g) => `
+        <button class="chip${d.group === g.id ? ' on' : ''}" data-post="group" data-g="${esc(g.id)}"
+          ${d.group === g.id ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
+          >${esc(g.label)}</button>`).join('')}
+    </div>
+    <p class="tiny" style="margin-top:7px">${esc(GROUP_PICK_NOTE)}</p>
     <p class="tiny" style="margin-top:6px">
       ${esc((POST_VISIBILITY.filter((v) => v.id === vis)[0] || {}).help || '')}
-      ${vis === 'public' && d.photos.length
-        ? ' This post has a photo in it. Once it is out there you cannot take it back.' : ''}
-    </p>
+      ${d.photos.length + d.files.length
+        ? ' There is ' + (d.photos.length + d.files.length === 1 ? 'a file' : 'more than one file')
+          + ' attached to this. Once it is out there you cannot take it back.'
+        : ''}
+    </p>` : ''}
     ${store.photoError ? `<p class="tiny" style="margin-top:6px;color:#A85A44">${esc(store.photoError)}</p>` : ''}
 
     <div style="display:flex;gap:8px;margin-top:11px;justify-content:flex-end;flex-wrap:wrap">
       <button class="chip" data-post="discard">Discard</button>
-      <button class="btn" data-post="save" ${postHasContent() ? '' : 'disabled'}
+      <button class="btn" data-post="save" ${postHasContent() && !store.photoBusy ? '' : 'disabled'}
         style="width:auto;flex:none;padding:10px 20px">Post</button>
+    </div>
+  </div>`;
+}
+
+/* The row of reactions under a shared post. Only ever under a shared
+   one, because a private post is read by one person and counting her
+   own reaction back to her would be strange.
+
+   The counts read across the top the way they do everywhere else: the
+   faces that were actually used, then the number. */
+function reactionBar(p) {
+  const counts = reactionCounts(p);
+  const mine = myReaction(p);
+  const total = reactionTotal(p);
+  const used = POST_REACTIONS.filter((r) => counts[r.id]);
+
+  return `
+  <div class="reacts">
+    ${total ? `
+    <div class="reacttally">
+      <span class="reactfaces">${used.map((r) => `<span class="emo">${r.glyph}</span>`).join('')}</span>
+      <span class="tiny">${total}</span>
+    </div>` : ''}
+    <div class="reactrow">
+      ${POST_REACTIONS.map((r) => `
+        <button class="reactbtn${mine === r.id ? ' on' : ''}" data-post="react"
+          data-id="${esc(p.id)}" data-r="${esc(r.id)}" title="${esc(r.label)}" aria-label="${esc(r.label)}">
+          <span class="emo">${r.glyph}</span>
+          ${counts[r.id] ? `<span class="reactn">${counts[r.id]}</span>` : ''}
+        </button>`).join('')}
     </div>
   </div>`;
 }
@@ -6561,16 +10816,35 @@ function postCard(p, own) {
 
     ${p.text ? `<p class="bodytext" style="margin-top:9px;white-space:pre-wrap">${esc(p.text)}</p>` : ''}
 
-    ${(p.photos || []).length ? `
-    <div class="postpics n${Math.min(4, p.photos.length)}">
-      ${p.photos.map((src) => `<span class="postpic"><img src="${esc(src)}" alt="" /></span>`).join('')}
+    ${(p.photos || []).length + (p.files || []).length ? `
+    <div class="postpics n${Math.min(4, (p.photos || []).length + (p.files || []).length)}">
+      ${(p.photos || []).map((src) => `<span class="postpic"><img src="${esc(src)}" alt="" loading="lazy" /></span>`).join('')}
+      ${(p.files || []).map((f, i) => postFileBlock(f, i, false)).join('')}
     </div>` : ''}
+
+    ${/* Reactions used to be counted here, on her own copy of her own
+          post, which was a placeholder until there was somewhere real
+          for a shared post to live. There is now. Real people react in
+          Community, so what belongs here is not a count, it is what
+          actually happened to the thing she shared. */ ''}
+    ${p.visibility === 'public' ? `
+    <p class="tiny feedstatus">
+      ${icon(p.sharedStatus === FEED_STATUS.removed ? 'info'
+        : p.sharedStatus === FEED_STATUS.held ? 'clock' : 'people', 11, 'var(--muted)')}
+      ${!p.sharedStatus || p.sharedStatus === FEED_STATUS.live
+        ? 'Up in Community.'
+        : esc(statusLine(p.sharedStatus))}
+      ${!p.sharedStatus || p.sharedStatus === FEED_STATUS.live
+        ? '<button class="chip" style="margin-left:6px" data-tab="community">See it there</button>' : ''}
+    </p>` : ''}
 
     ${own ? `
     <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
       ${p.visibility === 'public'
-        ? `<button class="chip" data-post="vis" data-id="${esc(p.id)}" data-vis="private">Make it private</button>`
-        : `<button class="chip" data-post="vis" data-id="${esc(p.id)}" data-vis="public">Share it</button>`}
+        ? `<button class="chip" data-post="vis" data-id="${esc(p.id)}" data-vis="private"
+             ${feed.busy === p.id ? 'disabled' : ''}>Take it back down</button>`
+        : `<button class="chip" data-post="vis" data-id="${esc(p.id)}" data-vis="public"
+             ${feed.busy === p.id ? 'disabled' : ''}>${feed.busy === p.id ? 'Sending' : 'Share it'}</button>`}
       <button class="chip" data-post="del" data-id="${esc(p.id)}">Delete</button>
     </div>` : ''}
   </div>`;
@@ -6591,6 +10865,7 @@ function normalizeSituation(sit) {
     path: typeof s.path === 'string' ? s.path : '',
     roles: Array.isArray(s.roles) ? s.roles : [],
     support: Array.isArray(s.support) ? s.support : [],
+    conditions: Array.isArray(s.conditions) ? s.conditions : [],
   };
 }
 
@@ -6672,13 +10947,65 @@ function tickRow(on, label, help, attrs) {
   </button>`;
 }
 
+/* WHO THEY ARE TO THE CHILD.
+
+   One block, used in two places: the signup walkthrough and Settings.
+   Written once so the two can never drift apart, which is what
+   happened last time a question lived in both.
+
+   Chips rather than tick rows, because both of these are pick one and
+   a tick row implies you may pick several. */
+function caretakerBlock() {
+  const p = store.parent || {};
+  const custom = (p.calledByOther || '').trim();
+  return `
+  <p class="sect">What ${esc(onlyChildFirstName() || 'your child')} calls you</p>
+  <div class="card" style="margin-bottom:10px">
+    <div class="chips">
+      ${CALLED_BY.map((r) => `
+        <button class="chip${p.calledBy === r.id && !custom ? ' on' : ''}" data-calledby="${esc(r.id)}"
+          ${p.calledBy === r.id && !custom ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
+          >${esc(r.label)}</button>`).join('')}
+    </div>
+    <p class="eyebrow" style="margin-top:12px">Or your own word</p>
+    <input class="inp" type="text" data-obfield="calledByOther"
+      value="${esc(p.calledByOther || '')}" placeholder="Mimi, Bubba, Tata, anything"
+      autocomplete="off" style="margin-top:7px;width:100%" />
+    <p class="tiny" style="margin-top:8px">${esc(CALLED_BY_OTHER_NOTE)}</p>
+  </div>
+
+  <p class="sect">How we should write about you</p>
+  <div class="card" style="margin-bottom:10px">
+    ${REFERS_TO.map((r) => tickRow(p.refersTo === r.id, r.label, r.help,
+      `data-refersto="${esc(r.id)}"`)).join('')}
+    <p class="tiny" style="margin-top:9px">${esc(REFERS_TO_SHORT)}</p>
+  </div>
+
+  <p class="sect">${esc(BODY_CARE_SETTING.title)}</p>
+  <div class="card" style="margin-bottom:10px">
+    ${tickRow(bodyCare(p) === 'yes', 'Show it', BODY_CARE_SETTING.on, 'data-bodycare="yes"')}
+    ${tickRow(bodyCare(p) === 'no', 'Leave it out', BODY_CARE_SETTING.off, 'data-bodycare="no"')}
+    <p class="tiny" style="margin-top:9px">${esc(BODY_CARE_SETTING.note)}</p>
+  </div>`;
+}
+
+/* The first real child's first name, for the line above. Falls back to
+   nothing at all rather than to a placeholder name, since somebody
+   signing up before they have added a child should not be asked what
+   "your child" calls them by name. */
+function onlyChildFirstName() {
+  const real = (store.children || []).filter((k) => !isExampleChild(k));
+  if (real.length !== 1) return '';
+  return (real[0].name || '').trim().split(/\s+/)[0] || '';
+}
+
 function situationBlock() {
   const sit = situation();
   const showPath = hasStage(sit, 'expecting') || hasStage(sit, 'trying');
   const nothing = !sit.stages.length && !sit.roles.length && !sit.support.length;
 
   return `
-  <p class="sect">Where you are right now</p>
+  <p class="sect" id="set-situation">Where you are right now</p>
   <p class="tiny" style="margin:-4px 0 10px">${esc(SITUATION_INTRO)}</p>
   ${nothing ? `<p class="tiny" style="margin:-4px 0 10px;color:var(--taupe)">${esc(SITUATION_EMPTY)}</p>` : ''}
 
@@ -6709,7 +11036,18 @@ function situationBlock() {
       `data-sit="support" data-id="${esc(r.id)}"`)).join('')}
   </div>
 
-  <p class="tiny" style="margin-top:2px">${icon('shield', 11, 'var(--sage)')} ${esc(SITUATION_PRIVACY)}</p>`;
+  ${caretakerBlock()}
+
+  <p class="sect">Anything you live with</p>
+  <p class="tiny" style="margin:-2px 0 8px">Ticking one turns on a log you would otherwise never be
+  shown. None of it is a diagnosis and none of it goes anywhere.</p>
+  <div class="card" style="margin-bottom:10px">
+    ${PARENT_CONDITIONS.map((r) => tickRow(
+      (sit.conditions || []).indexOf(r.id) !== -1, r.label, r.help,
+      `data-sit="conditions" data-id="${esc(r.id)}"`)).join('')}
+  </div>
+
+  <p class="tiny" style="margin-top:2px">${esc(SITUATION_PRIVACY)}</p>`;
 }
 
 /* -----------------------------------------------------------------
@@ -6777,9 +11115,37 @@ async function liftLoad() {
 
 /* Never throws and never blocks anything. Returns the written text
    straight away and quietly replaces it if Willow answers. */
+/* HAS THE PROJECT RUN OUT OF QUOTA TODAY.
+
+   The background writers and the chat draw on the same allowance. The
+   chat is the one somebody is waiting on, so the moment a background
+   write comes back over quota, every background write stops for the
+   rest of the day and leaves what is left to Willow.
+
+   Nothing visible is lost by stopping. Every one of these has a written
+   version that is already on screen, which is the whole design. The
+   affirmation quietly not being rewritten costs a parent nothing. Not
+   being able to ask a question at two in the morning costs them the
+   feature. */
+function liftOutOfQuota() {
+  const day = ciToday();
+  if (store.liftQuotaDay !== day) return false;
+  return !!store.liftQuotaHit;
+}
+
+function liftNoteQuota(err) {
+  const code = String((err && err.code) || '') + ' ' + String((err && err.message) || '')
+    + ' ' + String((err && err.status) || '');
+  if (!/429|quota|RESOURCE_EXHAUSTED|rate.?limit/i.test(code)) return;
+  store.liftQuotaDay = ciToday();
+  store.liftQuotaHit = true;
+  saveStore();
+}
+
 function liftWrite(kind, context, onDone) {
   if (!hasAccess()) return;
   if (lift.tried[kind]) return;
+  if (liftOutOfQuota()) return;
   if (liftCountToday() >= LIFT_DAILY_LIMIT) return;
   lift.tried[kind] = true;
   store.liftUsed = liftCountToday() + 1;
@@ -6794,7 +11160,11 @@ function liftWrite(kind, context, onDone) {
       flushStore();
       render();
     })
-    .catch(() => { /* The written one is already on screen. Nothing to do. */ });
+    .catch((err) => {
+      /* The written one is already on screen, so there is nothing to
+         show. The only thing worth doing is getting out of the way. */
+      liftNoteQuota(err);
+    });
 }
 
 function liftContext() {
@@ -7200,10 +11570,8 @@ function screenCheckins(c) {
   <div class="sc">
 
     ${!days.length ? `
-    <div class="card flat">
-      <p class="bodytext">Check in from Home once and this fills in. A week of it is enough to
-      start seeing a shape.</p>
-    </div>` : `
+    <p class="tiny" style="text-align:center;padding:6px 0">Check in from Home once and this fills in.</p>
+    ` : `
 
     <p class="sect">The last two weeks</p>
     <div class="card">
@@ -7300,6 +11668,37 @@ function parentCircle() {
   </button>`;
 }
 
+/* THE ONE QUESTION, AND WHAT SITS WHERE THE ANSWER GOES.
+
+   Unanswered, this is a small card asking. Answered yes, it is the
+   cycle section. Answered no, there is nothing here at all and there
+   never will be again.
+
+   It does not guess. A father opening the app and being invited to log
+   a period is what this exists to stop, and guessing from his name or
+   his pronoun would have been wrong for an adoptive mother in the
+   other direction. */
+function bodyCareBlock() {
+  const p = store.parent;
+  if (bodyCare(p) === 'no') return '';
+  if (bodyCare(p) === 'yes') {
+    return `
+    <p class="sect">Your cycle</p>
+    ${cycleWidget()}`;
+  }
+  const a = BODY_CARE_ASK;
+  return `
+  <div class="card flat" style="margin-top:14px">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(a.title)}</p>
+    <p class="bodytext" style="margin-top:6px">${esc(a.body)}</p>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn" style="flex:1 1 130px" data-bodycare="yes">${esc(a.yes)}</button>
+      <button class="chip" style="flex:1 1 110px;justify-content:center" data-bodycare="no">${esc(a.no)}</button>
+    </div>
+    <p class="tiny" style="margin-top:9px">${esc(a.after)}</p>
+  </div>`;
+}
+
 function screenHome(c) {
   const hour = new Date().getHours();
   const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
@@ -7310,7 +11709,6 @@ function screenHome(c) {
   const morning = liftMorning();
   const isMorning = hour < 12;
   const learn = parentLearnForDay(l.day);
-  const mine = (store.posts || []).slice(0, 3);
 
   return `
   ${cornerLeaves()}
@@ -7319,6 +11717,8 @@ function screenHome(c) {
     ${first ? `<p class="hello">${esc(first)}</p>` : ''}
   </div>
   <div class="sc">
+    ${installBanner()}
+    ${choreCard()}
 
     <div class="kidrow home">
       ${parentCircle()}
@@ -7344,25 +11744,36 @@ function screenHome(c) {
       <p class="liftline">${esc(affirmation)}</p>
     </div>
 
-    ${morning ? `
-    <div class="card">
-      <p class="eyebrow">${icon(isMorning ? 'sun' : 'moon', 11, 'var(--sage)')}
-        ${isMorning ? 'Something for this morning' : 'For tomorrow morning'}</p>
-      <h3 class="h3" style="font-size:16px;margin-top:5px">${esc(morning.title)}</h3>
-      <p class="bodytext" style="margin-top:4px">${esc(morning.body)}</p>
-    </div>` : ''}
+    ${postComposer()}
+    ${store.justPosted ? `
+    <p class="tiny" style="text-align:center;padding:2px 0 4px">
+      Posted. It is on your profile.
+      <button class="chip" style="margin-left:6px" data-me="1">See it</button>
+    </p>` : ''}
 
-    <button class="bigbtn" data-go="screen" data-id="now">
+    ${showsBodyHalf(store.parent) ? `
+    <button class="bigbtn" data-go="screen" data-id="momnow">
       <span class="bigbtn-ic">${icon('heart', 22, '#fff')}</span>
       <span class="grow">
         <span class="bigbtn-t">Something is happening right now</span>
-        <span class="bigbtn-s">Witching hour, a fever, crying that will not stop, choking</span>
+        <span class="bigbtn-s">${esc(momNowBlurb())}</span>
       </span>
       ${icon('chev', 17, 'rgba(255,255,255,.8)')}
-    </button>
+    </button>` : ''}
 
-    <p class="sect">Your cycle</p>
-    ${cycleWidget()}
+    <p class="sect">Logs for you</p>
+    ${momCheckinCard()}
+    ${momLogCard()}
+
+    ${bodyCareBlock()}
+
+    ${memOnThisDay()}
+
+    ${/* Hers live here rather than on her profile. Nothing on Home is
+          shareable, which is exactly what a memory should be. */ ''}
+    ${memSection('me')}
+
+    ${caretakerCards()}
 
     <p class="sect">For you</p>
     <button class="card learncard" data-go="learn" data-id="${esc(learn.id)}">
@@ -7375,17 +11786,13 @@ function screenHome(c) {
       Everything written for you
     </button>
 
-    <p class="sect">Your posts</p>
-    ${postComposer()}
-    ${mine.length ? mine.map((p) => postCard(p, true)).join('') : `
-    <div class="card flat">
-      <p class="bodytext">Nothing here yet. Write something down, on its own or with a photo. It stays
-      private unless you say otherwise.</p>
-    </div>`}
-    ${(store.posts || []).length > 3 ? `
-    <button class="btn ghost sm" style="width:100%" data-me="1">
-      All ${(store.posts || []).length} posts, on your profile
-    </button>` : ''}
+    ${morning ? `
+    <div class="card">
+      <p class="eyebrow">${icon(isMorning ? 'sun' : 'moon', 11, 'var(--sage)')}
+        ${isMorning ? 'Something for this morning' : 'For tomorrow morning'}</p>
+      <h3 class="h3" style="font-size:16px;margin-top:5px">${esc(morning.title)}</h3>
+      <p class="bodytext" style="margin-top:4px">${esc(morning.body)}</p>
+    </div>` : ''}
 
     ${duplicateCard()}
 
@@ -7399,6 +11806,513 @@ function screenHome(c) {
     </div>` : ''}
   </div>`;
 }
+
+/* ---------- HER OWN CHECK IN ----------
+
+   Each child had one. She did not, which said something the app did
+   not mean to say. Same shape as theirs, same rule: every question is
+   about the DAY rather than about her, and it never scores her. */
+
+function momCheckins() {
+  if (!store.parent.checkins || typeof store.parent.checkins !== 'object') store.parent.checkins = {};
+  return store.parent.checkins;
+}
+
+function momCiSaved(day) {
+  return momCheckins()[day || ciToday()] || null;
+}
+
+function momCiDraft() {
+  if (!store.momCi || typeof store.momCi !== 'object') {
+    const saved = momCiSaved();
+    store.momCi = saved ? JSON.parse(JSON.stringify(saved)) : {};
+  }
+  return store.momCi;
+}
+
+function momCiSet(rowId, val) {
+  const d = momCiDraft();
+  d[rowId] = d[rowId] === val ? '' : val;
+  flushStore();
+  render();
+}
+
+function momCiSave() {
+  const d = momCiDraft();
+  const any = MOM_CHECKIN.rows.some((r) => d[r.id]);
+  if (!any) return;
+  momCheckins()[ciToday()] = JSON.parse(JSON.stringify(d));
+  /* Kept to half a year, the same as the children's, so the record
+     stays useful without growing forever. */
+  const keys = Object.keys(momCheckins()).sort().reverse();
+  keys.slice(CHECKIN_KEEP_DAYS).forEach((k) => { delete store.parent.checkins[k]; });
+  store.momCi = null;
+  store.momCiOpen = false;
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+/* How the last stretch of days has gone, for the gentle line. */
+function momCiRun() {
+  const all = momCheckins();
+  const days = Object.keys(all).sort().reverse().slice(0, 3);
+  if (days.length < 3) return null;
+  const hard = days.every((d) => {
+    const v = all[d] || {};
+    const vals = MOM_CHECKIN.rows.map((r) => v[r.id]).filter(Boolean);
+    return vals.length && vals.filter((x) => x === 'hard').length >= Math.ceil(vals.length / 2);
+  });
+  return hard ? 'hard' : null;
+}
+
+function momCheckinCard() {
+  const saved = momCiSaved();
+  const open = store.momCiOpen && !saved;
+  const run = momCiRun();
+
+  if (saved && !store.momCiOpen) {
+    const said = MOM_CHECKIN.rows.map((r) => {
+      const v = saved[r.id];
+      if (!v) return null;
+      const opt = r.options.filter((o) => o.id === v)[0];
+      return opt ? opt.label : null;
+    }).filter(Boolean);
+    return `
+    <div class="card">
+      <p class="eyebrow">${icon('check', 11, 'var(--sage)')} You checked in today</p>
+      <p class="bodytext" style="margin-top:5px">${esc(said.join(', '))}</p>
+      ${run === 'hard' ? `
+      <p class="tiny" style="margin-top:8px">${icon('leaf', 10, 'var(--sage)')}
+        That is a few hard days close together. Nothing about that is a verdict on you, and it is the
+        kind of thing worth saying out loud to somebody, whether that is your provider or a person who
+        loves you.</p>` : ''}
+    </div>`;
+  }
+
+  if (!open) {
+    return `
+    <button class="lrow" data-momci="open">
+      <span class="licon">${icon('leaf', 18)}</span>
+      <span class="grow">
+        <span style="display:block;font-size:14.5px;font-weight:600;color:var(--ink)">${esc(MOM_CHECKIN.title)}</span>
+        <span class="tiny" style="display:block;margin-top:2px">${esc(MOM_CHECKIN.intro)}</span>
+      </span>
+      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+    </button>`;
+  }
+
+  const d = momCiDraft();
+  return `
+  <div class="card">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(MOM_CHECKIN.title)}</p>
+    ${MOM_CHECKIN.rows.map((r) => `
+      <div class="cirow">
+        <p class="cirow-q">${esc(r.label)}</p>
+        <div class="chips" style="margin-top:7px">
+          ${r.options.map((o) => `
+            <button class="chip${d[r.id] === o.id ? ' on' : ''}" data-momci="set"
+              data-row="${esc(r.id)}" data-val="${esc(o.id)}"
+              ${d[r.id] === o.id ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
+              aria-pressed="${d[r.id] === o.id}">${esc(o.label)}</button>`).join('')}
+        </div>
+      </div>`).join('')}
+    <div class="cirow">
+      <p class="cirow-q">${esc(MOM_CHECKIN.note)}</p>
+      <input class="inp" type="text" data-momcinote="1" id="momCiNote"
+        value="${esc(d.note || '')}" autocomplete="off" style="margin-top:7px;width:100%" />
+    </div>
+    <div style="display:flex;gap:8px;margin-top:11px">
+      <button class="btn" data-momci="save">${icon('check', 15, '#fff')} Save</button>
+      <button class="btn ghost" data-momci="cancel">Cancel</button>
+    </div>
+  </div>`;
+}
+
+
+/* The card on Home, and the screen behind it. */
+function momLogCard() {
+  const shape = momLogShape();
+  const groups = getMomLogGroups(shape);
+  if (!groups.length) return '';
+  const today = ciToday();
+  const todays = momLogs().filter((l) => String(l.at).slice(0, 10) === today);
+  const feedLast = lastSide('mom-breastfeeding') || lastSide('mom-pumping');
+
+  /* The four most useful for where she is, flattened out of the groups
+     so the common ones are one tap rather than two. */
+  const quick = groups.reduce((all, g) => all.concat(g.items), []).slice(0, 4);
+
+  return `
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="grow">
+        <span class="eyebrow" style="display:block">${icon('leaf', 11, 'var(--sage)')} For you</span>
+        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink);margin-top:2px">
+          ${todays.length
+            ? esc(todays.length + ' thing' + (todays.length === 1 ? '' : 's') + ' logged today')
+            : 'Nothing logged today'}
+        </span>
+      </span>
+    </div>
+
+    ${feedLast ? `
+    <p class="tiny" style="margin-top:7px">
+      ${icon('clock', 10, 'var(--sage)')} Last side was <strong style="color:var(--ink)">${esc(feedLast.side)}</strong>,
+      at ${esc(clockOf(feedLast.at))}.
+    </p>` : ''}
+
+    <div class="chips" style="margin-top:10px">
+      ${quick.map((t) => `
+        <button class="chip" data-go="log" data-id="${esc(t.id)}">
+          ${icon(t.icon, 12, 'var(--deep)')} ${esc(t.label)}
+        </button>`).join('')}
+    </div>
+    <button class="btn ghost sm" style="width:100%;margin-top:9px" data-logwho="me">
+      Everything you can log
+    </button>
+  </div>`;
+}
+
+/* The same plain text export the children have, for her. */
+function momExport() {
+  const lines = [];
+  lines.push('Logs for ' + (store.parent.name || 'me'));
+  lines.push('Exported ' + cycleDateLabelWithYear(ciToday()));
+  lines.push('');
+  momLogs().slice().forEach((l) => {
+    const t = anyLogType(l.typeId);
+    const d = new Date(l.at);
+    const day = isNaN(d.getTime()) ? String(l.at).slice(0, 10) : d.toISOString().slice(0, 10);
+    const bits = [];
+    Object.keys(l.values || {}).forEach((k) => {
+      const v = l.values[k];
+      if (v == null || v === '' || (Array.isArray(v) && !v.length)) return;
+      bits.push(k + ': ' + (Array.isArray(v) ? v.join(', ') : v));
+    });
+    lines.push(day + '  ' + clockOf(l.at) + '  ' + (t ? t.label : l.typeId)
+      + (summarizeLog(l, t) ? ' - ' + summarizeLog(l, t) : ''));
+    if (bits.length) lines.push('    ' + bits.join('  |  '));
+  });
+  lines.push('');
+  lines.push('Recorded in Ready Set Grow by the person it is about. Nothing in it was reviewed');
+  lines.push('by a clinician and nothing in it is a diagnosis.');
+  try {
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (store.parent.name || 'my').replace(/[^\w-]+/g, '-').toLowerCase() + '-logs.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  } catch (err) {
+    /* A blocked download is not worth taking the screen down for. */
+  }
+}
+
+
+/* =================================================================
+   RIGHT NOW, FOR HER
+
+   The child version answers "something is happening to my baby".
+   This one answers "something is happening to me", which is the half
+   she said was missing. What shows is driven by where she actually
+   is, so a mother of a four year old is never handed hemorrhage
+   signs and somebody who has never pumped never sees flange sizing.
+   ================================================================= */
+
+const MOM_URG_COLOR = {
+  emergency: 'var(--concern)',
+  callNow: '#B5705C',
+  sameDay: 'var(--attention)',
+  support: 'var(--sage)',
+};
+
+/* Where she is today, worked out rather than asked. The youngest
+   child's age is what puts her in or out of the postpartum window. */
+/* Which child is the youngest, and how they arrived. The arrival is
+   the part that matters: a one month old who was adopted did not
+   arrive through the body of the person holding the phone. */
+function youngestChild() {
+  const real = store.children.filter((k) => !isExampleChild(k) && k.birthday);
+  if (!real.length) return null;
+  let best = null;
+  let bestMonths = null;
+  real.forEach((k) => {
+    const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+    const m = sum && sum.age ? sum.age.totalMonths : null;
+    if (m == null) return;
+    if (bestMonths == null || m < bestMonths) { bestMonths = m; best = k; }
+  });
+  return best ? { child: best, months: bestMonths } : null;
+}
+
+/* Did THIS person give birth recently.
+ *
+ * The app used to answer this with the youngest child's age alone,
+ * which quietly assumed whoever is holding the phone gave birth to
+ * them. An adoptive father with a one month old was being shown
+ * bleeding and stitches. He was not.
+ *
+ * Two things say otherwise, and either is enough: the child is marked
+ * as having arrived another way, or the person has told Settings they
+ * are an adoptive, foster, step, kinship or guardian carer and not a
+ * birth parent. With nothing said either way the app keeps the old
+ * behaviour, because withholding hemorrhage warnings from somebody who
+ * simply has not filled in Settings is the worse mistake of the two.
+ */
+function gaveBirthRecently() {
+  const y = youngestChild();
+  if (!y) return false;
+  const arrival = Array.isArray(y.child.arrival) ? y.child.arrival : [];
+  const notMine = ['adopted', 'fostered', 'step', 'kinship']
+    .some((id) => arrival.indexOf(id) !== -1);
+  if (notMine) return false;
+  const roles = situation().roles || [];
+  if (roles.length && roles.indexOf('birth') === -1) return false;
+  return true;
+}
+
+function momShape() {
+  const y = youngestChild();
+  const sit = situation();
+  return {
+    /* Null for anybody who did not give birth, which is what turns the
+       recovery content off rather than hiding it screen by screen. */
+    monthsSinceBirth: gaveBirthRecently() && y ? y.months : null,
+    /* Feeding is a separate question. Plenty of people who did not give
+       birth feed a baby, by bottle or by inducing lactation. */
+    feeding: sitShows('feeding'),
+    pregnant: hasStage(sit, 'expecting'),
+    youngestMonths: y ? y.months : null,
+    roles: sit.roles || [],
+  };
+}
+
+/* Whoever is holding the phone, in the shape caretakers.js wants. */
+function caretakerShape() {
+  const sit = situation();
+  const kids = store.children.filter((k) => !isExampleChild(k));
+  /* How each child arrived is recorded per child, so a house holding
+     one somebody gave birth to and one who came another way is a shape
+     the app can actually see rather than a special case. */
+  const otherWays = ['adopted', 'fostered', 'step', 'kinship', 'exchange'];
+  const arrived = kids.filter((k) => (k.arrival || []).some((a) => otherWays.indexOf(a) !== -1));
+  return {
+    roles: sit.roles || [],
+    support: sit.support || [],
+    gaveBirth: gaveBirthRecently(),
+    hasChildren: kids.length > 0,
+    /* Some arrived one way and some another, which is its own thing. */
+    mixedArrivals: arrived.length > 0 && arrived.length < kids.length,
+    hasExchange: kids.some((k) => (k.arrival || []).indexOf('exchange') !== -1),
+  };
+}
+
+function caretakerCards() {
+  const list = caretakerEntriesFor(caretakerShape());
+  if (!list.length) return '';
+  return `
+  <p class="sect">Written for you</p>
+  ${list.map((e) => `
+    <button class="card learncard" data-go="caretaker" data-id="${esc(e.id)}">
+      <p class="eyebrow">${icon('people', 11, 'var(--sage)')} ${esc(e.kind)}</p>
+      <h3 class="h3" style="font-size:16.5px;margin-top:5px">${esc(e.title)}</h3>
+      <p class="bodytext" style="margin-top:4px">${esc(e.blurb)}</p>
+      <span class="chip" style="margin-top:10px">Read this ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>`).join('')}
+  <p class="tiny" style="margin-top:2px">${esc(CARETAKER_NOTE)}</p>`;
+}
+
+function viewCaretaker(id) {
+  const e = caretakerEntry(id);
+  if (!e) return emptyScreen('That one is not here', 'Go back and pick again.');
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <p class="eyebrow" style="margin-top:6px">${esc(e.kind)}</p>
+    <h1 class="title" style="margin-top:3px">${esc(e.title)}</h1>
+  </div>
+  <div class="sc">
+    <div class="card flat">
+      ${String(e.body).split('\n\n').map((para) => `<p class="bodytext" style="margin-bottom:9px">${esc(para)}</p>`).join('')}
+    </div>
+
+    <p class="sect">What helps</p>
+    <div class="card">
+      <ul class="dlist">${e.helps.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+    </div>
+
+    <p class="sect">When it needs more than an app</p>
+    <div class="card flat" style="border-left:3px solid var(--attention)">
+      <p class="bodytext">${esc(e.getHelp)}</p>
+    </div>
+
+    <p class="sect">Somebody to talk to</p>
+    ${MATERNAL_SUPPORT_LINES.map((l) => `
+      <div class="card flat">
+        <p class="eyebrow">${icon('people', 11, 'var(--sage)')} ${esc(l.name)}</p>
+        <p class="bodytext" style="margin-top:4px">${esc(l.detail)}</p>
+        <a class="btn ghost sm" style="margin-top:9px;text-decoration:none;display:block;text-align:center"
+          href="tel:${esc(String(l.contact).replace(/[^0-9]/g, '').slice(-11))}">${esc(l.contact)}</a>
+      </div>`).join('')}
+    <p class="tiny" style="margin-top:8px">These take calls from partners and family too, not only
+    from the person who gave birth.</p>
+  </div>`;
+}
+
+function momNowRow(e) {
+  return `
+  <button class="lrow" data-go="momnow" data-id="${esc(e.id)}">
+    <span class="licon">${icon(e.icon || 'heart', 18)}</span>
+    <span class="grow">
+      <span style="display:block;font-size:14.5px;font-weight:600;color:var(--ink)">${esc(e.label)}</span>
+      <span class="tiny" style="display:block;margin-top:2px">${esc(e.blurb)}</span>
+    </span>
+    <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+  </button>`;
+}
+
+/* The line under the button names what is actually behind it today,
+   so it reads as hers rather than as a generic panic button. */
+function momNowBlurb() {
+  const shape = momShape();
+  const bits = [];
+  if (shape.monthsSinceBirth != null && shape.monthsSinceBirth < POSTPARTUM_WINDOW_MONTHS) {
+    bits.push('bleeding', 'blood pressure');
+  }
+  if (shape.feeding) bits.push('a sore breast');
+  bits.push('rage', 'nothing left today');
+  return bits.slice(0, 4).join(', ');
+}
+
+function screenMomNow() {
+  const shape = momShape();
+  const groups = getMomSituationsByCategory(shape);
+  const em = showsMomEmergencyCard(shape);
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title" style="margin-top:6px">Something is happening</h1>
+    <p class="sub">This one is about you.</p>
+  </div>
+  <div class="sc">
+
+    ${em ? `
+    <div class="card" style="border-left:3px solid var(--concern)">
+      <p class="eyebrow" style="color:var(--concern)">
+        ${icon('info', 11, 'var(--concern)')} ${esc(MOM_ALWAYS_EMERGENCY.title)}
+      </p>
+      <ul class="dlist" style="margin-top:7px">
+        ${MOM_ALWAYS_EMERGENCY.signs.map((x) => `<li>${esc(x)}</li>`).join('')}
+      </ul>
+      <p class="bodytext" style="margin-top:9px"><strong style="color:var(--ink)">${esc(MOM_ALWAYS_EMERGENCY.sayThis)}</strong></p>
+      <a class="btn urgent" href="tel:911" style="margin-top:12px;text-decoration:none">
+        ${icon('info', 15, '#fff')} Call 911
+      </a>
+    </div>` : ''}
+
+    ${Object.keys(MOM_CATEGORY_LABELS).filter((c) => (groups[c] || []).length).map((c) => `
+      <p class="sect">${esc(MOM_CATEGORY_LABELS[c])}</p>
+      ${groups[c].map(momNowRow).join('')}
+    `).join('')}
+
+    <p class="sect">If you need a person</p>
+    ${MATERNAL_SUPPORT_LINES.map((l) => `
+      <div class="card flat">
+        <p class="eyebrow">${icon('people', 11, 'var(--sage)')} ${esc(l.name)}</p>
+        <p class="bodytext" style="margin-top:4px">${esc(l.detail)}</p>
+        <a class="btn ghost sm" style="margin-top:9px;text-decoration:none;display:block;text-align:center"
+          href="tel:${esc(String(l.contact).replace(/[^0-9]/g, '').slice(-11))}">${esc(l.contact)}</a>
+      </div>`).join('')}
+
+    <p class="tiny" style="margin-top:12px">${esc(MOM_NOW_DISCLAIMER)}</p>
+  </div>`;
+}
+
+function screenMomNowOne(id) {
+  const e = getMomSituation(id);
+  if (!e) return emptyScreen('That one is not here', 'Go back and pick again.');
+  const u = e.urgencyCheck;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="momnow">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title" style="margin-top:6px">${esc(e.label)}</h1>
+  </div>
+  <div class="sc">
+
+    ${u ? `
+    <div class="card" style="border-left:3px solid ${MOM_URG_COLOR[u.urgency] || 'var(--concern)'}">
+      <p class="eyebrow" style="color:${MOM_URG_COLOR[u.urgency] || 'var(--concern)'}">
+        ${icon('info', 11, MOM_URG_COLOR[u.urgency] || 'var(--concern)')}
+        ${esc(MOM_URGENCY[u.urgency] ? MOM_URGENCY[u.urgency].label : '')} &middot; ${esc(u.title)}
+      </p>
+      <ul class="dlist" style="margin-top:7px">
+        ${u.signs.map((x) => `<li>${esc(x)}</li>`).join('')}
+      </ul>
+      ${u.note ? `<p class="bodytext" style="margin-top:8px">${esc(u.note)}</p>` : ''}
+      ${u.urgency === 'emergency' ? `
+      <a class="btn urgent" href="tel:911" style="margin-top:12px;text-decoration:none">
+        ${icon('info', 15, '#fff')} Call 911
+      </a>` : ''}
+    </div>` : ''}
+
+    ${e.tryRightNow && e.tryRightNow.length ? `
+    <p class="sect">Right now</p>
+    <div class="card">
+      <ol class="nlist">${e.tryRightNow.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>
+    </div>` : ''}
+
+    ${e.whatIsHappening ? `
+    <p class="sect">What is going on</p>
+    <div class="card flat"><p class="bodytext">${esc(e.whatIsHappening)}</p></div>` : ''}
+
+    ${e.scripts && e.scripts.length ? `
+    <p class="sect">Words for it</p>
+    ${e.scripts.map((s) => `
+      <div class="card flat">
+        <p class="eyebrow">${esc(s.when)}</p>
+        <p class="bodytext" style="margin-top:4px;font-style:italic">${esc(s.say)}</p>
+      </div>`).join('')}` : ''}
+
+    ${e.sayThis ? `
+    <p class="sect">What to say when you call</p>
+    <div class="card flat"><p class="bodytext" style="font-style:italic">${esc(e.sayThis)}</p></div>` : ''}
+
+    ${e.callDoctorIf && e.callDoctorIf.length ? `
+    <p class="sect">Call if</p>
+    <div class="card flat" style="border-left:3px solid var(--attention)">
+      <ul class="dlist">${e.callDoctorIf.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+    </div>` : ''}
+
+    ${e.support ? `
+    <p class="sect">Somebody to talk to</p>
+    ${MATERNAL_SUPPORT_LINES.map((l) => `
+      <div class="card flat">
+        <p class="eyebrow">${icon('people', 11, 'var(--sage)')} ${esc(l.name)}</p>
+        <p class="bodytext" style="margin-top:4px">${esc(l.detail)}</p>
+        <a class="btn ghost sm" style="margin-top:9px;text-decoration:none;display:block;text-align:center"
+          href="tel:${esc(String(l.contact).replace(/[^0-9]/g, '').slice(-11))}">${esc(l.contact)}</a>
+      </div>`).join('')}` : ''}
+
+    ${e.sources && e.sources.length ? `
+    <p class="sect">Where this comes from</p>
+    <div class="card flat">
+      ${e.sources.map((s) => `
+        <p class="tiny" style="margin-bottom:5px">
+          <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.org)}, ${esc(s.label)}</a>
+        </p>`).join('')}
+    </div>` : ''}
+  </div>`;
+}
+
 
 /* -----------------------------------------------------------------
    LEARNING, FOR HER
@@ -7675,7 +12589,11 @@ function screenMyProfile() {
   <div class="sc-head">
     <div class="bigface">${faceHTML(v.photo, 96, 'me')}</div>
     <h1 class="title" style="margin-top:8px">${esc(p.name || 'Your profile')}</h1>
-    <p class="sub">${p.username ? '@' + esc(p.username) : 'Add a username in Settings'}</p>
+    <p class="sub">${calledByLabel(p) && store.children.length
+      ? esc(calledByLabel(p)) + ' to ' + esc(store.children.length === 1
+          ? (store.children[0].name || 'your child')
+          : String(store.children.length) + ' of them')
+      : (p.username ? '@' + esc(p.username) : 'Add a username in Settings')}</p>
   </div>
   <div class="sc">
 
@@ -7692,30 +12610,43 @@ function screenMyProfile() {
       ` : `
         <button class="btn ghost" data-edit="me">${icon('camera', 14, 'var(--deep)')} Change photo</button>
         <button class="btn ghost" data-tab="settings">${icon('gear', 14, 'var(--deep)')} Edit details</button>
+        <button class="btn ghost" data-go="screen" data-id="privacy">${icon('shield', 14, 'var(--deep)')} Privacy</button>
       `}
     </div>
 
     ${editing ? facePicker('me', v.photo) : ''}
     ${editing ? editUnsavedNote() : ''}
 
-    ${postComposer()}
+    ${store.feedError ? `
+    <div class="card" style="border-left:3px solid var(--attention)">
+      <p class="bodytext">${esc(store.feedError)}</p>
+      <button class="chip" style="margin-top:9px" data-feed="errok">Close</button>
+    </div>` : ''}
 
-    ${posts.length ? posts.map((x) => postCard(x, true)).join('') : `
-    <div class="card flat">
-      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} This is what other parents would see</p>
-      <p class="bodytext" style="margin-top:5px">
-        Your name, your photo and anything you have chosen to share. Nothing else. Your children's
-        profiles, their notes, your dates and everything in Settings stay private to you, always.
-      </p>
-    </div>`}
+    ${/* The box she writes in lives on Home and only on Home. This page
+          is where the posts LAND, which is the whole reason they are two
+          different screens. A second composer here was the same thing in
+          two places, and she has already had to say once that two
+          screens doing one job is how somebody ends up somewhere that is
+          not where they started. */ ''}
+    ${posts.length ? '' : `
+    <p class="tiny" style="text-align:center;padding:4px 0 2px">
+      Nothing posted yet. The box to write in is on Home.
+      <button class="chip" style="margin-left:6px" data-tab="home">Go there</button>
+    </p>`}
 
-    <div class="card flat" style="margin-top:6px">
-      <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} What is private</p>
-      <p class="bodytext" style="margin-top:5px">
-        Every profile you keep for a child is yours alone. It is a place to document, never a place
-        anybody else can look. Only a post can be shared, and only when you choose it on that post.
-      </p>
-    </div>
+    ${posts.map((x) => postCard(x, true)).join('')}
+
+    ${/* Her memories are NOT here. This page is the public facing half
+          of her, the one her posts live on, and a private shelf sitting
+          underneath it offering the same kind of box was the thing that
+          made her look twice. Hers are on Home, where nothing is
+          shareable. A child's stay on the child's own profile. */ ''}
+
+    <p class="tiny" style="margin-top:10px;text-align:center">
+      ${icon('shield', 10, 'var(--muted)')} Only posts can be shared, and only the ones you choose.
+      Everything else stays yours.
+    </p>
 
     ${editing ? editSaveBar() : ''}
   </div>`;
@@ -7728,6 +12659,160 @@ function screenChild(c) {
   const v = editing ? store.profileEdit.values : (kid || {});
   const doneMs = Object.keys(state.statuses || {}).filter(
     (id) => ['sometimes', 'mastered'].indexOf(state.statuses[id]) !== -1).length;
+  const months = c.months;
+  const first = (name || '').split(/\s+/)[0];
+
+  /* EACH SECTION IS WRITTEN ONCE AND PLACED SOMEWHERE ELSE.
+
+     The order follows the child's age, because the right order
+     genuinely differs: for a newborn, Everyday care is the most opened
+     screen in the app, and for a twelve year old it is almost never
+     touched while How their mind works becomes the whole game. All of
+     that reasoning lives in src/data/childSections.js.
+
+     Nothing is hidden by age, only reordered. The only things that
+     disappear are the ones with nothing behind them, such as milestones
+     past six and development guidance for an age nobody has written
+     yet, and those disappear for that reason rather than this one. */
+  const body = {
+    /* notedCard is what says something kind after a log is saved. It
+       used to live only on the Logs hub, so saving from here returned
+       her to this page and the encouragement was never seen. */
+    checkin: () => notedCard() + checkinCard(),
+
+    /* Today's plan is a card rather than another row with a heading,
+       because it is the thing a parent arrives wanting and it should
+       not look like the ninth item on a list. It used to appear twice,
+       here and again inside Things to do together, which is the same
+       duplication she has caught me on before. */
+    plan: () => (months == null ? '' : `
+      <button class="card todaycard" data-go="screen" data-id="plan">
+        <span class="todaycard-ic">${icon('sun', 20, '#fff')}</span>
+        <span class="grow">
+          <span class="todaycard-t">Today's plan</span>
+          <span class="todaycard-s">${esc(planCardLine(c))}</span>
+        </span>
+        ${icon('chev', 17, 'var(--deep)')}
+      </button>`),
+
+    logs: () => {
+      const quickLogs = months == null ? [] : getLogTypesForAge(months).slice(0, 4);
+      if (!quickLogs.length) return '';
+      return `
+      ${sectHead('logs', months, 'Log it as it happens')}
+      <div class="qgrid">
+        ${quickLogs.map((t) => `
+          <button class="q" data-go="log" data-id="${esc(t.id)}">
+            <span class="qi">${icon(logIcon(t.icon), 17)}</span>
+            <span class="qt">${esc(t.label)}</span>
+            <span class="qs">${esc(lastLogLine(t.id))}</span>
+          </button>`).join('')}
+      </div>
+      <button class="btn ghost sm" style="width:100%;margin-top:2px"
+        data-go="screen" data-id="childlogs">Everything logged for ${esc(first)}</button>`;
+    },
+
+    care: () => `
+      ${sectHead('care', months, 'Everyday care')}
+      ${childRow('moon', "Today's rhythm", 'Wake times, naps and bedtime, built from one answer',
+        'data-go="screen" data-id="sleep"')}
+      ${childRow('utensils', 'Feeding',
+        esc(getFeedingHeadline(months) || 'Milk, starting solids, and the family table'),
+        'data-go="screen" data-id="feeding"')}
+      ${showsDiaperContent(months) ? childRow('drop', esc(DIAPER_TITLE),
+        esc(diaperBandFor(months).perDay + ' a day at this age, and what to send to daycare'),
+        'data-go="screen" data-id="diaperplan"') : ''}
+      ${childRow('bulb', 'Care topics',
+        c.topics.length ? esc(c.topics.slice(0, 4).map((t) => t.label).join(', ')) : 'Practical care, picked for this age',
+        'data-go="screen" data-id="topics"')}`,
+
+    together: () => {
+      const jobs = kid ? choreJobsFor(kid.id).length : 0;
+      const canDo = months == null ? 0 : choresForMonths(months).length;
+      const fresh = months == null ? [] : choresNewlyPossible(months);
+      return `
+      ${sectHead('together', months, 'Things to do together')}
+      ${childRow('puzzle', 'Activities',
+        esc(c.activities.length + ' that fit this age'),
+        'data-go="screen" data-id="activities"')}
+      ${showsLearning(months) ? childRow('book', 'Learning',
+        esc('What a structured day looks like at ' + (learnBandFor(months) || {}).label.toLowerCase()),
+        'data-go="screen" data-id="learning"') : ''}
+      ${canDo ? childRow('check', 'Jobs',
+        esc(jobs
+          ? jobs + (jobs === 1 ? ' job on the family chart' : ' jobs on the family chart')
+          : (fresh.length
+            ? 'Old enough now for ' + fresh[0].label.toLowerCase()
+            : canDo + ' things they are old enough to have a go at')),
+        'data-go="screen" data-id="chores"') : ''}`;
+    },
+
+    where: () => {
+      const rows = [
+        c.summary.checkpoint ? childRow('chart', 'Milestones',
+          msChangeCount()
+            ? esc(msChangeCount() + ' marked but not saved yet')
+            : (doneMs ? esc(doneMs + ' marked so far. Ranges, not deadlines.') : 'Ranges, not deadlines'),
+          'data-go="screen" data-id="milestones"') : '',
+        c.content.length ? childRow('book', 'Development guidance',
+          esc(c.content.length + ' written for exactly this age'),
+          'data-go="screen" data-id="development"') : '',
+      ].filter(Boolean).join('');
+      return rows ? sectHead('where', months, 'Where they are now') + rows : '';
+    },
+
+    mind: () => `
+      ${sectHead('mind', months, 'How their mind works')}
+      ${childRow('bulb', 'Understanding ' + esc(first),
+        state.lenses.length
+          ? esc(getLenses(state.lenses).map((l) => l.label).join(', '))
+          : 'Turn on what fits them, and read what it actually means',
+        'data-go="screen" data-id="understand"')}
+      ${childRow('hand', signRowTitle(), signRowSub(months),
+        'data-go="screen" data-id="signs"')}
+      ${state.lenses.length ? `
+      <div class="card flat">
+        <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Your active lenses</p>
+        <p class="tiny" style="margin-top:4px">${esc(getLenses(state.lenses).map((l) => l.label).join(', '))}
+        are reordering what surfaces first. Nothing is hidden, everything is still here.</p>
+      </div>` : ''}`,
+
+    health: () => `
+      ${sectHead('health', months, 'Health')}
+      ${childRow('chart', 'Growth', growthRowSub(kid, months),
+        'data-go="screen" data-id="growth"')}
+      ${childRow('note', 'Vaccine record', vaxRowSub(kid, months),
+        'data-go="screen" data-id="vaxrecord"')}
+      ${childRow('shield', 'Vaccines',
+        'What the evidence says, what your rights are, and how to decide',
+        'data-go="screen" data-id="vaccines"')}
+      ${childRow('pill', 'Something is wrong right now',
+        'Fever, rashes, crying that will not stop, and when to call',
+        'data-go="screen" data-id="now"')}`,
+
+    safety: () => `
+      ${sectHead('safety', months, 'If something happens')}
+      ${childRow('heart', 'CPR, choking and staying safe',
+        esc('For ' + getCprForAge(months).label.toLowerCase()) + ', plus what to do when you are at the end of it',
+        'data-go="screen" data-id="safety"')}`,
+
+    memories: () => (kid ? memSection(kid.id) : ''),
+  };
+
+  const order = childSectionOrder(months);
+  /* The page breaks in half wherever the daily things stop for THIS
+     age, rather than at a fixed position, and the quiet half is
+     announced once so the change of weight reads as deliberate. */
+  let restOpened = false;
+  const sections = order.map((id) => {
+    const html = body[id] ? body[id]() : '';
+    if (!html) return '';
+    if (!restOpened && !isDailySection(id, months)) {
+      restOpened = true;
+      return `<div class="restwrap"><p class="sect rest-label">${esc(REST_LABEL)}</p>` + html;
+    }
+    return html;
+  }).join('');
 
   return `
   ${cornerLeaves()}
@@ -7762,8 +12847,6 @@ function screenChild(c) {
       </div>
     ` : ''}` : ''}
 
-    ${checkinCard()}
-
     ${c.days != null && c.days < 56 && getDiaperDay(c.days) ? `
     <p class="sect">The newborn count</p>
     ${newbornCounter(c)}
@@ -7772,112 +12855,32 @@ function screenChild(c) {
       Feeds, diapers and how many ounces
     </button>` : ''}
 
-    ${(() => {
-      const quickLogs = c.months == null ? [] : getLogTypesForAge(c.months).slice(0, 4);
-      if (!quickLogs.length) return '';
-      return `
-      <p class="sect">Log it as it happens</p>
-      <div class="qgrid">
-        ${quickLogs.map((t) => `
-          <button class="q" data-go="log" data-id="${esc(t.id)}">
-            <span class="qi">${icon(logIcon(t.icon), 17)}</span>
-            <span class="qt">${esc(t.label)}</span>
-            <span class="qs">${esc(lastLogLine(t.id))}</span>
-          </button>`).join('')}
-      </div>
-      <button class="btn ghost sm" style="width:100%;margin-top:9px" data-tab="logs">
-        Everything logged so far
-      </button>`;
-    })()}
+    ${sections}
+    ${restOpened ? '</div>' : ''}
 
-    ${(() => {
-      const pl = c.months == null ? null : buildPlan(c);
-      if (!pl || !pl.morning) return '';
-      return `
-      <p class="sect">Today's plan</p>
-      <p class="tiny" style="margin:-4px 0 10px">
-        This changes on its own at midnight, so tomorrow is not today again.
-      </p>
-      <div class="plan">
-        <span class="picon">${icon('sun', 17)}</span>
-        <div class="grow">
-          <p class="eyebrow">Morning</p>
-          <h3 class="h3" style="font-size:16px">${esc(pl.morning.title)}</h3>
-          <p class="tiny" style="margin-top:3px">${esc(pl.morning.description)}</p>
-          <button class="btn ghost sm" style="margin-top:9px" data-go="screen" data-id="plan">
-            The whole plan
-          </button>
-        </div>
-      </div>`;
-    })()}
-
-    <p class="sect">Where they are now</p>
-    ${childRow('chart', 'Milestones',
-      msChangeCount()
-        ? esc(msChangeCount() + ' marked but not saved yet')
-        : (doneMs ? esc(doneMs + ' marked so far. Ranges, not deadlines.') : 'Ranges, not deadlines'),
-      'data-go="screen" data-id="milestones"')}
-    ${childRow('book', 'Development guidance',
-      c.content.length ? esc(c.content.length + ' written for exactly this age') : 'Nothing written for this age yet',
-      'data-go="screen" data-id="development"')}
-
-    <p class="sect">How their mind works</p>
-    ${childRow('bulb', 'Understanding ' + esc(name),
-      state.lenses.length
-        ? esc(getLenses(state.lenses).map((l) => l.label).join(', ')) + ' &middot; tap to change'
-        : 'Twenty one ways a mind can work, explained in plain English and scoped to their age',
-      'data-go="screen" data-id="understand"')}
-    <p class="tiny" style="margin:-3px 0 8px">
-      Straight to one of them, whether or not it is turned on for ${esc(name)}:
-    </p>
-    <div class="chips" style="margin-bottom:6px">
-      ${COMMON_LENSES.map((id) => getLens(id)).filter(Boolean).map((l) => `
-        <button class="chip" data-go="lens" data-id="${esc(l.id)}">${esc(l.label)}</button>`).join('')}
-      <button class="chip" data-go="screen" data-id="understand"
-        style="background:var(--leaf2);border-color:var(--leaf)">All ${SUPPORT_LENSES.length}</button>
-    </div>
-
-    <p class="sect">Things to do together</p>
-    ${childRow('calendar', "Today's plan", 'Three things chosen for today, new again tomorrow',
-      'data-go="screen" data-id="plan"')}
-    ${childRow('puzzle', 'Activities',
-      esc(c.activities.length + ' that fit this age'),
-      'data-go="screen" data-id="activities"')}
-
-    <p class="sect">Everyday care</p>
-    ${childRow('moon', "Today's rhythm", 'Wake times, naps and bedtime, built from one answer',
-      'data-go="screen" data-id="sleep"')}
-    ${childRow('utensils', 'Feeding',
-      esc(getFeedingHeadline(c.months) || 'Milk, starting solids, and the family table'),
-      'data-go="screen" data-id="feeding"')}
-    ${childRow('bulb', 'Care topics',
-      c.topics.length ? esc(c.topics.slice(0, 4).map((t) => t.label).join(', ')) : 'Practical care, picked for this age',
-      'data-go="screen" data-id="topics"')}
-
-    <p class="sect">Health</p>
-    ${childRow('shield', 'Vaccines',
-      'What the evidence says, what your rights are, and how to decide',
-      'data-go="screen" data-id="vaccines"')}
-    ${childRow('pill', 'Something is wrong right now',
-      'Fever, rashes, crying that will not stop, and when to call',
-      'data-go="screen" data-id="now"')}
-
-    <p class="sect">If something happens</p>
-    ${childRow('heart', 'CPR, choking and staying safe',
-      esc('For ' + getCprForAge(c.months).label.toLowerCase()) +
-        (homeAloneIsRelevant(c.months) ? ', plus home alone readiness' : ''),
-      'data-go="screen" data-id="safety"')}
-
-    ${state.lenses.length ? `
-    <div class="card flat" style="margin-top:16px">
-      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Your active lenses</p>
-      <p class="tiny" style="margin-top:4px">${esc(getLenses(state.lenses).map((l) => l.label).join(', '))}
-      are reordering what surfaces first. Nothing is hidden, everything is still here.</p>
-    </div>` : ''}
     <p class="disclaimer">${esc(CONTENT_DISCLAIMER)}</p>
     ${editing ? editSaveBar() : ''}
   </div>`;
 }
+
+/* A heading, unless this section is one of the daily ones drawn as a
+   card, in which case it has none. */
+function sectHead(id, months, label) {
+  return `<p class="sect${isDailySection(id, months) ? ' sect-day' : ''}">${esc(label)}</p>`;
+}
+
+/* What today's plan card says underneath its title. Reads the plan that
+   already exists rather than building one, so opening the profile does
+   not quietly commit a child to a plan they may never look at. */
+function planCardLine(c) {
+  const kid = activeChild();
+  const plan = kid && kid.plan && kid.plan.day === ciToday() ? kid.plan : null;
+  if (!plan) return 'Three things chosen for today, new again tomorrow';
+  const done = Object.keys(plan.done || {}).length;
+  if (!done) return 'Three things chosen for today. Nothing ticked off yet.';
+  return done + ' ticked off today. Tomorrow brings a different one.';
+}
+
 
 /* -----------------------------------------------------------------
    LOGS
@@ -7898,6 +12901,235 @@ const LOG_ICON = {
   thermometer: 'pill', users: 'people',
 };
 function logIcon(name) { return LOG_ICON[name] || 'note'; }
+
+/* =================================================================
+   FILES, IN STORAGE RATHER THAN IN THE RECORD
+
+   Everything used to be stored as a data URL inside the account
+   record itself. That works for a 256 pixel avatar and falls over at
+   about seven real photos, because Firestore caps one record at a
+   megabyte and a phone photo is roughly 125 KB once encoded. Video was
+   never possible at all.
+
+   So files now go to Cloud Storage under the account's own id, and the
+   record keeps a path and a URL. The rules on the bucket say the id in
+   the path has to match the id of whoever is asking, which is the
+   whole security model.
+
+   WHAT HAPPENS WHEN STORAGE IS NOT REACHABLE
+   The upload fails and says so, in words, with the file still sitting
+   in the composer. It does not silently drop it and it does not fall
+   back to stuffing it in the record, because that is how the ceiling
+   got hit in the first place.
+   ================================================================= */
+
+let storagePromise = null;
+
+function loadStorage() {
+  if (storagePromise) return storagePromise;
+  storagePromise = (async () => {
+    const v = FIREBASE_SDK_VERSION;
+    const { app } = await loadFirebase();
+    const mod = await import(`https://www.gstatic.com/firebasejs/${v}/firebase-storage.js`);
+    return { mod: mod, storage: mod.getStorage(app) };
+  })().catch((err) => {
+    storagePromise = null;
+    throw err;
+  });
+  return storagePromise;
+}
+
+/* Photos are shrunk before they go up. A 4000 pixel phone photo is
+   four megabytes of detail nobody looks at on a 400 pixel screen, and
+   the smaller it is the faster it comes back on her mother's wifi. */
+function shrinkImage(file, maxEdge) {
+  return new Promise((resolve) => {
+    const done = (blob) => resolve(blob || file);
+    const edge = maxEdge || 1600;
+    const draw = (src, w, h) => {
+      try {
+        const f = Math.min(1, edge / Math.max(w, h));
+        if (f >= 1 && file.size < 900 * 1024) { done(null); return; }
+        const cv = document.createElement('canvas');
+        cv.width = Math.round(w * f);
+        cv.height = Math.round(h * f);
+        cv.getContext('2d').drawImage(src, 0, 0, cv.width, cv.height);
+        cv.toBlob((b) => done(b), 'image/jpeg', 0.84);
+      } catch (err) { done(null); }
+    };
+    if (typeof createImageBitmap === 'function') {
+      createImageBitmap(file, { imageOrientation: 'from-image' })
+        .then((bmp) => { draw(bmp, bmp.width, bmp.height); try { bmp.close(); } catch (e) {} })
+        .catch(() => done(null));
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { draw(img, img.naturalWidth, img.naturalHeight); try { URL.revokeObjectURL(url); } catch (e) {} };
+    img.onerror = () => { try { URL.revokeObjectURL(url); } catch (e) {} done(null); };
+    img.src = url;
+  });
+}
+
+function storageFolder(kind) {
+  if (kind === 'video') return 'video';
+  if (kind === 'audio') return 'audio';
+  return 'photos';
+}
+
+/**
+ * Put one file in Storage and hand back what the record should keep.
+ * onProgress gets 0 to 100 so a slow upload never looks like a hang.
+ */
+async function uploadFile(file, kind, onProgress) {
+  /* This used to read auth.uid, which has never existed. The signed in
+     user lives at auth.user.uid, so this was undefined every time and
+     every upload threw "not signed in" before it started. Photos,
+     videos and voice memos could not have worked in production at all.
+     Found while wiring the feed, which needed the same value. */
+  const uid = myUid();
+  if (!uid) throw new Error('not signed in');
+  const { mod, storage } = await loadStorage();
+
+  let body = file;
+  if (kind === 'photo') body = await shrinkImage(file, 1600);
+
+  const clean = String(file.name || 'file').replace(/[^\w.-]+/g, '-').slice(-60);
+  const path = 'users/' + uid + '/' + storageFolder(kind) + '/'
+    + Date.now() + '-' + Math.floor(Math.random() * 1000) + '-' + clean;
+
+  const ref = mod.ref(storage, path);
+  const task = mod.uploadBytesResumable(ref, body, {
+    contentType: body.type || file.type || 'application/octet-stream',
+  });
+
+  await new Promise((resolve, reject) => {
+    task.on('state_changed',
+      (snap) => {
+        if (onProgress && snap.totalBytes) {
+          onProgress(Math.round((snap.bytesTransferred / snap.totalBytes) * 100));
+        }
+      },
+      reject,
+      resolve);
+  });
+
+  const url = await mod.getDownloadURL(ref);
+  return { path: path, url: url, kind: kind, bytes: body.size || file.size || 0,
+    name: file.name || '' };
+}
+
+/* Taking a memory away takes its files with it. A file left in the
+   bucket after its memory is gone is something she is paying for and
+   cannot see. */
+async function deleteStoredFiles(files) {
+  if (!files || !files.length) return;
+  try {
+    const { mod, storage } = await loadStorage();
+    await Promise.all(files.map((f) => {
+      if (!f || !f.path) return null;
+      return mod.deleteObject(mod.ref(storage, f.path)).catch(() => null);
+    }));
+  } catch (err) {
+    /* The memory still goes. An orphaned file is better than a delete
+       that appears not to work. */
+  }
+}
+
+
+/* =================================================================
+   HER OWN LOGS
+
+   The same machinery as the child logs, pointed at her record instead
+   of a child's. What she is offered is decided by where she is rather
+   than by anybody's age, which is what momShape() already works out
+   for the mother facing Right Now.
+   ================================================================= */
+
+function momLogShape() {
+  const sit = situation();
+  return Object.assign(momShape(), { conditions: sit.conditions || [] });
+}
+
+function momLogs() {
+  if (!Array.isArray(store.parent.logs)) store.parent.logs = [];
+  return store.parent.logs;
+}
+
+/* One lookup for both sets, so the form and the list do not each need
+   to know whose log they are drawing. */
+function anyLogType(id) {
+  return getMomLogType(id) || getLogType(id);
+}
+
+function isMomLog(id) {
+  return !!getMomLogType(id);
+}
+
+/* The last side she fed or pumped from, which is the question the
+   whole feeding log exists to answer at four in the morning. */
+function lastSide(typeId) {
+  const rows = momLogs().filter((l) => l.typeId === typeId && l.values && l.values.side);
+  if (!rows.length) return null;
+  const v = rows[0];
+  return { side: v.values.side, at: v.at };
+}
+
+function momLogSave(typeId) {
+  const t = getMomLogType(typeId);
+  if (!t) return;
+  const d = state.logDraft && state.logDraft.typeId === typeId ? state.logDraft : null;
+  const values = Object.assign({}, (d && d.values) || {});
+  const filled = Object.keys(values).some((key) => {
+    const v = values[key];
+    return Array.isArray(v) ? v.length > 0 : v !== '' && v != null;
+  });
+  if (!filled) return;
+
+  const logs = momLogs();
+  logs.unshift({
+    id: 'm' + Date.now() + Math.floor(Math.random() * 1000),
+    typeId: typeId,
+    at: new Date().toISOString(),
+    values: values,
+  });
+  if (logs.length > 500) logs.length = 500;
+  state.logDraft = { typeId: null, values: {} };
+  store.logDraft = { typeId: null, values: {} };
+  store.parentUpdatedAt = Date.now();
+  notedSet(typeId);
+  nudgeMaybe(typeId, values);
+  /* Back to where she can see it, rather than to a dead end. */
+  store.logWho = 'me';
+  store.logDay = ciToday();
+  store.logCal = 0;
+  state.view = null;
+  state.tab = 'logs';
+  flushStore();
+  render();
+}
+
+function momLogDelete(id) {
+  store.parent.logs = momLogs().filter((l) => l.id !== id);
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+/* When she last took the same medicine. Timing only, never dose. */
+function momMedLine(name) {
+  const n = String(name || '').trim().toLowerCase();
+  if (!n) return null;
+  const last = momLogs().filter((l) => l.typeId === 'mom-medication'
+    && String((l.values || {}).name || '').trim().toLowerCase() === n)[0];
+  if (!last) return null;
+  const mins = Math.round((Date.now() - new Date(last.at).getTime()) / 60000);
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  const ago = h ? h + ' hour' + (h === 1 ? '' : 's') + (m ? ' and ' + m + ' minutes' : '') : m + ' minutes';
+  return { text: 'You last took ' + String(last.values.name) + ' ' + ago + ' ago, at ' + clockOf(last.at) + '.',
+    note: 'Timing only. How much to take is on the label or from whoever prescribed it.' };
+}
 
 function childLogs() {
   const k = activeChild();
@@ -7967,6 +13199,1139 @@ function medDueLine(name) {
   };
 }
 
+/* ---------- A WORD AFTER SOMETHING IS LOGGED ----------
+
+   The written line ships and shows immediately. Willow rewrites it in
+   the background when she is reachable, on the same daily budget as
+   the rest of her background writing, and if she is not reachable the
+   written one simply stays. Nothing ever saves in silence. */
+
+function selfCareRun(kind) {
+  const since = Date.now() - 1000 * 60 * 60 * 24 * 7;
+  const want = kind === 'self' ? SELFCARE_TYPES
+    : kind === 'outside' ? ['mom-outside'] : ['mom-moved'];
+  return momLogs().filter((l) => want.indexOf(l.typeId) !== -1
+    && new Date(l.at).getTime() >= since).length;
+}
+
+function notedSet(typeId) {
+  const t = anyLogType(typeId);
+  const label = t ? t.label : 'that';
+  const day = ciToday();
+  store.noted = {
+    typeId: typeId,
+    text: encourageFor(typeId, day),
+    from: 'written',
+    at: Date.now(),
+  };
+  /* The run line only for the looking after yourself ones, and only
+     once there is actually a run to mention. */
+  if (SELFCARE_TYPES.indexOf(typeId) !== -1) {
+    store.noted.run = runLine('self', selfCareRun('self'));
+  }
+  /* Willow's version, when she is going. Same budget as the daily
+     affirmation so a heavy logging day cannot eat the chat. */
+  try {
+    if (typeof liftWrite === 'function') {
+      /* A fresh key each time, or liftWrite would only ever write one
+         of these per session. The daily cap still holds. */
+      liftWrite('noted:' + typeId + ':' + Date.now(), { typeId: typeId, label: label, parentName: (store.parent.name || '').trim().split(/\s+/)[0] || '' }, (text) => {
+        const line = String(text || '').trim().replace(/^["']|["']$/g, '');
+        if (!line || line.length > 240) return;
+        if (!store.noted || store.noted.typeId !== typeId) return;
+        store.noted.text = line;
+        store.noted.from = 'willow';
+      });
+    }
+  } catch (err) { /* the written line is already on screen */ }
+}
+
+/* =================================================================
+   WILLOW SPEAKING UP
+
+   She asked for Willow to pop up sometimes with a message after
+   something is logged. The whole design is in src/data/nudges.js and
+   the short version is that "sometimes" is the requirement, not a
+   softening of it. Every log still gets its quiet line on the Logs
+   screen. Willow herself only surfaces when there is genuinely
+   something a friend would have noticed.
+   ================================================================= */
+
+/* How many hard days she has actually put down lately. Counted from
+   what she wrote, never inferred from anything else, and used for one
+   thing only: deciding whether Willow mentions that support exists. */
+function momLowDays(days) {
+  const since = Date.now() - 1000 * 60 * 60 * 24 * (Number(days) || 14);
+  return momLogs().filter((l) => l.typeId === 'mom-mood'
+    && new Date(l.at).getTime() >= since
+    && NUDGE_LOW_MOODS.indexOf(String((l.values || {}).mood || '')) !== -1).length;
+}
+
+function nudgeState() {
+  if (!store.nudge || typeof store.nudge !== 'object') store.nudge = {};
+  return store.nudge;
+}
+
+function nudgeCountToday() {
+  const n = nudgeState();
+  const day = ciToday();
+  if (n.day !== day) { n.day = day; n.count = 0; }
+  return n.count || 0;
+}
+
+/* Everything the decision needs, gathered from what the app already
+   knows. Kept apart from the decision itself so the rules can be
+   tested without a browser. */
+function nudgeFacts(typeId, values) {
+  const mine = isMomLog(typeId);
+  const list = mine ? momLogs() : (activeChild() ? (activeChild().logs || []) : []);
+  /* The log that was just saved is already in the list, so "first"
+     means exactly one of them, and the gap is measured to the one
+     before it rather than to itself. */
+  const same = list.filter((l) => l.typeId === typeId);
+  const others = list.filter((l) => l.id !== (same[0] || {}).id);
+  const prevAt = others.length ? new Date(others[0].at).getTime() : 0;
+  const n = nudgeState();
+
+  return {
+    typeId: typeId,
+    hour: new Date().getHours(),
+    isFirst: same.length <= 1,
+    selfRun: SELFCARE_TYPES.indexOf(typeId) !== -1 ? selfCareRun('self') : 0,
+    mood: (values && values.mood) ? String(values.mood) : '',
+    lowCount: momLowDays(14),
+    daysAway: prevAt ? Math.floor((Date.now() - prevAt) / (1000 * 60 * 60 * 24)) : 0,
+    lastAt: Number(n.lastAt) || 0,
+    todayCount: nudgeCountToday(),
+    now: Date.now(),
+  };
+}
+
+/* Decides, and if the answer is yes, puts her bubble on screen. The
+   written line is there immediately and Willow rewrites it if she can,
+   the same way everything else she writes works. */
+function nudgeMaybe(typeId, values) {
+  let reason = null;
+  try { reason = nudgeReason(nudgeFacts(typeId, values)); } catch (err) { reason = null; }
+  if (!reason) return;
+
+  const n = nudgeState();
+  const t = anyLogType(typeId);
+  const label = t ? t.label : '';
+  n.lastAt = Date.now();
+  n.count = nudgeCountToday() + 1;
+  n.at = Date.now();
+  n.reason = reason;
+  n.text = nudgeWritten(reason, ciToday() + typeId);
+  n.from = 'written';
+  n.opener = NUDGE_OPENERS[reason] || '';
+
+  /* Some lines are written once and read as written. See the note on
+     lowrun in nudges.js for why. */
+  if ((NUDGE_REASONS[reason] || {}).fixed) { flushStore(); return; }
+
+  try {
+    if (typeof liftWrite === 'function') {
+      liftWrite('nudge:' + reason + ':' + Date.now(), {
+        reason: reason,
+        label: label,
+        parentName: (store.parent.name || '').trim().split(/\s+/)[0] || '',
+      }, (text) => {
+        const line = String(text || '').trim().replace(/^["']|["']$/g, '');
+        if (!line || line.length > 200) return;
+        const cur = nudgeState();
+        /* She may have moved on, or a newer one may have replaced this.
+           Either way the old answer is no longer wanted. */
+        if (cur.reason !== reason) return;
+        cur.text = line;
+        cur.from = 'willow';
+      });
+    }
+  } catch (err) { /* the written line is already on screen */ }
+}
+
+function nudgeLive() {
+  const n = store.nudge;
+  if (!n || !n.text || n.gone) return null;
+  if (Date.now() - (n.at || 0) > NUDGE_LIFE_MINUTES * 60 * 1000) return null;
+  return n;
+}
+
+function nudgeDismiss() {
+  const n = nudgeState();
+  n.gone = true;
+  flushStore();
+  render();
+}
+
+/* Tapping her opens the panel and puts the conversation in motion, so
+   she is somebody who said something rather than a message that
+   disappears. */
+function nudgeTake() {
+  const n = nudgeLive();
+  if (!n) return;
+  const key = willowThreadKey();
+  willowSay('willow', n.text, [], '', key);
+  if (n.opener) willow.input = n.opener;
+  nudgeState().gone = true;
+  willow.open = true;
+  flushStore();
+  render();
+}
+
+/* Her bubble, peeking out above her pill in the corner. Drawn beside
+   the pill rather than instead of it, so the thing she is attached to
+   is still visibly her. */
+function nudgeBubble() {
+  const n = nudgeLive();
+  if (!n || willow.open) return '';
+  return `
+  <div class="wnudge">
+    <button class="wnudge-x" data-nudge="no" aria-label="Not now">&times;</button>
+    <button class="wnudge-body" data-nudge="open">
+      <span class="wnudge-t">${esc(WILLOW.name)}</span>
+      <span class="wnudge-l">${esc(n.text)}</span>
+      ${n.opener ? `<span class="wnudge-go">${esc(n.opener)} ${icon('chev', 11, 'var(--deep)')}</span>` : ''}
+    </button>
+  </div>`;
+}
+
+/* Shown once, on the screen she lands on, then cleared by the next
+   thing she does. A note about something that just happened should not
+   still be there tomorrow. */
+function notedCard() {
+  const n = store.noted;
+  if (!n || !n.text) return '';
+  if (Date.now() - (n.at || 0) > 1000 * 60 * 10) return '';
+  return `
+  <div class="card notedcard">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(logWhoName('me'))}</p>
+    <p class="bodytext" style="margin-top:4px">${esc(n.text)}</p>
+    ${n.run ? `<p class="tiny" style="margin-top:7px">${icon('star', 10, 'var(--sage)')} ${esc(n.run)}</p>` : ''}
+  </div>`;
+}
+
+/* =================================================================
+   MEMORIES
+
+   Kept forever, on the profile they belong to, and nowhere else.
+   ================================================================= */
+
+function memories() {
+  if (!Array.isArray(store.memories)) store.memories = [];
+  return store.memories;
+}
+
+function memDraft() {
+  if (!store.memDraft || typeof store.memDraft !== 'object') {
+    store.memDraft = newMemory(store.memWho || 'me', 'words');
+    store.memDraft.at = ciToday();
+  }
+  return store.memDraft;
+}
+
+function memOpen(who, kind) {
+  store.memWho = who;
+  store.memDraft = newMemory(who, kind || 'words');
+  store.memDraft.at = ciToday();
+  store.memOpen = true;
+  store.memError = '';
+  flushStore();
+  render();
+}
+
+function memClose() {
+  store.memDraft = null;
+  store.memOpen = false;
+  store.memError = '';
+  store.memBusy = 0;
+  flushStore();
+  render();
+}
+
+function memSetKind(kind) {
+  const d = memDraft();
+  d.kind = kind;
+  flushStore();
+  render();
+}
+
+function memSetVisibility(vis) {
+  const d = memDraft();
+  if (!canBePublic(d.who)) return;
+  d.visibility = vis;
+  flushStore();
+  render();
+}
+
+function memSave() {
+  const d = memDraft();
+  const text = String(d.text || '').trim();
+  if (!text && !d.files.length) return;
+  if (store.memBusy) return;
+  const mem = Object.assign({}, d, {
+    text: text,
+    at: d.at || ciToday(),
+    visibility: memoryVisibility(d),
+  });
+  memories().unshift(mem);
+  store.memDraft = null;
+  store.memOpen = false;
+  store.memError = '';
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+function memDelete(id) {
+  const mem = memories().filter((m) => m.id === id)[0];
+  if (!mem) return;
+  store.memories = memories().filter((m) => m.id !== id);
+  if (!Array.isArray(store.deletedMemoryIds)) store.deletedMemoryIds = [];
+  if (store.deletedMemoryIds.indexOf(id) === -1) store.deletedMemoryIds.push(id);
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+  /* The files go after the record, so the screen never waits on the
+     network to show that something was removed. */
+  deleteStoredFiles(mem.files);
+}
+
+function memSetVisibilityOn(id, vis) {
+  const mem = memories().filter((m) => m.id === id)[0];
+  if (!mem || !canBePublic(mem.who)) return;
+  mem.visibility = vis;
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+/* Picking a file for a memory. Separate from the profile photo picker
+   because this one accepts video and audio and does not crop. */
+let memInput = null;
+
+function ensureMemInput() {
+  if (memInput && memInput.isConnected) return memInput;
+  const el = document.createElement('input');
+  el.type = 'file';
+  el.id = 'rsgMemIn';
+  el.style.position = 'fixed';
+  el.style.left = '-9999px';
+  el.setAttribute('aria-hidden', 'true');
+  el.addEventListener('change', () => {
+    const file = el.files && el.files[0];
+    el.value = '';
+    if (!file) return;
+    memTakeFile(file);
+  });
+  document.body.appendChild(el);
+  memInput = el;
+  return el;
+}
+
+function memPick() {
+  const d = memDraft();
+  const k = memoryKind(d.kind);
+  if (!k || !k.accept) return;
+  if (d.files.length >= MEMORY_MAX_FILES) {
+    store.memError = 'That is ' + MEMORY_MAX_FILES + ' already, which is the limit for one memory.';
+    render();
+    return;
+  }
+  const el = ensureMemInput();
+  el.accept = k.accept;
+  store.memError = '';
+  try { el.click(); } catch (err) {
+    store.memError = 'This browser would not open the picker.';
+    render();
+  }
+}
+
+async function memTakeFile(file) {
+  const d = memDraft();
+  const big = tooBigMessage(d.kind, file.size || 0);
+  if (big) { store.memError = big; render(); return; }
+
+  store.memBusy = 1;
+  store.memError = '';
+  render();
+
+  try {
+    const saved = await uploadFile(file, d.kind, (pct) => {
+      store.memBusy = Math.max(1, pct);
+      render();
+    });
+    const cur = memDraft();
+    cur.files.push(saved);
+    store.memBusy = 0;
+    flushStore();
+    render();
+  } catch (err) {
+    store.memBusy = 0;
+    /* Said in words, with the file still in her hand rather than gone. */
+    store.memError = 'That did not upload. ' + (navigator.onLine === false
+      ? 'You are offline at the moment, so it is worth trying again when you are back.'
+      : 'Worth trying again, and if it keeps failing tell me and I will look at it.');
+    render();
+  }
+}
+
+function memDropFile(i) {
+  const d = memDraft();
+  const gone = d.files.splice(Number(i), 1);
+  flushStore();
+  render();
+  deleteStoredFiles(gone);
+}
+
+/* ---------- WHAT ONE LOOKS LIKE ---------- */
+
+function memFileBlock(f, i, editing) {
+  if (!f) return '';
+  if (f.kind === 'video') {
+    return `
+    <span class="memfile">
+      <video src="${esc(f.url)}" controls preload="metadata" playsinline></video>
+      ${editing ? `<button class="postpic-x" data-memdrop="${i}" aria-label="Remove">${icon('plus', 14, '#fff')}</button>` : ''}
+    </span>`;
+  }
+  if (f.kind === 'audio') {
+    return `
+    <span class="memfile audio">
+      ${icon('mic', 18, 'var(--deep)')}
+      <audio src="${esc(f.url)}" controls preload="metadata"></audio>
+      ${editing ? `<button class="postpic-x" data-memdrop="${i}" aria-label="Remove">${icon('plus', 14, '#fff')}</button>` : ''}
+    </span>`;
+  }
+  return `
+  <span class="memfile">
+    <img src="${esc(f.url)}" alt="" loading="lazy" />
+    ${editing ? `<button class="postpic-x" data-memdrop="${i}" aria-label="Remove">${icon('plus', 14, '#fff')}</button>` : ''}
+  </span>`;
+}
+
+function memCard(mem, opts) {
+  const o = opts || {};
+  const vis = memoryVisibility(mem);
+  const mine = (mem.who || 'me') === 'me';
+  return `
+  <div class="card memcard">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="grow">
+        <span class="memdate">${esc(mem.at ? cycleDateLabelWithYear(mem.at) : 'No date')}</span>
+        ${o.yearsAgo ? `<span class="tiny" style="display:block">${esc(yearsAgoLine(o.yearsAgo))}</span>` : ''}
+      </span>
+      ${mine ? `
+      <span class="post-vis${vis === 'public' ? ' pub' : ''}">
+        ${icon('shield', 11, 'var(--muted)')} Just me
+      </span>` : `
+      <span class="post-vis">${icon('shield', 11, 'var(--muted)')} Private</span>`}
+    </div>
+
+    ${mem.text ? `<p class="bodytext" style="margin-top:8px;white-space:pre-wrap">${esc(mem.text)}</p>` : ''}
+
+    ${(mem.files || []).length ? `
+    <div class="memfiles n${Math.min(4, mem.files.length)}">
+      ${mem.files.map((f, i) => memFileBlock(f, i, false)).join('')}
+    </div>` : ''}
+
+    ${/* No share button, on hers or on a child's. Memories are a shelf
+          you keep. Anything meant for other people is a post. */ ''}
+    ${o.actions === false ? '' : `
+    <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+      <button class="chip" data-memdel="${esc(mem.id)}">Delete</button>
+    </div>`}
+  </div>`;
+}
+
+/* ---------- THE COMPOSER ---------- */
+
+function memComposer(who) {
+  if (!store.memOpen || store.memWho !== who) {
+    return `
+    <button class="composer shut" data-memopen="${esc(who)}">
+      ${icon('star', 17, 'var(--deep)')}
+      <span class="composer-hint">Keep something${who === 'me' ? '' : ' about ' + esc(logWhoName(who))}</span>
+      <span class="composer-cam">${icon('camera', 17, 'var(--deep)')}</span>
+    </button>`;
+  }
+
+  const d = memDraft();
+  const k = memoryKind(d.kind) || MEMORY_KINDS[3];
+  const busy = store.memBusy;
+
+  return `
+  <div class="card composer">
+    <div class="chips" style="margin-bottom:9px">
+      ${MEMORY_KINDS.map((x) => `
+        <button class="chip${d.kind === x.id ? ' on' : ''}" data-memkind="${esc(x.id)}"
+          ${d.kind === x.id ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
+          >${icon(x.icon, 12, 'var(--deep)')} ${esc(x.label)}</button>`).join('')}
+    </div>
+
+    <textarea class="inp composer-in" id="memIn" data-memfield="text" rows="3"
+      placeholder="${esc(d.kind === 'words'
+        ? 'What did they say? Write it the way they said it.'
+        : 'What is this, and what do you want to remember about it?')}">${esc(d.text || '')}</textarea>
+
+    ${k.note ? `<p class="tiny" style="margin-top:7px">${esc(k.note)}</p>` : ''}
+
+    ${d.files.length ? `
+    <div class="memfiles draft n${Math.min(4, d.files.length)}">
+      ${d.files.map((f, i) => memFileBlock(f, i, true)).join('')}
+    </div>` : ''}
+
+    ${busy ? `
+    <div class="memup">
+      <div class="bar"><i style="width:${Math.max(4, busy)}%"></i></div>
+      <p class="tiny" style="margin-top:6px">Uploading, ${busy}%. It is safe to wait here.</p>
+    </div>` : ''}
+
+    ${store.memError ? `<p class="tiny" style="margin-top:8px;color:#A85A44">${esc(store.memError)}</p>` : ''}
+
+    <div class="composer-bar">
+      ${k.accept ? `
+      <button class="chip" data-mempick="1" ${busy || d.files.length >= MEMORY_MAX_FILES ? 'disabled' : ''}>
+        ${icon(k.icon, 13, 'var(--deep)')} Add ${esc(k.label.toLowerCase())}
+      </button>` : ''}
+      <span class="tiny" style="align-self:center">When did it happen</span>
+    </div>
+    <div style="margin-top:7px">${dateSelects('memory', d.at || ciToday(), 20, 0)}</div>
+
+    <p class="tiny" style="margin-top:10px">${icon('shield', 10, 'var(--sage)')}
+      ${esc(who === 'me' ? MEMORY_PRIVACY_MINE : MEMORY_PRIVACY_CHILD)}</p>
+
+    <div style="display:flex;gap:8px;margin-top:11px;justify-content:flex-end;flex-wrap:wrap">
+      <button class="chip" data-memclose="1">Cancel</button>
+      <button class="btn" data-memsave="1" ${busy ? 'disabled' : ''}
+        style="width:auto;flex:none;padding:10px 20px">Keep it</button>
+    </div>
+  </div>`;
+}
+
+/* ---------- THE SECTION ON A PROFILE ---------- */
+
+function memSection(who) {
+  const list = memoriesFor(memories(), who);
+  const show = store.memAll === who ? list : list.slice(0, 4);
+
+  return `
+  <p class="sect">Memories</p>
+  ${memComposer(who)}
+  ${show.map((m) => memCard(m)).join('')}
+  ${list.length > 4 ? `
+  <button class="btn ghost sm" style="width:100%" data-memall="${esc(store.memAll === who ? '' : who)}">
+    ${store.memAll === who ? 'Show fewer' : 'All ' + list.length + ', by year'}
+  </button>` : ''}
+  ${!list.length ? `
+  <p class="tiny" style="margin-top:2px">${esc(who === 'me' ? MEMORY_PRIVACY_MINE : MEMORY_EMPTY_CHILD)}</p>` : `
+  <p class="tiny" style="margin-top:2px">${esc(MEMORY_KEEP_NOTE)}</p>`}`;
+}
+
+/* ---------- A YEAR AGO TODAY, ON HOME ---------- */
+
+function memOnThisDay() {
+  const hits = onThisDay(memories(), ciToday());
+  if (!hits.length) return '';
+  if (store.memDayHidden === ciToday()) return '';
+  const m = hits[0];
+  const whoName = (m.who || 'me') === 'me' ? '' : logWhoName(m.who);
+
+  return `
+  <div class="card memday">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="grow">
+        <span class="eyebrow">${icon('star', 11, 'var(--sage)')} ${esc(yearsAgoLine(m.yearsAgo))}</span>
+        ${whoName ? `<span class="tiny" style="display:block;margin-top:2px">${esc(whoName)}</span>` : ''}
+      </span>
+      <button class="chip" data-memhide="1" aria-label="Hide for today"
+        style="min-height:28px;padding:4px 10px">Not now</button>
+    </div>
+    ${m.text ? `<p class="bodytext" style="margin-top:8px;white-space:pre-wrap">${esc(m.text)}</p>` : ''}
+    ${(m.files || []).length ? `
+    <div class="memfiles n1">${memFileBlock(m.files[0], 0, false)}</div>` : ''}
+    ${hits.length > 1 ? `
+    <p class="tiny" style="margin-top:8px">${hits.length - 1} more from this day.</p>` : ''}
+  </div>`;
+}
+
+/* =================================================================
+   WILLOW WALKING SOMEBODY IN THE DOOR
+
+   She asked for this directly: Willow should pop up once people sign
+   up and help walk them through setting up their profile, and explain
+   what the app does and what it is useful for.
+
+   The problem it solves is that a brand new account lands on a Home
+   screen full of empty cards asking for things, and an empty app looks
+   like homework. The same four answers, asked by Willow one at a time,
+   feel like being shown around instead.
+
+   IT ONLY EVER OPENS ON A DELIBERATE FLAG.
+   Not on "this account looks empty". Somebody signing in on a second
+   device has an empty account for the two seconds before the cloud
+   answers, and asking them to set up everything they already have
+   would be the worst possible first impression of a sync feature.
+   So doSignUp sets the flag, and choosing to look around sets the
+   flag, and nothing else does.
+   ================================================================= */
+
+function onboard() {
+  if (!store.onboard || typeof store.onboard !== 'object') {
+    store.onboard = { open: false, done: false, step: 'hello', line: '', lineFrom: '' };
+  }
+  const ob = store.onboard;
+  if (ONBOARD_STEPS.indexOf(ob.step) === -1) ob.step = 'hello';
+  return ob;
+}
+
+/* Called from the two places somebody genuinely arrives for the first
+   time, and from the button in Settings for anybody who wants it again. */
+function onboardStart() {
+  store.onboard = { open: true, done: false, step: 'hello', line: '', lineFrom: '' };
+  flushStore();
+}
+
+function onboardGo(step) {
+  const ob = onboard();
+  if (!step) return;
+  ob.step = step;
+  /* The closing line is written the moment that step is reached, so it
+     has something specific to say about what they just told us. */
+  if (step === 'ready') onboardLine();
+  flushStore();
+  render();
+}
+
+function onboardFinish() {
+  const ob = onboard();
+  ob.open = false;
+  ob.done = true;
+  store.parentUpdatedAt = Date.now();
+  state.view = null;
+  state.tab = 'home';
+  flushStore();
+  render();
+}
+
+/* Skipping and finishing land in the same place on purpose. Somebody
+   who taps out on step two has still made an account, and dropping
+   them somewhere different would read as a punishment. */
+function onboardSkip() {
+  onboardFinish();
+}
+
+/* THE CLOSING LINE. Written first, Willow's if she answers, and the
+   written one stays on screen the whole time. Exactly the pattern in
+   liftAffirmation, and for the same reason: the app must never show a
+   blank space where the kind thing was meant to be. */
+function onboardLine() {
+  const ob = onboard();
+  const kid = onboardFirstChild();
+  const sum = kid && kid.birthday ? getAgeSummary({ name: kid.name, birthday: kid.birthday }) : null;
+  const ctxLine = {
+    parentName: (store.parent.name || '').trim().split(/\s+/)[0] || '',
+    childName: kid ? (kid.name || '') : '',
+    childAge: sum && sum.shortLabel ? sum.shortLabel : '',
+  };
+  if (!ob.line) {
+    ob.line = onboardClosing(ctxLine);
+    ob.lineFrom = 'written';
+  }
+  const stageLabels = {};
+  PARENT_STAGES.forEach((st) => { stageLabels[st.id] = st.label; });
+  const roleLabels = {};
+  PARENT_ROLES.forEach((r) => { roleLabels[r.id] = r.label; });
+  liftWrite('onboard', Object.assign({}, ctxLine, {
+    situation: onboardSituationLine(situation(), stageLabels, roleLabels),
+  }), (text) => {
+    const cur = onboard();
+    /* A long answer is a sign the model ignored the brief, and a wall
+       of text on the last screen would undo the whole tone. */
+    if (text.length > 260) return;
+    cur.line = text;
+    cur.lineFrom = 'willow';
+  });
+  return ob.line;
+}
+
+/* The child this walkthrough is about, which is the one they just
+   added if they added one. */
+function onboardFirstChild() {
+  const real = store.children.filter((k) => !isExampleChild(k));
+  return real.length ? real[real.length - 1] : null;
+}
+
+function onboardDots(step) {
+  const here = onboardIndex(step);
+  return `
+  <div class="obdots" aria-hidden="true">
+    ${ONBOARD_STEPS.map((_, i) =>
+      `<span class="obdot${i === here ? ' on' : ''}${i < here ? ' done' : ''}"></span>`).join('')}
+  </div>`;
+}
+
+/* Willow saying something, drawn the same way her chat bubbles are so
+   she reads as the same person here as she does in the corner. */
+function onboardSays(text) {
+  return `
+  <div class="obsay">
+    <span class="obsay-face">${icon('leaf', 15, '#fff')}</span>
+    <div class="obsay-body">
+      ${String(text).split('\n\n').map((p) => `<p>${esc(p)}</p>`).join('')}
+    </div>
+  </div>`;
+}
+
+function screenOnboard() {
+  const ob = onboard();
+  const step = ob.step;
+  const next = onboardNext(step);
+  const back = onboardBack(step);
+
+  let body = '';
+
+  if (step === 'hello') {
+    body = `
+    ${onboardSays(ONBOARD_HELLO)}
+    <div class="card" style="margin-top:12px">
+      ${ONBOARD_WHAT.map((w, i) => `
+      <div class="obwhat${i ? ' sep' : ''}">
+        <span class="obwhat-ic">${icon(w.icon, 15, 'var(--sage)')}</span>
+        <span class="grow">
+          <span class="obwhat-t">${esc(w.title)}</span>
+          <span class="obwhat-b">${esc(w.body)}</span>
+        </span>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  if (step === 'you') {
+    body = `
+    ${onboardSays(ONBOARD_LINES.you)}
+    <div class="card" style="margin-top:12px">
+      <p class="eyebrow">Your name</p>
+      <input class="inp" type="text" id="obName" data-obfield="name"
+        value="${esc(store.parent.name || '')}" placeholder="Your first name"
+        autocomplete="given-name" style="margin-top:8px;width:100%" />
+      <p class="eyebrow" style="margin-top:14px">A username</p>
+      <input class="inp" type="text" id="obUser" data-obfield="username"
+        value="${esc(store.parent.username || '')}" placeholder="Optional"
+        autocomplete="off" style="margin-top:8px;width:100%" />
+      <p class="tiny" style="margin-top:9px">${esc(ONBOARD_NAME_NOTE)}</p>
+    </div>`;
+  }
+
+  if (step === 'where') {
+    const sit = situation();
+    body = `
+    ${onboardSays(ONBOARD_LINES.where)}
+    <div class="card" style="margin-top:12px">
+      ${PARENT_STAGES.map((st) => tickRow(hasStage(sit, st.id), st.label, st.help,
+        `data-sit="stages" data-id="${esc(st.id)}"`)).join('')}
+    </div>
+    <p class="sect" style="margin-top:14px">How you parent</p>
+    <div class="card">
+      ${PARENT_ROLES.map((r) => tickRow((sit.roles || []).indexOf(r.id) !== -1, r.label, '',
+        `data-sit="roles" data-id="${esc(r.id)}"`)).join('')}
+    </div>
+    <div style="margin-top:14px">${caretakerBlock()}</div>
+    <p class="tiny" style="margin-top:10px">${esc(SITUATION_PRIVACY)}</p>`;
+  }
+
+  if (step === 'child') {
+    const kid = onboardFirstChild();
+    body = `
+    ${onboardSays(ONBOARD_LINES.child)}
+    ${kid ? `
+    <div class="card" style="margin-top:12px">
+      <p class="eyebrow">${icon('check', 11, 'var(--sage)')} Added</p>
+      <p style="font-size:17px;color:var(--ink);margin:6px 0 0">${esc(kid.name || 'Your child')}</p>
+      ${kid.birthday ? `<p class="tiny" style="margin-top:4px">
+        That makes them ${esc((getAgeSummary({ name: kid.name, birthday: kid.birthday }) || {}).label || '')}.
+      </p>` : ''}
+    </div>
+    <p class="sect" style="margin-top:14px">How they came to you</p>
+    <p class="tiny" style="margin:-4px 0 10px">${esc(CHILD_ARRIVAL_NOTE)}</p>
+    <div class="card">
+      ${CHILD_ARRIVAL.map((a) => tickRow((kid.arrival || []).indexOf(a.id) !== -1, a.label, '',
+        `data-arrival="${esc(a.id)}" data-arrivalfor="${esc(kid.id)}"`)).join('')}
+    </div>` : `
+    <div class="card" style="margin-top:12px">
+      <p class="eyebrow">Their name</p>
+      <input class="inp" type="text" id="obKid" data-obfield="child"
+        value="${esc(store.draftChildName || '')}" placeholder="Their name or nickname"
+        autocomplete="off" style="margin-top:8px;width:100%" />
+      <p class="eyebrow" style="margin-top:14px">Their birthday</p>
+      <div style="margin-top:7px">${dateSelects('draft', store.draftChildBday || '', 25, 1)}</div>
+      <p class="tiny" style="margin-top:9px">${esc(ONBOARD_CHILD_NOTE)}</p>
+      <button class="btn" data-ob="addchild" style="margin-top:14px;width:100%"
+        ${(store.draftChildName || '').trim() || store.draftChildBday ? '' : 'disabled'}>Add them</button>
+    </div>
+    <p class="tiny" style="margin-top:10px">${esc(ONBOARD_CHILD_SKIP)}</p>`}`;
+  }
+
+  if (step === 'ready') {
+    body = `
+    ${onboardSays(onboardLine())}
+    <p class="sect" style="margin-top:14px">Three things worth doing first</p>
+    <div class="card">
+      ${ONBOARD_FIRST_THINGS.map((f, i) => `
+      <div class="obwhat${i ? ' sep' : ''}">
+        <span class="obwhat-ic">${icon('leaf', 14, 'var(--sage)')}</span>
+        <span class="grow">
+          <span class="obwhat-t">${esc(f.label)}</span>
+          <span class="obwhat-b">${esc(f.body)}</span>
+        </span>
+      </div>`).join('')}
+    </div>
+    <div class="card leafy" style="margin-top:12px">
+      <p class="bodytext">Ready Set Grow is educational information, not medical advice. It cannot
+      examine your child. Your pediatrician can, and they want you to call.</p>
+    </div>`;
+  }
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <div class="obtop">
+      ${back ? `<button class="back" data-ob="back">${icon('back', 15, 'var(--deep)')} Back</button>`
+        : '<span></span>'}
+      <button class="chip" data-ob="skip">${esc(ONBOARD_SKIP)}</button>
+    </div>
+    ${onboardDots(step)}
+    <h1 class="title" style="margin-top:8px">${esc(ONBOARD_TITLES[step] || '')}</h1>
+  </div>
+  <div class="sc">
+    ${body}
+    ${next ? `
+    <button class="btn" data-ob="next" style="margin-top:16px;width:100%">
+      ${step === 'hello' ? 'Show me' : 'Next'} ${icon('chev', 15, '#fff')}
+    </button>` : `
+    <button class="btn" data-ob="done" style="margin-top:16px;width:100%">
+      Take me in ${icon('chev', 15, '#fff')}
+    </button>`}
+    ${step === 'hello' ? '' : `
+    <p class="tiny" style="text-align:center;margin-top:10px">${esc(ONBOARD_SKIP_NOTE)}</p>`}
+  </div>`;
+}
+
+/* =================================================================
+   LOOKING BACK
+
+   Logging is only half of it. She said she could log things and then
+   not see where they went, which is fair: her own logs lived behind a
+   button on Home and the Logs tab only ever showed a child.
+
+   So Logs now covers everybody in the house. Pick a person, pick a
+   day off the calendar, and see what that day held. Numbers that
+   repeat, such as weight or blood pressure, get a line showing where
+   they have moved rather than a list she has to read backwards.
+   ================================================================= */
+
+/* Whose logs are on screen. Follows whoever's profile she was last on,
+   so opening Logs from a child shows that child. */
+function logWho() {
+  const w = store.logWho || store.profileWho || 'me';
+  if (w === 'me') return 'me';
+  return store.children.some((k) => k.id === w) ? w : 'me';
+}
+
+function logsOf(who) {
+  if (who === 'me') return momLogs();
+  const k = store.children.filter((x) => x.id === who)[0];
+  if (!k) return [];
+  if (!Array.isArray(k.logs)) k.logs = [];
+  return k.logs;
+}
+
+function logTypesOf(who) {
+  if (who === 'me') return getMomLogTypes(momLogShape());
+  const k = store.children.filter((x) => x.id === who)[0];
+  if (!k) return [];
+  const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+  const months = sum && sum.age ? sum.age.totalMonths : null;
+  return months == null ? [] : getLogTypesForAge(months);
+}
+
+function logWhoName(who) {
+  if (who === 'me') return (store.parent.name || 'You').split(/\s+/)[0];
+  const k = store.children.filter((x) => x.id === who)[0];
+  return k ? (k.name || 'Unnamed').split(/\s+/)[0] : 'You';
+}
+
+/* ---------- THE CALENDAR ---------- */
+
+function logDayKey(l) {
+  return String(l.at).slice(0, 10);
+}
+
+function logCalendar(who, monthOffset) {
+  const logs = logsOf(who);
+  const counts = {};
+  logs.forEach((l) => {
+    const d = logDayKey(l);
+    counts[d] = (counts[d] || 0) + 1;
+  });
+
+  const today = ciToday();
+  const parts = today.split('-');
+  const base = new Date(Number(parts[0]), Number(parts[1]) - 1 + (monthOffset || 0), 1);
+  const y = base.getFullYear();
+  const m = base.getMonth();
+  const monthName = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+    'August', 'September', 'October', 'November', 'December'][m];
+  const key = (d) => y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+  const days = new Date(y, m + 1, 0).getDate();
+  const lead = new Date(y, m, 1).getDay();
+  const picked = store.logDay || today;
+
+  const cells = [];
+  for (let i = 0; i < lead; i++) cells.push('<span class="cal-pad"></span>');
+  for (let d = 1; d <= days; d++) {
+    const k = key(d);
+    const n = counts[k] || 0;
+    /* Three weights rather than a number in every square, so a month
+       reads as a shape at a glance and a busy day still stands out. */
+    const band = n === 0 ? '' : n < 3 ? ' has1' : n < 7 ? ' has2' : ' has3';
+    cells.push(`<button class="cal-d${band}${k === today ? ' today' : ''}${k === picked ? ' picked' : ''}"
+      data-logday="${esc(k)}" aria-label="${esc(cycleDateLabelWithYear(k))}, ${n} logged"
+      aria-pressed="${k === picked}">${d}</button>`);
+  }
+
+  return `
+  <div class="calwrap">
+    <div class="calhead">
+      <button class="calnav" data-logcal="-1" aria-label="Previous month">${icon('back', 14, 'var(--deep)')}</button>
+      <span class="calmonth">${esc(monthName)} ${y}</span>
+      <button class="calnav" data-logcal="1" aria-label="Next month">${icon('chev', 14, 'var(--deep)')}</button>
+    </div>
+    <div class="calgrid">
+      ${['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d) => `<span class="cal-w">${d}</span>`).join('')}
+      ${cells.join('')}
+    </div>
+    <div class="callegend">
+      <span><i class="k-has1"></i> A little</span>
+      <span><i class="k-has2"></i> A fair bit</span>
+      <span><i class="k-has3"></i> A lot</span>
+    </div>
+  </div>`;
+}
+
+/* ---------- ONE DAY ---------- */
+
+function logDayCard(who) {
+  const day = store.logDay || ciToday();
+  const rows = logsOf(who).filter((l) => logDayKey(l) === day);
+  const isToday = day === ciToday();
+
+  return `
+  <div class="card">
+    <p class="eyebrow">${icon('calendar', 11, 'var(--sage)')}
+      ${isToday ? 'Today' : esc(cycleDateLabelWithYear(day))}</p>
+    ${rows.length ? `
+      <p style="font-size:14px;font-weight:600;color:var(--ink);margin:4px 0 9px">
+        ${esc(rows.length + ' thing' + (rows.length === 1 ? '' : 's') + ' logged')}
+      </p>
+      ${rows.map((l) => {
+        const t = anyLogType(l.typeId);
+        return `
+        <div class="dayrow">
+          <span class="dayrow-t">${esc(clockOf(l.at))}</span>
+          <span class="grow">
+            <span class="dayrow-l">${esc(t ? t.label : 'Log')}</span>
+            ${summarizeLog(l, t) ? `<span class="tiny" style="display:block">${esc(summarizeLog(l, t))}</span>` : ''}
+            ${l.values && l.values.notes ? `<span class="tiny" style="display:block;margin-top:2px">${esc(l.values.notes)}</span>` : ''}
+          </span>
+          ${who === 'me' ? `<button class="chip" data-delmomlog="${esc(l.id)}"
+            style="min-height:28px;padding:4px 9px">Remove</button>` : ''}
+        </div>`;
+      }).join('')}
+    ` : `
+      <p class="bodytext" style="margin-top:4px">
+        ${isToday ? 'Nothing logged yet today.' : 'Nothing was logged that day.'}
+      </p>`}
+  </div>`;
+}
+
+/* ---------- WHERE A NUMBER HAS MOVED ----------
+
+   Only for the logs that record the same number over and over, and
+   only once there are two of them. It says what the numbers are and
+   how they have moved. It does not say whether that is good. */
+
+const LOG_TRENDS = [
+  { typeId: 'mom-weight', field: 'weight', label: 'Weight', unit: 'lb' },
+  { typeId: 'mom-bp', field: 'systolic', label: 'Blood pressure', unit: '',
+    pair: 'diastolic', join: ' over ' },
+  { typeId: 'mom-sleep', field: 'hours', label: 'Your sleep', unit: 'hrs' },
+  { typeId: 'mom-sugar', field: 'reading', label: 'Blood sugar', unit: 'mg/dL' },
+];
+
+function trendRows(who, spec) {
+  return logsOf(who)
+    .filter((l) => l.typeId === spec.typeId)
+    .map((l) => ({
+      at: l.at,
+      n: Number((l.values || {})[spec.field]),
+      pair: spec.pair ? (l.values || {})[spec.pair] : null,
+    }))
+    .filter((r) => isFinite(r.n))
+    .slice(0, 30);
+}
+
+/* A plain line, drawn from the points themselves so it needs no
+   library and no axis nobody reads. */
+function sparkline(values) {
+  if (values.length < 2) return '';
+  const w = 240;
+  const h = 44;
+  const min = Math.min.apply(null, values);
+  const max = Math.max.apply(null, values);
+  const span = max - min || 1;
+  const step = w / (values.length - 1);
+  const pts = values.map((v, i) => {
+    const x = i * step;
+    const y = h - 4 - ((v - min) / span) * (h - 10);
+    return x.toFixed(1) + ',' + y.toFixed(1);
+  });
+  return `
+  <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" class="spark" aria-hidden="true">
+    <polyline points="${pts.join(' ')}" fill="none" stroke="var(--leaf)" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="${(values.length - 1) * step}" cy="${(h - 4 - ((values[values.length - 1] - min) / span) * (h - 10)).toFixed(1)}"
+      r="3.5" fill="var(--deep)" />
+  </svg>`;
+}
+
+function trendCard(who, spec) {
+  const rows = trendRows(who, spec);
+  if (rows.length < 2) return '';
+  /* Oldest first for the drawing, newest first is how they are stored. */
+  const chron = rows.slice().reverse();
+  const newest = rows[0];
+  const oldest = rows[rows.length - 1];
+  const diff = newest.n - oldest.n;
+  const moved = Math.abs(Math.round(diff * 10) / 10);
+  const dir = diff === 0 ? 'the same as' : diff > 0 ? 'up ' + moved + ' from' : 'down ' + moved + ' from';
+
+  const show = (r) => (spec.pair && r.pair ? r.n + spec.join + r.pair : r.n + (spec.unit ? ' ' + spec.unit : ''));
+
+  return `
+  <div class="card">
+    <p class="eyebrow">${icon('chart', 11, 'var(--sage)')} ${esc(spec.label)}</p>
+    <p class="liftline" style="font-size:19px;margin-top:3px">${esc(show(newest))}</p>
+    <p class="tiny" style="margin-top:2px">
+      ${esc(cycleDateLabel(logDayKey({ at: newest.at })))}, and ${esc(dir)}
+      ${esc(show(oldest))} on ${esc(cycleDateLabel(logDayKey({ at: oldest.at })))}.
+      ${rows.length} recorded.
+    </p>
+    ${sparkline(chron.map((r) => r.n))}
+  </div>`;
+}
+
+function trendsFor(who) {
+  if (who !== 'me') return '';
+  const cards = LOG_TRENDS.map((sp) => trendCard(who, sp)).filter(Boolean).join('');
+  if (!cards) return '';
+  return `<p class="sect">How it has moved</p>${cards}`;
+}
+
+/* ---------- THE PEOPLE STRIP ---------- */
+
+function logWhoStrip(who) {
+  const people = [{ id: 'me', name: logWhoName('me') }]
+    .concat(store.children.filter((k) => !isExampleChild(k)).map((k) => ({ id: k.id, name: logWhoName(k.id) })));
+  if (people.length < 2) return '';
+  return `
+  <div class="chips" style="margin-bottom:10px">
+    ${people.map((p) => `
+      <button class="chip${who === p.id ? ' on' : ''}" data-logwho="${esc(p.id)}"
+        ${who === p.id ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}
+        >${esc(p.name)}</button>`).join('')}
+  </div>`;
+}
+
+/* The Logs tab. Everybody in the house, a month at a time. */
+/* THE LOGS SCREEN WEARS TWO HATS.
+
+   As the TAB it is the whole house: a strip along the top to pick who,
+   and no Back, because a tab is a place rather than a step.
+
+   Opened from a child's profile it is THAT CHILD'S log page: their name
+   at the top, a Back button to their profile, and no person strip,
+   because she did not come here to browse everybody.
+
+   She hit the difference the hard way. "Everything logged for Stetson"
+   used to jump to the tab, which dropped the back stack and left the
+   bottom bar as the only way out, so pressing anything sent her Home. */
+function screenLogsHub(c, opts) {
+  const o = opts || {};
+  const page = !!o.page;
+  const who = logWho();
+  const types = logTypesOf(who);
+  const name = logWhoName(who);
+  const mine = who === 'me';
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    ${page ? `<button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>` : ''}
+    <h1 class="title"${page ? ' style="margin-top:6px"' : ''}>${page && !mine ? esc(name) + "'s logs" : 'Logs'}</h1>
+    <p class="sub">${mine
+      ? 'Everything you have put down, and where the numbers have moved.'
+      : 'What you have tracked for ' + esc(name) + ', and the version you can hand your pediatrician.'}</p>
+  </div>
+  <div class="sc">
+
+    ${notedCard()}
+
+    ${page ? '' : logWhoStrip(who)}
+
+    <p class="sect">Log something</p>
+    ${types.length ? `
+    <div class="qgrid">
+      ${types.map((t) => `
+        <button class="q" data-go="log" data-id="${esc(t.id)}">
+          <span class="qi">${icon(logIcon(t.icon), 17)}</span>
+          <span class="qt">${esc(t.label)}</span>
+          ${mine ? '' : `<span class="qs">${esc(lastLogLine(t.id))}</span>`}
+        </button>`).join('')}
+    </div>` : `
+    <p class="tiny" style="text-align:center;padding:8px 0">
+      ${mine ? 'Tell Settings where you are and the right logs appear.'
+        : 'Add a birthday and the right logs appear for that age.'}
+    </p>`}
+
+    <p class="sect">Look back</p>
+    ${logCalendar(who, store.logCal || 0)}
+    ${logDayCard(who)}
+
+    ${trendsFor(who)}
+
+    ${mine ? `
+    <p class="sect">For your provider</p>
+    <div class="card">
+      <p class="bodytext">A plain list of everything above with dates and times, as a text file you can
+      print, email, or read off your phone in the room. A blood pressure trend or a record of bleeding
+      is exactly what gets asked for and never remembered.</p>
+      <button class="btn ghost sm" style="width:100%;margin-top:11px" data-momexport="1">
+        ${icon('export', 14, 'var(--deep)')} Save it as a file
+      </button>
+    </div>
+    <p class="tiny" style="margin-top:10px">${icon('shield', 10, 'var(--sage)')} ${esc(MOM_LOG_NOTE)}</p>
+    ` : `
+    ${childLogs().length ? `
+    <p class="sect">For your pediatrician</p>
+    <div class="card">
+      <p class="bodytext">A plain list with dates and times, as a text file you can print or email.</p>
+      <button class="btn ghost sm" style="width:100%;margin-top:11px" data-export="logs">
+        ${icon('export', 14, 'var(--deep)')} Save it as a file
+      </button>
+    </div>` : ''}`}
+  </div>`;
+}
+
 function screenLogs(c) {
   if (c.months == null) return emptyScreen('Add a birthday and the right logs appear for that age.');
   /* Grouped by the data file, then flattened into one grid. The group
@@ -8019,9 +14384,7 @@ function screenLogs(c) {
           <button class="chip" data-dellog="${esc(l.id)}" style="min-height:30px;padding:5px 10px">Remove</button>
         </div>`;
       }).join('')}`).join('') : `
-      <div class="card flat">
-        <p class="bodytext">Nothing logged yet. Tap any of the buttons above and it lands here with a time on it.</p>
-      </div>`}
+      <p class="tiny" style="text-align:center;padding:6px 0">Nothing logged yet.</p>`}
 
     ${logs.length ? `
     <p class="sect">For your pediatrician</p>
@@ -8037,11 +14400,14 @@ function screenLogs(c) {
 }
 
 function viewLog(c, typeId) {
-  const t = getLogType(typeId);
+  const t = anyLogType(typeId);
   if (!t) return emptyScreen('That log could not be found.');
+  const mine = isMomLog(typeId);
   const d = state.logDraft && state.logDraft.typeId === typeId ? state.logDraft : { typeId: typeId, values: {} };
   const v = d.values || {};
-  const med = typeId === 'medication' ? medDueLine(v.name || '') : null;
+  const med = typeId === 'medication' ? medDueLine(v.name || '')
+    : typeId === 'mom-medication' ? momMedLine(v.name || '') : null;
+  const last = mine && t.tracksAlternating ? lastSide(typeId) : null;
 
   const field = (f) => {
     const id = 'lf_' + esc(f.id);
@@ -8081,7 +14447,35 @@ function viewLog(c, typeId) {
         </div>
       </div>`;
     }
-    const inputType = f.type === 'number' || f.type === 'duration' ? 'number' : f.type === 'time' ? 'time' : 'text';
+    /* A duration asks for hours AND minutes. It used to be one box in
+       minutes, which is fine for a feed and ridiculous for a night's
+       sleep: nobody wants to type 600. Stored as total minutes either
+       way, so everything that reads it back is untouched. */
+    if (f.type === 'duration') {
+      const total = Number(val) || 0;
+      const hrs = Math.floor(total / 60);
+      const mins = total % 60;
+      return `
+      <div class="card flat" style="margin-bottom:8px">
+        <p class="eyebrow">${esc(f.label)}</p>
+        <div class="durrow">
+          <span class="durbit">
+            <input class="inp" type="number" min="0" inputmode="numeric"
+              data-durfield="${esc(f.id)}" data-durpart="h"
+              value="${total ? hrs : ''}" placeholder="0" />
+            <span class="tiny">hours</span>
+          </span>
+          <span class="durbit">
+            <input class="inp" type="number" min="0" max="59" inputmode="numeric"
+              data-durfield="${esc(f.id)}" data-durpart="m"
+              value="${total ? mins : ''}" placeholder="0" />
+            <span class="tiny">minutes</span>
+          </span>
+        </div>
+        ${f.hint ? `<p class="tiny" style="margin-top:8px">${esc(f.hint)}</p>` : ''}
+      </div>`;
+    }
+    const inputType = f.type === 'number' ? 'number' : f.type === 'time' ? 'time' : 'text';
     return `
     <div class="card flat" style="margin-bottom:8px">
       <p class="eyebrow">${esc(f.label)}${f.unit ? ' <span style="opacity:.6">' + esc(f.unit) + '</span>' : ''}${f.type === 'duration' ? ' <span style="opacity:.6">minutes</span>' : ''}</p>
@@ -8095,14 +14489,24 @@ function viewLog(c, typeId) {
   return `
   <div class="sc-head">
     <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
-    <p class="eyebrow" style="margin-top:6px">New log</p>
+    <p class="eyebrow" style="margin-top:6px">${mine ? 'For you' : 'New log'}</p>
     <h1 class="title sm">${esc(t.label)}</h1>
   </div>
   <div class="sc">
 
+    ${last ? `
+    <div class="card" style="border-left:3px solid var(--sage)">
+      <p class="eyebrow">${icon('clock', 11, 'var(--sage)')} Last time</p>
+      <p class="bodytext" style="margin-top:5px">
+        <strong style="color:var(--ink)">${esc(last.side)}</strong>, at ${esc(clockOf(last.at))}.
+        ${last.side === 'Left' ? 'So this one is the right.'
+          : last.side === 'Right' ? 'So this one is the left.' : ''}
+      </p>
+    </div>` : ''}
+
     ${med ? `
-    <div class="card" style="border-left:3px solid ${med.due ? 'var(--sage)' : 'var(--attention)'}">
-      <p class="eyebrow">${esc(med.label)} timing</p>
+    <div class="card" style="border-left:3px solid ${med.due === false ? 'var(--attention)' : 'var(--sage)'}">
+      <p class="eyebrow">${esc(med.label || 'Medication')} timing</p>
       <p class="bodytext" style="margin-top:5px">${esc(med.text)}</p>
       <p class="tiny" style="margin-top:8px">${esc(med.note)}</p>
     </div>` : ''}
@@ -8119,7 +14523,9 @@ function viewLog(c, typeId) {
       Save this log
     </button>
     <p class="tiny" style="text-align:center;margin-top:9px">
-      Saved with the time right now. It stays on this device, under ${esc(state.name || 'this child')}.
+      ${mine
+        ? esc(MOM_LOG_NOTE)
+        : 'Saved with the time right now. It stays on this device, under ' + esc(state.name || 'this child') + '.'}
     </p>
   </div>`;
 }
@@ -8406,6 +14812,7 @@ function newbornBlock(c) {
 
 const cloud = {
   mod: null,        // the Firestore module namespace
+  app: null,        // the initialised Firebase app, shared with messaging
   db: null,
   uid: null,
   unsub: null,      // the live listener, so signing out can stop it
@@ -8437,7 +14844,10 @@ const cloud = {
    named here as belonging to this browser rather than to the child. Add
    a field to a child and it syncs, which is the behaviour anybody would
    assume. */
-const CHILD_LOCAL_ONLY = ['seeded'];
+/* sharedFrom stays local on purpose. It says whose record this is from
+   the reader's point of view, so writing it into the document itself
+   would stamp the owner's own child as shared from themselves. */
+const CHILD_LOCAL_ONLY = ['seeded', 'sharedFrom', 'sharedNames'];
 
 function childPayload(k) {
   const src = k || {};
@@ -8493,10 +14903,29 @@ function parentPayload() {
   return JSON.parse(JSON.stringify({
     parent: store.parent,
     bagChecked: store.bagChecked || [],
+    /* THE CHORE CHART SYNCS AT THE HOUSEHOLD LEVEL.
+       Two parents sharing a child have to be looking at the same
+       chart, or one of them ticks the bins on her phone and the other
+       is still being told the bins need doing. The ticks travel too,
+       for exactly that reason. */
+    choreJobs: store.choreJobs || [],
+    choreDone: store.choreDone || {},
+    choreAdults: store.choreAdults || [],
+    choreStarsOn: store.choreStarsOn !== false,
+    growthUnits: store.growthUnits === 'metric' ? 'metric' : 'us',
     /* Carried so the greeting that already appeared on her phone does
        not appear again on the laptop the same afternoon. */
     birthdaySeen: store.birthdaySeen || {},
     posts: store.posts || [],
+    /* Memories sync the same way posts do, so a photo added on the
+       phone is there on the laptop. The files themselves live in
+       Storage, this only carries the links and the words. */
+    memories: store.memories || [],
+    deletedMemoryIds: store.deletedMemoryIds || [],
+    /* Carried so the walkthrough she already sat through on her phone
+       does not run again on her laptop. */
+    onboardDone: !!(store.onboard && store.onboard.done),
+    blocked: store.blocked || [],
     deletedChildIds: store.deletedChildIds || [],
     notDuplicates: store.notDuplicates || [],
     updatedAt: store.parentUpdatedAt || 0,
@@ -8529,6 +14958,45 @@ function isUntouchedSeed(k) {
     && (!k.lenses || !k.lenses.length)
     && (!k.logs || !k.logs.length)
     && (!k.routineInclude || !k.routineInclude.length);
+}
+
+/* Memories never lose to a stamp. A photo added on the phone while the
+   laptop was open has to survive, so the two lists are joined rather
+   than one replacing the other, and only something deliberately deleted
+   on either device stays gone. */
+function mergeMemories(local, remote, deletedIds) {
+  const dead = {};
+  (deletedIds || []).forEach((id) => { dead[id] = true; });
+  const out = [];
+  const seen = {};
+  const take = (list) => {
+    (list || []).forEach((m) => {
+      if (!m || !m.id) return;
+      if (dead[m.id]) return;
+      if (seen[m.id]) return;
+      seen[m.id] = true;
+      out.push(m);
+    });
+  };
+  take(local);
+  take(remote);
+  return sortMemories(out);
+}
+
+/* Both devices' tombstones, joined, so a delete on either one holds. */
+function mergeDeletedIds(local, remote) {
+  const out = [];
+  const seen = {};
+  const take = (list) => {
+    (list || []).forEach((id) => {
+      if (!id || seen[id]) return;
+      seen[id] = true;
+      out.push(id);
+    });
+  };
+  take(local);
+  take(remote);
+  return out;
 }
 
 /* THE MERGE, kept pure so it can be tested without a network.
@@ -8588,6 +15056,10 @@ function cloudSetStatus(s, err) {
 async function cloudStart(app, uid) {
   if (cloud.started && cloud.uid === uid) return;
   cloudStop();
+  /* Kept so notifications can attach to the same initialised app
+     rather than starting a second one, which Firebase tolerates and
+     then behaves oddly about. */
+  cloud.app = app;
   cloud.uid = uid;
   cloud.started = true;
   cloudSetStatus('loading');
@@ -8606,6 +15078,12 @@ async function cloudStart(app, uid) {
     }
     await cloudFirstSync();
     cloudListen();
+    /* After, not before. The account's own children reconcile first,
+       then anything shared with it is added on top. */
+    sharePullAll();
+    /* A link tapped before there was an account. This is the moment
+       there is one, so it is the moment to spend the invite. */
+    if (invite.code) inviteRedeem();
   } catch (err) {
     cloud.started = false;
     cloudSetStatus('error', String((err && err.message) || err));
@@ -8620,6 +15098,8 @@ function cloudStop() {
   cloud.started = false;
   cloud.known = {};
   cloud.knownParent = null;
+  share.invites = []; share.shares = []; share.links = [];
+  share.loaded = false; share.made = null; share.joined = ''; share.error = '';
   if (cloud.timer) { clearTimeout(cloud.timer); cloud.timer = null; }
   cloud.status = 'local';
 }
@@ -8650,13 +15130,22 @@ async function cloudFirstSync() {
   /* The example never goes up, empty account or not. This is the line
      that stops every new signup starting life with somebody else's
      child on it. */
-  const localKids = store.children.filter((k) => !isUntouchedSeed(k)).map(childPayload);
+  /* Shared children are held out of this merge entirely. They are not
+     this account's to reconcile, they are pulled separately below from
+     the account that owns them. Leaving them in would have meant the
+     merge deciding a co parent's child was missing from their own
+     collection and helpfully writing it there. */
+  const localKids = store.children
+    .filter((k) => !isUntouchedSeed(k) && !k.sharedFrom)
+    .map(childPayload);
+  const sharedKids = store.children.filter((k) => !!k.sharedFrom);
 
   const merged = mergeChildren(localKids, remoteKids, deleted);
   /* Anything that came through the merge is on the account now, so
      nothing left is the app's invention. */
   merged.children.forEach((k) => { delete k.seeded; });
-  store.children = merged.children;
+  /* Mine, reconciled, plus the shared ones put back untouched. */
+  store.children = merged.children.concat(sharedKids);
   if (store.activeChildId && !store.children.some((k) => k.id === store.activeChildId)) {
     store.activeChildId = store.children.length === 1 ? store.children[0].id : null;
   }
@@ -8665,15 +15154,44 @@ async function cloudFirstSync() {
   const localPt = Number(store.parentUpdatedAt) || 0;
   const remotePt = Number(remoteUser && remoteUser.updatedAt) || 0;
   if (remoteUser && remotePt > localPt) {
-    store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '', photo: '', situation: { stages: [], path: '', roles: [], support: [] } }, remoteUser.parent || {});
+    store.parent = Object.assign({ name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '', photo: '', calledBy: '', calledByOther: '', refersTo: '', situation: { stages: [], path: '', roles: [], support: [] } }, remoteUser.parent || {});
     store.parent.birthday = sanitizeStoredDate(store.parent.birthday, 0);
     store.parent.lastPeriod = sanitizeStoredDate(store.parent.lastPeriod, 0);
     store.parent.situation = normalizeSituation(store.parent.situation);
     store.posts = Array.isArray(remoteUser.posts) ? remoteUser.posts : (store.posts || []);
     store.bagChecked = Array.isArray(remoteUser.bagChecked) ? remoteUser.bagChecked : [];
+    store.choreJobs = Array.isArray(remoteUser.choreJobs) ? remoteUser.choreJobs : [];
+    store.choreDone = (remoteUser.choreDone && typeof remoteUser.choreDone === 'object')
+      ? remoteUser.choreDone : {};
+    store.choreAdults = Array.isArray(remoteUser.choreAdults) ? remoteUser.choreAdults : [];
+    store.choreStarsOn = remoteUser.choreStarsOn === false ? false : true;
+    store.growthUnits = remoteUser.growthUnits === 'metric' ? 'metric' : 'us';
     store.birthdaySeen = (remoteUser.birthdaySeen && typeof remoteUser.birthdaySeen === 'object')
       ? remoteUser.birthdaySeen : {};
     store.parentUpdatedAt = remotePt;
+  }
+
+  /* Memories are handled outside the stamp comparison on purpose. They
+     are the one thing in here that cannot be recreated, so both sides
+     are kept and only a real delete removes anything. */
+  /* If this account has already been shown around on another device,
+     never show it again here. */
+  if (remoteUser && remoteUser.onboardDone) {
+    const ob = onboard();
+    ob.open = false;
+    ob.done = true;
+  }
+
+  if (remoteUser) {
+    store.deletedMemoryIds = mergeDeletedIds(
+      store.deletedMemoryIds,
+      Array.isArray(remoteUser.deletedMemoryIds) ? remoteUser.deletedMemoryIds : []
+    );
+    store.memories = mergeMemories(
+      store.memories,
+      Array.isArray(remoteUser.memories) ? remoteUser.memories : [],
+      store.deletedMemoryIds
+    );
   }
 
   remoteKids.forEach((k) => { cloud.known[k.id] = contentKey(k); });
@@ -8701,12 +15219,19 @@ function cloudListen() {
       cloud.known[remote.id] = key;
       const i = store.children.findIndex((k) => k.id === remote.id);
       if (i === -1) { store.children.push(normalizeChild(remote)); changed = true; return; }
+      /* Keep whose record it is. normalizeChild builds from the
+         document, and sharedFrom deliberately is not in the document. */
+      const wasShared = store.children[i].sharedFrom;
       const lt = Number(store.children[i].updatedAt) || 0;
       const rt = Number(remote.updatedAt) || 0;
       /* Through the normaliser, same as the first sync. A record written
          by an older copy of the app must never arrive missing fields
          and take the local copy's with it. */
-      if (rt > lt) { store.children[i] = normalizeChild(remote); changed = true; }
+      if (rt > lt) {
+        store.children[i] = normalizeChild(remote);
+        if (wasShared) store.children[i].sharedFrom = wasShared;
+        changed = true;
+      }
     });
     if (changed) {
       if (store.activeChildId && !store.children.some((k) => k.id === store.activeChildId)) {
@@ -8726,6 +15251,248 @@ function cloudQueue() {
   cloud.timer = setTimeout(() => { cloud.timer = null; cloudPush(false); }, 1400);
 }
 
+/* =================================================================
+   TWO PARENTS, ONE CHILD
+
+   The rules in firestore.rules are the guarantee. Everything here is
+   the convenience on top of them: making a code, redeeming one,
+   fetching the children it unlocked, and taking it all back.
+
+   Nothing in this block is trusted by the server. A modified copy of
+   this app can ask for whatever it likes and the rules will refuse it,
+   which is the whole reason they were written and tested first.
+   ================================================================= */
+
+const share = {
+  invites: [],      // codes this account has handed out, still live
+  shares: [],       // who currently has access, and to what
+  links: [],        // whose children this account has been given
+  loaded: false,
+  busy: false,
+  error: '',
+  made: null,       // the code just created, so it can be shown once
+  pickIds: [],      // which children the next code should cover
+  joinInput: '',
+  joined: '',       // the sentence after a successful redeem
+};
+
+function sharingOn() {
+  return !!(cloud.started && cloud.db && cloud.mod && myUid());
+}
+
+/* Everything the two lists on the screen need. Read rather than
+   watched, because access does not change minute to minute. */
+async function shareLoad(force) {
+  if (!sharingOn()) return;
+  if (share.loaded && !force) return;
+  const fs = cloud.mod;
+  const uid = myUid();
+  try {
+    const mine = [];
+    const invSnap = await fs.getDocs(fs.collection(cloud.db, 'users', uid, 'shares'));
+    invSnap.forEach((d) => mine.push(Object.assign({ viewerUid: d.id }, d.data())));
+    share.shares = mine;
+
+    const links = [];
+    const linkSnap = await fs.getDocs(fs.collection(cloud.db, 'links', uid, 'from'));
+    linkSnap.forEach((d) => links.push(Object.assign({ ownerUid: d.id }, d.data())));
+    share.links = links;
+
+    share.loaded = true;
+    share.error = '';
+  } catch (err) {
+    share.error = SHARE_ERRORS.offline;
+  }
+  render();
+}
+
+/* Make a code for the children she ticked. */
+async function shareMakeCode() {
+  if (!sharingOn()) { share.error = SHARE_ERRORS.noAccount; render(); return; }
+  const ids = (share.pickIds || []).filter((id) => store.children.some((k) => k.id === id && !k.sharedFrom));
+  if (!ids.length) return;
+  share.busy = true;
+  share.error = '';
+  render();
+  const fs = cloud.mod;
+  const code = makeShareCode();
+  const names = ids.map((id) => {
+    const k = store.children.filter((x) => x.id === id)[0];
+    return (k && k.name) || 'Your child';
+  });
+  try {
+    await fs.setDoc(fs.doc(cloud.db, 'invites', code), {
+      ownerUid: myUid(),
+      ownerName: (store.parent.name || '').trim().split(/\s+/)[0] || 'They',
+      childIds: ids,
+      childNames: names,
+      expiresAt: codeExpiry(Date.now()),
+      usedBy: '',
+      at: Date.now(),
+    });
+    share.made = { code: code, names: names, at: Date.now() };
+    share.pickIds = [];
+  } catch (err) {
+    share.error = SHARE_ERRORS.failed;
+  }
+  share.busy = false;
+  render();
+}
+
+/* Redeem one. The order matters: check it, write the grant, write the
+   index, burn the code, then fetch. If any of the first three fail the
+   rules have refused and nothing has changed. */
+async function shareJoin() {
+  if (!sharingOn()) { share.error = SHARE_ERRORS.noAccount; render(); return; }
+  const box = document.getElementById('shareIn');
+  if (box && box.value) share.joinInput = box.value;
+  const code = cleanCode(share.joinInput);
+  if (!codeLooksRight(code)) {
+    /* Say which half is wrong. Telling somebody the code is ten
+       characters long while they are staring at ten characters is how
+       a working feature gets reported as broken. */
+    const bad = badCodeChar(code);
+    share.error = bad
+      ? SHARE_ERRORS.badChar + ' The ' + bad + ' is the problem.'
+      : SHARE_ERRORS.shape;
+    render();
+    return;
+  }
+  share.busy = true;
+  share.error = '';
+  share.joined = '';
+  render();
+
+  const fs = cloud.mod;
+  const uid = myUid();
+  try {
+    const snap = await fs.getDoc(fs.doc(cloud.db, 'invites', code));
+    if (!snap.exists()) { share.error = SHARE_ERRORS.missing; share.busy = false; render(); return; }
+    const inv = snap.data();
+    if (inv.ownerUid === uid) { share.error = SHARE_ERRORS.own; share.busy = false; render(); return; }
+    if (Number(inv.expiresAt || 0) <= Date.now()) { share.error = SHARE_ERRORS.expired; share.busy = false; render(); return; }
+    if (inv.usedBy) { share.error = SHARE_ERRORS.used; share.busy = false; render(); return; }
+
+    const payload = { childIds: inv.childIds, code: code, at: Date.now() };
+    await fs.setDoc(fs.doc(cloud.db, 'users', inv.ownerUid, 'shares', uid), payload);
+    await fs.setDoc(fs.doc(cloud.db, 'links', uid, 'from', inv.ownerUid), payload);
+    /* Burned last, so a failure earlier leaves the code usable rather
+       than spending it on an attempt that did not work. */
+    try { await fs.updateDoc(fs.doc(cloud.db, 'invites', code), { usedBy: uid }); } catch (err) {}
+
+    await sharePullFrom(inv.ownerUid, inv.childIds);
+    share.joined = shareJoinedLine(inv.ownerName, inv.childNames || []);
+    share.joinInput = '';
+    share.loaded = false;
+    await shareLoad(true);
+  } catch (err) {
+    share.error = SHARE_ERRORS.failed;
+  }
+  share.busy = false;
+  render();
+}
+
+/* Fetch the children a grant unlocked and put them in the store,
+   marked with whose they are. */
+async function sharePullFrom(ownerUid, childIds) {
+  if (!sharingOn()) return;
+  const fs = cloud.mod;
+  for (let i = 0; i < (childIds || []).length; i++) {
+    const id = childIds[i];
+    try {
+      const snap = await fs.getDoc(fs.doc(cloud.db, 'users', ownerUid, 'children', id));
+      if (!snap.exists()) continue;
+      const k = normalizeChild(snap.data());
+      k.sharedFrom = ownerUid;
+      const at = store.children.findIndex((x) => x.id === id);
+      if (at === -1) store.children.push(k);
+      else if ((Number(k.updatedAt) || 0) >= (Number(store.children[at].updatedAt) || 0)) store.children[at] = k;
+      cloud.known[id] = contentKey(childPayload(k));
+    } catch (err) { /* refused or gone. Either way it is not ours. */ }
+  }
+  flushStore();
+}
+
+/* Every shared child, refreshed. Called on sign in, after the account's
+   own first sync. */
+async function sharePullAll() {
+  if (!sharingOn()) return;
+  const fs = cloud.mod;
+  try {
+    const snap = await fs.getDocs(fs.collection(cloud.db, 'links', myUid(), 'from'));
+    const jobs = [];
+    snap.forEach((d) => jobs.push([d.id, (d.data() || {}).childIds || []]));
+    for (let i = 0; i < jobs.length; i++) await sharePullFrom(jobs[i][0], jobs[i][1]);
+    if (jobs.length) render();
+  } catch (err) { /* no links, or offline */ }
+}
+
+/* The owner taking it back. */
+async function shareRevoke(viewerUid) {
+  if (!sharingOn() || share.busy) return;
+  share.busy = true;
+  render();
+  const fs = cloud.mod;
+  try {
+    await fs.deleteDoc(fs.doc(cloud.db, 'users', myUid(), 'shares', viewerUid));
+    try { await fs.deleteDoc(fs.doc(cloud.db, 'links', viewerUid, 'from', myUid())); } catch (err) {}
+    share.shares = share.shares.filter((x) => x.viewerUid !== viewerUid);
+  } catch (err) {
+    share.error = SHARE_ERRORS.failed;
+  }
+  share.busy = false;
+  render();
+}
+
+/* The co parent walking away. Removes the children from this device
+   without touching the record itself. */
+async function shareLeave(ownerUid) {
+  if (!sharingOn() || share.busy) return;
+  share.busy = true;
+  render();
+  const fs = cloud.mod;
+  const uid = myUid();
+  try {
+    try { await fs.deleteDoc(fs.doc(cloud.db, 'links', uid, 'from', ownerUid)); } catch (err) {}
+    try { await fs.deleteDoc(fs.doc(cloud.db, 'users', ownerUid, 'shares', uid)); } catch (err) {}
+    const gone = store.children.filter((k) => k.sharedFrom === ownerUid).map((k) => k.id);
+    store.children = store.children.filter((k) => k.sharedFrom !== ownerUid);
+    /* NOT added to deletedChildIds. That list means "this child was
+       deleted", which would propagate and remove them from the owner's
+       account too. Leaving is not deleting. */
+    gone.forEach((id) => { delete cloud.known[id]; });
+    if (store.activeChildId && gone.indexOf(store.activeChildId) !== -1) {
+      store.activeChildId = store.children.length === 1 ? store.children[0].id : null;
+    }
+    if (store.profileWho && gone.indexOf(store.profileWho) !== -1) store.profileWho = 'me';
+    share.links = share.links.filter((x) => x.ownerUid !== ownerUid);
+    flushStore();
+  } catch (err) {
+    share.error = SHARE_ERRORS.failed;
+  }
+  share.busy = false;
+  render();
+}
+
+/* Cancel a code that has not been used. */
+async function shareDropCode(code) {
+  if (!sharingOn()) return;
+  try { await cloud.mod.deleteDoc(cloud.mod.doc(cloud.db, 'invites', code)); } catch (err) {}
+  if (share.made && share.made.code === code) share.made = null;
+  render();
+}
+
+/* Who owns this child, in words, for the profile. */
+function sharedOwnerName(k) {
+  if (!k || !k.sharedFrom) return '';
+  const link = share.links.filter((x) => x.ownerUid === k.sharedFrom)[0];
+  return (link && link.ownerName) || '';
+}
+
+function sharedWithCount(childId) {
+  return share.shares.filter((s2) => (s2.childIds || []).indexOf(childId) !== -1).length;
+}
+
 async function cloudPush() {
   if (!cloudOn()) return;
   const fs = cloud.mod;
@@ -8743,7 +15510,15 @@ async function cloudPush() {
     k.updatedAt = now;
     payload.updatedAt = now;
     pending.push(['child', k.id, key]);
-    writes.push(fs.setDoc(fs.doc(cloud.db, 'users', uid, 'children', k.id), payload));
+    /* THE LINE THAT STOPS A SECOND STETSON EXISTING.
+
+       A child shared with this account belongs to somebody else, so an
+       edit goes back to their record rather than creating a copy under
+       this one. Without this, a co parent logging a feed would quietly
+       fork the child, and neither parent would ever see the other's
+       entries again. */
+    const owner = k.sharedFrom || uid;
+    writes.push(fs.setDoc(fs.doc(cloud.db, 'users', owner, 'children', k.id), payload));
   });
 
   const pt = parentPayload();
@@ -8840,6 +15615,2303 @@ function cloudStatusLine() {
 
 
 /* =================================================================
+   THE INVITE LINK
+
+   Sharing already worked through a ten character code. Typing that
+   code off one phone into another is the part that failed, in real
+   life, for a real husband on a real evening, and the app told him the
+   code was ten characters long while he was looking at ten characters.
+
+   So the code stays and nobody has to use it. A link carries it. Tap
+   the link and the app knows who invited you before you have done
+   anything, and joins you the moment there is an account to join with.
+
+   THE CODE IS TAKEN OUT OF THE ADDRESS BAR IMMEDIATELY
+   It is a single use credential sitting in a URL, which is fine while
+   it is travelling through one text message and not fine sitting in
+   somebody's history, in a screenshot, or in whatever a shared browser
+   syncs. It is read once into memory, the address is rewritten without
+   it, and it never goes to disk.
+   ================================================================= */
+
+const invite = {
+  code: '',        // the pending code, in memory only
+  done: false,
+};
+
+function inviteTake() {
+  if (typeof location === 'undefined') return;
+  const code = joinCodeFromUrl(location.search || '');
+  const open = (String(location.search || '').match(/[?&]open=([a-z]+)/i) || [])[1] || '';
+  if (!code && !open) return;
+  if (code) invite.code = code;
+  /* Out of the address bar before anything renders. */
+  try {
+    const clean = location.pathname + location.hash;
+    history.replaceState(null, '', clean || '/');
+  } catch (err) {}
+  if (open) {
+    try { pushOpenTarget(open); } catch (err) {}
+  }
+}
+
+/* WHY THE DOOR DOES NOT NAME WHO INVITED YOU.
+   It would be nicer if it did. Reading the invite needs an account,
+   because the rules will not let a stranger read one, and that rule is
+   worth more than the nicety: without it anybody could walk the invite
+   collection and learn children's names. So the door says somebody,
+   and the name appears the moment there is an account to see it with. */
+
+/* Called once there is an account. Runs the same redemption the typed
+   code runs, so there is only one path that can be wrong. */
+async function inviteRedeem() {
+  if (!invite.code || invite.done) return;
+  if (!sharingOn()) return;
+  invite.done = true;
+  share.joinInput = invite.code;
+  invite.code = '';
+  state.tab = 'home';
+  state.view = { type: 'screen', id: 'sharing' };
+  render();
+  await shareJoin();
+}
+
+/* The banner on the sign in door, so somebody who has just been sent a
+   link by their husband knows why they are being asked to make an
+   account before they decide whether to. */
+function inviteDoorBlock() {
+  if (!invite.code) return '';
+  return `
+  <div class="card leafy" style="margin-bottom:14px">
+    <p class="eyebrow">${icon('people', 11, 'var(--sage)')} ${esc(SHARE_INVITED_TITLE)}</p>
+    <p class="bodytext" style="margin-top:6px">Somebody wants to share a child with you.</p>
+    <p class="tiny" style="margin-top:8px">${esc(SHARE_INVITED_SIGNUP)}</p>
+  </div>`;
+}
+
+/* The share sheet, which on a phone is the row of apps with Messages
+   at the front of it. Falls back to the clipboard on a desktop, where
+   there is no sheet to open. */
+async function inviteSend(code) {
+  const names = ((share.made && share.made.names) || []);
+  const text = shareMessage(store.parent.name, names, code, location.origin);
+  try {
+    if (navigator.share) {
+      await navigator.share({ text: text });
+      return;
+    }
+  } catch (err) {
+    /* Dismissing the sheet throws, and that is not an error worth
+       showing anybody. */
+    if (String((err && err.name) || '') === 'AbortError') return;
+  }
+  copyText(text);
+  store.shareLinkCopied = true;
+  render();
+  setTimeout(() => { store.shareLinkCopied = false; render(); }, 2200);
+}
+
+/* =================================================================
+   FOR YOU, TOPICS, AND WILLOW'S DAILY POST
+
+   Three things that hang together: a feed sorted by whether the
+   person who wrote a post has a child about the same age as yours, a
+   topic out of any word with a hash in front of it, and one post a
+   day from Willow that a human has to press send on.
+
+   NOTHING IN HERE SORTS BY REACTIONS
+   Sorting a parenting feed by what got the most response surfaces the
+   most upsetting post in it, reliably, every time. There is no version
+   of that which is good for somebody reading at three in the morning,
+   so engagement is not in the ordering at all. See forYouScore in
+   src/data/foryou.js for what is.
+   ================================================================= */
+
+/* The stage band of whichever child is open, or the youngest real one,
+   because that is the one whose stage a parent is living in. */
+function myFeedBand() {
+  const kids = store.children.filter((k) => !isExampleChild(k) && k.birthday);
+  if (!kids.length) return '';
+  const active = activeChild();
+  const pick = (active && active.birthday && !isExampleChild(active))
+    ? active
+    : kids.slice().sort((a, b) => (a.birthday < b.birthday ? 1 : -1))[0];
+  const m = childMonths(pick);
+  return m === null ? '' : feedBandFor(m);
+}
+
+/* Any word with a hash in front of it becomes a button. Built by
+   escaping the whole body first and then replacing inside the escaped
+   string, so nothing a person types can become markup. */
+function bodyWithTags(text) {
+  const safe = esc(String(text || ''));
+  return safe.replace(/(^|\s)#([A-Za-z][A-Za-z0-9]{1,23})(?![A-Za-z0-9])/g,
+    (whole, pre, word) => pre + '<button class="taglink" data-feedtag="'
+      + esc(word.toLowerCase()) + '">#' + word + '</button>');
+}
+
+function trendingBlock() {
+  const all = visibleFeed(feed.posts, blockedList());
+  const live = all.filter((p) => p.status === FEED_STATUS.live);
+  const hot = trendingTags(live);
+  const band = myFeedBand();
+  const thin = hot.length < 3;
+  const items = thin ? curatedFor(band) : hot;
+
+  return `
+  <div class="dsec">
+    <h4>${esc(TRENDING_TITLE)}</h4>
+    ${thin ? `<p class="tiny" style="margin:0 0 9px">${esc(TRENDING_THIN)}</p>` : ''}
+    <div class="chips">
+      ${items.map((t) => {
+    const tag = t.tag;
+    const on = feed.tag === tag;
+    return `<button class="chip${on ? ' on' : ''}" data-feedtag="${esc(tag)}">${esc(tagLabel(tag))}${
+      thin ? '' : ` <span class="tagn">${esc(String(t.posts))}</span>`}</button>`;
+  }).join('')}
+    </div>
+  </div>`;
+}
+
+function forYouBlock() {
+  const all = visibleFeed(feed.posts, blockedList());
+  const live = all.filter((p) => p.status === FEED_STATUS.live);
+  const band = myFeedBand();
+  const tagged = feed.tag ? postsWithTag(live, feed.tag) : live;
+  const ordered = band ? sortForYou(tagged, band) : tagged.slice().sort((a, b) => b.at - a.at);
+
+  return `
+  ${feed.tag ? `
+    <div class="card leafy" style="margin-bottom:11px">
+      <p class="eyebrow">${icon('search', 11, 'var(--sage)')} Topic</p>
+      <p style="font-size:16px;color:var(--ink);margin:6px 0 0;font-family:var(--serif)">${esc(tagLabel(feed.tag))}</p>
+      <p class="tiny" style="margin:6px 0 0">${esc(ordered.length
+    ? (ordered.length === 1 ? 'One post' : ordered.length + ' posts')
+    : 'Nobody has used this one yet. Put it in a post and you will be the first.')}</p>
+      <button class="chip" style="margin-top:10px" data-feedtag="__clear">Show everything again</button>
+    </div>` : `
+    <p class="tiny" style="margin:0 0 10px">${esc(band ? FORYOU_SUB : FORYOU_NO_BAND)}</p>`}
+
+  ${band && !feed.tag ? `
+    <p class="tiny" style="margin:0 0 10px;color:var(--faint)">Leaning towards ${esc(bandLabel(band).toLowerCase())}.</p>` : ''}
+
+  ${trendingBlock()}
+
+  ${feed.loading ? `<div class="card flat"><p class="bodytext">Loading.</p></div>` : ''}
+
+  ${!feed.loading && !ordered.length ? `
+    <div class="card" style="text-align:center;padding:30px 22px">
+      ${growthSVG(2, 58)}
+      <p style="margin:12px 0 0;font-size:14.5px;font-weight:600;color:var(--ink)">Nothing here yet</p>
+      <p class="bodytext" style="margin-top:7px">${esc(FEED_EMPTY)}</p>
+    </div>` : ''}
+
+  ${ordered.map((p) => feedCard(p, { live: true })).join('')}
+  ${ordered.length ? `<p class="tiny" style="text-align:center;margin-top:10px">${esc(TAG_HINT)}</p>` : ''}`;
+}
+
+/* ------------------------------------------------------------------
+   WILLOW'S DAILY POST
+   Only a moderator sees this, and only a person can send it.
+   ------------------------------------------------------------------ */
+const wpost = { busy: false, error: '' };
+
+function willowDraftToday() {
+  const d = store.willowPost && typeof store.willowPost === 'object' ? store.willowPost : {};
+  return d.day === ciToday() ? d : { day: ciToday(), text: '', posted: false };
+}
+
+async function willowWriteDaily() {
+  if (wpost.busy) return;
+  wpost.busy = true;
+  wpost.error = '';
+  render();
+  try {
+    const theme = willowThemeFor(ciToday());
+    const band = myFeedBand();
+    const prompt = willowPostPrompt(theme, bandLabel(band).toLowerCase() || 'children of all ages');
+    /* Its own one shot call rather than the chat, which is a
+       conversation with its own rules and a sources line at the end.
+       Squeezing a community post through those produces exactly what
+       you would expect. */
+    const model = await liftLoad();
+    const res = await model.generateContent(prompt);
+    const text = res && res.response && typeof res.response.text === 'function'
+      ? res.response.text() : '';
+    const clean = String(text || '').trim();
+    if (!clean) throw new Error('empty');
+    store.willowPost = { day: ciToday(), text: clean, theme: theme.id, posted: false };
+    saveStore();
+  } catch (err) {
+    wpost.error = WILLOW_POST_FALLBACK;
+  }
+  wpost.busy = false;
+  render();
+}
+
+/* Posted as Willow rather than as the person who pressed the button,
+   because pretending a person wrote it would be the actual problem
+   with an AI posting in a community. */
+async function willowPostIt() {
+  const d = willowDraftToday();
+  const text = (document.getElementById('wpostbody') || {}).value || d.text;
+  if (!String(text || '').trim()) return;
+  wpost.busy = true;
+  render();
+  const post = {
+    id: 'wp' + Date.now(),
+    text: String(text).trim(),
+    files: [],
+    group: '',
+    band: myFeedBand(),
+    at: Date.now(),
+  };
+  const ok = await feedShare(Object.assign({}, post, { username: 'Willow' }));
+  if (ok !== false) {
+    store.willowPost = { day: ciToday(), text: String(text).trim(), posted: true };
+    saveStore();
+  }
+  wpost.busy = false;
+  render();
+}
+
+function willowPostBlock() {
+  if (!feed.isMod) return '';
+  const d = willowDraftToday();
+  return `
+  <div class="card flat" style="margin-bottom:11px">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(WILLOW_POST_TITLE)}</p>
+    <p class="tiny" style="margin:6px 0 9px">${esc(WILLOW_POST_NOTE)}</p>
+    ${d.posted ? `
+      <p class="bodytext" style="margin:0">Today's one is up.</p>` : d.text ? `
+      <textarea class="inp" id="wpostbody" rows="5" style="width:100%">${esc(d.text)}</textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button class="btn" data-wpost="post"${wpost.busy ? ' disabled' : ''}>${esc(wpost.busy ? 'Posting' : 'Post it')}</button>
+        <button class="chip" data-wpost="write"${wpost.busy ? ' disabled' : ''}>Write a different one</button>
+        <button class="chip" data-wpost="bin">Not today</button>
+      </div>` : `
+      <button class="btn" data-wpost="write"${wpost.busy ? ' disabled' : ''}>
+        ${esc(wpost.busy ? 'Writing' : 'Ask her to write today’s')}
+      </button>`}
+    ${wpost.error ? `<p class="tiny" style="color:var(--concern);margin:8px 0 0">${esc(wpost.error)}</p>` : ''}
+  </div>`;
+}
+
+/* =================================================================
+   NOTIFICATIONS
+
+   The client half. The app asks for permission, gets a token from
+   Firebase and writes it to the user's own document. The half that is
+   awake and decides to send anything is functions/index.js.
+
+   THE WHOLE THING STAYS ASLEEP UNTIL IT WOULD WORK
+   A site gets one chance to ask a browser for notification permission.
+   Refused once, it is very hard to ask again, and on an iPhone it is
+   effectively impossible. So nothing here appears at all until
+   WEB_PUSH_KEY has a value, which is to say until the server half
+   actually exists. See src/data/notifications.js.
+
+   AND IT IS NEVER ASKED FOR WITHOUT BEING ASKED FOR
+   No prompt on arrival, no prompt after three visits, no prompt when
+   somebody posts. The browser dialog only ever appears after a tap on
+   a button on this screen that says exactly what it is about to do.
+   ================================================================= */
+
+const push = {
+  mod: null,
+  messaging: null,
+  token: '',
+  busy: false,
+  error: '',
+};
+
+function pushSupported() {
+  return typeof window !== 'undefined'
+    && 'Notification' in window
+    && 'serviceWorker' in navigator
+    && 'PushManager' in window;
+}
+
+function pushPermission() {
+  try { return Notification.permission; } catch (err) { return 'default'; }
+}
+
+/* An iPhone can do this only from a home screen install. Saying so
+   before the button rather than after the failure. */
+function pushNeedsInstallFirst() {
+  return installPlatform() === 'ios' && !isInstalled();
+}
+
+function pushPrefs() {
+  const p = (store.pushPrefs && typeof store.pushPrefs === 'object') ? store.pushPrefs : {};
+  const out = Object.assign({}, pushDefaults(), p);
+  if (!isFinite(Number(out.quietFrom))) out.quietFrom = PUSH_QUIET.defaultFrom;
+  if (!isFinite(Number(out.quietTo))) out.quietTo = PUSH_QUIET.defaultTo;
+  return out;
+}
+
+async function pushLoad() {
+  if (push.messaging) return push.messaging;
+  const v = FIREBASE_SDK_VERSION;
+  const mod = await import(`https://www.gstatic.com/firebasejs/${v}/firebase-messaging.js`);
+  const supported = await mod.isSupported().catch(() => false);
+  if (!supported) throw new Error('This browser cannot do notifications.');
+  push.mod = mod;
+  push.messaging = mod.getMessaging(cloud.app || undefined);
+  return push.messaging;
+}
+
+/* Asking, once, out loud, in response to a tap. */
+async function pushEnable() {
+  if (push.busy) return;
+  push.busy = true;
+  push.error = '';
+  render();
+  try {
+    if (!cloud.uid) throw new Error('Sign in first, so the settings follow you to your other devices.');
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') {
+      push.error = perm === 'denied' ? PUSH_DENIED : 'Not switched on. You can tap again whenever you like.';
+      push.busy = false;
+      render();
+      return;
+    }
+    const messaging = await pushLoad();
+    /* Handed our own service worker rather than letting Firebase
+       register a second one. Two workers on one scope fight, and the
+       one that wins is not always the one with the push handler. */
+    const reg = await navigator.serviceWorker.ready;
+    const token = await push.mod.getToken(messaging, {
+      vapidKey: WEB_PUSH_KEY,
+      serviceWorkerRegistration: reg,
+    });
+    if (!token) throw new Error('The browser did not give us a token. Try again in a moment.');
+    push.token = token;
+    await pushSaveSettings(token);
+    store.pushOn = true;
+    saveStore();
+  } catch (err) {
+    push.error = String((err && err.message) || err);
+  }
+  push.busy = false;
+  render();
+}
+
+/* Writes to users/<uid>/private/push, which is the only document the
+   scheduled function ever reads. Nothing about a child goes in it. */
+async function pushSaveSettings(token) {
+  if (!cloud.db || !cloud.uid) return;
+  const fs = cloud.mod;
+  if (!fs) return;
+  let tz = '';
+  try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (err) {}
+  const payload = pushSettingsPayload(pushPrefs(), token || push.token, tz);
+  /* merge so a second device adds its token rather than replacing the
+     first one's. The tokens array is unioned for the same reason. */
+  await fs.setDoc(
+    fs.doc(cloud.db, 'users', cloud.uid, 'private', 'push'),
+    payload,
+    { merge: true },
+  ).catch((err) => { push.error = 'Could not save that. ' + String(err.message || err); });
+}
+
+async function pushDisable() {
+  push.busy = true;
+  render();
+  try {
+    if (cloud.db && cloud.uid && cloud.mod) {
+      const fs = cloud.mod;
+      await fs.setDoc(
+        fs.doc(cloud.db, 'users', cloud.uid, 'private', 'push'),
+        { tokens: [], kinds: {}, updatedAt: Date.now() },
+        { merge: true },
+      ).catch(() => {});
+    }
+    if (push.messaging && push.mod && push.mod.deleteToken) {
+      await push.mod.deleteToken(push.messaging).catch(() => {});
+    }
+  } catch (err) {}
+  push.token = '';
+  store.pushOn = false;
+  saveStore();
+  push.busy = false;
+  render();
+}
+
+function pushToggleKind(id) {
+  const p = pushPrefs();
+  p[id] = !p[id];
+  store.pushPrefs = p;
+  saveStore();
+  if (store.pushOn) pushSaveSettings().catch(() => {});
+}
+
+function pushSetQuiet(which, value) {
+  const p = pushPrefs();
+  p[which] = Math.max(0, Math.min(23, Number(value) || 0));
+  store.pushPrefs = p;
+  saveStore();
+  if (store.pushOn) pushSaveSettings().catch(() => {});
+}
+
+function hourLabel(h) {
+  const n = Number(h) || 0;
+  if (n === 0) return 'midnight';
+  if (n === 12) return 'noon';
+  return (n > 12 ? n - 12 : n) + (n >= 12 ? 'pm' : 'am');
+}
+
+function screenPush() {
+  const perm = pushPermission();
+  const p = pushPrefs();
+  const on = !!store.pushOn && perm === 'granted';
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(PUSH_TITLE)}</h1>
+    <p class="sub">${esc(PUSH_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${!pushConfigured() ? `
+      <div class="card leafy">
+        <p class="bodytext">${esc(PUSH_NOT_YET)}</p>
+      </div>
+      <div class="dsec">
+        <h4>${esc(PUSH_HOW.title)}</h4>
+        ${list(PUSH_HOW.items)}
+      </div>` : `
+      <div class="card leafy">
+        <p class="bodytext">${esc(PUSH_INTRO)}</p>
+      </div>
+
+      ${!pushSupported() ? `
+        <div class="card flat"><p class="bodytext">This browser cannot do notifications at all.</p></div>`
+    : pushNeedsInstallFirst() ? `
+        <div class="card flat">
+          <p class="bodytext">${esc(PUSH_IOS_NEEDS_INSTALL)}</p>
+          <button class="bigbtn" data-go="screen" data-id="install" style="margin-top:10px">Put it on my home screen</button>
+        </div>`
+      : perm === 'denied' ? `
+        <div class="card flat"><p class="bodytext">${esc(PUSH_DENIED)}</p></div>`
+        : `
+        <button class="bigbtn" data-push="${on ? 'off' : 'on'}"${push.busy ? ' disabled' : ''}>
+          ${esc(push.busy ? 'One moment' : (on ? 'Turn notifications off' : 'Turn notifications on'))}
+        </button>`}
+      ${push.error ? `<p class="tiny" style="color:var(--concern);margin:4px 0 10px">${esc(push.error)}</p>` : ''}
+
+      <div class="dsec">
+        <h4>What is worth interrupting you for</h4>
+        ${PUSH_KINDS.map((k) => `
+          <button class="lrow" data-push="kind" data-id="${esc(k.id)}">
+            <span class="chbox${p[k.id] ? ' on' : ''}" style="margin-top:2px">
+              ${p[k.id] ? icon('check', 13, '#fff') : ''}
+            </span>
+            <span class="grow">
+              <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(k.label)}</span>
+              <span class="tiny" style="display:block;margin-top:2px">${esc(k.detail)}</span>
+            </span>
+          </button>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PUSH_QUIET.title)}</h4>
+        <p class="tiny" style="margin:0 0 10px">${esc(PUSH_QUIET.body)}</p>
+        <div class="quietrow">
+          <span class="tiny">From</span>
+          <select class="inp" data-pushquiet="quietFrom">
+            ${[...Array(24).keys()].map((h) => `
+              <option value="${h}"${Number(p.quietFrom) === h ? ' selected' : ''}>${esc(hourLabel(h))}</option>`).join('')}
+          </select>
+          <span class="tiny">until</span>
+          <select class="inp" data-pushquiet="quietTo">
+            ${[...Array(24).keys()].map((h) => `
+              <option value="${h}"${Number(p.quietTo) === h ? ' selected' : ''}>${esc(hourLabel(h))}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PUSH_NAMES.title)}</h4>
+        <button class="lrow" data-push="kind" data-id="useNames">
+          <span class="chbox${p.useNames ? ' on' : ''}" style="margin-top:2px">
+            ${p.useNames ? icon('check', 13, '#fff') : ''}
+          </span>
+          <span class="grow"><span class="tiny">${esc(PUSH_NAMES.body)}</span></span>
+        </button>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PUSH_HOW.title)}</h4>
+        ${list(PUSH_HOW.items)}
+      </div>`}
+    ${privacyLine()}
+  </div>`;
+}
+
+/* A tap on a notification tells the open window where to go. Paired
+   with the postMessage in sw.js. */
+if (typeof navigator !== 'undefined' && navigator.serviceWorker && navigator.serviceWorker.addEventListener) {
+  navigator.serviceWorker.addEventListener('message', (ev) => {
+    const d = ev && ev.data;
+    if (!d || d.rsg !== 'open' || !d.url) return;
+    try {
+      const u = new URL(d.url, location.origin);
+      const open = u.searchParams.get('open');
+      if (open) { pushOpenTarget(open); render(); }
+    } catch (err) {}
+  });
+}
+
+/* A notification, or a link from one, naming where to land. Kept in
+   one place so the function and the app cannot drift on the names. */
+function pushOpenTarget(name) {
+  const map = {
+    chores: { type: 'screen', id: 'chores' },
+    checkin: { type: 'screen', id: 'checkins' },
+    vaxrecord: { type: 'screen', id: 'vaxrecord' },
+    community: null,
+    growth: { type: 'screen', id: 'growth' },
+  };
+  if (!(name in map)) return false;
+  if (name === 'community') { state.tab = 'community'; state.view = null; return true; }
+  state.tab = 'home';
+  state.view = map[name];
+  return true;
+}
+
+/* =================================================================
+   THE VACCINE RECORD
+
+   What this child has had, with dates. Separate from the vaccines
+   screen, which is the reading and the argument. This is the ledger.
+
+   IT NEVER GOES RED
+   A dose that is behind says "was due around then" in the same type
+   as everything else. Nothing flashes, nothing counts down, and a
+   series a family has decided against reads as settled rather than as
+   permanently outstanding. An app that keeps a red mark on the screen
+   of somebody who has already made their decision is not keeping a
+   record, it is arguing, and there is a whole screen for that already.
+   ================================================================= */
+
+function vaxRecord(kid) {
+  return ((kid || {}).vax && typeof kid.vax === 'object') ? kid.vax : {};
+}
+
+function vaxSkipped(kid) {
+  return Array.isArray((kid || {}).vaxSkip) ? kid.vaxSkip : [];
+}
+
+function vaxIsSkipped(kid, seriesId) {
+  return vaxSkipped(kid).indexOf(seriesId) !== -1;
+}
+
+function vaxSetDose(kid, seriesId, n, date) {
+  if (!kid.vax || typeof kid.vax !== 'object') kid.vax = {};
+  const key = vaxDoseKey(seriesId, n);
+  if (date) kid.vax[key] = date; else delete kid.vax[key];
+  kid.updatedAt = Date.now();
+  saveStore();
+}
+
+function vaxToggleSkip(kid, seriesId) {
+  const cur = vaxSkipped(kid);
+  kid.vaxSkip = cur.indexOf(seriesId) === -1
+    ? cur.concat([seriesId])
+    : cur.filter((x) => x !== seriesId);
+  kid.updatedAt = Date.now();
+  saveStore();
+}
+
+/* Yearly things are kept as a list of dates rather than a tick list,
+   because a flu jab is a different event every autumn and a checkbox
+   would only ever tell you that one happened at some point. */
+function vaxSeasonalDates(kid, seriesId) {
+  const r = vaxRecord(kid);
+  const raw = r['season:' + seriesId];
+  return Array.isArray(raw) ? raw.slice().sort() : [];
+}
+
+function vaxAddSeasonal(kid, seriesId, date) {
+  if (!date) return;
+  if (!kid.vax || typeof kid.vax !== 'object') kid.vax = {};
+  const key = 'season:' + seriesId;
+  const cur = Array.isArray(kid.vax[key]) ? kid.vax[key] : [];
+  if (cur.indexOf(date) === -1) kid.vax[key] = cur.concat([date]).sort();
+  kid.updatedAt = Date.now();
+  saveStore();
+}
+
+function vaxRemoveSeasonal(kid, seriesId, date) {
+  const key = 'season:' + seriesId;
+  const cur = Array.isArray((kid.vax || {})[key]) ? kid.vax[key] : [];
+  kid.vax[key] = cur.filter((d) => d !== date);
+  kid.updatedAt = Date.now();
+  saveStore();
+}
+
+function screenVaxRecord(c) {
+  const kid = activeChild();
+  if (!kid) return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">The record</h1>
+  </div>
+  <div class="sc"><div class="card leafy"><p class="bodytext">Add a child first.</p></div></div>`;
+
+  const first = (kid.name || 'They').split(/\s+/)[0];
+  const months = childMonths(kid);
+  const rec = vaxRecord(kid);
+  const counts = vaxCounts(rec, vaxSkipped(kid));
+  const tab = store.vaxTab || 'list';
+  const tabs = [
+    { id: 'list', label: 'The record' },
+    { id: 'schedule', label: 'Where things stand' },
+  ];
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(first + "'s record")}</h1>
+    <p class="sub">${esc(VAX_RECORD_INTRO)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('vaxTab', tab, tabs)}
+    ${tab === 'schedule' ? vaxStandTab() : vaxListTab(kid, first, months, counts)}
+  </div>`;
+}
+
+function vaxListTab(kid, first, months, counts) {
+  const rec = vaxRecord(kid);
+  const openId = store.vaxOpen || '';
+
+  return `
+  <div class="card leafy">
+    <p class="bodytext" style="margin:0">
+      ${esc(counts.given + ' of the ' + counts.total + ' one off doses recorded.')}
+      ${counts.given === 0 ? 'Start with the card from their last appointment.' : ''}
+    </p>
+  </div>
+
+  ${VAX_SERIES.map((s) => vaxSeriesRow(kid, s, months, openId === s.id)).join('')}
+
+  <div class="dsec">
+    <h4>${esc(VAX_RECORD_HOW.title)}</h4>
+    ${list(VAX_RECORD_HOW.items)}
+  </div>
+
+  <button class="tiny" data-vax="export"
+    style="display:block;width:100%;text-align:center;background:none;border:0;color:var(--deep);text-decoration:underline;padding:10px">
+    Copy the whole record as text
+  </button>
+  ${store.vaxCopied ? `<p class="tiny" style="text-align:center;margin:0">Copied.</p>` : ''}
+  <p class="tiny" style="margin-top:10px">${esc(VAX_RECORD_NOTE)}</p>`;
+}
+
+function vaxSeriesRow(kid, s, months, open) {
+  const rec = vaxRecord(kid);
+  const skipped = vaxIsSkipped(kid, s.id);
+  const real = s.doses.filter((d) => !d.optional);
+  const done = real.filter((d) => rec[vaxDoseKey(s.id, d.n)]).length;
+  const seasonal = s.seasonal ? vaxSeasonalDates(kid, s.id) : [];
+
+  let sub;
+  if (skipped) sub = 'Not being given';
+  else if (s.seasonal) sub = seasonal.length
+    ? (seasonal.length === 1 ? 'One recorded' : seasonal.length + ' recorded')
+    : 'Given yearly, nothing recorded yet';
+  else if (done === real.length && real.length) sub = 'All ' + real.length + ' recorded';
+  else sub = done + ' of ' + real.length + ' recorded';
+
+  return `
+  <div class="card flat vaxcard" style="padding:0;overflow:hidden">
+    <button class="vaxhead" data-vax="open" data-id="${esc(s.id)}">
+      <span class="grow">
+        <span class="vaxname">${esc(s.label)}</span>
+        <span class="tiny" style="display:block;margin-top:2px">${esc(sub)}</span>
+      </span>
+      <span class="chev">${icon(open ? 'chevdown' : 'chev', 15, 'var(--faint)')}</span>
+    </button>
+    ${open ? `
+      <div class="vaxbody">
+        <p class="bodytext" style="margin:0 0 8px">${esc(s.protects)}</p>
+        ${s.note ? `<p class="tiny" style="margin:0 0 10px">${esc(s.note)}</p>` : ''}
+        ${s.sdm ? `<p class="tiny" style="margin:0 0 10px">This one has been a decide it with your doctor vaccine rather than a routine one.</p>` : ''}
+
+        ${skipped ? `
+          <p class="bodytext" style="margin:0 0 10px">Marked as not being given. Nothing here will ask about it again.</p>` : (s.seasonal
+    ? vaxSeasonalBody(kid, s)
+    : s.doses.map((d) => vaxDoseRow(kid, s, d, months)).join(''))}
+
+        <button class="tiny" data-vax="skip" data-id="${esc(s.id)}"
+          style="display:block;width:100%;text-align:center;background:none;border:0;color:var(--muted);text-decoration:underline;padding:8px 0 2px">
+          ${esc(skipped ? 'Put it back on the list' : 'We are not giving this one')}
+        </button>
+      </div>` : ''}
+  </div>`;
+}
+
+function vaxDoseRow(kid, s, d, months) {
+  const rec = vaxRecord(kid);
+  const key = vaxDoseKey(s.id, d.n);
+  const given = rec[key];
+  const state = vaxDoseState(s, d, months, given);
+  const editing = store.vaxEdit === key;
+
+  const when = given ? given
+    : (state === 'about now' ? 'Usually about now'
+      : (state === 'was due' ? 'Usually by now' : d.window));
+
+  return `
+  <div class="vaxdose${given ? ' on' : ''}">
+    <button class="vaxtick" data-vax="tick" data-id="${esc(key)}"
+      aria-label="${esc(given ? 'Clear dose ' + d.n : 'Record dose ' + d.n + ' as given today')}">
+      ${given ? icon('check', 12, '#fff') : ''}
+    </button>
+    <span class="grow">
+      <span class="vaxdname">Dose ${d.n}${d.optional ? ', only some brands' : ''}</span>
+      <span class="tiny" style="display:block;margin-top:1px">${esc(when)}${given ? '' : esc(' (' + d.window + ')')}</span>
+    </span>
+    <button class="tiny vaxdate" data-vax="edit" data-id="${esc(key)}">${esc(given ? 'Change' : 'Date')}</button>
+  </div>
+  ${editing ? `
+    <div class="vaxedit">
+      <input class="inp" id="vaxdatein" type="date" value="${esc(given || ciToday())}"
+        max="${esc(ciToday())}" ${kid.birthday ? 'min="' + esc(kid.birthday) + '"' : ''}>
+      <button class="btn" data-vax="savedate" data-id="${esc(key)}">Save</button>
+      ${given ? `<button class="tiny vaxdate" data-vax="clear" data-id="${esc(key)}">Clear</button>` : ''}
+    </div>
+    ${store.vaxError ? `<p class="tiny" style="color:var(--concern);margin:0 0 8px">${esc(store.vaxError)}</p>` : ''}` : ''}`;
+}
+
+function vaxSeasonalBody(kid, s) {
+  const dates = vaxSeasonalDates(kid, s.id);
+  return `
+  ${dates.map((d) => `
+    <div class="vaxdose on">
+      <span class="vaxtick on">${icon('check', 12, '#fff')}</span>
+      <span class="grow"><span class="vaxdname">${esc(d)}</span></span>
+      <button class="chx" data-vax="delseason" data-id="${esc(s.id)}" data-date="${esc(d)}"
+        aria-label="Remove ${esc(d)}">${icon('close', 12, 'var(--muted)')}</button>
+    </div>`).join('')}
+  <div class="vaxedit">
+    <input class="inp" id="vaxseasonin" type="date" value="${esc(ciToday())}" max="${esc(ciToday())}">
+    <button class="btn" data-vax="addseason" data-id="${esc(s.id)}">Add a date</button>
+  </div>`;
+}
+
+function vaxStandTab() {
+  const w = VAX_WHERE_THINGS_STAND;
+  return `
+  <div class="card leafy">
+    <p class="eyebrow">${icon('info', 11, 'var(--sage)')} As it stood in ${esc(w.asOf)}</p>
+    <p class="bodytext" style="margin-top:6px">${esc(w.body[0])}</p>
+  </div>
+  <div class="dsec">
+    <h4>${esc(w.title)}</h4>
+    ${w.body.slice(1).map((b) => `<p class="bodytext" style="margin:0 0 9px">${esc(b)}</p>`).join('')}
+  </div>
+  <p class="tiny" style="margin:0 0 12px">This is a moving situation and the paragraph above is dated for
+  that reason. If you are reading it long after ${esc(w.asOf)}, check the two schedules directly.</p>
+  ${dsec('Both schedules, and where they differ', sourceRows(VAX_SCHEDULE_SOURCES))}
+  <button class="lrow" data-go="screen" data-id="vaccines">
+    <span class="licon">${icon('shield', 18)}</span>
+    <span class="grow">
+      <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">The reading, and both sides of it</span>
+      <span class="tiny" style="display:block;margin-top:2px">What the evidence says, what your rights are, and how to decide</span>
+    </span>
+    <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+  </button>`;
+}
+
+function vaxSaveDate(kid, key) {
+  const el = document.getElementById('vaxdatein');
+  const date = el ? el.value : '';
+  if (!date) { store.vaxError = 'Pick a date first.'; return; }
+  if (date > ciToday()) { store.vaxError = 'That date has not happened yet.'; return; }
+  if (kid.birthday && date < kid.birthday) { store.vaxError = 'That is before they were born.'; return; }
+  const bits = key.split(':');
+  store.vaxError = '';
+  store.vaxEdit = '';
+  vaxSetDose(kid, bits[0], Number(bits[1]), date);
+}
+
+function vaxExportText(kid) {
+  const rec = vaxRecord(kid);
+  const lines = ['Vaccine record for ' + (kid.name || 'child')
+    + (kid.birthday ? ', born ' + kid.birthday : ''), ''];
+  VAX_SERIES.forEach((s) => {
+    if (vaxIsSkipped(kid, s.id)) { lines.push(s.label + ': not being given'); return; }
+    if (s.seasonal) {
+      const d = vaxSeasonalDates(kid, s.id);
+      lines.push(s.label + ': ' + (d.length ? d.join(', ') : 'nothing recorded'));
+      return;
+    }
+    const parts = s.doses.filter((d) => !d.optional || rec[vaxDoseKey(s.id, d.n)]).map((d) => {
+      const g = rec[vaxDoseKey(s.id, d.n)];
+      return 'dose ' + d.n + ' ' + (g || 'not recorded');
+    });
+    lines.push(s.label + ': ' + parts.join(', '));
+  });
+  lines.push('');
+  lines.push('Kept by a parent in the Ready Set Grow app. Not an official record.');
+  return lines.join('\n');
+}
+
+/* The one line under the record on a child's profile. */
+function vaxRowSub(kid, months) {
+  const rec = vaxRecord(kid);
+  const counts = vaxCounts(rec, vaxSkipped(kid));
+  if (!counts.given) return 'Tick off what has been given, and keep the dates';
+  const next = vaxNextUp(months, rec, vaxSkipped(kid));
+  if (counts.given >= counts.total) return 'Everything on the list is recorded';
+  return counts.given + ' of ' + counts.total + ' recorded'
+    + (next ? ', next is ' + next.series.label.toLowerCase() : '');
+}
+
+/* =================================================================
+   GROWTH
+
+   The chart a parent actually gets handed at the surgery, except that
+   here the percentile is deliberately the small print and the shape of
+   the child's own line is the headline.
+
+   WHY THE SEX QUESTION IS ASKED HERE AND NOT AT SIGN UP
+   Growth curves are separate for boys and girls and there is no honest
+   way around that, the difference is real from birth. But asking for
+   it when somebody is adding a child, before they have seen anything
+   the app does, is a form question with no visible purpose. So it is
+   asked on the one screen that cannot work without it, with the reason
+   printed next to it.
+
+   THE CHART IS DRAWN BY HAND IN SVG
+   No charting library. It is five reference curves and a short
+   polyline, the whole app is one file, and pulling in a library to
+   draw six paths would cost more than it gives.
+   ================================================================= */
+
+const GROWTH_LINES = [3, 15, 50, 85, 97];
+
+function childMonths(kid) {
+  const sum = getAgeSummary({ name: (kid || {}).name, birthday: (kid || {}).birthday });
+  return sum.age ? sum.age.totalMonths : null;
+}
+
+function growthUs() {
+  return store.growthUnits !== 'metric';
+}
+
+function growthEntries(kid) {
+  return Array.isArray((kid || {}).growth) ? kid.growth : [];
+}
+
+function growthField(measure) {
+  return measure === 'weight' ? 'kg' : (measure === 'height' ? 'cm' : 'headCm');
+}
+
+function growthNewId() {
+  return 'g' + Date.now() + Math.floor(Math.random() * 1000);
+}
+
+/* The percentile they were born on, which is what decides how far the
+   line has to drift before it means anything. Taken from the earliest
+   reading in the first fortnight, and null when there is not one,
+   because guessing it would change the threshold silently. */
+function growthBirthCentile(kid) {
+  const sex = (kid || {}).sex;
+  if (!sex || !kid.birthday) return null;
+  const early = growthEntries(kid)
+    .filter((e) => e.kg)
+    .map((e) => ({ e: e, m: growthMonthsBetween(kid.birthday, e.date) }))
+    .filter((x) => x.m !== null && x.m <= 0.5)
+    .sort((a, b) => a.m - b.m)[0];
+  if (!early) return null;
+  return growthPercentile('weight', early.m, sex, early.e.kg);
+}
+
+function growthPoints(kid, measure) {
+  if (!kid || !kid.sex || !kid.birthday) return [];
+  return growthTrend(growthEntries(kid), measure, kid.birthday, kid.sex);
+}
+
+/* How wide the chart is. Starts at birth always, because the shape of
+   the first year is the point, and runs a little past the newest
+   reading so the last dot is not jammed against the edge. */
+function growthSpan(points, measure) {
+  const cap = growthMaxMonths(measure);
+  const newest = points.length ? points[points.length - 1].months : 0;
+  let to = Math.ceil((newest + Math.max(2, newest * 0.12)) / 3) * 3;
+  to = Math.max(6, Math.min(cap, to));
+  return { from: 0, to: to };
+}
+
+function growthChart(kid, measure) {
+  const sex = kid.sex;
+  const points = growthPoints(kid, measure);
+  const span = growthSpan(points, measure);
+
+  const curves = GROWTH_LINES.map((p) => ({
+    p: p,
+    pts: growthCurve(measure, sex, span.from, span.to, p, 48),
+  })).filter((c) => c.pts.length > 1);
+  if (!curves.length) return '';
+
+  let lo = Infinity, hi = -Infinity;
+  curves.forEach((c) => c.pts.forEach((q) => { lo = Math.min(lo, q.value); hi = Math.max(hi, q.value); }));
+  points.forEach((q) => { lo = Math.min(lo, q.value); hi = Math.max(hi, q.value); });
+  const pad = (hi - lo) * 0.08 || 1;
+  lo -= pad; hi += pad;
+
+  /* Room on the left for the value labels and along the bottom for the
+     ages, inside the viewBox rather than outside it, so nothing is
+     clipped at any width. */
+  const W = 320, H = 210, L = 34, R = 26, T = 10, B = 24;
+  const x = (m) => L + (m - span.from) / (span.to - span.from) * (W - L - R);
+  const y = (v) => T + (hi - v) / (hi - lo) * (H - T - B);
+
+  const path = (pts) => pts.map((q, i) => (i ? 'L' : 'M') + x(q.months).toFixed(1) + ' ' + y(q.value).toFixed(1)).join(' ');
+
+  /* Age ticks at whole months while the span is short and at whole
+     years once it is long, so the axis never prints "13.5 months". */
+  const ticks = [];
+  if (span.to <= 24) {
+    for (let m = 0; m <= span.to; m += (span.to <= 12 ? 3 : 6)) ticks.push({ m: m, label: String(m) });
+  } else {
+    for (let yy = 0; yy * 12 <= span.to; yy += (span.to > 96 ? 2 : 1)) ticks.push({ m: yy * 12, label: String(yy) });
+  }
+
+  const us = growthUs();
+  const show = (v) => (measure === 'weight'
+    ? (us ? (v * LB_PER_KG).toFixed(0) : v.toFixed(0))
+    : (us ? cmToIn(v).toFixed(0) : v.toFixed(0)));
+
+  /* Four value labels, each naming a number the chart actually
+     reaches, taken off the median curve rather than off round numbers
+     that might sit outside the drawing. */
+  const vals = [lo + (hi - lo) * 0.08, lo + (hi - lo) * 0.36,
+    lo + (hi - lo) * 0.64, lo + (hi - lo) * 0.92];
+
+  const last = points.length ? points[points.length - 1] : null;
+
+  return `
+  <div class="gchart">
+    <svg viewBox="0 0 ${W} ${H}" role="img"
+      aria-label="${esc((kid.name || 'Their') + ' ' + measure + ' plotted against the reference curves')}">
+      ${vals.map((v) => `
+        <line x1="${L}" y1="${y(v).toFixed(1)}" x2="${W - R}" y2="${y(v).toFixed(1)}"
+          stroke="var(--line2)" stroke-width="1"/>
+        <text x="${L - 5}" y="${(y(v) + 3.5).toFixed(1)}" text-anchor="end"
+          font-size="8.5" fill="var(--muted)">${esc(show(v))}</text>`).join('')}
+
+      ${curves.map((c) => `
+        <path d="${path(c.pts)}" fill="none" stroke="var(--sage)"
+          stroke-width="${c.p === 50 ? 1.6 : 1}"
+          stroke-opacity="${c.p === 50 ? 0.85 : 0.38}"
+          ${c.p === 50 ? '' : 'stroke-dasharray="3 3"'}/>
+        <text x="${(W - R + 3).toFixed(1)}" y="${(y(c.pts[c.pts.length - 1].value) + 3).toFixed(1)}"
+          font-size="7.5" fill="var(--muted)">${c.p}</text>`).join('')}
+
+      ${ticks.map((t) => `
+        <text x="${x(t.m).toFixed(1)}" y="${H - 8}" text-anchor="middle"
+          font-size="8.5" fill="var(--muted)">${esc(t.label)}</text>`).join('')}
+      <text x="${L}" y="${H - 1}" font-size="7.5" fill="var(--faint)">${esc(span.to <= 24 ? 'months' : 'years')}</text>
+
+      ${points.length > 1 ? `
+        <path d="${path(points)}" fill="none" stroke="var(--deep)" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+      ${points.map((q) => `
+        <circle cx="${x(q.months).toFixed(1)}" cy="${y(q.value).toFixed(1)}" r="3"
+          fill="var(--deep)"/>`).join('')}
+      ${last ? `
+        <circle cx="${x(last.months).toFixed(1)}" cy="${y(last.value).toFixed(1)}" r="5.5"
+          fill="none" stroke="var(--deep)" stroke-width="1.5" stroke-opacity="0.45"/>` : ''}
+    </svg>
+  </div>`;
+}
+
+function screenGrowth(c) {
+  const kid = activeChild();
+  const first = (((kid || {}).name) || 'They').split(/\s+/)[0];
+  if (!kid) return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">Growth</h1>
+  </div>
+  <div class="sc">
+    <div class="card leafy"><p class="bodytext">Add a child first and this fills up.</p></div>
+  </div>`;
+
+  if (!kid.sex) return growthAskSex(kid, first);
+
+  const tab = store.growthTab || 'chart';
+  const measure = store.growthMeasure || 'weight';
+  const tabs = [
+    { id: 'chart', label: 'The line' },
+    { id: 'list', label: 'Every reading' },
+    { id: 'about', label: 'What it means' },
+  ];
+
+  const body = tab === 'list' ? growthListTab(kid, first)
+    : tab === 'about' ? growthAboutTab()
+      : growthChartTab(kid, first, measure);
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">Growth</h1>
+    <p class="sub">${esc(GROWTH_INTRO)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('growthTab', tab, tabs)}
+    ${body}
+  </div>`;
+}
+
+/* The one question this screen cannot work without, asked once, with
+   the reason attached. */
+function growthAskSex(kid, first) {
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">Growth</h1>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="bodytext">Before this can draw anything, it needs to know whether to use the boys'
+      curves or the girls' curves for ${esc(first)}.</p>
+      <p class="tiny" style="margin-top:8px">Growth references are separate from birth and there is no
+      honest way around it. This is the only thing the app uses it for, and you can change it later.</p>
+    </div>
+    <button class="lrow" data-growth="sex" data-id="m">
+      <span class="licon">${icon('chart', 18)}</span>
+      <span class="grow"><span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Boys' curves</span></span>
+    </button>
+    <button class="lrow" data-growth="sex" data-id="f">
+      <span class="licon">${icon('chart', 18)}</span>
+      <span class="grow"><span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Girls' curves</span></span>
+    </button>
+    ${privacyLine()}
+  </div>`;
+}
+
+function growthChartTab(kid, first, measure) {
+  const ms = GROWTH_MEASURES.filter((m) => {
+    const months = childMonths(kid);
+    if (months === null) return true;
+    /* A measure that has run past its useful age is not offered, but
+       anything already recorded under it stays readable in the list. */
+    return months <= m.maxMonths + 6;
+  });
+  const active = ms.filter((m) => m.id === measure)[0] || ms[0];
+  const points = growthPoints(kid, active.id);
+  const last = points.length ? points[points.length - 1] : null;
+  const concern = growthConcern(points, growthBirthCentile(kid));
+  const months = childMonths(kid);
+  const scored = months !== null && months <= active.maxMonths;
+
+  return `
+  <div class="chips" style="margin-bottom:12px">
+    ${ms.map((m) => `
+      <button class="chip" data-growthm="${esc(m.id)}" aria-pressed="${m.id === active.id}">${esc(m.label)}</button>`).join('')}
+  </div>
+
+  ${points.length ? growthChart(kid, active.id) : `
+    <div class="card leafy">
+      <p class="bodytext">Nothing recorded yet. Add the reading from their last check and it will
+      start a line. One reading is a dot, so it will not tell you much until there are three.</p>
+    </div>`}
+
+  ${last ? `
+    <div class="card flat">
+      <p class="eyebrow">${icon('chart', 11, 'var(--sage)')} ${esc(last.date)}</p>
+      <p class="bodytext" style="margin:6px 0 0;font-size:15px">
+        <strong>${esc(active.id === 'weight' ? showWeight(last.value, growthUs()) : showLength(last.value, growthUs()))}</strong>${scored ? esc(', ' + percentileWords(normCdfPct(last.z))) : ''}
+      </p>
+      ${points.length >= 2 ? `
+        <p class="tiny" style="margin:6px 0 0">${esc(growthSinceLine(points, active.id))}</p>` : `
+        <p class="tiny" style="margin:6px 0 0">One reading. Add the next one at their next check and this becomes a line.</p>`}
+    </div>` : ''}
+
+  ${concern ? `
+    <div class="card flat" style="border:1px solid var(--line)">
+      <p class="eyebrow">${icon('info', 11, 'var(--taupe)')} ${esc(concern.level === 'ask' ? 'Worth asking about' : 'Worth another reading')}</p>
+      <p class="bodytext" style="margin:6px 0 0">${esc(concern.line)}</p>
+    </div>` : ''}
+
+  ${!scored && months !== null ? `
+    <p class="tiny" style="margin:0 0 12px">${esc(active.id === 'weight'
+    ? 'Past eleven, the app records a weight but stops putting a percentile on it. Above that age the number tells you very little you can act on, and it starts something that is hard to stop.'
+    : 'Past the age this measurement is routinely taken, so it is recorded without a curve.')}</p>` : ''}
+
+  ${growthAddForm(kid, active)}
+
+  <p class="tiny" style="margin-top:14px">${esc(GROWTH_DISCLAIMER)}</p>`;
+}
+
+function normCdfPct(z) {
+  const t = 1 / (1 + 0.2316419 * Math.abs(z));
+  const d = 0.3989422804014327 * Math.exp(-z * z / 2);
+  const p = d * t * (0.319381530 + t * (-0.356563782 + t * (1.781477937
+    + t * (-1.821255978 + t * 1.330274429))));
+  return (z > 0 ? 1 - p : p) * 100;
+}
+
+function growthSinceLine(points, measure) {
+  const a = points[points.length - 2], b = points[points.length - 1];
+  const weeks = Math.round((new Date(b.date) - new Date(a.date)) / 604800000);
+  const gain = b.value - a.value;
+  const us = growthUs();
+  const amount = measure === 'weight'
+    ? (us ? (Math.abs(gain) * LB_PER_KG).toFixed(1) + ' lb' : (Math.abs(gain) * 1000).toFixed(0) + ' g')
+    : (us ? cmToIn(Math.abs(gain)).toFixed(1) + ' in' : Math.abs(gain).toFixed(1) + ' cm');
+  const dir = gain >= 0 ? 'Up' : 'Down';
+  const moved = Math.abs(b.z - a.z) < 0.25
+    ? 'Same line as before, which is the answer you want.'
+    : (b.z > a.z ? 'A little higher up the chart than last time.' : 'A little lower down the chart than last time.');
+  return dir + ' ' + amount + ' in ' + (weeks <= 1 ? 'a week' : weeks + ' weeks') + '. ' + moved;
+}
+
+function growthAddForm(kid, measure) {
+  const us = growthUs();
+  const d = store.growthDraft || {};
+  const id = measure.id;
+  return `
+  <div class="dsec">
+    <h4>Add a reading</h4>
+    <div class="grow-form">
+      <label class="tiny" for="gdate">When it was taken</label>
+      <input class="inp" id="gdate" type="date" value="${esc(d.date || ciToday())}" data-growthfield="date">
+      ${id === 'weight' ? (us ? `
+        <label class="tiny" for="glb">Weight</label>
+        <div class="grow-pair">
+          <input class="inp" id="glb" type="number" inputmode="decimal" min="0" step="1" placeholder="lb" value="${esc(d.lb || '')}" data-growthfield="lb">
+          <input class="inp" id="goz" type="number" inputmode="decimal" min="0" max="15" step="1" placeholder="oz" value="${esc(d.oz || '')}" data-growthfield="oz">
+        </div>` : `
+        <label class="tiny" for="gkg">Weight in kg</label>
+        <input class="inp" id="gkg" type="number" inputmode="decimal" min="0" step="0.01" placeholder="kg" value="${esc(d.kg || '')}" data-growthfield="kg">`) : ''}
+      ${id === 'height' ? (us ? `
+        <label class="tiny" for="gin">Length or height in inches</label>
+        <input class="inp" id="gin" type="number" inputmode="decimal" min="0" step="0.25" placeholder="in" value="${esc(d.inches || '')}" data-growthfield="inches">` : `
+        <label class="tiny" for="gcm">Length or height in cm</label>
+        <input class="inp" id="gcm" type="number" inputmode="decimal" min="0" step="0.1" placeholder="cm" value="${esc(d.cm || '')}" data-growthfield="cm">`) : ''}
+      ${id === 'head' ? (us ? `
+        <label class="tiny" for="ghin">Head in inches</label>
+        <input class="inp" id="ghin" type="number" inputmode="decimal" min="0" step="0.25" placeholder="in" value="${esc(d.headIn || '')}" data-growthfield="headIn">` : `
+        <label class="tiny" for="ghcm">Head in cm</label>
+        <input class="inp" id="ghcm" type="number" inputmode="decimal" min="0" step="0.1" placeholder="cm" value="${esc(d.headCm || '')}" data-growthfield="headCm">`) : ''}
+      <button class="bigbtn" data-growth="save" data-id="${esc(id)}">Save this reading</button>
+      ${store.growthError ? `<p class="tiny" style="color:var(--concern);margin:2px 0 0">${esc(store.growthError)}</p>` : ''}
+    </div>
+    <button class="tiny" data-growth="units"
+      style="display:block;width:100%;text-align:center;background:none;border:0;color:var(--muted);text-decoration:underline;padding:8px">
+      ${esc(us ? 'Switch to kilograms and centimetres' : 'Switch to pounds and inches')}
+    </button>
+    <p class="tiny" style="margin:0">${esc(measure.note)}</p>
+  </div>`;
+}
+
+function growthListTab(kid, first) {
+  const entries = growthEntries(kid).slice().sort((a, b) => (a.date < b.date ? 1 : -1));
+  if (!entries.length) {
+    return `<div class="card leafy"><p class="bodytext">Nothing recorded for ${esc(first)} yet.</p></div>`;
+  }
+  const us = growthUs();
+  return `
+  ${entries.map((e) => {
+    const months = growthMonthsBetween(kid.birthday, e.date);
+    const bits = [];
+    if (e.kg) bits.push(showWeight(e.kg, us));
+    if (e.cm) bits.push(showLength(e.cm, us));
+    if (e.headCm) bits.push('head ' + showLength(e.headCm, us));
+    return `
+    <div class="card flat" style="padding:11px 12px">
+      <div style="display:flex;align-items:flex-start;gap:8px">
+        <span class="grow">
+          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(bits.join(', ') || 'Empty reading')}</span>
+          <span class="tiny" style="display:block;margin-top:2px">${esc(e.date)}${months === null ? '' : esc(', at ' + growthAgeWord(months))}</span>
+        </span>
+        <button class="chx" data-growth="del" data-id="${esc(e.id)}"
+          aria-label="Delete the reading from ${esc(e.date)}">${icon('close', 12, 'var(--muted)')}</button>
+      </div>
+    </div>`;
+  }).join('')}
+  <button class="tiny" data-growth="export"
+    style="display:block;width:100%;text-align:center;background:none;border:0;color:var(--deep);text-decoration:underline;padding:10px">
+    Copy all of it as text
+  </button>
+  ${store.growthCopied ? `<p class="tiny" style="text-align:center;margin:0">Copied. Paste it wherever you need it.</p>` : ''}`;
+}
+
+function growthAgeWord(months) {
+  if (months < 1) return Math.max(0, Math.round(months * 30.4375)) + ' days old';
+  if (months < 24) return Math.round(months) + ' months';
+  const y = Math.floor(months / 12);
+  const m = Math.round(months - y * 12);
+  return y + (m ? ' years ' + m + ' months' : ' years');
+}
+
+function growthAboutTab() {
+  return `
+  <div class="card leafy">
+    <p class="bodytext">${esc(GROWTH_INTRO)}</p>
+  </div>
+  <div class="dsec">
+    <h4>${esc(GROWTH_WHAT_IT_MEANS.title)}</h4>
+    ${list(GROWTH_WHAT_IT_MEANS.items)}
+  </div>
+  <div class="dsec">
+    <h4>${esc(GROWTH_THE_JUMP.title)}</h4>
+    ${GROWTH_THE_JUMP.body.map((b) => `<p class="bodytext" style="margin:0 0 9px">${esc(b)}</p>`).join('')}
+  </div>
+  <div class="dsec">
+    <h4>${esc(GROWTH_WHEN_TO_ASK.title)}</h4>
+    ${list(GROWTH_WHEN_TO_ASK.items, true)}
+  </div>
+  <div class="dsec">
+    <h4>${esc(GROWTH_WHEN_NOT_TO.title)}</h4>
+    ${list(GROWTH_WHEN_NOT_TO.items)}
+  </div>
+  <div class="dsec">
+    <h4>${esc(GROWTH_HOW_TO_MEASURE.title)}</h4>
+    ${list(GROWTH_HOW_TO_MEASURE.items)}
+  </div>
+  ${dsec('Where this comes from', sourceRows(GROWTH_SOURCES))}
+  <p class="tiny">${esc(GROWTH_DISCLAIMER)}</p>`;
+}
+
+/* Reading the fields straight off the DOM at save time rather than
+   holding them in the store as they are typed. A value in the markup
+   rebuilds the input on every keystroke, which is the bug that broke
+   the Willow chat, and a number field that rebuilds mid entry loses
+   the decimal point. */
+function growthSave(measureId) {
+  const kid = activeChild();
+  if (!kid) return;
+  const g = (id) => {
+    const el = document.getElementById(id);
+    return el ? el.value : '';
+  };
+  const date = g('gdate') || ciToday();
+  const entry = { id: growthNewId(), date: date };
+
+  if (measureId === 'weight') {
+    if (growthUs()) {
+      const lb = parseFloat(g('glb')), oz = parseFloat(g('goz')) || 0;
+      if (isFinite(lb) && lb > 0) entry.kg = lbOzToKg(lb, oz);
+    } else {
+      const kg = parseFloat(g('gkg'));
+      if (isFinite(kg) && kg > 0) entry.kg = kg;
+    }
+  } else if (measureId === 'height') {
+    const v = parseFloat(growthUs() ? g('gin') : g('gcm'));
+    if (isFinite(v) && v > 0) entry.cm = growthUs() ? inToCm(v) : v;
+  } else {
+    const v = parseFloat(growthUs() ? g('ghin') : g('ghcm'));
+    if (isFinite(v) && v > 0) entry.headCm = growthUs() ? inToCm(v) : v;
+  }
+
+  if (entry.kg === undefined && entry.cm === undefined && entry.headCm === undefined) {
+    store.growthError = 'Put a number in before saving.';
+    return;
+  }
+  /* A date in the future, or before they were born, is a typo rather
+     than a measurement, and plotting it would bend the line. */
+  if (date > ciToday()) { store.growthError = 'That date has not happened yet.'; return; }
+  if (kid.birthday && date < kid.birthday) { store.growthError = 'That is before they were born.'; return; }
+
+  if (!Array.isArray(kid.growth)) kid.growth = [];
+  /* A second reading on a day that already has one merges into it,
+     because a weight and a length taken at the same appointment are
+     one visit and should be one row. */
+  const sameDay = kid.growth.filter((e) => e.date === date)[0];
+  if (sameDay) {
+    if (entry.kg !== undefined) sameDay.kg = entry.kg;
+    if (entry.cm !== undefined) sameDay.cm = entry.cm;
+    if (entry.headCm !== undefined) sameDay.headCm = entry.headCm;
+  } else {
+    kid.growth.push(entry);
+  }
+  kid.growth.sort((a, b) => (a.date < b.date ? -1 : 1));
+  store.growthError = '';
+  store.growthDraft = {};
+  kid.updatedAt = Date.now();
+  saveStore();
+}
+
+/* Copying to the clipboard, with the old iOS fallback, because a Copy
+   button that silently does nothing is worse than no Copy button. */
+function copyText(text) {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+      return;
+    }
+  } catch (err) {}
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  } catch (err) {}
+}
+
+/* The one line under Growth on a child's profile. Says what is there
+   rather than inviting them in with nothing behind the door. */
+function growthRowSub(kid, months) {
+  const n = growthEntries(kid).length;
+  if (!n) return 'Weight and height over time, on the real curves';
+  if (n === 1) return 'One reading so far. Two more and it is a line.';
+  const pts = growthPoints(kid, 'weight').length ? growthPoints(kid, 'weight') : growthPoints(kid, 'height');
+  if (!pts.length) return esc(n + ' readings');
+  return esc(n + ' readings, last one ' + pts[pts.length - 1].date);
+}
+
+function growthExportText(kid) {
+  const us = growthUs();
+  const lines = ['Growth for ' + (kid.name || 'child') + (kid.birthday ? ', born ' + kid.birthday : ''), ''];
+  growthEntries(kid).slice().sort((a, b) => (a.date < b.date ? -1 : 1)).forEach((e) => {
+    const bits = [];
+    if (e.kg) bits.push(showWeight(e.kg, us));
+    if (e.cm) bits.push(showLength(e.cm, us));
+    if (e.headCm) bits.push('head ' + showLength(e.headCm, us));
+    const m = growthMonthsBetween(kid.birthday, e.date);
+    lines.push(e.date + (m === null ? '' : '  (' + growthAgeWord(m) + ')') + '  ' + bits.join(', '));
+  });
+  return lines.join('\n');
+}
+
+/* =================================================================
+   THE FAMILY CHORE CHART
+
+   A weekly grid of who does what on which day, which fills today's
+   list on its own. Set it up in September and it still works in
+   November, which is the whole reason it is a week and not a list.
+
+   EVERYONE IS ON IT, NOT JUST THE CHILDREN
+   A chart with only children on it quietly teaches that jobs are a
+   thing children do. So the grown ups are people on this chart too,
+   with their own rows and their own jobs, and a child looking at
+   Tuesday sees two jobs with their name and nine with a parent's.
+   That arithmetic is worth seeing.
+
+   WHO TICKS
+   Anybody with the app open. It is not locked to a parent, because a
+   six year old who cannot tick their own box has not really been
+   given the job. What a parent gets is the chart in front of them,
+   which is enough.
+
+   STARS ARE ON BY DEFAULT AND COME OFF IN ONE TAP
+   Plenty of families feel strongly that helping at home should not be
+   paid or scored. They are not wrong, and the chart works identically
+   with the stars hidden.
+   ================================================================= */
+
+const CHORE_ME = 'me';
+
+function choreNewId() {
+  return 'j' + Date.now() + Math.floor(Math.random() * 1000);
+}
+
+/* Everyone the chart can hand a job to. The parent, any other adults
+   they have added, and every real child. Example children are left
+   out, because a chart is not a demo. */
+function chorePeople() {
+  const out = [{
+    id: CHORE_ME,
+    name: (store.parent.name || 'You').trim() || 'You',
+    kind: 'adult',
+    months: null,
+  }];
+  (store.choreAdults || []).forEach((a) => {
+    out.push({ id: a.id, name: a.name || 'Someone', kind: 'adult', months: null });
+  });
+  store.children.filter((k) => !isExampleChild(k)).forEach((k) => {
+    const s = getAgeSummary({ name: k.name, birthday: k.birthday });
+    const months = s.age ? s.age.totalMonths : null;
+    /* A baby is not on the chart. Not out of tidiness: a row with a
+       name and no possible job on it invites somebody to invent one,
+       and the youngest thing on the list is already sixteen months. */
+    if (months != null && !choresForMonths(months).length) return;
+    out.push({
+      id: k.id,
+      name: (k.name || 'Unnamed').split(/\s+/)[0],
+      kind: 'child',
+      months: months,
+    });
+  });
+  return out;
+}
+
+function chorePerson(id) {
+  return chorePeople().filter((p) => p.id === id)[0] || null;
+}
+
+function choreJobs() {
+  return Array.isArray(store.choreJobs) ? store.choreJobs : [];
+}
+
+/* A job whose person has been removed from the family, or whose chore
+   id no longer exists in the library, is dropped on the way out rather
+   than deleted from the store. Deleting somebody's whole chart because
+   a chore got renamed in a build would be an unpleasant surprise. */
+function choreLiveJobs() {
+  const ids = {};
+  chorePeople().forEach((p) => { ids[p.id] = true; });
+  return choreJobs().filter((j) => ids[j.personId] && choreById(j.choreId));
+}
+
+function choreJobsFor(personId, day) {
+  return choreLiveJobs().filter((j) => j.personId === personId
+    && (day === undefined || day === null || (j.days || []).indexOf(day) !== -1));
+}
+
+function choreJobsOnDay(day) {
+  return choreLiveJobs().filter((j) => (j.days || []).indexOf(day) !== -1);
+}
+
+function choreTodayIndex() {
+  return new Date().getDay();
+}
+
+function choreDoneFor(dayKey) {
+  const all = (store.choreDone && typeof store.choreDone === 'object') ? store.choreDone : {};
+  return all[dayKey] || {};
+}
+
+function choreIsDone(jobId, dayKey) {
+  return !!choreDoneFor(dayKey || ciToday())[jobId];
+}
+
+function choreToggle(jobId) {
+  const key = ciToday();
+  if (!store.choreDone || typeof store.choreDone !== 'object') store.choreDone = {};
+  if (!store.choreDone[key]) store.choreDone[key] = {};
+  if (store.choreDone[key][jobId]) delete store.choreDone[key][jobId];
+  else store.choreDone[key][jobId] = true;
+  choreTrimDone();
+  saveStore();
+}
+
+/* Ten weeks of history is plenty to draw a star total from, and it
+   stops the saved store growing without limit for a family that uses
+   this for years. */
+function choreTrimDone() {
+  const all = store.choreDone;
+  if (!all || typeof all !== 'object') return;
+  const keys = Object.keys(all).sort();
+  const over = keys.length - 70;
+  for (let i = 0; i < over; i++) delete all[keys[i]];
+}
+
+function choreStarsOn() {
+  return store.choreStarsOn !== false;
+}
+
+/* Stars earned. Counted from the done record rather than stored, so it
+   can never drift away from what is actually ticked. */
+function choreStars(personId, sinceDays) {
+  if (!choreStarsOn()) return 0;
+  const byId = {};
+  choreLiveJobs().forEach((j) => { byId[j.id] = j; });
+  const all = (store.choreDone && typeof store.choreDone === 'object') ? store.choreDone : {};
+  const keys = Object.keys(all);
+  let cut = '';
+  if (sinceDays) {
+    const d = new Date();
+    d.setDate(d.getDate() - sinceDays);
+    cut = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+      + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  let total = 0;
+  keys.forEach((k) => {
+    if (cut && k < cut) return;
+    Object.keys(all[k] || {}).forEach((jobId) => {
+      const job = byId[jobId];
+      if (!job || job.personId !== personId) return;
+      const ch = choreById(job.choreId);
+      if (ch) total += (ch.stars || 0);
+    });
+  });
+  return total;
+}
+
+function choreAdd(choreId, personId, day) {
+  if (!Array.isArray(store.choreJobs)) store.choreJobs = [];
+  /* The same job twice for the same person is never what anybody
+     meant, so an existing one gains the day instead. */
+  const found = store.choreJobs.filter((j) => j.choreId === choreId && j.personId === personId)[0];
+  if (found) {
+    if ((found.days || []).indexOf(day) === -1) found.days = (found.days || []).concat([day]);
+  } else {
+    store.choreJobs.push({ id: choreNewId(), choreId: choreId, personId: personId, days: [day] });
+  }
+  saveStore();
+}
+
+function choreSetDay(jobId, day, on) {
+  const job = choreJobs().filter((j) => j.id === jobId)[0];
+  if (!job) return;
+  const days = (job.days || []).filter((d) => d !== day);
+  job.days = on ? days.concat([day]).sort() : days;
+  /* A job on no days at all is not a job. */
+  if (!job.days.length) store.choreJobs = choreJobs().filter((j) => j.id !== jobId);
+  saveStore();
+}
+
+function choreRemove(jobId) {
+  store.choreJobs = choreJobs().filter((j) => j.id !== jobId);
+  saveStore();
+}
+
+function choreAddAdult(name) {
+  const clean = (name || '').trim();
+  if (!clean) return;
+  if (!Array.isArray(store.choreAdults)) store.choreAdults = [];
+  store.choreAdults.push({ id: 'a' + Date.now() + Math.floor(Math.random() * 1000), name: clean });
+  saveStore();
+}
+
+function choreRemoveAdult(id) {
+  store.choreAdults = (store.choreAdults || []).filter((a) => a.id !== id);
+  store.choreJobs = choreJobs().filter((j) => j.personId !== id);
+  saveStore();
+}
+
+/* What is still outstanding today, for the card on Home. */
+function choreOutstanding() {
+  const day = choreTodayIndex();
+  const key = ciToday();
+  return choreJobsOnDay(day).filter((j) => !choreIsDone(j.id, key));
+}
+
+function choreStarRow(n) {
+  if (!choreStarsOn() || !n) return '';
+  return `<span class="chstars">${icon('star', 11, 'var(--taupe)')} ${esc(String(n))}</span>`;
+}
+
+/* ---------------- THE CARD ON HOME ---------------- */
+function choreCard() {
+  /* Before there is a chart at all, the card is the way in. It only
+     appears once at least one child is old enough to be given
+     something, so a household of one newborn never sees it. */
+  if (!choreLiveJobs().length) {
+    const ready = chorePeople().filter((p) => p.kind === 'child');
+    if (!ready.length) return '';
+    return `
+    <button class="card flat chorecard" data-go="screen" data-id="chores" style="width:100%;text-align:left">
+      <p class="eyebrow">${icon('check', 11, 'var(--sage)')} Jobs</p>
+      <p class="bodytext" style="margin:5px 0 0">
+        ${esc(ready.length === 1 ? ready[0].name + ' is old enough to have a job of their own.' : 'Everyone here is old enough for a job of their own.')}
+        Start a chart for the week.
+      </p>
+    </button>`;
+  }
+  const left = choreOutstanding();
+  const day = CHORE_DAYS[choreTodayIndex()];
+  const names = [];
+  left.forEach((j) => {
+    const p = chorePerson(j.personId);
+    if (p && names.indexOf(p.name) === -1) names.push(p.name);
+  });
+  return `
+  <button class="card flat chorecard" data-go="screen" data-id="chores" style="width:100%;text-align:left">
+    <p class="eyebrow">${icon('check', 11, 'var(--sage)')} ${esc(day.label)}</p>
+    ${left.length ? `
+      <p class="bodytext" style="margin:5px 0 0">
+        ${esc(left.length === 1 ? 'One job left today' : left.length + ' jobs left today')}${names.length ? esc(', for ' + listJoin(names)) : ''}.
+      </p>` : `
+      <p class="bodytext" style="margin:5px 0 0">Everything on today's chart is done.</p>`}
+  </button>`;
+}
+
+/* Oxford comma deliberately absent, because she does not use one. */
+function listJoin(arr) {
+  const a = (arr || []).slice();
+  if (!a.length) return '';
+  if (a.length === 1) return a[0];
+  const last = a.pop();
+  return a.join(', ') + ' and ' + last;
+}
+
+/* ---------------- THE BOARD ---------------- */
+function screenChores() {
+  const tab = store.choreTab || 'today';
+  const tabs = [
+    { id: 'today', label: 'Today' },
+    { id: 'week', label: 'The week' },
+    { id: 'who', label: 'Who does what' },
+    { id: 'how', label: 'How to start' },
+  ];
+  const body = tab === 'week' ? choreWeekTab()
+    : tab === 'who' ? choreWhoTab()
+      : tab === 'how' ? choreHowTab()
+        : choreTodayTab();
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">Jobs</h1>
+    <p class="sub">${esc(CHORE_INTRO)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('choreTab', tab, tabs)}
+    ${store.chorePick ? chorePicker() : body}
+  </div>`;
+}
+
+function choreTodayTab() {
+  const day = choreTodayIndex();
+  const key = ciToday();
+  const people = chorePeople();
+  const any = choreJobsOnDay(day).length;
+
+  if (!choreLiveJobs().length) return choreEmpty();
+
+  return `
+  ${!any ? `
+    <div class="card flat">
+      <p class="bodytext">Nothing is on the chart for ${esc(CHORE_DAYS[day].label.toLowerCase())}. That is allowed.
+      One clear day a week is a good idea rather than an oversight.</p>
+    </div>` : ''}
+  ${people.map((p) => {
+    const jobs = choreJobsFor(p.id, day);
+    if (!jobs.length) return '';
+    const doneN = jobs.filter((j) => choreIsDone(j.id, key)).length;
+    return `
+    <div class="dsec">
+      <h4>${esc(p.name)} ${esc(doneN + ' of ' + jobs.length)}${p.kind === 'child' ? esc(' ') : ''}</h4>
+      ${jobs.map((j) => choreTickRow(j, key)).join('')}
+    </div>`;
+  }).join('')}
+  ${choreStarsOn() ? `
+    <div class="dsec">
+      <h4>Stars this week</h4>
+      ${people.filter((p) => p.kind === 'child' && choreJobsFor(p.id).length).map((p) => `
+        <div class="lrow" style="pointer-events:none">
+          <span class="grow" style="font-size:14px;font-weight:600;color:var(--ink)">${esc(p.name)}</span>
+          <span class="tiny">${esc(String(choreStars(p.id, 7)))} this week, ${esc(String(choreStars(p.id)))} altogether</span>
+        </div>`).join('')}
+    </div>` : ''}`;
+}
+
+function choreTickRow(job, key) {
+  const ch = choreById(job.choreId);
+  if (!ch) return '';
+  const done = choreIsDone(job.id, key);
+  return `
+  <button class="chrow${done ? ' done' : ''}" data-chore="tick" data-id="${esc(job.id)}">
+    <span class="chbox">${done ? icon('check', 13, '#fff') : ''}</span>
+    <span class="grow">
+      <span class="chlabel">${esc(ch.label)}</span>
+      <span class="tiny" style="display:block;margin-top:2px">
+        ${esc(ch.minutes + ' min')}${ch.withYou ? ', with you' : ''}${ch.note ? '' : ''}
+      </span>
+    </span>
+    ${choreStarRow(ch.stars)}
+  </button>`;
+}
+
+function choreEmpty() {
+  return `
+  <div class="card leafy">
+    <p class="bodytext">Nothing on the chart yet. Add one job for one person and see how the week goes
+    before you add any more. A chart with six new jobs on it on day one is a chart nobody looks at on day three.</p>
+  </div>
+  ${chorePeople().map((p) => `
+    <button class="lrow" data-chore="pick" data-id="${esc(p.id)}">
+      <span class="licon">${icon(p.kind === 'child' ? 'star' : 'user', 18)}</span>
+      <span class="grow">
+        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Give ${esc(p.name)} a job</span>
+        <span class="tiny" style="display:block;margin-top:2px">${esc(p.kind === 'child'
+    ? (p.months == null ? 'Add their birthday to see what fits' : choresForMonths(p.months).length + ' things they are old enough for')
+    : 'The jobs that are already yours, written down')}</span>
+      </span>
+      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+    </button>`).join('')}`;
+}
+
+function choreWeekTab() {
+  const sel = typeof store.choreDay === 'number' ? store.choreDay : choreTodayIndex();
+  const people = chorePeople();
+  return `
+  <div class="chdays">
+    ${CHORE_DAYS.map((d) => {
+    const n = choreJobsOnDay(d.id).length;
+    return `
+    <button class="chday${sel === d.id ? ' on' : ''}" data-chore="day" data-id="${esc(String(d.id))}">
+      <span class="chday-l">${esc(d.short)}</span>
+      <span class="chday-n">${esc(n ? String(n) : '')}</span>
+    </button>`;
+  }).join('')}
+  </div>
+  <p class="tiny" style="margin:0 0 12px">Tap a day to see it, then give somebody a job on it.</p>
+  ${people.map((p) => {
+    const jobs = choreJobsFor(p.id, sel);
+    return `
+    <div class="dsec">
+      <h4>${esc(p.name)}</h4>
+      ${jobs.length ? jobs.map((j) => {
+    const ch = choreById(j.choreId);
+    return `
+        <div class="chrow flat">
+          <span class="grow"><span class="chlabel">${esc(ch.label)}</span>
+          <span class="tiny" style="display:block;margin-top:2px">${esc(ch.minutes + ' min')}${ch.withYou ? ', with you' : ''}</span></span>
+          ${choreStarRow(ch.stars)}
+          <button class="chx" data-chore="offday" data-id="${esc(j.id)}" data-day="${esc(String(sel))}"
+            aria-label="Take this off ${esc(CHORE_DAYS[sel].label)}">${icon('close', 12, 'var(--muted)')}</button>
+        </div>`;
+  }).join('') : `<p class="tiny" style="margin:0 0 8px">Nothing on ${esc(CHORE_DAYS[sel].short)}.</p>`}
+      <button class="chadd" data-chore="pick" data-id="${esc(p.id)}" data-day="${esc(String(sel))}">
+        ${icon('plus', 13, 'var(--deep)')} Add a job for ${esc(p.name)}
+      </button>
+    </div>`;
+  }).join('')}`;
+}
+
+function choreWhoTab() {
+  const people = chorePeople();
+  return `
+  ${people.map((p) => {
+    const jobs = choreJobsFor(p.id);
+    return `
+    <div class="dsec">
+      <h4>${esc(p.name)}${p.kind === 'child' && choreStarsOn() ? esc(', ' + choreStars(p.id) + ' stars') : ''}</h4>
+      ${jobs.length ? jobs.map((j) => {
+    const ch = choreById(j.choreId);
+    return `
+        <div class="card flat" style="padding:11px 12px">
+          <div style="display:flex;align-items:flex-start;gap:8px">
+            <span class="grow"><span class="chlabel">${esc(ch.label)}</span>
+            <span class="tiny" style="display:block;margin-top:2px">${esc(choreAreaLabel(ch.area))}, ${esc(ch.minutes + ' min')}</span></span>
+            ${choreStarRow(ch.stars)}
+            <button class="chx" data-chore="remove" data-id="${esc(j.id)}"
+              aria-label="Take ${esc(ch.label)} off the chart">${icon('close', 12, 'var(--muted)')}</button>
+          </div>
+          <div class="chdays sm">
+            ${CHORE_DAYS.map((d) => `
+              <button class="chday${(j.days || []).indexOf(d.id) !== -1 ? ' on' : ''}"
+                data-chore="toggleday" data-id="${esc(j.id)}" data-day="${esc(String(d.id))}">
+                <span class="chday-l">${esc(d.short)}</span>
+              </button>`).join('')}
+          </div>
+          ${ch.note ? `<p class="tiny" style="margin:8px 0 0">${esc(ch.note)}</p>` : ''}
+        </div>`;
+  }).join('') : `<p class="tiny" style="margin:0 0 8px">No jobs yet.</p>`}
+      <button class="chadd" data-chore="pick" data-id="${esc(p.id)}">
+        ${icon('plus', 13, 'var(--deep)')} Add a job for ${esc(p.name)}
+      </button>
+      ${p.id !== CHORE_ME && p.kind === 'adult' ? `
+        <button class="tiny" data-chore="deladult" data-id="${esc(p.id)}"
+          style="background:none;border:0;color:var(--muted);text-decoration:underline;padding:6px 0">
+          Take ${esc(p.name)} off the chart
+        </button>` : ''}
+    </div>`;
+  }).join('')}
+
+  <div class="dsec">
+    <h4>Somebody else who helps</h4>
+    <p class="tiny" style="margin:0 0 8px">A partner, a grandparent, an older stepchild, anyone who is part of how
+    this house runs. They get their own row and their own jobs.</p>
+    <div style="display:flex;gap:8px">
+      <input class="inp grow" id="choreadult" type="text" autocomplete="off" placeholder="Their name" value="">
+      <button class="btn" data-chore="addadult" style="flex:none">Add</button>
+    </div>
+  </div>
+
+  <div class="dsec">
+    <h4>Stars</h4>
+    <button class="lrow" data-chore="stars">
+      <span class="licon">${icon('star', 18)}</span>
+      <span class="grow">
+        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(choreStarsOn() ? 'Stars are on' : 'Stars are off')}</span>
+        <span class="tiny" style="display:block;margin-top:2px">${esc(choreStarsOn()
+    ? 'Tap to hide them. The chart works exactly the same.'
+    : 'Tap to turn them back on.')}</span>
+      </span>
+    </button>
+  </div>`;
+}
+
+function chorePicker() {
+  const pick = store.chorePick || {};
+  const p = chorePerson(pick.personId);
+  if (!p) { store.chorePick = null; return choreTodayTab(); }
+  const day = typeof pick.day === 'number' ? pick.day : choreTodayIndex();
+  const have = {};
+  choreJobsFor(p.id, day).forEach((j) => { have[j.choreId] = true; });
+
+  const pool = p.kind === 'adult'
+    ? adultChores()
+    : (p.months == null ? [] : choresForMonths(p.months));
+  const groups = choresByArea(pool);
+
+  return `
+  <div class="card leafy">
+    <p class="bodytext" style="margin:0">
+      A job for ${esc(p.name)} on ${esc(CHORE_DAYS[day].label)}.
+      ${p.kind === 'child' && p.months != null
+    ? esc('Everything here is something a ' + childAgeWord(p.months) + ' can have a go at. It will not be done well and that is the job being done.')
+    : esc('The work that is already yours, written down so it is on the chart with everybody else’s.')}
+    </p>
+  </div>
+  ${p.kind === 'child' && p.months == null ? `
+    <div class="card flat"><p class="bodytext">Add their birthday on their profile and this fills up.</p></div>` : ''}
+  ${groups.map((g) => `
+    <div class="dsec">
+      <h4>${esc(g.area.label)}</h4>
+      ${g.items.map((ch) => `
+        <button class="chrow pick${have[ch.id] ? ' has' : ''}" data-chore="add"
+          data-id="${esc(ch.id)}" data-who="${esc(p.id)}" data-day="${esc(String(day))}">
+          <span class="chbox plus">${have[ch.id] ? icon('check', 13, '#fff') : icon('plus', 13, 'var(--deep)')}</span>
+          <span class="grow">
+            <span class="chlabel">${esc(ch.label)}</span>
+            <span class="tiny" style="display:block;margin-top:2px">${esc(ch.minutes + ' min')}${ch.withYou ? ', with you' : ''}</span>
+          </span>
+          ${choreStarRow(ch.stars)}
+        </button>`).join('')}
+    </div>`).join('')}
+  <button class="bigbtn" data-chore="donepick">Done</button>`;
+}
+
+/* A rough word for how old they are, for one sentence of copy. It does
+   not need to be precise and a precise one reads like a form. */
+function childAgeWord(months) {
+  if (months < 24) return 'toddler';
+  if (months < 60) return String(Math.floor(months / 12)) + ' year old';
+  if (months < 156) return String(Math.floor(months / 12)) + ' year old';
+  return 'teenager';
+}
+
+function choreHowTab() {
+  return `
+  <div class="card leafy">
+    <p class="bodytext">${esc(CHORE_INTRO)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(CHORE_WHY.title)}</h4>
+    ${list(CHORE_WHY.items)}
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(CHORE_START.title)}</h4>
+    <ol class="nlist">${CHORE_START.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(CHORE_WHEN_THEY_WONT.title)}</h4>
+    ${list(CHORE_WHEN_THEY_WONT.items)}
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(CHORE_STARS_NOTE.title)}</h4>
+    ${CHORE_STARS_NOTE.body.map((b) => `<p class="bodytext" style="margin:0 0 9px">${esc(b)}</p>`).join('')}
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(CHORE_SAFETY.title)}</h4>
+    ${list(CHORE_SAFETY.items, true)}
+  </div>
+
+  ${dsec('Where this comes from', sourceRows(CHORE_SOURCES))}`;
+}
+
+/* =================================================================
+   THE LEARNING DAY
+
+   What a structured day actually looks like, block by block, for a
+   parent teaching at home and for a parent who wants to know what
+   their child does all day at nursery.
+
+   IT SHOWS ONE BAND AT A TIME, STARTING AT THEIR AGE
+   The bands are pickable, because a mother with a two year old and a
+   four year old needs to see both, and because looking a year ahead is
+   half of why anybody opens a page like this.
+
+   IT DOES NOT PRETEND TO BE SIX HOURS
+   The taught part of a nursery day is an hour or two. The rest is
+   care, food, sleep and the logistics of twenty children. Saying that
+   plainly is the single most useful thing on the screen, because the
+   alternative is somebody at home concluding by nine in the morning
+   that she is already failing.
+   ================================================================= */
+
+function learnBandChoice(months) {
+  const picked = store.learnBand ? learnBandById(store.learnBand) : null;
+  return picked || learnBandFor(months) || LEARN_BANDS[0];
+}
+
+function screenLearning(c) {
+  const months = c.months;
+  const band = learnBandChoice(months);
+  const tab = store.learnTab || 'day';
+  const tabs = [
+    { id: 'day', label: 'The day' },
+    { id: 'subjects', label: 'Subjects' },
+    { id: 'kit', label: 'What you need' },
+    { id: 'how', label: 'Running it' },
+  ];
+  const body = tab === 'subjects' ? learnSubjectsTab(months)
+    : tab === 'kit' ? learnKitTab()
+      : tab === 'how' ? learnHowTab()
+        : learnDayTab(band, months);
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">Learning</h1>
+    <p class="sub">${esc(LEARN_INTRO)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('learnTab', tab, tabs)}
+    ${body}
+  </div>`;
+}
+
+function learnDayTab(band, months) {
+  const natural = learnBandFor(months);
+  const off = natural && band.id !== natural.id;
+  return `
+  <div class="chips" style="margin-bottom:12px">
+    ${LEARN_BANDS.map((b) => `
+      <button class="chip" data-learnband="${esc(b.id)}" aria-pressed="${b.id === band.id}">${esc(b.label)}</button>`).join('')}
+  </div>
+  ${off && natural ? `
+    <p class="tiny" style="margin:0 0 10px">You are looking at ${esc(band.label.toLowerCase())}.
+    <button class="tiny" data-learnband="${esc(natural.id)}"
+      style="background:none;border:0;padding:0;color:var(--deep);text-decoration:underline">Back to their age</button></p>` : ''}
+
+  <div class="card leafy">
+    <p class="bodytext" style="margin:0 0 6px"><strong>${esc(band.label)}</strong></p>
+    <p class="bodytext" style="margin:0">${esc(band.sum)}</p>
+  </div>
+  ${band.note ? `<p class="tiny" style="margin:0 0 14px">${esc(band.note)}</p>` : ''}
+
+  ${band.blocks.map((b, i) => `
+    <div class="lblock">
+      <div class="lblock-h">
+        <span class="lnum">${esc(String(i + 1))}</span>
+        <span class="grow">
+          <span class="lblock-t">${esc(b.name)}</span>
+          <span class="lblock-s">${esc(blockKindLabel(b.kind))} &middot; ${esc(b.minutes)} min</span>
+        </span>
+      </div>
+      <p class="bodytext" style="margin:0 0 8px">${esc(b.what)}</p>
+      ${list(b.doThis)}
+      ${(b.need || []).length ? `
+        <p class="tiny" style="margin:8px 0 0">You need: ${esc(b.need.join(', ').toLowerCase())}.</p>` : ''}
+    </div>`).join('')}
+
+  <div class="dsec">
+    <h4>${esc(LEARN_RULES.title)}</h4>
+    ${list(LEARN_RULES.items)}
+  </div>`;
+}
+
+function learnSubjectsTab(months) {
+  const now = subjectsFor(months);
+  const later = LEARN_SUBJECTS.filter((s) => now.indexOf(s) === -1);
+  return `
+  <div class="card leafy">
+    <p class="bodytext" style="margin:0">Each of these hangs off a block in the day rather than being a lesson of
+    its own. The ages are when it is worth starting, not when it should be finished.</p>
+  </div>
+  ${now.map(learnSubjectCard).join('')}
+  ${later.length ? `
+    <div class="dsec">
+      <h4>Not yet</h4>
+      ${later.map((s) => `
+        <div class="card flat" style="padding:11px 12px">
+          <p class="bodytext" style="margin:0"><strong>${esc(s.label)}</strong></p>
+          <p class="tiny" style="margin:4px 0 0">Worth starting around ${esc(learnAgeWord(s.startsMonths))}. ${esc(s.what)}</p>
+        </div>`).join('')}
+    </div>` : ''}`;
+}
+
+function learnSubjectCard(s) {
+  return `
+  <div class="dsec">
+    <h4>${esc(s.label)}</h4>
+    <p class="bodytext" style="margin:0 0 8px">${esc(s.what)}</p>
+    ${list(s.now)}
+  </div>`;
+}
+
+function learnAgeWord(months) {
+  if (months <= 0) return 'birth';
+  if (months < 24) return String(months) + ' months';
+  const y = months / 12;
+  return (y === Math.floor(y) ? String(y) : String(Math.floor(y)) + ' and a half') + ' years';
+}
+
+function learnKitTab() {
+  return `
+  <div class="card leafy">
+    <p class="bodytext" style="margin:0">The commonest way this stops before it starts is somebody deciding they
+    have to buy things first. You do not.</p>
+  </div>
+  <div class="dsec">
+    <h4>${esc(LEARN_SUPPLIES.title)}</h4>
+    ${list(LEARN_SUPPLIES.core)}
+  </div>
+  <div class="dsec">
+    <h4>Worth adding later</h4>
+    ${list(LEARN_SUPPLIES.laterOn)}
+  </div>
+  <div class="dsec">
+    <h4>Already in your kitchen</h4>
+    ${list(LEARN_SUPPLIES.freeStuff)}
+  </div>
+  <div class="dsec">
+    <h4>${esc(LEARN_KITS.title)}</h4>
+    ${LEARN_KITS.body.map((b) => `<p class="bodytext" style="margin:0 0 9px">${esc(b)}</p>`).join('')}
+  </div>`;
+}
+
+function learnHowTab() {
+  return `
+  <div class="dsec">
+    <h4>${esc(LEARN_RULES.title)}</h4>
+    ${list(LEARN_RULES.items)}
+  </div>
+  <div class="dsec">
+    <h4>${esc(LEARN_HOURS.title)}</h4>
+    <div class="card flat" style="padding:4px 12px">
+      ${LEARN_HOURS.rows.map((r) => `
+        <div class="hoursrow">
+          <span class="grow">${esc(r.band)}</span>
+          <span class="tiny" style="text-align:right">${esc(r.hours)}</span>
+        </div>`).join('')}
+    </div>
+    <p class="tiny" style="margin:9px 0 0">${esc(LEARN_HOURS.note)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(LEARN_AT_HOME.title)}</h4>
+    ${list(LEARN_AT_HOME.items)}
+  </div>
+  ${dsec('Where this comes from', sourceRows(LEARN_SOURCES))}`;
+}
+
+/* =================================================================
+   PUTTING THE APP ON THE HOME SCREEN
+
+   Ready Set Grow is a website. That is a genuine advantage, because
+   there is nothing to download and nothing to update by hand, and a
+   parent who is handed a link can be reading it eight seconds later.
+   It has one cost: a website lives in a tab, and a tab at three in the
+   morning is a thing you have to go and find.
+
+   Putting it on the home screen fixes that, and while it is there the
+   browser also keeps a copy of the page, so it opens in a hospital
+   corridor with no signal.
+
+   THE TWO PHONES DO NOT WORK THE SAME WAY, AND THAT CANNOT BE HIDDEN
+   Android and desktop Chrome fire beforeinstallprompt, which hands the
+   page a real install button. A tap does the whole thing.
+
+   iPhone has never fired that event. Not once, not in any version, and
+   there is no sign it ever will. On an iPhone the only route is Share
+   then Add to Home Screen, done by hand, in Safari, and Chrome on an
+   iPhone cannot do it at all. So the app detects which of those two
+   worlds it is in and either shows a button or shows the steps. It
+   never shows a button that does nothing, which is what most sites do
+   and which is worse than saying so.
+   ================================================================= */
+
+const install = {
+  /* The saved beforeinstallprompt event. It can only be used once, and
+     only in direct response to a tap, which is why it is kept rather
+     than acted on the moment it arrives. */
+  prompt: null,
+  busy: false,
+  done: false,
+};
+
+/* Already running from the home screen. Both spellings are needed:
+   the standard one, and the old Apple property that iOS Safari still
+   uses and which is the only thing that answers on an iPhone. */
+function isInstalled() {
+  try {
+    if (window.navigator && window.navigator.standalone === true) return true;
+    if (typeof window.matchMedia === 'function'
+      && window.matchMedia('(display-mode: standalone)').matches) return true;
+  } catch (err) {}
+  return false;
+}
+
+/* Which set of steps to show. Deliberately blunt: the point is only to
+   pick the right instructions, so an unknown phone falls through to the
+   computer steps, which are the most forgiving. */
+function installPlatform() {
+  const ua = String((navigator && navigator.userAgent) || '');
+  const touchMac = /Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 1;
+  if (/iPad|iPhone|iPod/.test(ua) || touchMac) return 'ios';
+  if (/Android/.test(ua)) return 'android';
+  return 'desktop';
+}
+
+/* iPhone Chrome, Firefox and Edge all run Safari underneath but none of
+   them carry Add to Home Screen. Somebody following the steps in the
+   wrong browser will scroll a list that does not contain the thing they
+   are looking for and conclude the app is broken, so it is said up
+   front instead. */
+function iosWrongBrowser() {
+  const ua = String((navigator && navigator.userAgent) || '');
+  return installPlatform() === 'ios' && /CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+}
+
+function canPromptInstall() {
+  return !!install.prompt;
+}
+
+async function doInstall() {
+  if (!install.prompt || install.busy) return;
+  install.busy = true;
+  render();
+  try {
+    install.prompt.prompt();
+    const res = await install.prompt.userChoice;
+    if (res && res.outcome === 'accepted') install.done = true;
+  } catch (err) {
+    /* A prompt that was already used, or a browser that changed its
+       mind. Nothing to say about it. The steps are on screen anyway. */
+  }
+  /* Used up either way. The browser will fire a fresh one later if it
+     still wants to. */
+  install.prompt = null;
+  install.busy = false;
+  render();
+}
+
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    /* Stopping the default is what keeps the browser from putting its
+       own bar across the bottom of the screen at whatever moment it
+       likes, usually the moment somebody is halfway through typing. */
+    e.preventDefault();
+    install.prompt = e;
+    render();
+  });
+  window.addEventListener('appinstalled', () => {
+    install.done = true;
+    install.prompt = null;
+    store.installHidden = '';
+    saveStore();
+    render();
+  });
+}
+
+/* WHEN THE QUIET BANNER ON HOME IS ALLOWED TO APPEAR
+
+   Not on the first visit, because somebody who has not decided whether
+   they like the app yet does not want to be asked to keep it. Not if
+   it is already installed. Not if there is nothing in here worth
+   coming back to. And not more than twice ever. */
+function showInstallBanner() {
+  if (isInstalled() || install.done) return false;
+  if (installPlatform() === 'desktop' && !canPromptInstall()) return false;
+  if ((store.installWaves || 0) >= 2) return false;
+  /* Something of their own in here. An example child does not count. */
+  const real = store.children.filter((k) => !isExampleChild(k)).length;
+  if (!real) return false;
+  const hidden = store.installHidden || '';
+  if (hidden) {
+    const days = (Date.now() - Date.parse(hidden + 'T00:00:00')) / 86400000;
+    if (!(days >= 7)) return false;
+  }
+  return true;
+}
+
+function installBanner() {
+  if (!showInstallBanner()) return '';
+  return `
+  <div class="installbar">
+    <span class="installic">${icon('home', 15, 'var(--deep)')}</span>
+    <span class="grow">${esc(INSTALL_BANNER)}</span>
+    <button class="installgo" data-install="open">Show me</button>
+    <button class="installx" data-install="later" aria-label="Not now">${icon('close', 12, 'var(--muted)')}</button>
+  </div>`;
+}
+
+function screenInstall() {
+  const plat = installPlatform();
+  const here = plat === 'ios' ? INSTALL_IOS : (plat === 'android' ? INSTALL_ANDROID : INSTALL_DESKTOP);
+  const others = [INSTALL_IOS, INSTALL_ANDROID, INSTALL_DESKTOP].filter((x) => x !== here);
+  const installed = isInstalled() || install.done;
+
+  const steps = (sec) => `
+    <div class="dsec">
+      <h4>${esc(sec.title)}</h4>
+      <p class="tiny" style="margin:0 0 9px">${esc(sec.note)}</p>
+      <ol class="nlist">
+        ${sec.steps.map((x) => `<li>${esc(x)}</li>`).join('')}
+      </ol>
+    </div>`;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">${esc(INSTALL_TITLE)}</h1>
+    <p class="sub">${esc(INSTALL_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${installed ? `
+      <div class="card leafy">
+        <p class="bodytext">${esc(INSTALL_ALREADY)}</p>
+      </div>` : `
+      <div class="card leafy">
+        ${list(INSTALL_WHY)}
+      </div>
+
+      ${canPromptInstall() ? `
+        <button class="bigbtn" data-install="go"${install.busy ? ' disabled' : ''}>
+          ${esc(install.busy ? 'Asking your browser' : 'Install Ready Set Grow')}
+        </button>` : ''}
+
+      ${iosWrongBrowser() ? `
+        <div class="card flat">
+          <p class="bodytext"><strong>You are not in Safari.</strong> On an iPhone, only Safari can add an app to
+          the home screen. Open readysetgrow-app.com in Safari and the steps below will work.</p>
+        </div>` : ''}
+
+      ${steps(here)}
+
+      <div class="dsec">
+        <h4>On your other devices</h4>
+        <p class="tiny" style="margin:0 0 9px">You can have it on as many as you like. Sign in on
+        each one and they stay in step with each other.</p>
+        ${others.map((sec) => `
+          <p class="bodytext" style="margin:0 0 4px"><strong>${esc(sec.title)}</strong></p>
+          <ol class="nlist" style="margin:0 0 12px">
+            ${sec.steps.map((x) => `<li>${esc(x)}</li>`).join('')}
+          </ol>`).join('')}
+      </div>`}
+
+    <div class="dsec">
+      <h4>${esc(INSTALL_NOTIFY.title)}</h4>
+      ${INSTALL_NOTIFY.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+    </div>
+
+    ${privacyLine()}
+  </div>`;
+}
+
+/* =================================================================
    IS THIS COPY OF THE APP STILL CURRENT?
 
    A phone running last week's copy looks exactly like a phone that is
@@ -8873,9 +17945,10 @@ function buildStamp() {
 async function checkForUpdate(force) {
   if (update.available) return;
   const now = Date.now();
-  /* Once on open, then at most every five minutes when the app comes
-     back to the front. Nobody needs this answered more often. */
-  if (!force && now - update.checkedAt < 300000) return;
+  /* At most every two minutes. The interval below asks every three, and
+     focus and coming back online ask too, so this only exists to stop
+     three of those landing at once. */
+  if (!force && now - update.checkedAt < 120000) return;
   update.checkedAt = now;
   if (typeof fetch !== 'function' || !buildStamp()) return;
   try {
@@ -8883,13 +17956,14 @@ async function checkForUpdate(force) {
       cache: 'no-store',
       headers: { Range: 'bytes=0-2047' },
     });
-    if (res.status !== 206) {
-      /* No range support means the only way to answer is to download
-         the whole app again, which is worse than not knowing. */
-      if (res.body && res.body.cancel) { try { res.body.cancel(); } catch (err) {} }
-      return;
-    }
-    const head = await res.text();
+    /* 206 is the partial answer that was asked for. A server that
+       ignores the Range header answers 200 with the whole file, and
+       reading the stamp out of the first couple of kilobytes of that
+       still works. It costs a download that was not wanted, so it is
+       not the happy path, but silently never checking again is worse.
+       GitHub Pages does honour ranges today. It has not always. */
+    if (res.status !== 206 && res.status !== 200) return;
+    const head = (await res.text()).slice(0, 4096);
     const m = head.match(/name="rsg-build"\s+content="([^"]+)"/);
     if (!m) return;
     if (m[1] && m[1] !== buildStamp()) {
@@ -9152,6 +18226,11 @@ const willow = {
   open: false,
   busyKey: '',      // the child whose question is in flight, '' when idle
   input: '',
+  /* Set for exactly one repaint whenever a new message is added or the
+     panel is opened, and it is the only thing allowed to move where
+     she is reading. Every other repaint puts the conversation back
+     where it was. */
+  stick: false,
   threads: {},      // childId -> [ { who: 'you' | 'willow', text, sources: [], kind } ]
   ai: null,         // the model handle, once loaded
   loading: null,    // the in flight load promise
@@ -9159,6 +18238,9 @@ const willow = {
   failed: false,
   usedToday: 0,
   usedDate: '',
+  /* The last real failure, kept so Settings can show it. Memory only:
+     it describes this device at this moment and is worthless tomorrow. */
+  lastError: '',
 };
 
 /* One conversation per child rather than one for the whole app.
@@ -9231,8 +18313,72 @@ function willowChildLine(c) {
   return bits.join(', ');
 }
 
+/* Her cycle, in a sentence, so a question such as "is it normal that my
+   period was late this month" is answered from her own logged dates
+   rather than from a textbook average. Nothing is sent when she has not
+   logged anything. */
+function willowMotherLine() {
+  const bits = [];
+
+  /* Who she is to her children, so Willow never addresses an adoptive
+     father as though he gave birth. */
+  const sit = situation();
+  const roleLabels = (sit.roles || []).map((r) => {
+    const m = PARENT_ROLES.filter((x) => x.id === r)[0];
+    return m ? m.label : '';
+  }).filter(Boolean);
+  if (roleLabels.length) bits.push('She is: ' + roleLabels.join(', ') + '.');
+  /* What the child calls them, and which pronoun to use. Without this
+     Willow wrote to everybody as she, including the grandfather and
+     the adoptive dad. */
+  const careLine = caretakerLine(store.parent);
+  if (careLine) bits.push(careLine);
+  if (!gaveBirthRecently()) bits.push('She did not give birth recently, so nothing about recovery '
+    + 'from a birth applies to her unless she raises it.');
+
+  /* Her cycle, when she has logged any of it. */
+  const list = periods();
+  const info = list.length ? cycleInfoNow() : null;
+  if (info) bits.push(cycleForWillow(list, info, cycleStats(list)));
+
+  /* The last week of her own logs, so a question about how she has been
+     is answered from what she actually recorded. */
+  const since = Date.now() - 1000 * 60 * 60 * 24 * 7;
+  const recent = momLogs().filter((l) => new Date(l.at).getTime() >= since);
+  if (recent.length) {
+    const counts = {};
+    recent.forEach((l) => {
+      const t = anyLogType(l.typeId);
+      const label = t ? t.label : l.typeId;
+      counts[label] = (counts[label] || 0) + 1;
+    });
+    bits.push('In the last week she logged: '
+      + Object.keys(counts).map((k) => k.toLowerCase() + ' x' + counts[k]).join(', ') + '.');
+  }
+
+  /* And how she said the last few days went. */
+  const ci = momCheckins();
+  const days = Object.keys(ci).sort().reverse().slice(0, 3);
+  if (days.length) {
+    bits.push('Her last check ins: ' + days.map((d) => {
+      const v = ci[d] || {};
+      return d + ' ' + MOM_CHECKIN.rows.map((r) => v[r.id]).filter(Boolean).join('/');
+    }).join('; ') + '.');
+  }
+
+  if (!bits.length) return '';
+  return bits.join(' ') + ' '
+    + (info ? CYCLE_WILLOW_BRIEF + ' ' : '')
+    + 'Use any of this only if the question is about her. Never read her logs back at her '
+    + 'unprompted, never comment on weight or a number moving, and never diagnose.';
+}
+
 function willowSay(who, text, sources, kind, key) {
   willowThread(key).push({ who: who, text: text, sources: sources || [], kind: kind || '' });
+  /* A new message is the one and only time the conversation should
+     move on its own. Every other repaint leaves her exactly where she
+     was reading. See the willow slot in render(). */
+  willow.stick = true;
 }
 
 async function willowAsk(question) {
@@ -9280,9 +18426,27 @@ async function willowAsk(question) {
        say "what about at naps?" and be understood. */
     const history = willowHistory(willowThread(key).slice(0, -1), 10);
     const chat = model.startChat({ history: history });
-    const res = await chat.sendMessage(willowPrompt(q, hits.slice(0, 4), willowChildLine(c)));
-    const raw = res && res.response && typeof res.response.text === 'function'
-      ? res.response.text() : String(res || '');
+    const res = await chat.sendMessage(willowPrompt(q, hits.slice(0, 4), willowChildLine(c), willowMotherLine()));
+
+    /* A response the model refused to give comes back looking almost
+       like a normal one, with the reason tucked away and text() set to
+       throw. Read the refusal FIRST, or the throw arrives in the catch
+       below with nothing on it to identify itself. */
+    const resp = res && res.response;
+    const blocked = resp && ((resp.promptFeedback && resp.promptFeedback.blockReason)
+      || (resp.candidates && resp.candidates[0] && resp.candidates[0].finishReason
+          && ['SAFETY', 'BLOCKLIST', 'PROHIBITED_CONTENT', 'RECITATION', 'SPII']
+               .indexOf(resp.candidates[0].finishReason) !== -1
+          && resp.candidates[0].finishReason));
+    if (blocked) {
+      willow.lastError = 'blocked: ' + blocked;
+      willowSay('willow', WILLOW.wouldNotAnswer, [], 'failed', key);
+      willow.busyKey = '';
+      render();
+      return;
+    }
+
+    const raw = resp && typeof resp.text === 'function' ? resp.text() : String(res || '');
     const split = willowSplitSources(raw);
     /* Only entries that were actually offered can be linked, whatever
        the model wrote on that line. */
@@ -9295,20 +18459,64 @@ async function willowAsk(question) {
     willow.usedToday = willowCountToday() + 1;
     willowSay('willow', split.body || WILLOW.failed, used, '', key);
   } catch (err) {
-    /* Three failures, three different fixes, so they get three
-       different sentences. Telling somebody to try again in a moment,
-       when the real answer is that a key was never pasted in, wastes
-       their evening on a problem no amount of retrying will move. */
-    const code = String((err && err.code) || '') + ' ' + String((err && err.message) || '');
+    /* Different failures have different fixes, so they get different
+       sentences. Telling somebody to try again in a moment, when the
+       real answer is that a key was never pasted in, wastes their
+       evening on a problem no amount of retrying will move.
+
+       AND THE ONE THAT SENT ME ROUND IN CIRCLES: everything that did
+       not match a pattern used to become "something went wrong",
+       which is the least useful sentence in the app. The real reason
+       was thrown away, so there was nothing to look at. It is kept
+       now, and Settings shows it. */
+    willow.lastError = willowErrorDetail(err);
+    const code = willow.lastError;
     let message;
-    if (/app.?check|401|unauthenticated/i.test(code)) message = WILLOW.notVerified;
-    else if (/api-not-enabled|not been used|SERVICE_DISABLED|403|permission/i.test(code)) message = WILLOW.notReady;
+    if (/app.?check|401|unauthenticated|recaptcha/i.test(code)) message = WILLOW.notVerified;
+    else if (/api-not-enabled|not been used|SERVICE_DISABLED|403|permission|consumer/i.test(code)) message = WILLOW.notReady;
+    /* Out of quota is not a broken app and should never be described
+       as one. It is a billing page, or tomorrow. */
+    /* Credit before quota, because a depleted balance also arrives as a
+       429 and the two need opposite answers: one you wait out, the
+       other you pay. */
+    else if (/prepayment|credits? (are |is )?depleted|billing#prepay|insufficient (funds|credit)/i.test(code)) {
+      message = WILLOW.outOfCredit;
+    }
+    else if (/429|quota|RESOURCE_EXHAUSTED|rate.?limit/i.test(code)) message = WILLOW.outOfQuota;
+    /* The model refused rather than failed. Common on anything that
+       sounds medical, which in a parenting app is most questions worth
+       asking, so it gets its own honest answer rather than a shrug. */
+    else if (/SAFETY|blocked|block.?reason|PROHIBITED|RECITATION/i.test(code)) message = WILLOW.wouldNotAnswer;
+    else if (/offline|network|Failed to fetch|NetworkError|ERR_/i.test(code)) message = WILLOW.noNetwork;
     else if (!willow.ready) message = WILLOW.notReady;
     else message = WILLOW.failed;
     willowSay('willow', message, [], 'failed', key);
   }
   willow.busyKey = '';
   render();
+}
+
+/* Everything an error is willing to tell us, flattened into one line.
+   Firebase wraps its failures, so the useful part is often two levels
+   down in `cause` or in `customData`, and the top level says only
+   "error". */
+function willowErrorDetail(err) {
+  if (!err) return 'unknown';
+  const bits = [];
+  const add = (v) => { const t = String(v == null ? '' : v).trim(); if (t && bits.indexOf(t) === -1) bits.push(t); };
+  add(err.code);
+  add(err.name);
+  add(err.message);
+  add(err.status);
+  if (err.customData) { try { add(JSON.stringify(err.customData)); } catch (e) {} }
+  let cause = err.cause;
+  let depth = 0;
+  while (cause && depth < 3) {
+    add(cause.code); add(cause.message); add(cause.status);
+    cause = cause.cause; depth += 1;
+  }
+  if (!bits.length) { try { add(JSON.stringify(err)); } catch (e) { add(String(err)); } }
+  return bits.join(' | ').slice(0, 600);
 }
 
 function willowBubble() {
@@ -9694,6 +18902,14 @@ function birthdayDismiss() {
   flushStore();
 }
 
+/* NOTE ON THE INPUT AT THE BOTTOM: it carries no value attribute on
+   purpose. With value="${willow.input}" baked in, the panel's markup
+   changed on every keystroke, so render() saw a difference and rebuilt
+   the whole panel, throwing away the box she was typing in. On a phone
+   that drops the keyboard and breaks anything typed mid word. The
+   value is set as a property after paint instead, in render(), so
+   typing changes nothing about the markup and the box she is typing in
+   is the same box the whole way through. */
 function willowPanel() {
   if (!willow.open) return '';
   const key = willowThreadKey();
@@ -9743,7 +18959,7 @@ function willowPanel() {
 
     <div class="wfoot">
       <input id="willowIn" class="winput" type="text" autocomplete="off"
-        placeholder="Ask ${esc(WILLOW.name)} something" value="${esc(willow.input)}"
+        placeholder="Ask ${esc(WILLOW.name)} something"
         ${thinking ? 'disabled' : ''} />
       <button class="wsend" data-willow="send" aria-label="Send" ${thinking ? 'disabled' : ''}>
         ${icon('chev', 17, '#fff')}
@@ -9765,6 +18981,11 @@ function willowPanel() {
    Please leave this here.
    ----------------------------------------------------------------- */
 loadStore();
+/* Before the first render and before anything is written anywhere: the
+   invite code comes out of the address bar into memory, and the address
+   is rewritten without it. A single use credential should not sit in
+   somebody's history. */
+inviteTake();
 initControls();
 restoreSession();
 render();
@@ -9772,3 +18993,64 @@ render();
 /* Ask once, a few seconds in, so it never competes with the first
    paint or with signing in. */
 setTimeout(() => { try { checkForUpdate(true); } catch (err) {} }, 4000);
+
+/* AND THEN IT KEEPS ASKING.
+
+   This used to run four seconds after opening, and after that only
+   when the tab went away and came back. Which meant a tab left open on
+   a desk all afternoon asked exactly once, while it was still current,
+   and then never again. She sat in front of a version from twenty
+   minutes earlier twice in one day, both times concluding the work had
+   vanished, because nothing in the app ever told her otherwise.
+
+   So it now also asks on a timer, and on the two events that mean a
+   browser has probably been asleep: getting focus back, and the
+   network coming back. The ask itself is a range request for two
+   kilobytes, so doing it every few minutes costs effectively nothing
+   even on a phone. */
+if (typeof setInterval === 'function') {
+  setInterval(() => { try { checkForUpdate(false); } catch (err) {} }, 180000);
+}
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('focus', () => { try { checkForUpdate(false); } catch (err) {} });
+  window.addEventListener('online', () => { try { checkForUpdate(true); } catch (err) {} });
+}
+
+/* THE SERVICE WORKER.
+
+   Registered last, and on purpose after everything else has started,
+   because it is the least urgent thing in the file. It is what lets
+   the app be installed on a home screen and what lets it open with no
+   signal.
+
+   IT IS NETWORK FIRST. Look at sw.js for why, but the short version is
+   that a cache first worker would turn the stale copy problem into a
+   permanent one, and that problem has already cost a real afternoon.
+
+   It only registers over https or on localhost, which means the file
+   protocol and the odd preview host quietly skip it rather than
+   throwing. */
+if (typeof navigator !== 'undefined' && navigator.serviceWorker
+  && (location.protocol === 'https:' || location.hostname === 'localhost'
+    || location.hostname === '127.0.0.1')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then((reg) => {
+      /* A waiting worker means a newer one is sitting behind the one
+         currently running. Tell it to take over now rather than on some
+         future full quit, since the page itself is fetched fresh either
+         way and there is nothing to lose. */
+      if (reg.waiting) reg.waiting.postMessage('skip-waiting');
+      reg.addEventListener('updatefound', () => {
+        const w = reg.installing;
+        if (!w) return;
+        w.addEventListener('statechange', () => {
+          if (w.state === 'installed' && reg.waiting) reg.waiting.postMessage('skip-waiting');
+        });
+      });
+    }).catch(() => {
+      /* A browser that will not have it, a private window, or a host
+         serving from a path we do not control. The app works exactly as
+         it did before service workers existed. */
+    });
+  });
+}

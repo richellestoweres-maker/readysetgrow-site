@@ -54,6 +54,8 @@ order = [
     ('hospitalBag',         SRC/'data/hospitalBag.js'),
     ('pumping',             SRC/'data/pumping.js'),
     ('feeding',             SRC/'data/feeding.js'),
+    ('latchAndTies',        SRC/'data/latchAndTies.js'),
+    ('feedingDeep',         SRC/'data/feedingDeep.js'),
     ('emergencySkills',     SRC/'data/emergencySkills.js'),
     ('willow',              SRC/'data/willow.js'),
     ('postpartum',          SRC/'data/postpartum.js'),
@@ -63,6 +65,33 @@ order = [
     ('dailyLift',           SRC/'data/dailyLift.js'),
     ('situation',           SRC/'data/situation.js'),
     ('parentLearn',         SRC/'data/parentLearn.js'),
+    ('momNow',              SRC/'data/momNow.js'),
+    ('momLogs',             SRC/'data/momLogs.js'),
+    ('caretakers',          SRC/'data/caretakers.js'),
+    ('encourage',           SRC/'data/encourage.js'),
+    ('memories',            SRC/'data/memories.js'),
+    ('onboarding',          SRC/'data/onboarding.js'),
+    ('nudges',              SRC/'data/nudges.js'),
+    ('planFraming',         SRC/'data/planFraming.js'),
+    ('feed',                SRC/'data/feed.js'),
+    ('fireflies',           SRC/'data/fireflies.js'),
+    ('groups',              SRC/'data/groups.js'),
+    ('outings',             SRC/'data/outings.js'),
+    ('privacy',             SRC/'data/privacy.js'),
+    ('sharing',             SRC/'data/sharing.js'),
+    ('diapers',             SRC/'data/diapers.js'),
+    ('install',             SRC/'data/install.js'),
+    ('chores',              SRC/'data/chores.js'),
+    ('learning',            SRC/'data/learning.js'),
+    ('growth',              SRC/'data/growth.js'),
+    ('vaccineRecord',       SRC/'data/vaccineRecord.js'),
+    ('notifications',       SRC/'data/notifications.js'),
+    ('foryou',              SRC/'data/foryou.js'),
+    ('breakingPoint',       SRC/'data/breakingPoint.js'),
+    ('support',             SRC/'data/support.js'),
+    ('eatingTogether',      SRC/'data/eatingTogether.js'),
+    ('childSections',       SRC/'data/childSections.js'),
+    ('signLanguage',        SRC/'data/signLanguage.js'),
     ('cycle',               SRC/'data/cycle.js'),
     ('firebaseConfig',      SRC/'data/firebaseConfig.js'),
 ]
@@ -84,11 +113,27 @@ def check_unlisted():
 # same top level name is a hard SyntaxError that takes the whole prototype
 # down. Catch it here, by name, rather than in a browser console.
 def check_collisions():
+    # EVERY top level declaration, not only the exported ones.
+    #
+    # This used to look at `export const` and `export function` alone,
+    # and that gap cost an afternoon. src/utils/age.js has a private
+    # `function monthsBetween`, src/data/growth.js later added an
+    # exported one with a different signature, and because the bundle is
+    # a plain concatenation the second quietly replaced the first. Every
+    # age in the app became zero, so every child looked like a newborn.
+    # Nothing threw. The gate saw two names it was not looking at.
+    #
+    # A private name is exactly as dangerous as a public one here,
+    # because after the ESM is stripped they all live in the same
+    # scope. So all four shapes are collected now.
     owner, bad = {}, []
     for name, path in order:
         text = path.read_text()
         names = set(re.findall(r'^export\s+const\s+([A-Za-z_$][\w$]*)', text, re.M))
         names |= set(re.findall(r'^export\s+function\s+([A-Za-z_$][\w$]*)', text, re.M))
+        names |= set(re.findall(r'^const\s+([A-Za-z_$][\w$]*)', text, re.M))
+        names |= set(re.findall(r'^function\s+([A-Za-z_$][\w$]*)', text, re.M))
+        names |= set(re.findall(r'^let\s+([A-Za-z_$][\w$]*)', text, re.M))
         for n in sorted(names):
             if n in owner:
                 bad.append((n, owner[n], name))
@@ -193,12 +238,54 @@ def check_boot_is_last(text, label):
 
 check_boot_is_last(app, 'proto/app.js')
 
+def check_sub_tabs(text, label):
+    """Every tab strip key must be a key the state proxy knows about.
+
+    subTabs emits data-sub="<key>" and the single handler for all of
+    them does state[key] = value. `state` is a live view onto `store`
+    for a fixed list of names and an ordinary object for anything
+    else, so a key that is not on the list is written to a property
+    nothing ever reads. The tab highlights, the screen does not
+    change, and nothing throws.
+
+    That shipped. Four screens had dead tabs before anybody noticed,
+    because every test set the store key directly instead of clicking
+    the tab. This check is cheap and that class of bug is not."""
+    # Comments come out first. One of them explains what state[key]
+    # does, and a bracket inside prose is enough to send a search for
+    # the opening bracket of a list into the middle of a sentence.
+    bare = re.sub(r'/\*.*?\*/', ' ', text, flags=re.S)
+    bare = re.sub(r'(?m)^\s*//.*$', ' ', bare)
+
+    listed = set()
+    for m in re.finditer(r"\]\.forEach\(\(key\)", bare):
+        open_at = bare.rfind('[', 0, m.start())
+        if open_at == -1:
+            continue
+        listed |= set(re.findall(r"'([A-Za-z_$][\w$]*)'", bare[open_at:m.start()]))
+
+    # Both spellings: a literal data-sub in markup, and the call to
+    # subTabs, whose own markup writes data-sub="${group}" and would
+    # otherwise be read as a key called $.
+    used = set(re.findall(r"""data-sub=["']([A-Za-z_][\w$]*)["']""", text))
+    used |= set(re.findall(r"subTabs\('([A-Za-z_$][\w$]*)'", text))
+    missing = sorted(used - listed)
+    if missing:
+        print('SUB TAB KEYS MISSING FROM THE STATE PROXY IN %s:' % label)
+        for m in missing:
+            print('  %s  is used by a tab strip but state cannot reach it, so the tab will do nothing' % m)
+        raise SystemExit(1)
+    return len(used)
+
+sub_tab_keys = check_sub_tabs(app, 'proto/app.js')
+
 def assemble(shell_html):
     return shell_html + '\n<script>\n' + bundle + '\n</script>\n<script>\n' + app + '\n</script>\n'
 
 html = assemble(shell)
 (OUT/'ready-set-grow-prototype.html').write_text(html)
 print('names    : %d top level, no collisions' % top_level_names)
+print('sub tabs : %d strips, every key reachable' % sub_tab_keys)
 print('bundle   : %d lines' % bundle.count('\n'))
 print('workbench: %d bytes' % len(html))
 
@@ -301,7 +388,20 @@ desktop_head = head.replace(
     # Near the top of the file on purpose. The running app asks the
     # server for the first two kilobytes and reads this, rather than
     # pulling a megabyte down to find out whether anything changed.
-    '<meta name="rsg-build" content="%s">' % BUILD_STAMP,
+    '<meta name="rsg-build" content="%s">\n' % BUILD_STAMP
+    # Everything an installable app needs. The manifest, the icons and
+    # the service worker are real files at the root of the site, not
+    # data URLs, because a browser refuses to install from a data URL
+    # and flatly refuses to register a worker from one.
+    + '<link rel="manifest" href="/manifest.webmanifest">\n'
+    '<meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">\n'
+    '<meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">\n'
+    '<meta name="apple-mobile-web-app-capable" content="yes">\n'
+    '<meta name="apple-mobile-web-app-status-bar-style" content="default">\n'
+    '<meta name="apple-mobile-web-app-title" content="Ready Set Grow">\n'
+    '<link rel="apple-touch-icon" href="/apple-touch-icon.png">\n'
+    '<link rel="icon" href="/favicon-32.png" sizes="32x32">\n'
+    '<link rel="icon" href="/icon-512.png" sizes="512x512">',
 )
 
 desktop_shell = (
