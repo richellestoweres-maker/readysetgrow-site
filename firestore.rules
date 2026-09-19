@@ -282,6 +282,15 @@ service cloud.firestore {
     /* The rooms, mirrored from src/data/groups.js. Adding a room means
        adding it in both places, which is the price of the server being
        able to refuse one that does not exist. */
+    /* The seven stage bands, mirrored from FEED_BANDS in
+       src/data/foryou.js. If a band is added there it has to be added
+       here too, and the test in the scratchpad checks that the two
+       lists match. */
+    function bandOk(b) {
+      return b == '' || b == 'expecting' || b == 'newborn' || b == 'baby'
+        || b == 'toddler' || b == 'preschool' || b == 'school' || b == 'teen';
+    }
+
     function groupOk(g) {
       return g == ''
         || g in ['nights', 'feeding', 'sleep', 'first', 'solo', 'bodies',
@@ -314,6 +323,15 @@ service cloud.firestore {
            nobody can moderate because nobody knows it exists. */
         && request.resource.data.group is string
         && groupOk(request.resource.data.group)
+        /* Topics and the stage band. Both optional so a post from a
+           client that predates them still goes up. The band is one of
+           seven words, checked here as well as in the app, because the
+           point of it being coarse is lost if a modified client can
+           put an exact age in the field instead. */
+        && (!('tags' in request.resource.data)
+            || (request.resource.data.tags is list && request.resource.data.tags.size() <= 5))
+        && (!('band' in request.resource.data)
+            || (request.resource.data.band is string && bandOk(request.resource.data.band)))
         && !('childId' in request.resource.data)
         && !('birthday' in request.resource.data)
         && !('childName' in request.resource.data);

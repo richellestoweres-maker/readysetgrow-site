@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-19 14:50">
+<meta name="rsg-build" content="2026-09-19 15:08">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1066,6 +1066,18 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 }
 .updatebtn.ghost{background:transparent;color:var(--deep2);border-color:transparent}
 
+/* a hashtag inside a post. inline so it flows with the sentence, and
+   a real button so it is reachable by keyboard and by a screen reader
+   rather than a coloured span that only a mouse can find. */
+.taglink{
+  display:inline;padding:0;border:0;background:none;font:inherit;
+  color:var(--deep);font-weight:600;cursor:pointer;text-decoration:none;
+}
+.taglink:hover{text-decoration:underline}
+.tagn{opacity:.55;font-weight:600}
+.chip.on .tagn{opacity:.8}
+textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
+
 /* the quiet hours row, two selects that must both fit a 320px phone */
 .quietrow{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .quietrow .inp{flex:1 1 90px;min-width:0;padding:8px 9px}
@@ -1518,7 +1530,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-19 14:50';
+const BUILD_STAMP = '2026-09-19 15:08';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -22263,6 +22275,14 @@ function feedDocFrom(post, username, uid) {
       kind: String(f.kind || 'photo'),
     })),
     status: statusFor((post && post.text) || ''),
+    /* THE TWO FIELDS THAT MAKE FOR YOU AND TRENDING POSSIBLE.
+       tags come out of the body, so nothing is entered twice. band is
+       a stage, not an age and certainly not a birthday: seven buckets
+       across eighteen years, and it cannot be turned back into a date.
+       It is the only thing about a child that leaves the phone, and
+       that is the whole reason it is this coarse. */
+    tags: parseTags((post && post.text) || ''),
+    band: String((post && post.band) || ''),
     at: Number((post && post.at)) || Date.now(),
     localId: String((post && post.id) || ''),
   };
@@ -26214,6 +26234,267 @@ function pushSettingsPayload(prefs, token, tz) {
 }
 
 
+/* ===== src/data/foryou.js ===== */
+/**
+ * Ready Set Grow: For You, hashtags and trending
+ * ------------------------------------------------------------------
+ * A feed sorted by whether a post is likely to matter to somebody with
+ * a child this age, rather than by what is newest.
+ *
+ * WHY AGE AND NOTHING ELSE
+ * A mother of a six week old and a mother of a fourteen year old have
+ * almost nothing in common on a given Tuesday. Age is the single
+ * strongest predictor of whether a post is worth somebody's time, and
+ * it needs nothing about the person to work out. No interests to
+ * gather, no behaviour to watch, no profile to build. One number that
+ * the app already knows, and it is not even sent: what goes up with a
+ * post is a band, not a birthday.
+ *
+ * THE BAND IS COARSE ON PURPOSE
+ * Seven bands across eighteen years. "Newborn" is not a date of birth
+ * and cannot be turned back into one, which matters because this is
+ * the only thing about a child that leaves the phone at all.
+ *
+ * TRENDING IS ALLOWED TO SAY IT HAS NOTHING
+ * A trending list with three posts in it is not trending, it is a
+ * list. Below the threshold the app shows curated topics instead and
+ * says which it is doing. Faking momentum an app does not have is how
+ * a community feels dead, because everybody can tell.
+ */
+
+const TAG_MAX = 5;
+const TAG_MIN_LEN = 2;
+const TAG_MAX_LEN = 24;
+
+/* Hashtags out of a body of text. Lowercased so #Teething and
+   #teething are the same thing, capped so nobody can stuff forty of
+   them into one post and take over the trending list on their own. */
+function parseTags(text) {
+  const out = [];
+  const seen = {};
+  /* The negative lookahead is what stops a forty character word being
+     chopped to twenty four and accepted as a tag. Too long is not a
+     tag, it is somebody typing. */
+  const re = /(^|\s)#([A-Za-z][A-Za-z0-9]{1,23})(?![A-Za-z0-9])/g;
+  let m;
+  while ((m = re.exec(String(text || ''))) !== null) {
+    const t = m[2].toLowerCase();
+    if (t.length < TAG_MIN_LEN || t.length > TAG_MAX_LEN) continue;
+    if (seen[t]) continue;
+    seen[t] = true;
+    out.push(t);
+    if (out.length >= TAG_MAX) break;
+  }
+  return out;
+}
+
+function tagLabel(tag) {
+  return '#' + String(tag || '');
+}
+
+/* ------------------------------------------------------------------
+   THE BANDS
+   ------------------------------------------------------------------ */
+const FEED_BANDS = [
+  { id: 'expecting', label: 'Expecting', min: -12, max: 0 },
+  { id: 'newborn', label: 'Newborn days', min: 0, max: 4 },
+  { id: 'baby', label: 'Babies', min: 4, max: 12 },
+  { id: 'toddler', label: 'Toddlers', min: 12, max: 36 },
+  { id: 'preschool', label: 'Preschool', min: 36, max: 60 },
+  { id: 'school', label: 'School age', min: 60, max: 132 },
+  { id: 'teen', label: 'Teenagers', min: 132, max: 240 },
+];
+
+function feedBandFor(months) {
+  const m = Number(months);
+  if (!isFinite(m)) return '';
+  for (let i = 0; i < FEED_BANDS.length; i++) {
+    const b = FEED_BANDS[i];
+    if (m >= b.min && m < b.max) return b.id;
+  }
+  return m >= 240 ? 'teen' : '';
+}
+
+function bandLabel(id) {
+  const b = FEED_BANDS.filter((x) => x.id === id)[0];
+  return b ? b.label : '';
+}
+
+function bandIndex(id) {
+  for (let i = 0; i < FEED_BANDS.length; i++) if (FEED_BANDS[i].id === id) return i;
+  return -1;
+}
+
+/* ------------------------------------------------------------------
+   THE ORDER
+
+   Three things, in this order of weight: how close the poster's stage
+   is to yours, how recent it is, and whether it is in a room you were
+   already reading. No engagement anywhere in it. Sorting a parenting
+   feed by what got the most reactions surfaces the most upsetting
+   post in it, every time, and there is no version of that which is
+   good for somebody at three in the morning.
+   ------------------------------------------------------------------ */
+const FORYOU_HALF_LIFE_HOURS = 30;
+
+function forYouScore(post, myBand, now) {
+  const t = Number((post || {}).at) || 0;
+  const hours = Math.max(0, ((now || Date.now()) - t) / 3600000);
+  /* Halves every day and a bit, so a week old post can still surface
+     if it is a much better match, and a month old one will not. */
+  const fresh = Math.pow(0.5, hours / FORYOU_HALF_LIFE_HOURS);
+
+  const mine = bandIndex(myBand);
+  const theirs = bandIndex((post || {}).band || '');
+  let match = 0.45;
+  if (mine >= 0 && theirs >= 0) {
+    const gap = Math.abs(mine - theirs);
+    /* Same stage counts for a lot, one either side counts for
+       something, and further away than that is just the feed. */
+    match = gap === 0 ? 1 : (gap === 1 ? 0.6 : 0.25);
+  }
+  return match * (0.25 + 0.75 * fresh);
+}
+
+function sortForYou(posts, myBand, now) {
+  const at = now || Date.now();
+  return (posts || []).slice().sort((a, b) => forYouScore(b, myBand, at) - forYouScore(a, myBand, at));
+}
+
+function postsWithTag(posts, tag) {
+  const t = String(tag || '').toLowerCase();
+  return (posts || []).filter((p) => (p.tags || []).indexOf(t) !== -1);
+}
+
+/* ------------------------------------------------------------------
+   TRENDING, AND THE HONEST FALLBACK
+   ------------------------------------------------------------------ */
+const TRENDING_MIN_POSTS = 3;
+const TRENDING_MIN_PEOPLE = 2;
+const TRENDING_SHOW = 8;
+const TRENDING_WINDOW_HOURS = 168;
+
+function trendingTags(posts, now) {
+  const cut = (now || Date.now()) - TRENDING_WINDOW_HOURS * 3600000;
+  const counts = {};
+  const people = {};
+  (posts || []).forEach((p) => {
+    if ((Number(p.at) || 0) < cut) return;
+    (p.tags || []).forEach((t) => {
+      counts[t] = (counts[t] || 0) + 1;
+      people[t] = people[t] || {};
+      people[t][p.authorUid || '?'] = true;
+    });
+  });
+  return Object.keys(counts)
+    /* Two different people, not one person posting four times. That
+       single rule is most of what stops a trending list being one
+       enthusiastic account. */
+    .filter((t) => counts[t] >= TRENDING_MIN_POSTS
+      && Object.keys(people[t]).length >= TRENDING_MIN_PEOPLE)
+    .sort((a, b) => counts[b] - counts[a])
+    .slice(0, TRENDING_SHOW)
+    .map((t) => ({ tag: t, posts: counts[t], people: Object.keys(people[t]).length }));
+}
+
+const CURATED_TOPICS = [
+  { tag: 'nightfeeds', label: 'Night feeds', band: 'newborn' },
+  { tag: 'latch', label: 'Latch and feeding', band: 'newborn' },
+  { tag: 'fourthtrimester', label: 'The fourth trimester', band: 'newborn' },
+  { tag: 'naps', label: 'Naps', band: 'baby' },
+  { tag: 'teething', label: 'Teething', band: 'baby' },
+  { tag: 'firstfoods', label: 'First foods', band: 'baby' },
+  { tag: 'tantrums', label: 'Tantrums', band: 'toddler' },
+  { tag: 'pottytraining', label: 'Potty training', band: 'toddler' },
+  { tag: 'bigfeelings', label: 'Big feelings', band: 'preschool' },
+  { tag: 'startingschool', label: 'Starting school', band: 'preschool' },
+  { tag: 'homework', label: 'Homework', band: 'school' },
+  { tag: 'screens', label: 'Screens', band: 'school' },
+  { tag: 'friendships', label: 'Friendships', band: 'school' },
+  { tag: 'independence', label: 'Independence', band: 'teen' },
+  { tag: 'talkingtoteens', label: 'Talking to teenagers', band: 'teen' },
+  { tag: 'sleep', label: 'Sleep', band: '' },
+  { tag: 'guilt', label: 'Guilt', band: '' },
+  { tag: 'help', label: 'Asking for help', band: '' },
+];
+
+function curatedFor(band) {
+  const mine = CURATED_TOPICS.filter((t) => t.band === band);
+  const any = CURATED_TOPICS.filter((t) => !t.band);
+  return mine.concat(any).slice(0, TRENDING_SHOW);
+}
+
+const TRENDING_TITLE = 'What people are talking about';
+const TRENDING_THIN =
+  'Not enough posts yet for anything to be genuinely trending, so these are topics rather than a '
+  + 'leaderboard. Tap one to start it off.';
+const FORYOU_TITLE = 'For you';
+const FORYOU_SUB =
+  'Sorted by whether somebody with a child about the same age as yours wrote it. Nothing else goes '
+  + 'into it, and nothing about your child leaves your phone to make it work.';
+const FORYOU_NO_BAND =
+  'Add a birthday to a child and this sorts itself around their age. Until then it is everything, newest first.';
+const TAG_HINT = 'Put a # in front of a word and it becomes a topic other people can find.';
+
+/* ------------------------------------------------------------------
+   WILLOW'S DAILY POST
+
+   She writes it, a person presses post. Never automatic.
+
+   An AI posting into a parenting community unattended is a bad idea on
+   a long enough timeline, and the timeline is never long. So the draft
+   lands in the same queue a held post lands in, a human reads it, and
+   a human sends it. If nobody presses the button, nothing appears,
+   which is the correct failure.
+   ------------------------------------------------------------------ */
+const WILLOW_POST_TITLE = 'Willow has written something';
+const WILLOW_POST_NOTE =
+  'She writes one of these each morning. Read it, change anything you like, and press post. '
+  + 'Nothing goes up on its own.';
+
+const WILLOW_POST_THEMES = [
+  { id: 'question', ask: 'Ask the room one open question about something ordinary and hard in this stage. No advice in it at all, just the question and one line of why you are asking.' },
+  { id: 'permission', ask: 'Give people permission to stop doing one thing that parents at this stage are told they must do and that does not actually matter. Say plainly that it does not matter.' },
+  { id: 'nobodytells', ask: 'Name one thing about this stage that nobody warns anybody about. Not a tip. Just the thing, said out loud, so somebody reads it and feels less strange.' },
+  { id: 'smallwin', ask: 'Describe one very small thing that is going right for a parent at this stage and that they have almost certainly not noticed themselves doing.' },
+  { id: 'twoways', ask: 'Take one thing parents argue about at this stage and lay out both ways of doing it fairly, then say that both households turn out fine. Take no side.' },
+  { id: 'onething', ask: 'Offer one thing to try today that takes under five minutes and needs nothing bought.' },
+  { id: 'hardday', ask: 'Write to somebody having a bad day at this stage. No fixing, no steps. Two or three sentences that would be worth reading at 3am.' },
+];
+
+function willowThemeFor(dayKey) {
+  /* Rotates by the date so the same day always produces the same
+     theme, which makes a draft reproducible and stops a refresh
+     quietly changing what she was going to say. */
+  const s = String(dayKey || '');
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h * 31) + s.charCodeAt(i)) >>> 0;
+  return WILLOW_POST_THEMES[h % WILLOW_POST_THEMES.length];
+}
+
+function willowPostPrompt(theme, bandName) {
+  return [
+    'You are writing one short post for the Ready Set Grow parenting community.',
+    'The room is parents of ' + (bandName || 'children of all ages') + '.',
+    '',
+    'The brief: ' + theme.ask,
+    '',
+    'Rules for the writing:',
+    'Between 30 and 80 words. Shorter is better.',
+    'Plain words. No exclamation marks. No emoji.',
+    'Never use a dash of any kind as punctuation. Use commas and full stops.',
+    'Do not open with a greeting and do not sign it.',
+    'Do not claim to be a parent and do not invent a personal story.',
+    'Do not give medical advice and do not tell anybody to see a doctor.',
+    'End with one hashtag, lowercase, one word, that fits what you wrote.',
+  ].join('\n');
+}
+
+const WILLOW_POST_FALLBACK =
+  'Willow could not write one just now. That is usually the connection rather than anything wrong. '
+  + 'Try again in a minute.';
+
+
 /* ===== src/data/breakingPoint.js ===== */
 /**
  * Ready Set Grow: When A Parent Is At The End Of It
@@ -28665,6 +28946,10 @@ const store = {
   pushOn: false,
   pushPrefs: {},
 
+  /* Willow's draft for today, and whether it has been sent. Keyed by
+     the day so yesterday's cannot be posted by accident. */
+  willowPost: null,
+
   vaxTab: 'list',
   vaxOpen: '',
   vaxEdit: '',
@@ -28880,6 +29165,7 @@ function flushStore() {
       growthUnits: store.growthUnits,
       pushOn: store.pushOn,
       pushPrefs: store.pushPrefs,
+      willowPost: store.willowPost,
       installWaves: store.installWaves,
       onboard: store.onboard,
       nudge: store.nudge,
@@ -28996,6 +29282,7 @@ function loadStore() {
     store.growthUnits = saved.growthUnits === 'metric' ? 'metric' : 'us';
     store.pushOn = !!saved.pushOn;
     store.pushPrefs = (saved.pushPrefs && typeof saved.pushPrefs === 'object') ? saved.pushPrefs : {};
+    store.willowPost = (saved.willowPost && typeof saved.willowPost === 'object') ? saved.willowPost : null;
     store.installWaves = Number(saved.installWaves) || 0;
     store.deletedMemoryIds = Array.isArray(saved.deletedMemoryIds) ? saved.deletedMemoryIds : [];
     store.onboard = (saved.onboard && typeof saved.onboard === 'object')
@@ -30487,7 +30774,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -30844,6 +31131,20 @@ function initControls() {
       return;
     } else if (t.dataset.update === 'later') {
       update.dismissed = true;
+    } else if (t.dataset.feedtag) {
+      feed.tag = t.dataset.feedtag === '__clear' ? '' : t.dataset.feedtag;
+      feed.view = 'foryou';
+      state.tab = 'community';
+      state.view = null;
+    } else if (t.dataset.wpost === 'write') {
+      willowWriteDaily();
+      return;
+    } else if (t.dataset.wpost === 'post') {
+      willowPostIt();
+      return;
+    } else if (t.dataset.wpost === 'bin') {
+      store.willowPost = { day: ciToday(), text: '', posted: true };
+      saveStore();
     } else if (t.dataset.push === 'on') {
       pushEnable();
       return;
@@ -34667,6 +34968,10 @@ const feed = {
      Once a load has been tried, it is not tried again on its own.
      Trying again is a button. */
   tried: false,
+  /* The topic being looked at, or empty for everything. Lives on feed
+     rather than in the store because a topic is where you are right
+     now, not a setting. */
+  tag: '',
 };
 
 /* -----------------------------------------------------------------
@@ -35087,7 +35392,11 @@ async function feedShare(post) {
     render();
     return false;
   }
-  const doc = feedDocFrom(post, store.parent.username, myUid());
+  /* The stage band is attached here rather than at write time, so an
+     old post shared later still carries the stage the family is in
+     now, which is the one that matters for who should see it. */
+  const withBand = Object.assign({}, post, { band: post.band || myFeedBand() });
+  const doc = feedDocFrom(withBand, post.username || store.parent.username, myUid());
   const refuse = feedRefuseReason(doc, post);
   if (refuse) { store.feedError = refuse; render(); return false; }
 
@@ -35261,7 +35570,7 @@ function feedCard(p, opts) {
       ${o.queue ? `<span class="post-vis">${icon('clock', 11, 'var(--muted)')} Waiting</span>` : ''}
     </div>
 
-    ${p.body ? `<p class="bodytext" style="margin-top:9px;white-space:pre-wrap">${esc(p.body)}</p>` : ''}
+    ${p.body ? `<p class="bodytext" style="margin-top:9px;white-space:pre-wrap">${bodyWithTags(p.body)}</p>` : ''}
 
     ${(p.files || []).length ? `
     <div class="postpics n${Math.min(4, p.files.length)}">
@@ -35349,7 +35658,8 @@ function screenCommunity(c) {
   const tab = feed.view === 'queue' && feed.isMod ? 'queue'
     : feed.view === 'mine' ? 'mine'
     : feed.view === 'flies' ? 'flies'
-    : feed.view === 'rooms' ? 'rooms' : 'feed';
+    : feed.view === 'rooms' ? 'rooms'
+      : feed.view === 'foryou' ? 'foryou' : 'feed';
 
   /* The sky is live while it is on screen and listening to nothing at
      all when it is not. Started here, torn down in render(). */
@@ -35372,6 +35682,7 @@ function screenCommunity(c) {
     ${signedIn ? `
     <div class="feedtabs">
       <button class="chip${tab === 'flies' ? ' on' : ''}" data-feed="view" data-v="flies">${esc(FIREFLY_TITLE)}</button>
+      <button class="chip${tab === 'foryou' ? ' on' : ''}" data-feed="view" data-v="foryou">${esc(FORYOU_TITLE)}</button>
       <button class="chip${tab === 'feed' ? ' on' : ''}" data-feed="view" data-v="feed">Everyone</button>
       <button class="chip${tab === 'rooms' ? ' on' : ''}" data-feed="view" data-v="rooms">${esc(GROUPS_TITLE)}</button>
       <button class="chip${tab === 'mine' ? ' on' : ''}" data-feed="view" data-v="mine">
@@ -35388,6 +35699,7 @@ function screenCommunity(c) {
     </div>`}
 
     ${tab === 'flies' ? fliesBlock() : ''}
+    ${tab === 'foryou' ? willowPostBlock() : ''}
 
     ${store.feedThanks ? `
     <div class="card leafy">
@@ -35407,6 +35719,7 @@ function screenCommunity(c) {
       <button class="chip" style="margin-top:9px" data-feed="retry">Try again</button>
     </div>` : ''}
 
+    ${tab === 'foryou' ? forYouBlock() : `
     ${tab === 'queue' ? `
       <p class="sect">${esc(MOD_TITLE)}</p>
       <p class="tiny" style="margin:-4px 0 10px">${esc(MOD_NOTE)}</p>
@@ -35476,7 +35789,7 @@ function screenCommunity(c) {
 
       ${live.length ? `
       <p class="tiny" style="text-align:center;margin-top:10px">${esc(FEED_HOW)}</p>` : ''}
-    `}
+    `}`}
 
     <button class="lrow" data-go="screen" data-id="wisdom" style="align-items:flex-start;margin-top:14px">
       <span class="licon">${icon('bulb', 18, 'var(--sage)')}</span>
@@ -42655,6 +42968,192 @@ function cloudStatusLine() {
   return { tone: 'plain', title: 'Saved on this device', text: 'Sign in to keep it on your account too.' };
 }
 
+
+/* =================================================================
+   FOR YOU, TOPICS, AND WILLOW'S DAILY POST
+
+   Three things that hang together: a feed sorted by whether the
+   person who wrote a post has a child about the same age as yours, a
+   topic out of any word with a hash in front of it, and one post a
+   day from Willow that a human has to press send on.
+
+   NOTHING IN HERE SORTS BY REACTIONS
+   Sorting a parenting feed by what got the most response surfaces the
+   most upsetting post in it, reliably, every time. There is no version
+   of that which is good for somebody reading at three in the morning,
+   so engagement is not in the ordering at all. See forYouScore in
+   src/data/foryou.js for what is.
+   ================================================================= */
+
+/* The stage band of whichever child is open, or the youngest real one,
+   because that is the one whose stage a parent is living in. */
+function myFeedBand() {
+  const kids = store.children.filter((k) => !isExampleChild(k) && k.birthday);
+  if (!kids.length) return '';
+  const active = activeChild();
+  const pick = (active && active.birthday && !isExampleChild(active))
+    ? active
+    : kids.slice().sort((a, b) => (a.birthday < b.birthday ? 1 : -1))[0];
+  const m = childMonths(pick);
+  return m === null ? '' : feedBandFor(m);
+}
+
+/* Any word with a hash in front of it becomes a button. Built by
+   escaping the whole body first and then replacing inside the escaped
+   string, so nothing a person types can become markup. */
+function bodyWithTags(text) {
+  const safe = esc(String(text || ''));
+  return safe.replace(/(^|\s)#([A-Za-z][A-Za-z0-9]{1,23})(?![A-Za-z0-9])/g,
+    (whole, pre, word) => pre + '<button class="taglink" data-feedtag="'
+      + esc(word.toLowerCase()) + '">#' + word + '</button>');
+}
+
+function trendingBlock() {
+  const all = visibleFeed(feed.posts, blockedList());
+  const live = all.filter((p) => p.status === FEED_STATUS.live);
+  const hot = trendingTags(live);
+  const band = myFeedBand();
+  const thin = hot.length < 3;
+  const items = thin ? curatedFor(band) : hot;
+
+  return `
+  <div class="dsec">
+    <h4>${esc(TRENDING_TITLE)}</h4>
+    ${thin ? `<p class="tiny" style="margin:0 0 9px">${esc(TRENDING_THIN)}</p>` : ''}
+    <div class="chips">
+      ${items.map((t) => {
+    const tag = t.tag;
+    const on = feed.tag === tag;
+    return `<button class="chip${on ? ' on' : ''}" data-feedtag="${esc(tag)}">${esc(tagLabel(tag))}${
+      thin ? '' : ` <span class="tagn">${esc(String(t.posts))}</span>`}</button>`;
+  }).join('')}
+    </div>
+  </div>`;
+}
+
+function forYouBlock() {
+  const all = visibleFeed(feed.posts, blockedList());
+  const live = all.filter((p) => p.status === FEED_STATUS.live);
+  const band = myFeedBand();
+  const tagged = feed.tag ? postsWithTag(live, feed.tag) : live;
+  const ordered = band ? sortForYou(tagged, band) : tagged.slice().sort((a, b) => b.at - a.at);
+
+  return `
+  ${feed.tag ? `
+    <div class="card leafy" style="margin-bottom:11px">
+      <p class="eyebrow">${icon('search', 11, 'var(--sage)')} Topic</p>
+      <p style="font-size:16px;color:var(--ink);margin:6px 0 0;font-family:var(--serif)">${esc(tagLabel(feed.tag))}</p>
+      <p class="tiny" style="margin:6px 0 0">${esc(ordered.length
+    ? (ordered.length === 1 ? 'One post' : ordered.length + ' posts')
+    : 'Nobody has used this one yet. Put it in a post and you will be the first.')}</p>
+      <button class="chip" style="margin-top:10px" data-feedtag="__clear">Show everything again</button>
+    </div>` : `
+    <p class="tiny" style="margin:0 0 10px">${esc(band ? FORYOU_SUB : FORYOU_NO_BAND)}</p>`}
+
+  ${band && !feed.tag ? `
+    <p class="tiny" style="margin:0 0 10px;color:var(--faint)">Leaning towards ${esc(bandLabel(band).toLowerCase())}.</p>` : ''}
+
+  ${trendingBlock()}
+
+  ${feed.loading ? `<div class="card flat"><p class="bodytext">Loading.</p></div>` : ''}
+
+  ${!feed.loading && !ordered.length ? `
+    <div class="card" style="text-align:center;padding:30px 22px">
+      ${growthSVG(2, 58)}
+      <p style="margin:12px 0 0;font-size:14.5px;font-weight:600;color:var(--ink)">Nothing here yet</p>
+      <p class="bodytext" style="margin-top:7px">${esc(FEED_EMPTY)}</p>
+    </div>` : ''}
+
+  ${ordered.map((p) => feedCard(p, { live: true })).join('')}
+  ${ordered.length ? `<p class="tiny" style="text-align:center;margin-top:10px">${esc(TAG_HINT)}</p>` : ''}`;
+}
+
+/* ------------------------------------------------------------------
+   WILLOW'S DAILY POST
+   Only a moderator sees this, and only a person can send it.
+   ------------------------------------------------------------------ */
+const wpost = { busy: false, error: '' };
+
+function willowDraftToday() {
+  const d = store.willowPost && typeof store.willowPost === 'object' ? store.willowPost : {};
+  return d.day === ciToday() ? d : { day: ciToday(), text: '', posted: false };
+}
+
+async function willowWriteDaily() {
+  if (wpost.busy) return;
+  wpost.busy = true;
+  wpost.error = '';
+  render();
+  try {
+    const theme = willowThemeFor(ciToday());
+    const band = myFeedBand();
+    const prompt = willowPostPrompt(theme, bandLabel(band).toLowerCase() || 'children of all ages');
+    /* Its own one shot call rather than the chat, which is a
+       conversation with its own rules and a sources line at the end.
+       Squeezing a community post through those produces exactly what
+       you would expect. */
+    const model = await liftLoad();
+    const res = await model.generateContent(prompt);
+    const text = res && res.response && typeof res.response.text === 'function'
+      ? res.response.text() : '';
+    const clean = String(text || '').trim();
+    if (!clean) throw new Error('empty');
+    store.willowPost = { day: ciToday(), text: clean, theme: theme.id, posted: false };
+    saveStore();
+  } catch (err) {
+    wpost.error = WILLOW_POST_FALLBACK;
+  }
+  wpost.busy = false;
+  render();
+}
+
+/* Posted as Willow rather than as the person who pressed the button,
+   because pretending a person wrote it would be the actual problem
+   with an AI posting in a community. */
+async function willowPostIt() {
+  const d = willowDraftToday();
+  const text = (document.getElementById('wpostbody') || {}).value || d.text;
+  if (!String(text || '').trim()) return;
+  wpost.busy = true;
+  render();
+  const post = {
+    id: 'wp' + Date.now(),
+    text: String(text).trim(),
+    files: [],
+    group: '',
+    band: myFeedBand(),
+    at: Date.now(),
+  };
+  const ok = await feedShare(Object.assign({}, post, { username: 'Willow' }));
+  if (ok !== false) {
+    store.willowPost = { day: ciToday(), text: String(text).trim(), posted: true };
+    saveStore();
+  }
+  wpost.busy = false;
+  render();
+}
+
+function willowPostBlock() {
+  if (!feed.isMod) return '';
+  const d = willowDraftToday();
+  return `
+  <div class="card flat" style="margin-bottom:11px">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(WILLOW_POST_TITLE)}</p>
+    <p class="tiny" style="margin:6px 0 9px">${esc(WILLOW_POST_NOTE)}</p>
+    ${d.posted ? `
+      <p class="bodytext" style="margin:0">Today's one is up.</p>` : d.text ? `
+      <textarea class="inp" id="wpostbody" rows="5" style="width:100%">${esc(d.text)}</textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button class="btn" data-wpost="post"${wpost.busy ? ' disabled' : ''}>${esc(wpost.busy ? 'Posting' : 'Post it')}</button>
+        <button class="chip" data-wpost="write"${wpost.busy ? ' disabled' : ''}>Write a different one</button>
+        <button class="chip" data-wpost="bin">Not today</button>
+      </div>` : `
+      <button class="btn" data-wpost="write"${wpost.busy ? ' disabled' : ''}>
+        ${esc(wpost.busy ? 'Writing' : 'Ask her to write today’s')}
+      </button>`}
+    ${wpost.error ? `<p class="tiny" style="color:var(--concern);margin:8px 0 0">${esc(wpost.error)}</p>` : ''}
+  </div>`;
+}
 
 /* =================================================================
    NOTIFICATIONS
