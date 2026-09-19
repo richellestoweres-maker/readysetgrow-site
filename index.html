@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-19 14:31">
+<meta name="rsg-build" content="2026-09-19 14:42">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1066,6 +1066,39 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 }
 .updatebtn.ghost{background:transparent;color:var(--deep2);border-color:transparent}
 
+/* ---------- THE VACCINE RECORD ----------
+   A folding list. Closed it is one line per vaccine, which is the view
+   somebody wants when they are answering a question at a desk. Open it
+   is the doses with their dates. Nothing in here is ever red: a dose
+   that is behind says so in the same type as everything else. */
+.vaxcard{margin-bottom:8px}
+.vaxhead{
+  display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+  padding:12px 13px;background:none;border:0;font:inherit;cursor:pointer;min-height:52px;
+}
+.vaxname{display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3}
+.vaxbody{padding:0 13px 12px;border-top:1px solid var(--line2)}
+.vaxbody .bodytext{padding-top:10px}
+.vaxdose{
+  display:flex;align-items:center;gap:9px;padding:8px 0;
+  border-bottom:1px solid var(--line2);
+}
+.vaxdose:last-of-type{border-bottom:0}
+.vaxtick{
+  flex:none;width:22px;height:22px;border-radius:7px;
+  border:1.5px solid var(--sage);background:var(--surface);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
+}
+.vaxdose.on .vaxtick,.vaxtick.on{background:var(--deep);border-color:var(--deep)}
+.vaxdname{display:block;font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.3}
+.vaxdose.on .vaxdname{color:var(--muted)}
+.vaxdate{
+  flex:none;background:none;border:0;color:var(--deep);text-decoration:underline;
+  padding:6px 4px;cursor:pointer;min-height:34px;
+}
+.vaxedit{display:flex;gap:8px;align-items:center;padding:8px 0 10px;flex-wrap:wrap}
+.vaxedit .inp{flex:1 1 140px;min-width:0}
+
 /* ---------- THE GROWTH CHART ----------
    The svg scales to whatever width it gets and keeps its shape, so the
    curves stay readable on a 320px phone and do not stretch flat on a
@@ -1481,7 +1514,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-19 14:31';
+const BUILD_STAMP = '2026-09-19 14:42';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -25745,6 +25778,281 @@ const GROWTH_DISCLAIMER =
   + 'take is the one at the surgery.';
 
 
+/* ===== src/data/vaccineRecord.js ===== */
+/**
+ * Ready Set Grow: The vaccine record
+ * ------------------------------------------------------------------
+ * What this child has actually had, with dates, and what the series
+ * would normally do next. A record, not an argument. The argument, and
+ * the case for both sides of it, lives in src/data/vaccines.js and is
+ * not repeated here.
+ *
+ * WHY THIS IS A RECORD AND NOT A REMINDER SYSTEM
+ * The single most useful thing an app can do here is answer the
+ * question a parent is asked at every appointment, every school form
+ * and every A and E visit: has she had her twelve month shots. That is
+ * a question about the past. Nagging somebody about the future is a
+ * different product and a worse one, particularly in a family that has
+ * decided not to do some of this.
+ *
+ * DECLINING IS A FIRST CLASS STATE
+ * A parent who has decided against a vaccine, or against all of them,
+ * should still be able to keep a complete and accurate record. So a
+ * series can be marked as not being given, and it then reads as
+ * settled rather than as permanently overdue. An app that shows a red
+ * mark forever is not recording anything, it is nagging.
+ *
+ * ON THE AGES BELOW
+ * These are the ages the doses have been given at in the United States
+ * for many years, and they are what is printed on a record card. They
+ * are not a claim about what anybody should do. See VAX_WHERE_THINGS
+ * STAND for why that distinction matters more in 2026 than it used to.
+ *
+ * FIELDS
+ *   doses[].at        the usual age in months for that dose
+ *   doses[].window    what the card actually prints, in words
+ *   sdm               the dose or series is one where the guidance has
+ *                     said at some point to decide with a doctor
+ *   seasonal          given yearly rather than once, so it is recorded
+ *                     by date rather than ticked off a list
+ */
+
+const VAX_SERIES = [
+  {
+    id: 'hepb', label: 'Hepatitis B', long: 'HepB',
+    protects: 'A liver infection that a baby can catch at birth and that often causes no symptoms for decades.',
+    doses: [
+      { n: 1, at: 0, window: 'At birth' },
+      { n: 2, at: 1.5, window: '1 to 2 months' },
+      { n: 3, at: 9, window: '6 to 18 months' },
+    ],
+  },
+  {
+    id: 'rv', label: 'Rotavirus', long: 'RV',
+    protects: 'The stomach bug that used to be the commonest reason a baby in the US ended up on a drip.',
+    note: 'Drops by mouth rather than an injection. The series has to be started before 15 weeks and finished by 8 months, which is the one real deadline in the whole schedule.',
+    doses: [
+      { n: 1, at: 2, window: '2 months' },
+      { n: 2, at: 4, window: '4 months' },
+      { n: 3, at: 6, window: '6 months, brand dependent', optional: true },
+    ],
+  },
+  {
+    id: 'dtap', label: 'Diphtheria, tetanus and whooping cough', long: 'DTaP',
+    protects: 'Three at once. Whooping cough is the one that matters most in the first months, and it is the reason the first dose is early.',
+    doses: [
+      { n: 1, at: 2, window: '2 months' },
+      { n: 2, at: 4, window: '4 months' },
+      { n: 3, at: 6, window: '6 months' },
+      { n: 4, at: 16, window: '15 to 18 months' },
+      { n: 5, at: 60, window: '4 to 6 years' },
+    ],
+  },
+  {
+    id: 'hib', label: 'Hib', long: 'Haemophilus influenzae type b',
+    protects: 'A bacterial meningitis that was common in under fives and is now rare.',
+    doses: [
+      { n: 1, at: 2, window: '2 months' },
+      { n: 2, at: 4, window: '4 months' },
+      { n: 3, at: 6, window: '6 months, brand dependent', optional: true },
+      { n: 4, at: 13, window: '12 to 15 months' },
+    ],
+  },
+  {
+    id: 'pcv', label: 'Pneumococcal', long: 'PCV',
+    protects: 'Pneumonia, ear infections and another kind of meningitis.',
+    doses: [
+      { n: 1, at: 2, window: '2 months' },
+      { n: 2, at: 4, window: '4 months' },
+      { n: 3, at: 6, window: '6 months' },
+      { n: 4, at: 13, window: '12 to 15 months' },
+    ],
+  },
+  {
+    id: 'ipv', label: 'Polio', long: 'IPV',
+    protects: 'Polio. The inactivated kind, which is not the swallowed one older relatives will remember.',
+    doses: [
+      { n: 1, at: 2, window: '2 months' },
+      { n: 2, at: 4, window: '4 months' },
+      { n: 3, at: 12, window: '6 to 18 months' },
+      { n: 4, at: 60, window: '4 to 6 years' },
+    ],
+  },
+  {
+    id: 'mmr', label: 'Measles, mumps and rubella', long: 'MMR',
+    protects: 'Three at once. Measles is the one that spreads fastest of almost anything known.',
+    note: 'Not given before 12 months in normal circumstances, because antibodies passed on in pregnancy get in the way before then. An earlier dose is sometimes given for travel and does not count towards the two.',
+    doses: [
+      { n: 1, at: 13, window: '12 to 15 months' },
+      { n: 2, at: 60, window: '4 to 6 years' },
+    ],
+  },
+  {
+    id: 'var', label: 'Chickenpox', long: 'Varicella',
+    protects: 'Chickenpox, and the shingles it can come back as decades later.',
+    doses: [
+      { n: 1, at: 13, window: '12 to 15 months' },
+      { n: 2, at: 60, window: '4 to 6 years' },
+    ],
+  },
+  {
+    id: 'hepa', label: 'Hepatitis A', long: 'HepA',
+    protects: 'Another liver infection, this one usually caught from food or water.',
+    doses: [
+      { n: 1, at: 15, window: '12 to 23 months' },
+      { n: 2, at: 21, window: 'At least 6 months after the first' },
+    ],
+  },
+  {
+    id: 'flu', label: 'Flu', long: 'Influenza', seasonal: true,
+    protects: 'Whatever flu is going round this winter. It changes every year, which is why this one does too.',
+    note: 'From 6 months, once a year. The first year a child has it they need two doses about a month apart, and after that it is one.',
+    doses: [],
+  },
+  {
+    id: 'covid', label: 'COVID-19', long: 'COVID-19', seasonal: true, sdm: true,
+    protects: 'COVID-19.',
+    note: 'The guidance on this one has changed more than any other in the schedule and is still moving. Whether and when it is offered to a healthy child is currently a decision to make with your own doctor.',
+    doses: [],
+  },
+  {
+    id: 'rsv', label: 'RSV', long: 'RSV antibody or maternal vaccine', seasonal: true,
+    protects: 'The winter virus that fills baby wards every year. The commonest reason a baby under one is admitted.',
+    note: 'Not a vaccine in the usual sense for the baby. Either the mother has a vaccine late in pregnancy, or the baby has an antibody injection before their first RSV season. One or the other, not usually both.',
+    doses: [],
+  },
+  {
+    id: 'tdap', label: 'Tdap booster', long: 'Tdap',
+    protects: 'The same three as DTaP, topped up for a bigger body.',
+    doses: [
+      { n: 1, at: 138, window: '11 to 12 years' },
+    ],
+  },
+  {
+    id: 'hpv', label: 'HPV', long: 'Human papillomavirus',
+    protects: 'The virus behind almost all cervical cancer and a large share of throat cancers, in both sexes.',
+    note: 'Two doses if it is started before the thirteenth birthday, three if it is started later. Starting earlier means fewer needles, which is most of why the age is where it is.',
+    doses: [
+      { n: 1, at: 138, window: '11 to 12 years' },
+      { n: 2, at: 144, window: '6 to 12 months after the first' },
+      { n: 3, at: 150, window: 'Only if the series was started at 15 or older', optional: true },
+    ],
+  },
+  {
+    id: 'menacwy', label: 'Meningococcal ACWY', long: 'MenACWY',
+    protects: 'Four kinds of meningococcal disease, which is rare and can kill a healthy teenager in a day.',
+    doses: [
+      { n: 1, at: 138, window: '11 to 12 years' },
+      { n: 2, at: 192, window: '16 years' },
+    ],
+  },
+  {
+    id: 'menb', label: 'Meningococcal B', long: 'MenB', sdm: true,
+    protects: 'The fifth kind, the one ACWY does not cover. Common in college outbreaks.',
+    note: 'This one has been a decide with your doctor vaccine for years rather than a routine one, and it is usually discussed around sixteen.',
+    doses: [
+      { n: 1, at: 192, window: '16 to 18 years' },
+      { n: 2, at: 198, window: 'A few months after the first' },
+    ],
+  },
+];
+
+/* THE BIT THAT IS HONEST ABOUT 2026
+   Written to be read by somebody who is not following the news, and
+   dated, because it will go out of date and a reader deserves to know
+   how old it is. It takes no side. Both bodies named here are real and
+   both are worth reading. */
+const VAX_WHERE_THINGS_STAND = {
+  title: 'Why the schedule is not one schedule right now',
+  asOf: 'September 2026',
+  body: [
+    'For decades the CDC schedule and the American Academy of Pediatrics schedule were the same document. In 2026 they are not.',
+    'The federal schedule was rewritten to move several vaccines, including hepatitis B at birth, hepatitis A, rotavirus, flu, COVID and meningococcal, from a routine recommendation to a decide it with your doctor recommendation. The American Academy of Pediatrics published its own schedule keeping them as routine.',
+    'A federal court then suspended the rewritten schedule on the grounds that the process used to change it was likely unlawful, which put an earlier version back in force while appeals continue. That is where it stood when this was written.',
+    'What this means for you in practice: your pediatrician, your state, your school district and your insurer may not all be working from the same list, and none of them is being difficult. Ask your own doctor which schedule their practice is following and why.',
+    'The ages in this record are the ones that have been on a US vaccination card for years and that both schedules still use for the doses they include. They are here so you can keep track of what has been given, not to tell you what to do.',
+  ],
+};
+
+const VAX_RECORD_INTRO =
+  'What has actually been given, with dates. The question every form, every new doctor and every '
+  + 'school office asks, answered from your own pocket.';
+
+const VAX_RECORD_HOW = {
+  title: 'Filling it in',
+  items: [
+    'Copy it off the card from the last appointment rather than from memory. Memory reliably merges two visits into one.',
+    'If you do not have the dates, your pediatrician has them, and every state has an immunization registry that can send you a full copy.',
+    'An approximate date is far better than a blank. Put the month if that is all you have.',
+    'If you have decided against one, mark it as not being given. It will read as settled rather than sitting there looking overdue forever.',
+  ],
+};
+
+const VAX_RECORD_NOTE =
+  'This is your copy, not an official one. Schools and travel usually want the record from the '
+  + 'practice or the state registry, and this is the thing that tells you what to ask them for.';
+
+const VAX_SCHEDULE_SOURCES = [
+  { label: 'Child and adolescent immunization schedule', org: 'Centers for Disease Control and Prevention', url: 'https://www.cdc.gov/vaccines/hcp/imz-schedules/child-adolescent-notes.html' },
+  { label: 'Recommended childhood and adolescent immunization schedule, 2026', org: 'American Academy of Pediatrics', url: 'https://publications.aap.org/pediatrics/article/157/3/e2025075754/206175/Recommended-Childhood-and-Adolescent-Immunization' },
+  { label: 'Where the two 2026 schedules differ', org: 'Contemporary Pediatrics', url: 'https://www.contemporarypediatrics.com/view/the-unharmonious-2026-child-and-adolescent-immunization-schedule' },
+];
+
+function vaxSeries(id) {
+  return VAX_SERIES.filter((v) => v.id === id)[0] || null;
+}
+
+function vaxDoseKey(seriesId, n) {
+  return seriesId + ':' + n;
+}
+
+/* Where a dose sits relative to this child's age. Deliberately gentle:
+   nothing is ever "missed", only "was due a while ago", because a
+   parent who is behind usually knows and does not need it said twice. */
+function vaxDoseState(series, dose, months, given) {
+  if (given) return 'given';
+  if (months === null || months === undefined) return 'unknown';
+  if (months < dose.at - 1) return 'later';
+  if (months <= dose.at + 2) return 'about now';
+  return 'was due';
+}
+
+/* What is worth surfacing on the child's profile. One line, or nothing
+   at all, and nothing for a series that has been declined. */
+function vaxNextUp(months, record, skipped) {
+  if (months === null || months === undefined) return null;
+  const skip = {};
+  (skipped || []).forEach((id) => { skip[id] = true; });
+  let best = null;
+  VAX_SERIES.forEach((s) => {
+    if (skip[s.id] || s.seasonal) return;
+    s.doses.forEach((d) => {
+      if (d.optional) return;
+      if ((record || {})[vaxDoseKey(s.id, d.n)]) return;
+      if (months < d.at - 1) return;
+      if (!best || d.at < best.dose.at) best = { series: s, dose: d };
+    });
+  });
+  return best;
+}
+
+function vaxCounts(record, skipped) {
+  const skip = {};
+  (skipped || []).forEach((id) => { skip[id] = true; });
+  let given = 0, total = 0;
+  VAX_SERIES.forEach((s) => {
+    if (s.seasonal) return;
+    s.doses.forEach((d) => {
+      if (d.optional) return;
+      if (skip[s.id]) return;
+      total += 1;
+      if ((record || {})[vaxDoseKey(s.id, d.n)]) given += 1;
+    });
+  });
+  return { given: given, total: total };
+}
+
+
 /* ===== src/data/breakingPoint.js ===== */
 /**
  * Ready Set Grow: When A Parent Is At The End Of It
@@ -28081,6 +28389,13 @@ function newChildRecord(name, birthday) {
     wakeTime: '06:30',
     napOverride: null,
     routineInclude: [],
+    /* What has been given, keyed series:dose to a date, plus
+       season:<id> to a list of dates for the yearly ones. vaxSkip is
+       the series this family has decided against, which is a settled
+       state rather than a permanently outstanding one. See
+       src/data/vaccineRecord.js. */
+    vax: {},
+    vaxSkip: [],
     /* Which set of growth curves to plot them on. Empty until asked,
        and asked only on the growth screen, which is the one place it
        is needed. See screenGrowth. */
@@ -28183,6 +28498,12 @@ const store = {
   /* Pounds and inches or kilograms and centimetres. A preference of the
      parent's, not of the child's, because a household reads one or the
      other and the numbers are stored metric either way. */
+  vaxTab: 'list',
+  vaxOpen: '',
+  vaxEdit: '',
+  vaxError: '',
+  vaxCopied: false,
+
   growthUnits: 'us',
   growthTab: 'chart',
   growthMeasure: 'weight',
@@ -29527,6 +29848,7 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'chores') html = screenChores();
   else if (v && v.type === 'screen' && v.id === 'learning') html = screenLearning(c);
   else if (v && v.type === 'screen' && v.id === 'growth') html = screenGrowth(c);
+  else if (v && v.type === 'screen' && v.id === 'vaxrecord') html = screenVaxRecord(c);
   else if (v && v.type === 'screen' && v.id === 'plan') html = screenPlan(c);
   else if (v && v.type === 'screen' && v.id === 'sleep') html = screenSleep(c);
   else if (v && v.type === 'screen' && v.id === 'development') html = screenDevelopment(c);
@@ -29993,7 +30315,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -30350,6 +30672,50 @@ function initControls() {
       return;
     } else if (t.dataset.update === 'later') {
       update.dismissed = true;
+    } else if (t.dataset.vax === 'open') {
+      store.vaxOpen = store.vaxOpen === t.dataset.id ? '' : t.dataset.id;
+      store.vaxEdit = '';
+      store.vaxError = '';
+    } else if (t.dataset.vax === 'tick') {
+      const kid = activeChild();
+      if (kid) {
+        const bits = t.dataset.id.split(':');
+        /* A tick records today, which is right the overwhelming
+           majority of the time because it is tapped in the car park.
+           Change is there for the rest. */
+        const has = !!vaxRecord(kid)[t.dataset.id];
+        vaxSetDose(kid, bits[0], Number(bits[1]), has ? '' : ciToday());
+      }
+    } else if (t.dataset.vax === 'edit') {
+      store.vaxEdit = store.vaxEdit === t.dataset.id ? '' : t.dataset.id;
+      store.vaxError = '';
+    } else if (t.dataset.vax === 'savedate') {
+      const kid = activeChild();
+      if (kid) vaxSaveDate(kid, t.dataset.id);
+    } else if (t.dataset.vax === 'clear') {
+      const kid = activeChild();
+      if (kid) {
+        const bits = t.dataset.id.split(':');
+        vaxSetDose(kid, bits[0], Number(bits[1]), '');
+        store.vaxEdit = '';
+      }
+    } else if (t.dataset.vax === 'skip') {
+      const kid = activeChild();
+      if (kid) vaxToggleSkip(kid, t.dataset.id);
+    } else if (t.dataset.vax === 'addseason') {
+      const kid = activeChild();
+      const el = document.getElementById('vaxseasonin');
+      if (kid && el && el.value) vaxAddSeasonal(kid, t.dataset.id, el.value);
+    } else if (t.dataset.vax === 'delseason') {
+      const kid = activeChild();
+      if (kid) vaxRemoveSeasonal(kid, t.dataset.id, t.dataset.date);
+    } else if (t.dataset.vax === 'export') {
+      const kid = activeChild();
+      if (kid) {
+        copyText(vaxExportText(kid));
+        store.vaxCopied = true;
+        setTimeout(() => { store.vaxCopied = false; render(); }, 1800);
+      }
     } else if (t.dataset.growthm) {
       store.growthMeasure = t.dataset.growthm;
       store.growthError = '';
@@ -39284,6 +39650,8 @@ function screenChild(c) {
       ${sectHead('health', months, 'Health')}
       ${childRow('chart', 'Growth', growthRowSub(kid, months),
         'data-go="screen" data-id="growth"')}
+      ${childRow('note', 'Vaccine record', vaxRowSub(kid, months),
+        'data-go="screen" data-id="vaxrecord"')}
       ${childRow('shield', 'Vaccines',
         'What the evidence says, what your rights are, and how to decide',
         'data-go="screen" data-id="vaccines"')}
@@ -42096,6 +42464,298 @@ function cloudStatusLine() {
   return { tone: 'plain', title: 'Saved on this device', text: 'Sign in to keep it on your account too.' };
 }
 
+
+/* =================================================================
+   THE VACCINE RECORD
+
+   What this child has had, with dates. Separate from the vaccines
+   screen, which is the reading and the argument. This is the ledger.
+
+   IT NEVER GOES RED
+   A dose that is behind says "was due around then" in the same type
+   as everything else. Nothing flashes, nothing counts down, and a
+   series a family has decided against reads as settled rather than as
+   permanently outstanding. An app that keeps a red mark on the screen
+   of somebody who has already made their decision is not keeping a
+   record, it is arguing, and there is a whole screen for that already.
+   ================================================================= */
+
+function vaxRecord(kid) {
+  return ((kid || {}).vax && typeof kid.vax === 'object') ? kid.vax : {};
+}
+
+function vaxSkipped(kid) {
+  return Array.isArray((kid || {}).vaxSkip) ? kid.vaxSkip : [];
+}
+
+function vaxIsSkipped(kid, seriesId) {
+  return vaxSkipped(kid).indexOf(seriesId) !== -1;
+}
+
+function vaxSetDose(kid, seriesId, n, date) {
+  if (!kid.vax || typeof kid.vax !== 'object') kid.vax = {};
+  const key = vaxDoseKey(seriesId, n);
+  if (date) kid.vax[key] = date; else delete kid.vax[key];
+  kid.updatedAt = Date.now();
+  saveStore();
+}
+
+function vaxToggleSkip(kid, seriesId) {
+  const cur = vaxSkipped(kid);
+  kid.vaxSkip = cur.indexOf(seriesId) === -1
+    ? cur.concat([seriesId])
+    : cur.filter((x) => x !== seriesId);
+  kid.updatedAt = Date.now();
+  saveStore();
+}
+
+/* Yearly things are kept as a list of dates rather than a tick list,
+   because a flu jab is a different event every autumn and a checkbox
+   would only ever tell you that one happened at some point. */
+function vaxSeasonalDates(kid, seriesId) {
+  const r = vaxRecord(kid);
+  const raw = r['season:' + seriesId];
+  return Array.isArray(raw) ? raw.slice().sort() : [];
+}
+
+function vaxAddSeasonal(kid, seriesId, date) {
+  if (!date) return;
+  if (!kid.vax || typeof kid.vax !== 'object') kid.vax = {};
+  const key = 'season:' + seriesId;
+  const cur = Array.isArray(kid.vax[key]) ? kid.vax[key] : [];
+  if (cur.indexOf(date) === -1) kid.vax[key] = cur.concat([date]).sort();
+  kid.updatedAt = Date.now();
+  saveStore();
+}
+
+function vaxRemoveSeasonal(kid, seriesId, date) {
+  const key = 'season:' + seriesId;
+  const cur = Array.isArray((kid.vax || {})[key]) ? kid.vax[key] : [];
+  kid.vax[key] = cur.filter((d) => d !== date);
+  kid.updatedAt = Date.now();
+  saveStore();
+}
+
+function screenVaxRecord(c) {
+  const kid = activeChild();
+  if (!kid) return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">The record</h1>
+  </div>
+  <div class="sc"><div class="card leafy"><p class="bodytext">Add a child first.</p></div></div>`;
+
+  const first = (kid.name || 'They').split(/\s+/)[0];
+  const months = childMonths(kid);
+  const rec = vaxRecord(kid);
+  const counts = vaxCounts(rec, vaxSkipped(kid));
+  const tab = store.vaxTab || 'list';
+  const tabs = [
+    { id: 'list', label: 'The record' },
+    { id: 'schedule', label: 'Where things stand' },
+  ];
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(first + "'s record")}</h1>
+    <p class="sub">${esc(VAX_RECORD_INTRO)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('vaxTab', tab, tabs)}
+    ${tab === 'schedule' ? vaxStandTab() : vaxListTab(kid, first, months, counts)}
+  </div>`;
+}
+
+function vaxListTab(kid, first, months, counts) {
+  const rec = vaxRecord(kid);
+  const openId = store.vaxOpen || '';
+
+  return `
+  <div class="card leafy">
+    <p class="bodytext" style="margin:0">
+      ${esc(counts.given + ' of the ' + counts.total + ' one off doses recorded.')}
+      ${counts.given === 0 ? 'Start with the card from their last appointment.' : ''}
+    </p>
+  </div>
+
+  ${VAX_SERIES.map((s) => vaxSeriesRow(kid, s, months, openId === s.id)).join('')}
+
+  <div class="dsec">
+    <h4>${esc(VAX_RECORD_HOW.title)}</h4>
+    ${list(VAX_RECORD_HOW.items)}
+  </div>
+
+  <button class="tiny" data-vax="export"
+    style="display:block;width:100%;text-align:center;background:none;border:0;color:var(--deep);text-decoration:underline;padding:10px">
+    Copy the whole record as text
+  </button>
+  ${store.vaxCopied ? `<p class="tiny" style="text-align:center;margin:0">Copied.</p>` : ''}
+  <p class="tiny" style="margin-top:10px">${esc(VAX_RECORD_NOTE)}</p>`;
+}
+
+function vaxSeriesRow(kid, s, months, open) {
+  const rec = vaxRecord(kid);
+  const skipped = vaxIsSkipped(kid, s.id);
+  const real = s.doses.filter((d) => !d.optional);
+  const done = real.filter((d) => rec[vaxDoseKey(s.id, d.n)]).length;
+  const seasonal = s.seasonal ? vaxSeasonalDates(kid, s.id) : [];
+
+  let sub;
+  if (skipped) sub = 'Not being given';
+  else if (s.seasonal) sub = seasonal.length
+    ? (seasonal.length === 1 ? 'One recorded' : seasonal.length + ' recorded')
+    : 'Given yearly, nothing recorded yet';
+  else if (done === real.length && real.length) sub = 'All ' + real.length + ' recorded';
+  else sub = done + ' of ' + real.length + ' recorded';
+
+  return `
+  <div class="card flat vaxcard" style="padding:0;overflow:hidden">
+    <button class="vaxhead" data-vax="open" data-id="${esc(s.id)}">
+      <span class="grow">
+        <span class="vaxname">${esc(s.label)}</span>
+        <span class="tiny" style="display:block;margin-top:2px">${esc(sub)}</span>
+      </span>
+      <span class="chev">${icon(open ? 'chevdown' : 'chev', 15, 'var(--faint)')}</span>
+    </button>
+    ${open ? `
+      <div class="vaxbody">
+        <p class="bodytext" style="margin:0 0 8px">${esc(s.protects)}</p>
+        ${s.note ? `<p class="tiny" style="margin:0 0 10px">${esc(s.note)}</p>` : ''}
+        ${s.sdm ? `<p class="tiny" style="margin:0 0 10px">This one has been a decide it with your doctor vaccine rather than a routine one.</p>` : ''}
+
+        ${skipped ? `
+          <p class="bodytext" style="margin:0 0 10px">Marked as not being given. Nothing here will ask about it again.</p>` : (s.seasonal
+    ? vaxSeasonalBody(kid, s)
+    : s.doses.map((d) => vaxDoseRow(kid, s, d, months)).join(''))}
+
+        <button class="tiny" data-vax="skip" data-id="${esc(s.id)}"
+          style="display:block;width:100%;text-align:center;background:none;border:0;color:var(--muted);text-decoration:underline;padding:8px 0 2px">
+          ${esc(skipped ? 'Put it back on the list' : 'We are not giving this one')}
+        </button>
+      </div>` : ''}
+  </div>`;
+}
+
+function vaxDoseRow(kid, s, d, months) {
+  const rec = vaxRecord(kid);
+  const key = vaxDoseKey(s.id, d.n);
+  const given = rec[key];
+  const state = vaxDoseState(s, d, months, given);
+  const editing = store.vaxEdit === key;
+
+  const when = given ? given
+    : (state === 'about now' ? 'Usually about now'
+      : (state === 'was due' ? 'Usually by now' : d.window));
+
+  return `
+  <div class="vaxdose${given ? ' on' : ''}">
+    <button class="vaxtick" data-vax="tick" data-id="${esc(key)}"
+      aria-label="${esc(given ? 'Clear dose ' + d.n : 'Record dose ' + d.n + ' as given today')}">
+      ${given ? icon('check', 12, '#fff') : ''}
+    </button>
+    <span class="grow">
+      <span class="vaxdname">Dose ${d.n}${d.optional ? ', only some brands' : ''}</span>
+      <span class="tiny" style="display:block;margin-top:1px">${esc(when)}${given ? '' : esc(' (' + d.window + ')')}</span>
+    </span>
+    <button class="tiny vaxdate" data-vax="edit" data-id="${esc(key)}">${esc(given ? 'Change' : 'Date')}</button>
+  </div>
+  ${editing ? `
+    <div class="vaxedit">
+      <input class="inp" id="vaxdatein" type="date" value="${esc(given || ciToday())}"
+        max="${esc(ciToday())}" ${kid.birthday ? 'min="' + esc(kid.birthday) + '"' : ''}>
+      <button class="btn" data-vax="savedate" data-id="${esc(key)}">Save</button>
+      ${given ? `<button class="tiny vaxdate" data-vax="clear" data-id="${esc(key)}">Clear</button>` : ''}
+    </div>
+    ${store.vaxError ? `<p class="tiny" style="color:var(--concern);margin:0 0 8px">${esc(store.vaxError)}</p>` : ''}` : ''}`;
+}
+
+function vaxSeasonalBody(kid, s) {
+  const dates = vaxSeasonalDates(kid, s.id);
+  return `
+  ${dates.map((d) => `
+    <div class="vaxdose on">
+      <span class="vaxtick on">${icon('check', 12, '#fff')}</span>
+      <span class="grow"><span class="vaxdname">${esc(d)}</span></span>
+      <button class="chx" data-vax="delseason" data-id="${esc(s.id)}" data-date="${esc(d)}"
+        aria-label="Remove ${esc(d)}">${icon('close', 12, 'var(--muted)')}</button>
+    </div>`).join('')}
+  <div class="vaxedit">
+    <input class="inp" id="vaxseasonin" type="date" value="${esc(ciToday())}" max="${esc(ciToday())}">
+    <button class="btn" data-vax="addseason" data-id="${esc(s.id)}">Add a date</button>
+  </div>`;
+}
+
+function vaxStandTab() {
+  const w = VAX_WHERE_THINGS_STAND;
+  return `
+  <div class="card leafy">
+    <p class="eyebrow">${icon('info', 11, 'var(--sage)')} As it stood in ${esc(w.asOf)}</p>
+    <p class="bodytext" style="margin-top:6px">${esc(w.body[0])}</p>
+  </div>
+  <div class="dsec">
+    <h4>${esc(w.title)}</h4>
+    ${w.body.slice(1).map((b) => `<p class="bodytext" style="margin:0 0 9px">${esc(b)}</p>`).join('')}
+  </div>
+  <p class="tiny" style="margin:0 0 12px">This is a moving situation and the paragraph above is dated for
+  that reason. If you are reading it long after ${esc(w.asOf)}, check the two schedules directly.</p>
+  ${dsec('Both schedules, and where they differ', sourceRows(VAX_SCHEDULE_SOURCES))}
+  <button class="lrow" data-go="screen" data-id="vaccines">
+    <span class="licon">${icon('shield', 18)}</span>
+    <span class="grow">
+      <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">The reading, and both sides of it</span>
+      <span class="tiny" style="display:block;margin-top:2px">What the evidence says, what your rights are, and how to decide</span>
+    </span>
+    <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+  </button>`;
+}
+
+function vaxSaveDate(kid, key) {
+  const el = document.getElementById('vaxdatein');
+  const date = el ? el.value : '';
+  if (!date) { store.vaxError = 'Pick a date first.'; return; }
+  if (date > ciToday()) { store.vaxError = 'That date has not happened yet.'; return; }
+  if (kid.birthday && date < kid.birthday) { store.vaxError = 'That is before they were born.'; return; }
+  const bits = key.split(':');
+  store.vaxError = '';
+  store.vaxEdit = '';
+  vaxSetDose(kid, bits[0], Number(bits[1]), date);
+}
+
+function vaxExportText(kid) {
+  const rec = vaxRecord(kid);
+  const lines = ['Vaccine record for ' + (kid.name || 'child')
+    + (kid.birthday ? ', born ' + kid.birthday : ''), ''];
+  VAX_SERIES.forEach((s) => {
+    if (vaxIsSkipped(kid, s.id)) { lines.push(s.label + ': not being given'); return; }
+    if (s.seasonal) {
+      const d = vaxSeasonalDates(kid, s.id);
+      lines.push(s.label + ': ' + (d.length ? d.join(', ') : 'nothing recorded'));
+      return;
+    }
+    const parts = s.doses.filter((d) => !d.optional || rec[vaxDoseKey(s.id, d.n)]).map((d) => {
+      const g = rec[vaxDoseKey(s.id, d.n)];
+      return 'dose ' + d.n + ' ' + (g || 'not recorded');
+    });
+    lines.push(s.label + ': ' + parts.join(', '));
+  });
+  lines.push('');
+  lines.push('Kept by a parent in the Ready Set Grow app. Not an official record.');
+  return lines.join('\n');
+}
+
+/* The one line under the record on a child's profile. */
+function vaxRowSub(kid, months) {
+  const rec = vaxRecord(kid);
+  const counts = vaxCounts(rec, vaxSkipped(kid));
+  if (!counts.given) return 'Tick off what has been given, and keep the dates';
+  const next = vaxNextUp(months, rec, vaxSkipped(kid));
+  if (counts.given >= counts.total) return 'Everything on the list is recorded';
+  return counts.given + ' of ' + counts.total + ' recorded'
+    + (next ? ', next is ' + next.series.label.toLowerCase() : '');
+}
 
 /* =================================================================
    GROWTH
