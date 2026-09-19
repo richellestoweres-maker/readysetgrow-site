@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-19 18:01">
+<meta name="rsg-build" content="2026-09-19 21:10">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1573,7 +1573,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-19 18:01';
+const BUILD_STAMP = '2026-09-19 21:10';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -28974,6 +28974,982 @@ const GROW_DISCLAIMER = 'Information, not medical advice. Ages and ranges are av
   + 'pediatrician would far rather see a child who turned out to be fine.';
 
 
+/* ===== src/data/puberty.js ===== */
+/**
+ * Ready Set Grow: Keeping track of it
+ * ==================================================================
+ * Her ask, in her words: "if someone has a daughter that is in the age
+ * range for a period we should be able to track their cycle like the
+ * mom does and be able to mark on there if they are on birth control
+ * or anything else so that mom can help. maybe she can check off the
+ * list on there as well on what she has hit puberty wise and same with
+ * son if there is anything they can check off."
+ *
+ * So: a checklist of what has happened, a cycle for a daughter who has
+ * started, and somewhere to record medication. All of it feeding back
+ * something useful rather than just sitting there.
+ *
+ * THE THING THIS DOES THAT A TICK LIST NORMALLY DOES NOT
+ * Puberty runs in a fairly reliable order with fairly reliable gaps,
+ * which means a parent who has recorded two or three things can be
+ * told roughly what is coming and roughly when. Breasts come about two
+ * to two and a half years before a first period. Discharge starts six
+ * to twelve months before it. A growth spurt is about a year out.
+ * Those gaps are the whole point of recording the dates, and they turn
+ * a checklist into an answer to the only question a mother is actually
+ * asking, which is when.
+ *
+ * THE PRIVACY PROBLEM, TAKEN SERIOUSLY
+ * A record of a teenage girl's body, kept by somebody else, is not the
+ * same kind of data as a vaccination card. Three things follow from
+ * that and all three are built in rather than written in a footer.
+ *
+ *   1. Anybody this child is shared with can see it. A co parent, a
+ *      grandparent, whoever holds a code. The app says so before the
+ *      first thing is recorded, not after.
+ *   2. It is opt in per child. Nothing appears on a daughter's profile
+ *      because she turned eleven. Somebody has to decide to start it.
+ *   3. It can be handed over and it can be deleted, in one tap, and
+ *      the app says out loud that at some point this should stop being
+ *      her mother's record and start being hers.
+ *
+ * WHY BIRTH CONTROL IS WRITTEN THE WAY IT IS
+ * Because the commonest reasons a teenager is prescribed it in the
+ * United States are period pain, heavy bleeding, irregular cycles and
+ * acne, and an app that treats the entry as though it could only mean
+ * one thing puts a mother off recording something her daughter's
+ * doctor needs to know. It is a medication. It is recorded as one.
+ *
+ * Ages and gaps checked September 2026. Sources in PUB_SOURCES.
+ */
+
+/* ==================================================================
+   THE CHECKLISTS
+   ==================================================================
+   Order matters. These are listed in the order they usually happen,
+   so the list itself teaches the sequence even to somebody who ticks
+   nothing.
+
+   'gap' is how long after this thing a first period usually is, in
+   months, and it is only on the girls' list because it is the only
+   question with a real answer. Where there is no reliable gap there
+   is no number, rather than a number made up to fill the column.
+   ================================================================== */
+
+const PUB_GIRL = [
+  {
+    id: 'breast', label: 'Breasts starting',
+    what: 'A firm, often tender lump under one nipple, frequently on one side for a while. This is '
+      + 'usually the first sign of anything.',
+    typical: 'Usually around ten, anywhere from eight to twelve',
+    gap: 30, gapText: 'A first period usually comes about two to two and a half years after this',
+  },
+  {
+    id: 'hair', label: 'Pubic hair',
+    what: 'Sometimes before the breasts, more often just after.',
+    typical: 'Usually within a year of the breasts starting',
+    gap: 18, gapText: 'A first period usually comes one to two years after this',
+  },
+  {
+    id: 'smell', label: 'Body odour',
+    what: 'The day you notice they need deodorant. It catches parents off guard because it often '
+      + 'arrives before anything else is visible.',
+    typical: 'Often the first thing anybody notices',
+  },
+  {
+    id: 'spurt', label: 'A growth spurt',
+    what: 'Trousers short, shoes too small, eating constantly. In girls this comes earlier in the '
+      + 'process than it does in boys.',
+    typical: 'Often about a year before a first period',
+    gap: 12, gapText: 'A first period often comes around a year after this',
+  },
+  {
+    id: 'underarm', label: 'Underarm hair',
+    what: 'Usually after pubic hair.',
+    typical: 'Later in the run up',
+  },
+  {
+    id: 'acne', label: 'Skin changing',
+    what: 'Spots, oilier skin and hair. Hormonal rather than anything to do with washing, and worth '
+      + 'saying so to a child who thinks it is their fault.',
+    typical: 'Anywhere through it',
+  },
+  {
+    id: 'discharge', label: 'Discharge started',
+    what: 'A clear or milky discharge in her underwear. Nobody warns girls about this and a lot of '
+      + 'them think something is wrong with them. It is the body getting ready and it is normal.',
+    typical: 'The most useful single sign that it is close',
+    gap: 9, gapText: 'A first period usually comes six to twelve months after this starts',
+    big: true,
+  },
+  {
+    id: 'moods', label: 'Moods changing',
+    what: 'More tearful, more irritable, more easily stung. Real, hormonal, and not something to be '
+      + 'argued out of.',
+    typical: 'Through the whole of it',
+  },
+  {
+    id: 'period', label: 'First period',
+    what: 'The day it happened. Once this is recorded the app can start tracking the cycle.',
+    typical: 'On average around twelve, and earlier than that is common',
+    opensCycle: true,
+  },
+];
+
+const PUB_BOY = [
+  {
+    id: 'testes', label: 'Testicles getting bigger',
+    what: 'The actual first sign, and almost nobody notices it. If you are not going to record this '
+      + 'one, that is completely fine, and it is on the list because it is the honest starting point.',
+    typical: 'Usually around eleven and a half, anywhere from nine and a half to fourteen',
+  },
+  {
+    id: 'hair', label: 'Pubic hair',
+    what: 'Usually the first thing a parent actually sees.',
+    typical: 'Soon after the testicles start changing',
+  },
+  {
+    id: 'smell', label: 'Body odour',
+    what: 'Often early, often sudden, and often the first conversation about deodorant.',
+    typical: 'Often one of the first noticeable things',
+  },
+  {
+    id: 'spurt', label: 'A growth spurt',
+    what: 'Nearly four inches in a year at the peak. Growing pains, eating constantly, and clumsy '
+      + 'with it because the limbs arrived before the coordination.',
+    typical: 'Later in the process than in girls',
+  },
+  {
+    id: 'acne', label: 'Skin changing',
+    what: 'Spots and oilier skin. Boys get told even less about this than girls do.',
+    typical: 'Anywhere through it',
+  },
+  {
+    id: 'voicecrack', label: 'Voice starting to crack',
+    what: 'The squeaking stage. Mortifying, temporary, and worth not laughing at.',
+    typical: 'Just after the growth spurt peaks',
+  },
+  {
+    id: 'voice', label: 'Voice settled deeper',
+    what: 'The change everybody watches for, and one of the last things to happen rather than one of '
+      + 'the first.',
+    typical: 'Late',
+  },
+  {
+    id: 'underarm', label: 'Underarm hair',
+    what: 'Usually after pubic hair.',
+    typical: 'Later in the run up',
+  },
+  {
+    id: 'facial', label: 'Facial hair',
+    what: 'Upper lip first, usually, then the rest over a few years.',
+    typical: 'Near the end of it',
+  },
+  {
+    id: 'ejac', label: 'First ejaculation or wet dream',
+    what: 'You may well never know about this one and there is no need to ask. It is on the list '
+      + 'because a lot of parents want to know where it sits in the order, which is about a year '
+      + 'after the testicles start changing.',
+    typical: 'About a year after the start',
+    private: true,
+  },
+];
+
+function pubList(sex) {
+  return sex === 'f' ? PUB_GIRL : PUB_BOY;
+}
+
+function pubItem(sex, id) {
+  return pubList(sex).filter((x) => x.id === id)[0] || null;
+}
+
+/* How far through, counting only the things a parent could reasonably
+   observe, so a list with two private items on it does not read as
+   permanently incomplete. */
+function pubCount(sex, marks) {
+  const list = pubList(sex).filter((x) => !x.private);
+  let done = 0;
+  list.forEach((x) => { if ((marks || {})[x.id]) done += 1; });
+  return { done: done, total: list.length };
+}
+
+/* Months between a YYYY-MM or YYYY-MM-DD and today. Month granularity
+   on purpose, because no parent knows the day her daughter's breasts
+   started and asking for one gets you a made up answer. */
+function pubMonthsSince(value, today) {
+  if (!value) return null;
+  const a = String(value).split('-');
+  const b = String(today || '').split('-');
+  if (a.length < 2 || b.length < 2) return null;
+  const ay = Number(a[0]), am = Number(a[1]);
+  const by = Number(b[0]), bm = Number(b[1]);
+  if (!isFinite(ay) || !isFinite(am) || !isFinite(by) || !isFinite(bm)) return null;
+  return (by - ay) * 12 + (bm - am);
+}
+
+function pubMonthLabel(value) {
+  if (!value) return '';
+  const p = String(value).split('-');
+  const names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August',
+    'September', 'October', 'November', 'December'];
+  const m = Number(p[1]);
+  if (!isFinite(m) || m < 1 || m > 12) return String(value);
+  return names[m - 1] + ' ' + p[0];
+}
+
+function pubAddMonths(value, add) {
+  const p = String(value || '').split('-');
+  let y = Number(p[0]), m = Number(p[1]);
+  if (!isFinite(y) || !isFinite(m)) return '';
+  m += add;
+  y += Math.floor((m - 1) / 12);
+  m = ((m - 1) % 12 + 12) % 12 + 1;
+  return y + '-' + String(m).padStart(2, '0');
+}
+
+/* THE PART THAT MAKES THE LIST WORTH FILLING IN.
+
+   Takes what has been recorded and says what usually comes next and
+   roughly when. Only for girls and only about a first period, because
+   that is the only gap in the whole of puberty with a number behind it
+   that is worth telling somebody. Uses the tightest signal available,
+   which is discharge if it is there, then the growth spurt, then hair,
+   then breasts. */
+function pubPeriodHint(sex, marks, today) {
+  if (sex !== 'f') return null;
+  const m = marks || {};
+  if (m.period) return null;
+  const order = ['discharge', 'spurt', 'hair', 'breast'];
+  for (let i = 0; i < order.length; i++) {
+    const it = pubItem('f', order[i]);
+    if (!it || !it.gap || !m[it.id]) continue;
+    const since = pubMonthsSince(m[it.id], today);
+    if (since === null || since < 0) continue;
+    const left = it.gap - since;
+    return {
+      from: it.label.toLowerCase(),
+      started: m[it.id],
+      since: since,
+      gapText: it.gapText,
+      left: left,
+      /* Past the usual window is worth saying gently. It is extremely
+         common and it is not a problem, and a girl waiting is usually
+         the one who most wants to know she is normal. */
+      overdue: left < -6,
+      around: pubAddMonths(m[it.id], it.gap),
+    };
+  }
+  return null;
+}
+
+const PUB_HINT_OVERDUE = 'Later than the usual gap, which happens to plenty of girls and is '
+  + 'not on its own a problem. The ages that are worth an appointment are no period by fifteen, or '
+  + 'more than three years since her breasts started.';
+
+/* ==================================================================
+   PRIVACY, AND WHOSE RECORD THIS IS
+   ==================================================================
+   The honest section, shown before anything is recorded rather than
+   buried in a footer nobody reads.
+   ================================================================== */
+
+const PUB_TITLE = 'Keeping track of it';
+
+const PUB_SUB = 'What has happened so far, and when. Only if you want it.';
+
+const PUB_START = {
+  title: 'Before you start',
+  body: [
+    'This is a record of your child’s body, and that is a different kind of thing from a '
+    + 'vaccination card. Worth thirty seconds before you begin.',
+  ],
+  items: [
+    'Anybody you have shared this child with can see everything on it. A co parent, a grandparent, '
+    + 'whoever you gave a code to. If that is not what you want, do not start it, or take their '
+    + 'access back first under Sharing a child.',
+    'It is not on by default and it never appears by itself. You are turning it on.',
+    'You can delete the whole thing in one tap, at any time, and nothing is kept.',
+    'At some point this stops being your record and starts being theirs. There is no right age for '
+    + 'that and you will know. When it comes, hand it over or delete it rather than keeping it quietly.',
+  ],
+  ask: 'Does your child know you are keeping this? For a younger child that question does not really '
+    + 'arise. For a thirteen year old it does, and being told is usually better than being found out.',
+  btn: 'Start keeping track',
+  notNow: 'Not for now',
+};
+
+const PUB_INTRO = 'Tick what has happened and put roughly when. A month is enough, nobody '
+  + 'knows the day. The more you record the better the app can tell you what is usually next.';
+
+const PUB_DELETE = {
+  title: 'Deleting it',
+  body: 'This removes every mark, every date, every period and every medication for this child, from '
+    + 'this device and from the cloud copy. It cannot be undone and nothing is kept.',
+  btn: 'Delete all of it',
+  confirm: 'Yes, delete all of it',
+  cancel: 'Keep it',
+};
+
+const PUB_HANDOVER = {
+  title: 'When it should be theirs',
+  body: 'Somewhere in the middle of all this, a child gets old enough that a record of their body '
+    + 'kept by somebody else stops being care and starts being something else. There is no age on '
+    + 'that and you will know it when you see it. When you get there, you can show them what is here, '
+    + 'let them keep it themselves, and delete this copy. That is not losing anything. That is the '
+    + 'whole point of it.',
+};
+
+/* ==================================================================
+   HER CYCLE
+   ================================================================== */
+
+const CYC_TITLE = 'Her cycle';
+
+const CYC_SUB = 'The same calendar you use for yourself, for her, so somebody is keeping '
+  + 'track while she works out what is normal.';
+
+const CYC_INTRO = [
+  'Log the first day of each period. After two the app works out her own average rather than '
+  + 'assuming twenty eight days, and after a few it can say whether her cycles are settling.',
+  'The first few years are irregular and that is expected. What this is really for is having an '
+  + 'accurate answer when a doctor asks, because nobody remembers and the answer matters.',
+];
+
+const CYC_NORMAL = {
+  title: 'What normal looks like at her age',
+  items: [
+    'Anywhere from 21 to 45 days apart. That is the adolescent range and it is wider than the adult '
+    + 'one, so do not measure her against a chart written for you.',
+    'Fewer than seven days of bleeding.',
+    'Three to six pads or tampons a day.',
+    'Irregular for the first few years, and taking longer to settle than it used to. In one large '
+    + 'study the share of girls whose cycles were regular within two years of starting fell from 76 '
+    + 'percent in those born in the 1950s and 60s to 56 percent in those born in the early 2000s.',
+  ],
+};
+
+const CYC_RED = {
+  title: 'Worth a doctor',
+  items: [
+    'Cycles closer together than every 21 days, or further apart than every 45.',
+    'Ninety days between periods, even once.',
+    'Bleeding for more than seven days.',
+    'Soaking through more than one pad or tampon every one to two hours.',
+    'Pain that keeps her off school. Period pain that stops a girl living her life is worth '
+    + 'investigating rather than enduring, and a generation of women were told otherwise.',
+    'A lot of bruising or bleeding generally, or a bleeding disorder in the family.',
+  ],
+  note: 'This is exactly what the log is for. Turning up with dates beats turning up with a guess, '
+    + 'and it is the difference between being taken seriously and being told to come back in six months.',
+};
+
+const CYC_NO_FERTILE = 'Deliberately left out: this does not show a fertile window or '
+  + 'anything about pregnancy. That is on your own cycle screen because it is your body. What is '
+  + 'here is dates, averages and whether anything looks worth asking about.';
+
+/* ==================================================================
+   MEDICATION
+   ==================================================================
+   Neutral on purpose. See the file header for why.
+   ================================================================== */
+
+const MED_TITLE = 'What she is taking';
+
+const MED_TITLE_ANY = 'What they are taking';
+
+const MED_INTRO = 'Anything ongoing, so it is in one place when a doctor asks. Dates matter '
+  + 'more than doses here, because what a doctor usually wants to know is how long.';
+
+const MED_KINDS = [
+  { id: 'bc', label: 'Birth control',
+    note: 'Pill, patch, ring, implant, injection or coil. Worth recording which one and when it '
+      + 'started, because it changes bleeding and it changes what a period chart means.' },
+  { id: 'period', label: 'Something for periods',
+    note: 'Pain relief, tranexamic acid, iron, or anything else taken around a period.' },
+  { id: 'skin', label: 'Something for skin',
+    note: 'Including the ones that interact with other things.' },
+  { id: 'mood', label: 'Something for mood or attention', note: '' },
+  { id: 'other', label: 'Anything else ongoing', note: '' },
+];
+
+const MED_BC_NOTE = 'Worth knowing, and worth saying to a daughter who assumes what it means: '
+  + 'the commonest reasons a teenager in the United States is prescribed hormonal birth control are '
+  + 'period pain, heavy or irregular bleeding and acne. It is a medication with several uses. This '
+  + 'app records it as one and draws no conclusion about why.';
+
+const MED_ON_CHART = 'Hormonal birth control usually changes the bleeding pattern, and on '
+  + 'some methods periods stop altogether. That is expected rather than alarming, and it does mean '
+  + 'the cycle averages below stop describing a natural cycle from the day it starts.';
+
+const MED_EMPTY = 'Nothing recorded.';
+
+const PUB_SOURCES = [
+  { org: 'AAFP', label: 'The order puberty happens in, and the usual ages',
+    url: 'https://www.aafp.org/pubs/afp/issues/2017/1101/p590.html' },
+  { org: 'Geisinger', label: 'The signs a first period is coming, and how far out each one is',
+    url: 'https://www.geisinger.org/health-and-wellness/wellness-articles/2026/04/23/13/15/signs-your-daughter-is-about-to-start-her-period' },
+  { org: 'ACOG and AAP', label: 'The adolescent cycle ranges and what is worth an appointment',
+    url: 'https://www.acog.org/clinical/clinical-guidance/committee-opinion/articles/2015/12/menstruation-in-girls-and-adolescents-using-the-menstrual-cycle-as-a-vital-sign' },
+  { org: 'Harvard Chan School', label: 'Cycles taking longer to settle than they used to',
+    url: 'https://hsph.harvard.edu/news/menstrual-periods-are-arriving-earlier-for-younger-generations-especially-among-racial-minority-and-lower-income-individuals/' },
+  { org: 'AAP, HealthyChildren', label: 'What to tell boys, and where the first ejaculation sits',
+    url: 'https://www.healthychildren.org/English/ages-stages/gradeschool/puberty/Pages/Physical-Development-Boys-What-to-Expect.aspx' },
+];
+
+/* When the tracker is worth offering at all. Below this it is not
+   useful and putting it on a profile would be strange. */
+function pubShows(months) {
+  return typeof months === 'number' && months >= 84;
+}
+
+
+/* ===== src/data/consent.js ===== */
+/**
+ * Ready Set Grow: Consent, and if something happens
+ * ==================================================================
+ * WHY THIS EXISTS, AND THE BRIEF IT WAS WRITTEN TO
+ * A mother asked for it, and the reason she asked is the design. It
+ * happened to her at sixteen. She was frightened to tell her mother.
+ * She told her anyway, and her mother got her a Plan B pill and was,
+ * in her words, great.
+ *
+ * Both halves of that matter. The fear nearly stopped it, and what
+ * her mother did next is the model. So this file has one job: close
+ * the gap between frightened to tell and told anyway, and then make
+ * sure the adult on the other side knows what to do.
+ *
+ * THE NUMBER THIS IS BUILT AROUND
+ * Of American children aged ten to seventeen who were sexually
+ * abused or assaulted, 31 percent told a parent. Two thirds told no
+ * adult at all. That is not a failure of those children. It is what
+ * happens when nobody said in advance what would happen if they did.
+ *
+ * WHAT GOES FIRST AND WHY
+ * The tab for a parent whose child has just told them opens first.
+ * Somebody arriving here at eleven at night is not reading an
+ * explainer, and the two clocks that genuinely close, emergency
+ * contraception and HIV prevention, are measured in hours.
+ *
+ * THE THING THIS FILE REFUSES TO REPEAT
+ * Almost every page on the internet says a forensic exam must happen
+ * within 72 hours. Current best practice has moved to seven days and
+ * in places ten, and DNA is recoverable well past the old cutoffs. A
+ * parent at hour eighty who reads 72 concludes the window is gone
+ * when it is not. So this says go now, sooner is better, and do not
+ * decide on your own that you are too late.
+ *
+ * ON FREEZING
+ * The single most useful fact in here. In the best known study of
+ * women examined after rape, around seven in ten reported significant
+ * tonic immobility, the involuntary freeze. Nearly half reported it
+ * at the extreme end. A child who did not fight concludes it was not
+ * really assault, or that it was their fault, and then does not tell
+ * anybody. Saying this out loud, in advance, is prevention.
+ *
+ * ON WHAT IS STATED AS PROVEN
+ * The research on how a parent should respond is correlational. It
+ * shows that blame, disbelief, minimising, taking over the decisions
+ * and distancing travel with worse outcomes. It does not prove the
+ * reaction causes them, and it is mostly drawn from adults rather
+ * than teenagers telling a parent. The advice is sound and it is
+ * written as associated with rather than as will cause.
+ *
+ * Everything checked September 2026. Sources in CON_SOURCES.
+ */
+
+const CON_TITLE = 'Consent, and if something happens';
+
+const CON_SUB = 'What consent actually requires, what to say at each age, and what to do in '
+  + 'the first day if your child tells you something.';
+
+const CON_TABS = [
+  { id: 'told', label: 'If they just told you' },
+  { id: 'what', label: 'What consent really is' },
+  { id: 'age', label: 'What to say, by age' },
+  { id: 'raising', label: 'Raising the other half' },
+];
+
+/* ==================================================================
+   IF THEY JUST TOLD YOU
+   ==================================================================
+   First tab, first block, shortest sentences in the file.
+   ================================================================== */
+
+const TOLD_HEAD = 'Read this part first. The rest can wait.';
+
+const TOLD_FIRST = {
+  title: 'The first thirty seconds',
+  intro: 'What you say now is what they will remember about this for the rest of their life. Three '
+    + 'sentences, in this order, before anything else.',
+  lines: [
+    'I believe you.',
+    'I am so glad you told me.',
+    'This is not your fault. None of it.',
+  ],
+  then: 'Then stop talking and let them talk, or not talk. You do not need the details tonight and '
+    + 'you may never need them. What you need is for them to know the person they told did not '
+    + 'flinch.',
+};
+
+const TOLD_DONT = {
+  title: 'The five things not to say',
+  intro: 'These are the reactions that show up in the research alongside worse outcomes afterwards. '
+    + 'Every one of them is something a frightened parent says out of love.',
+  items: [
+    'Why did you not fight, or scream, or leave. Freezing is the usual response, not the rare one, '
+    + 'and it is involuntary. This question tells a child it was their fault.',
+    'What were you wearing, how much did you drink, why were you there. However you mean it, it '
+    + 'lands as blame, and it is the reason two thirds of children tell nobody.',
+    'Why did you not tell me sooner. They are telling you now. That is the hard part and they have '
+    + 'just done it.',
+    'Right, here is what we are going to do. Taking the decisions away is its own harm. Something '
+    + 'was just done to them without their say. Do not be the second thing.',
+    'Nothing. Going quiet, changing the subject, or treating them differently afterwards reads as '
+    + 'disgust, and they will assume it is aimed at them.',
+  ],
+  instead: 'Instead: I believe you. What do you want to do. You do not have to decide everything '
+    + 'tonight, and I am not going anywhere.',
+};
+
+/* THE TWO CLOCKS. The only genuinely urgent part, and the part most
+   parents do not know exists. Everything else on this screen can wait
+   until the morning. These cannot. */
+const TOLD_CLOCKS = {
+  title: 'Two things have a clock on them',
+  intro: 'Almost nothing about this has to be decided tonight. These two do, and most parents have '
+    + 'never been told they exist.',
+  items: [
+    { what: 'Emergency contraception', when: 'Best within hours. Still worth it for days.',
+      detail: 'Sooner is meaningfully better. See below for which one and where.' },
+    { what: 'Medication that prevents HIV', when: 'Within 72 hours, and sooner is better',
+      detail: 'It is called PEP, it is a 28 day course, and an emergency department can start it '
+        + 'the same night. After 72 hours it is no longer offered, so this is a real deadline.' },
+  ],
+  note: 'If you take only one thing from this page: an emergency department can do both of those, '
+    + 'plus the exam, plus antibiotics, in one visit tonight.',
+};
+
+const TOLD_EC = {
+  title: 'Emergency contraception, plainly',
+  intro: 'There is more than one and they are not the same. Which one matters more than most people '
+    + 'realise, and a pharmacist will not always volunteer the difference.',
+  options: [
+    { name: 'Plan B and its generics, levonorgestrel',
+      window: 'Labelled for 72 hours. Works best in the first 24.',
+      how: 'Over the counter, no prescription, no age limit, no identification needed. Anybody of '
+        + 'any age can buy it, including your child, including you for your child. Usually 10 to 50 '
+        + 'dollars, and the generics are the same medicine.',
+      note: 'Often locked in a cabinet or behind the counter, which costs time. Ask at the counter '
+        + 'rather than hunting the shelves.' },
+    { name: 'ella, ulipristal',
+      window: 'Works for the full 120 hours, five days',
+      how: 'Needs a prescription, at any age, which is the main obstacle. A telehealth appointment '
+        + 'can often write one the same day.',
+      note: 'The important difference: levonorgestrel fades as the hours pass and ella does not. '
+        + 'After the first day, ella is the better option, and after three days it is clearly better.' },
+    { name: 'A copper or hormonal IUD',
+      window: 'Up to 120 hours',
+      how: 'Needs a clinician to place it, so it is the highest effort option.',
+      note: 'It is also by some distance the most effective, cutting the chance of pregnancy by over '
+        + '99 percent, and it is unaffected by body weight. Worth asking about rather than assuming '
+        + 'it is not for a teenager.' },
+  ],
+  weight: 'One thing nobody tells you. Levonorgestrel works less well at higher body weight. At a '
+    + 'BMI over 25 the pregnancy rate is around one and a half times higher, and over 30 it is more '
+    + 'than three times. American regulators have not put a warning on the label because they judged '
+    + 'the data inconclusive, but professional guidance is to use ella or an IUD instead above that '
+    + 'point. Nobody should ever be refused Plan B over their weight, it is still worth taking, and '
+    + 'it is worth asking for one of the others as well.',
+};
+
+const TOLD_EXAM = {
+  title: 'The exam, and the thing everybody gets wrong about it',
+  body: [
+    'A sexual assault forensic exam is done by a specially trained nurse, usually called a SANE. It '
+    + 'collects evidence, treats injuries, and it is also where the emergency contraception, the HIV '
+    + 'medication and the antibiotics happen. It is not only about a court case.',
+    'You should not be billed for it. Federal law requires states to cover the cost whether or not '
+    + 'anybody talks to the police.',
+  ],
+  window: 'Almost every page on the internet says 72 hours. Do not use that number to decide you are '
+    + 'too late. Current best practice in many places collects evidence up to seven days, and some go '
+    + 'to ten. Go as soon as you can, because sooner is better, and if it has already been four days, '
+    + 'call anyway and ask rather than deciding for yourself that the window has closed.',
+  preserve: 'Ideally, do not shower, change clothes, brush hair or use the bathroom first, and put '
+    + 'the clothes in a paper bag rather than plastic. If they already showered, that does not end it '
+    + 'and it is not a reason not to go.',
+};
+
+const TOLD_REPORT = {
+  title: 'What will happen about the police, honestly',
+  body: [
+    'If your child is under eighteen and you take them to a hospital or a doctor and say what '
+    + 'happened, expect a report to be made. Medical staff are mandated reporters in every state, '
+    + 'and in many places it is not optional and you will not be asked to agree to it.',
+    'That is worth knowing in the car rather than discovering in a waiting room, because a young '
+    + 'person who was told nothing would happen and then watches a police officer arrive has been '
+    + 'let down by the adult who promised it.',
+  ],
+  ask: 'Ask the intake nurse directly, before anything else: in this state, what are you required to '
+    + 'report, to whom, and when. They will tell you, and it is a normal question.',
+  adults: 'An adult can usually have the exam done and have the evidence stored without reporting. '
+    + 'For a minor that option exists in only a handful of states, so do not count on it.',
+  perp: 'Whether the other person is investigated depends on their age relative to your child and on '
+    + 'your state, and those rules vary enormously. Nobody can tell you from a page what will happen '
+    + 'in your state, and a call to the hotline below will get you closer than a search will.',
+};
+
+const TOLD_LATER = {
+  title: 'What does not have to be decided tonight',
+  items: [
+    'Whether to press charges.',
+    'Whether to tell anybody else, including the other parent, the school or the family.',
+    'Whether to see a therapist.',
+    'What happens about school, or the team, or the friendship group.',
+    'What your child wants this to mean.',
+  ],
+  note: 'Tonight is medical, and it is being believed. Everything else keeps.',
+};
+
+const TOLD_AFTER = {
+  title: 'The weeks after',
+  items: [
+    'Keep responding well. It is not one conversation, and how you react the fifth time matters as '
+    + 'much as the first.',
+    'Let them keep control of who knows. Telling somebody else without asking is its own betrayal.',
+    'Watch sleep, school, eating and friendships rather than asking how they are every day.',
+    'There are follow up appointments that matter. Repeat testing at one to two weeks, and blood '
+    + 'tests at six weeks and three months. Put them in the calendar.',
+    'Offer a therapist without making it a condition. Somebody who works with this specifically, not '
+    + 'just anybody.',
+    'Look after yourself somewhere they cannot see, because a parent falling apart in front of them '
+    + 'becomes one more thing for them to manage.',
+  ],
+};
+
+const TOLD_LINES = [
+  { name: 'RAINN, the National Sexual Assault Hotline', contact: '1-800-656-4673',
+    detail: 'Free, 24 hours, confidential. They take calls from parents as well, and they will talk '
+      + 'you through what happens in your state. Chat at rainn.org, or text HOPE to 64673.',
+    url: 'https://rainn.org/' },
+  { name: 'Childhelp National Child Abuse Hotline', contact: '1-800-422-4453',
+    detail: 'Counsellors, 24 hours, 170 languages, and explicitly for parents. You can call before '
+      + 'you have decided anything.',
+    url: 'https://childhelphotline.org/' },
+  { name: 'Love Is Respect, for teenagers', contact: '1-866-331-9474',
+    detail: 'If this happened inside a relationship, which for teenagers it very often does. Text '
+      + 'LOVEIS to 22522.',
+    url: 'https://www.loveisrespect.org/' },
+  { name: 'The Deaf Hotline, by video', contact: '1-855-812-1001',
+    detail: 'Answered in American Sign Language by Deaf advocates, and it covers sexual assault.',
+    url: 'https://thedeafhotline.org/' },
+  { name: 'Stop It Now', contact: '1-888-773-8368',
+    detail: 'For an adult who is worried about a child, including when the person who did it is '
+      + 'inside the family and you do not know what to do about that.',
+    url: 'https://www.stopitnow.org/help-guidance/help-services' },
+];
+
+/* ==================================================================
+   WHAT CONSENT REALLY IS
+   ================================================================== */
+
+const WHAT_HEAD = 'No means no is the beginner version, and it is the part that fails.';
+
+const WHAT_INTRO = [
+  'Almost everybody was taught consent as a thing that gets refused. That leaves out every situation '
+  + 'where nobody said no, which is most of them, and it leaves a young person who did not say no '
+  + 'certain that what happened must have been fine.',
+  'The grown up version is the other way round. Consent is not the absence of a no. It is the '
+  + 'presence of a yes, from somebody in a state to give one, for this, now.',
+];
+
+const WHAT_CAPACITY = {
+  title: 'You cannot agree to something if you are not in a state to agree',
+  items: [
+    'Asleep, or passed out. There is no version of this that is ambiguous.',
+    'Drunk or high enough that they are not really there. Not tipsy, not merry, but past the point '
+    + 'of making decisions. If somebody is wondering whether the other person is too drunk, that is '
+    + 'the answer.',
+    'Drugged, whether they took it knowingly or not.',
+    'Too young, which depends on their age, the other person’s age, and the state.',
+    'Frightened, cornered, or dependent on the person asking.',
+  ],
+};
+
+const WHAT_FREEZE = {
+  title: 'The part that stops children telling anybody',
+  body: [
+    'Freezing is the usual response, not the rare one. In the best known study, of nearly three '
+    + 'hundred women examined after rape, around seven in ten reported significant involuntary '
+    + 'freezing during it, and nearly half reported it at the extreme end. It has a name, tonic '
+    + 'immobility, it is a reflex, and it is not something anybody chooses.',
+    'This matters more than almost anything else on this page. A young person who did not fight, did '
+    + 'not shout and did not run concludes that it therefore was not really assault, or that they '
+    + 'must have wanted it, or that nobody will believe them. Then they tell nobody.',
+  ],
+  say: 'So say it before anything ever happens, out loud, to a twelve year old: if your body freezes '
+    + 'and you cannot move or speak, that is normal, it happens to most people, and it does not mean '
+    + 'you agreed to anything. Not fighting is not saying yes.',
+};
+
+const WHAT_COERCION = {
+  title: 'Force is not the only way it happens',
+  intro: 'For teenagers it is very rarely a stranger with a weapon. It is much more often this.',
+  items: [
+    'Being worn down. Asking over and over until it is easier to give in than to keep saying no.',
+    'If you loved me. If you were not frigid. Everybody else does.',
+    'Threatening to leave, to tell people, to share a photo, to hurt themselves.',
+    'Being the one with the power. Older, more popular, the one with the car, the one everybody '
+    + 'believes.',
+    'Getting somebody drunk on purpose.',
+    'Carrying on after a yes turned into a no, or after somebody went still and quiet.',
+  ],
+  note: 'Giving in is not the same as agreeing. Somebody who says fine, whatever, just to make it '
+    + 'stop has not consented, and a person who cannot tell the difference has chosen not to.',
+};
+
+const WHAT_CARRY = {
+  title: 'Yes does not carry forward',
+  items: [
+    'Yes last week is not yes tonight.',
+    'Yes to one thing is not yes to another thing.',
+    'Being in a relationship is not standing permission. Marriage is not either.',
+    'Yes can be taken back partway through, at any point, for any reason or none.',
+    'Having done it before does not make the next time automatic.',
+  ],
+};
+
+const WHAT_LAW = {
+  title: 'What the law says, and why not to lean on it',
+  body: [
+    'Worth being honest with a teenager about this rather than letting them find out later. Around '
+    + 'thirteen states have no statutory definition of consent at all. Only a handful spell out in '
+    + 'law that consent can be taken back partway through. Most states define the absence of consent '
+    + 'rather than requiring the presence of it, and what counts as too drunk varies enormously from '
+    + 'one state line to the next.',
+    'That does not mean any of the things on this page are up for debate. It means the law is a '
+    + 'floor written by legislatures and what you owe another person is higher than the floor. Teach '
+    + 'the standard, not the statute.',
+  ],
+};
+
+const WHAT_WHO = {
+  title: 'Who it usually is',
+  body: [
+    'Not a stranger. For children and teenagers, the person who does it is usually another young '
+    + 'person. In a large national sample, around seven in ten were other juveniles, and for teenage '
+    + 'girls it was most often a boyfriend or a male acquaintance.',
+    'Which is why a rule about strangers protects almost nobody, and why the conversation has to '
+    + 'include the possibility that it is somebody your child likes, somebody you have met, and '
+    + 'somebody they will not want to get in trouble.',
+  ],
+};
+
+/* ==================================================================
+   BY AGE
+   ================================================================== */
+
+const CON_BY_AGE = [
+  {
+    id: 'tiny', label: 'Two to four', from: 18, to: 59,
+    head: 'Nothing about sex. Everything about your body being yours.',
+    items: [
+      'Nobody has to hug or kiss anybody, including grandparents. Offer a wave, a high five, a '
+      + 'handshake. This is the first consent lesson and it does not mention consent.',
+      'When they say stop during tickling or wrestling, stop instantly, every time, even if they are '
+      + 'laughing. That is the whole lesson in one second.',
+      'Ask before you do things to their body where you can. Can I wipe your face. I am going to '
+      + 'pick you up now.',
+      'Correct words for body parts, so that if they ever need to tell somebody something they have '
+      + 'the words to do it with.',
+      'Surprises are things everybody finds out. Secrets are things you keep forever, and we do not '
+      + 'have those.',
+    ],
+  },
+  {
+    id: 'small', label: 'Five to eight', from: 60, to: 107,
+    head: 'The rules about touch, and the promise.',
+    items: [
+      'The parts a swimsuit covers are private. Nobody looks at them or touches them, except to keep '
+      + 'them clean or healthy, and a doctor only with you in the room.',
+      'Say out loud that it includes everybody. Not a teacher, not a cousin, not a coach, not a '
+      + 'grown up in this family. A rule that only covers strangers covers almost nothing.',
+      'If anybody does, you are not in trouble and it is not your fault, and if they said I would be '
+      + 'angry, that is how they trick people.',
+      'Make the promise for the first time and make it enormous. You will never be in trouble for '
+      + 'telling me. Never. Whatever it is.',
+      'Ask who else they would tell if they could not tell you, and make sure there is a real answer.',
+      'Their no counts too, for other children. You stop when somebody says stop.',
+    ],
+  },
+  {
+    id: 'middle', label: 'Nine to eleven', from: 108, to: 143,
+    head: 'Both directions, and the first mention that it is usually somebody you know.',
+    items: [
+      'Say it plainly for the first time: most of the time this is not a stranger. It is somebody '
+      + 'you know, and sometimes somebody you like.',
+      'Somebody being nice to you does not mean what they are doing is alright, and you are allowed '
+      + 'to feel two things at once about the same person.',
+      'You are in charge of your own body and everybody else is in charge of theirs. Both halves, '
+      + 'said together, from now on.',
+      'Pictures. If anybody asks for one, that is an adult problem and not yours, and it stops the '
+      + 'second you tell me.',
+      'Practise it out loud. What would you say, what would you do, who would you find. Saying it in '
+      + 'the kitchen makes it reachable later.',
+    ],
+  },
+  {
+    id: 'teen', label: 'Twelve to fifteen', from: 144, to: 191,
+    head: 'The real version, before they need it.',
+    items: [
+      'Consent is a yes, from somebody in a state to give one, for this, now. Not the absence of a '
+      + 'no. Say it in those words.',
+      'Asleep, drunk, high, frightened or cornered means no. If you are wondering whether somebody '
+      + 'is too drunk, you already know.',
+      'Freezing is normal and involuntary and it happens to most people. If your body goes still, '
+      + 'that is not you agreeing. Say this one twice.',
+      'Yes can be taken back at any point. Yes to one thing is not yes to another.',
+      'Being pestered until you give in is not agreeing, whatever anybody says afterwards.',
+      'If it happens to a friend: believe them, do not tell anybody else without asking, and help '
+      + 'them find an adult. What you say in the first minute matters as much for them as it would '
+      + 'for you.',
+      'And the promise again, now that it means something harder. Whatever has happened, whoever it '
+      + 'was, whatever you had taken or drunk, whatever you told me you were doing that night, come '
+      + 'to me. You will not be in trouble. Not then, not later, not at all.',
+    ],
+  },
+  {
+    id: 'older', label: 'Sixteen to eighteen', from: 192, to: 400,
+    head: 'The practical half, and saying the promise out loud one more time.',
+    items: [
+      'Tell them emergency contraception exists, what it is called, that it works best within hours, '
+      + 'that anybody of any age can buy Plan B over the counter with no identification, and that '
+      + 'there is a different one called ella that works better after the first day.',
+      'Tell them a hospital can prevent HIV with medication but only within 72 hours.',
+      'Tell them the exam is free and that they will not be billed for it.',
+      'Tell them what you would actually do: I would come and get you, wherever you are, whatever '
+      + 'time it is, and I would not ask a single question in the car.',
+      'Say the part about the police honestly rather than promising something you cannot deliver. If '
+      + 'we go to a hospital they may have to report it, and I will tell you before we walk in.',
+      'And then say the whole promise again, because sixteen is when they most need it and least '
+      + 'expect it to still apply.',
+    ],
+  },
+];
+
+function conStageFor(months) {
+  if (months === null || months === undefined) return null;
+  for (let i = 0; i < CON_BY_AGE.length; i++) {
+    const s = CON_BY_AGE[i];
+    if (months >= s.from && months <= s.to) return s;
+  }
+  return months < CON_BY_AGE[0].from ? null : CON_BY_AGE[CON_BY_AGE.length - 1];
+}
+
+const CON_PROMISE = {
+  title: 'The promise, written out',
+  body: 'This is the whole of it. Say it at five in small words, say it at twelve in bigger ones, '
+    + 'and say it again at sixteen when they have stopped listening to most things.',
+  words: 'You will never be in trouble for telling me. Not about a photograph, not about who you '
+    + 'were with, not about where you were, not about what you drank or took, not about lying to me '
+    + 'about where you were going. If something happens, come to me. I will believe you, I will not '
+    + 'be angry, and we will work out what to do together.',
+  why: 'Only about three in ten children who are sexually abused or assaulted tell a parent. Two '
+    + 'thirds tell no adult at all. The single thing most likely to move your child from that second '
+    + 'group to the first is having heard that promise, in those words, before anything ever '
+    + 'happened.',
+};
+
+/* ==================================================================
+   RAISING THE OTHER HALF
+   ==================================================================
+   The half most parents skip, and the one that is actually about
+   prevention rather than about damage limitation.
+   ================================================================== */
+
+const RAISE_HEAD = 'Everybody teaches their child how not to be a victim. Far fewer teach '
+  + 'them the other thing.';
+
+const RAISE_INTRO = [
+  'Most of what parents say about this is defensive. Watch your drink, do not walk alone, tell me '
+  + 'where you are. All sensible, all aimed at one side of it.',
+  'The people who do this are somebody’s children, and for teenagers they are usually other '
+  + 'teenagers. Which means the conversation that prevents it is one somebody has to have with the '
+  + 'person who might do it, and that is not a conversation about being accused.',
+];
+
+const RAISE_SAY = {
+  title: 'What to actually say',
+  items: [
+    'Your job is not to avoid being refused. Your job is to be sure. If you are not sure, you stop '
+    + 'and you ask, and if asking feels like it would ruin the mood, that is the moment it matters.',
+    'Silence is not a yes. Going still is not a yes. Freezing is what most people’s bodies do '
+    + 'when they are frightened, and it is the single most misread thing there is.',
+    'Being drunk does not make it not count, and it will not be a defence for you either.',
+    'If somebody says fine, whatever, just to make you stop asking, you did not get a yes. You wore '
+    + 'somebody down, and you know the difference.',
+    'Yes can be taken back partway through, and when it is, you stop immediately and without sulking '
+    + 'about it.',
+    'If you get this wrong you will not have made a mistake, you will have done something to another '
+    + 'person that they carry. That is the weight of it and it is not too heavy to say out loud.',
+  ],
+  not: 'What not to say: any version of be careful, you could get accused. It teaches a boy that the '
+    + 'risk in this situation is to him, and it is the opposite of the lesson.',
+};
+
+const RAISE_FRIENDS = {
+  title: 'The part that actually moves the numbers',
+  body: [
+    'The programmes with the best evidence behind them are not the ones that lecture teenagers about '
+    + 'consent. They are the ones that change what a young person thinks their friends will tolerate.',
+    'A bystander programme run across twenty six high schools cut sexual violence perpetration by '
+    + 'roughly a fifth. A coach led programme with male athletes reduced dating violence a year '
+    + 'later, and the striking part is what moved first. Their stated attitudes barely shifted. What '
+    + 'changed was whether they laughed along with their friends.',
+  ],
+  home: 'So the version of this for a kitchen table is not another lecture about consent. It is: '
+    + 'what do you do when your friend is the one doing it. Do you laugh. Do you say nothing. Do you '
+    + 'get the girl a lift home. Those are the questions worth asking, and a teenager will actually '
+    + 'answer them.',
+  honest: 'Said honestly: no study has shown that a parent teaching this at home reduces anything, '
+    + 'because nobody has been able to measure it. The programme evidence is real and the effects are '
+    + 'modest. Do it anyway, for the obvious reason.',
+};
+
+const RAISE_BOTH = 'One more thing, because it gets missed. Boys are assaulted too, by around '
+  + 'one in twenty by the age of seventeen, and they tell people even less often than girls do. A '
+  + 'son needs both halves of this conversation just as much as a daughter does.';
+
+const CON_SOURCES = [
+  { org: 'RAINN', label: 'The hotline, the forensic exam, and state consent law compared',
+    url: 'https://rainn.org/articles/rape-kit' },
+  { org: 'EVAWI', label: 'Why the 72 hour figure for an exam is out of date',
+    url: 'https://evawintl.org/best_practice_faqs/medical-forensic-exams-exam-timelines/' },
+  { org: 'KFF', label: 'Emergency contraception, the options, the windows and the cost',
+    url: 'https://www.kff.org/womens-health-policy/emergency-contraception/' },
+  { org: 'Society of Family Planning', label: 'Which emergency contraception, and the body weight evidence',
+    url: 'https://societyfp.org/wp-content/uploads/2023/05/SFP-Clinical-Recommendation_Emergency-contraception-2023_Final.pdf' },
+  { org: 'CDC', label: 'What happens medically after an assault, including the 72 hour HIV window',
+    url: 'https://www.cdc.gov/std/treatment-guidelines/sexual-assault-adults.htm' },
+  { org: 'Moller et al 2017', label: 'Tonic immobility during sexual assault, the freezing research',
+    url: 'https://obgyn.onlinelibrary.wiley.com/doi/full/10.1111/aogs.13174' },
+  { org: 'CCRC, University of New Hampshire', label: 'Who the perpetrator is, and how few children tell a parent',
+    url: 'https://www.unh.edu/ccrc/sites/default/files/media/2022-03/sexual-abuse-and-assault-in-a-large-national-sample-of-children-and-adolescents.pdf' },
+  { org: 'CHILD USA', label: 'Delayed disclosure, and how long children wait',
+    url: 'https://childusa.org/wp-content/uploads/2024/06/Delayed-Disclosure-2024.pdf' },
+  { org: 'Ullman 2023', label: 'What kinds of reaction to a disclosure go with worse outcomes',
+    url: 'https://journals.sagepub.com/doi/abs/10.1177/15248380211016013' },
+  { org: 'Coker et al 2017', label: 'The bystander programme that reduced perpetration across 26 schools',
+    url: 'https://www.ajpmonline.org/article/S0749-3797(17)30027-2/fulltext' },
+  { org: 'HHS ASPE', label: 'How age of consent and reporting duties vary by state',
+    url: 'https://aspe.hhs.gov/reports/statutory-rape-guide-state-laws-reporting-requirements' },
+];
+
+const CON_DISCLAIMER = 'Information, not medical or legal advice. The medical windows here '
+  + 'are real and worth acting on tonight. Everything about the police and the law varies by state, '
+  + 'and the hotline above will get you a better answer for where you live than any page can.';
+
+
 /* ===== src/data/eatingTogether.js ===== */
 /**
  * Ready Set Grow: Eating, Once The Milk Question Is Over
@@ -31606,7 +32582,7 @@ const state = {};
     and nothing throws. That is exactly what happened to the Learning
     tabs, and to Jobs, Growth and the vaccine record with them. The
     build now refuses to finish if a data-sub key is not here. */
- 'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab',
+ 'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab',
  'logDraft', 'draftChildName', 'draftChildBday'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -32794,6 +33770,8 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'support') html = screenSupport(c);
   else if (v && v.type === 'screen' && v.id === 'online') html = screenOnline(c);
   else if (v && v.type === 'screen' && v.id === 'growingup') html = screenGrowingUp(c);
+  else if (v && v.type === 'screen' && v.id === 'childcycle') html = screenChildCycle(c);
+  else if (v && v.type === 'screen' && v.id === 'consent') html = screenConsent(c);
   else if (v && v.type === 'screen' && v.id === 'plan') html = screenPlan(c);
   else if (v && v.type === 'screen' && v.id === 'sleep') html = screenSleep(c);
   else if (v && v.type === 'screen' && v.id === 'development') html = screenDevelopment(c);
@@ -33264,7 +34242,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -33505,6 +34483,10 @@ function initControls() {
       else if (how === 'done') { store.cycleEdit = false; flushStore(); }
       else if (how === 'history') { store.cycleHistory = !store.cycleHistory; flushStore(); }
       else if (how === 'today') { periodToggle(ciToday()); return; }
+    } else if (t.dataset.childperiod) {
+      const kid = activeChild();
+      if (kid) childPeriodToggle(kid, t.dataset.childperiod);
+      return;
     } else if (t.dataset.period) {
       periodToggle(t.dataset.period);
       return;
@@ -33991,6 +34973,11 @@ function initControls() {
       } else {
         navBack();
       }
+    } else if (t.dataset.pub) {
+      pubAction(t.dataset.pub, t.dataset.id);
+      if (t.dataset.pub === 'caledit' || t.dataset.pub === 'caldone') { /* falls through to render */ }
+    } else if (t.dataset.constage) {
+      store.conStage = store.conStage === t.dataset.constage ? '' : t.dataset.constage;
     } else if (t.dataset.onlinestage) {
       store.onlineStage = store.onlineStage === t.dataset.onlinestage ? '' : t.dataset.onlinestage;
     } else if (t.dataset.growstage) {
@@ -36522,6 +37509,16 @@ function supTabTraffick() {
     </div>
 
     <div class="dsec">
+      <h4>If it was not a stranger</h4>
+      <p class="bodytext" style="margin:0 0 10px">For a teenager this is far more often somebody they
+        know, and often somebody they are seeing. What consent actually requires, and what to do in
+        the first day if your child tells you something, is written out in full.</p>
+      <button class="btn ghost" style="width:100%" data-go="screen" data-id="consent">
+        ${icon('heart', 14, 'var(--deep)')} ${esc(CON_TITLE)}
+      </button>
+    </div>
+
+    <div class="dsec">
       <h4>${esc(TRAF_PREVENT.title)}</h4>
       <p class="tiny" style="margin:0 0 9px">${esc(TRAF_PREVENT.intro)}</p>
       ${TRAF_PREVENT.items.map((x) => `
@@ -36832,9 +37829,19 @@ function growNowBlock(months) {
   </div>`;
 }
 
+function growTabsFor(months) {
+  const base = GROW_TABS.slice();
+  if (!pubShows(months)) return base;
+  /* Second, not first. Somebody arriving here is usually reading
+     rather than recording, and the reading is what the screen is
+     mostly for. */
+  return [base[0], { id: 'track', label: PUB_TITLE }].concat(base.slice(1));
+}
+
 function screenGrowingUp(c) {
-  const tab = state.growTab || 'now';
   const months = c.months;
+  let tab = state.growTab || 'now';
+  if (growTabsFor(months).filter((x) => x.id === tab).length === 0) tab = 'now';
 
   return `
   ${cornerLeaves()}
@@ -36844,9 +37851,10 @@ function screenGrowingUp(c) {
     <p class="sub">${esc(GROW_SUB)}</p>
   </div>
   <div class="sc">
-    ${subTabs('growTab', tab, GROW_TABS)}
+    ${subTabs('growTab', tab, growTabsFor(months))}
 
     ${tab === 'now' ? growNowBlock(months) : ''}
+    ${tab === 'track' ? pubTrackBlock(c) : ''}
 
     ${tab === 'body' ? `
       <div class="dsec">
@@ -36915,6 +37923,16 @@ function screenGrowingUp(c) {
       </div>
 
       <div class="dsec">
+        <h4>The long version of all of this</h4>
+        <p class="bodytext" style="margin:0 0 10px">Consent properly, what it looks like at each age,
+          how to be the person they tell, and what to do in the first day if they ever do. It is the
+          most important screen in this app and it is one tap away.</p>
+        <button class="btn" style="width:100%" data-go="screen" data-id="consent">
+          ${icon('heart', 14, '#fff')} ${esc(CON_TITLE)}
+        </button>
+      </div>
+
+      <div class="dsec">
         <h4>${esc(GROW_SEXED.title)}</h4>
         <p class="sect" style="margin-top:0">${esc(GROW_SEXED.strong.title)}</p>
         ${list(GROW_SEXED.strong.items)}
@@ -36958,6 +37976,773 @@ function screenGrowingUp(c) {
 
     ${dsec('Where this comes from', sourceRows(GROW_SOURCES))}
     <p class="disclaimer">${esc(GROW_DISCLAIMER)}</p>
+  </div>`;
+}
+
+/* ==================================================================
+   KEEPING TRACK OF PUBERTY, AND A DAUGHTER'S CYCLE
+
+   Everything about why this is opt in, why it can be deleted in one
+   tap, and why birth control is recorded as a medication rather than
+   as a statement, lives in src/data/puberty.js.
+
+   WHAT IS SHOWN TO WHOM, which was her question:
+
+     The TRACKER is fitted to the child. A girl gets the girls' list,
+     a boy gets the boys' list, the cycle only exists for a girl who
+     has started, and none of it appears before seven. It is a record
+     of one particular body and showing the wrong body's list would be
+     both useless and strange.
+
+     The READING is not fitted and never will be. Every age band and
+     both sets of changes stay reachable on every child's profile at
+     every age, because a mother of a son still needs to know what a
+     period is, a parent reading ahead is doing the right thing, and
+     an app that decides which half of puberty a family is allowed to
+     read about has overstepped.
+   ================================================================== */
+
+function pubMarks(kid) {
+  return (kid && kid.pub && typeof kid.pub === 'object') ? kid.pub : {};
+}
+
+function pubOn(kid) {
+  return !!(kid && kid.pubOn);
+}
+
+function pubSet(kid, id, value) {
+  if (!kid) return;
+  if (!kid.pub || typeof kid.pub !== 'object') kid.pub = {};
+  if (value) kid.pub[id] = value; else delete kid.pub[id];
+  kid.updatedAt = Date.now();
+  saveStore();
+}
+
+/* Today as YYYY-MM, since month is the granularity the whole of this
+   works in. Nobody knows the day. */
+function pubThisMonth() {
+  return String(ciToday()).slice(0, 7);
+}
+
+function childPeriods(kid) {
+  return normalizePeriods(Array.isArray((kid || {}).periods) ? kid.periods : []);
+}
+
+function childPeriodsSet(kid, list) {
+  if (!kid) return;
+  kid.periods = normalizePeriods(list);
+  kid.updatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+function childPeriodToggle(kid, date) {
+  const list = childPeriods(kid);
+  const at = list.indexOf(date);
+  if (at === -1) list.push(date); else list.splice(at, 1);
+  childPeriodsSet(kid, list);
+  /* Logging a period IS the first period being recorded, so the
+     checklist stops asking about something that has demonstrably
+     already happened. */
+  if (at === -1 && !pubMarks(kid).period) pubSet(kid, 'period', String(date).slice(0, 7));
+}
+
+function childMeds(kid) {
+  return Array.isArray((kid || {}).meds) ? kid.meds : [];
+}
+
+function pubWipe(kid) {
+  if (!kid) return;
+  delete kid.pub;
+  delete kid.periods;
+  delete kid.meds;
+  delete kid.cycleLength;
+  kid.pubOn = false;
+  kid.updatedAt = Date.now();
+  store.pubDelete = false;
+  flushStore();
+}
+
+/* The door. Nothing is recorded until somebody has read what this is
+   and pressed the button, which is the whole of the consent design. */
+function pubStartBlock(kid, first) {
+  return `
+  <div class="card leafy">
+    <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} ${esc(PUB_START.title)}</p>
+    ${PUB_START.body.map((x) => `<p class="bodytext" style="margin-top:8px">${esc(x)}</p>`).join('')}
+  </div>
+
+  <div class="dsec">
+    <h4>What you should know first</h4>
+    ${list(PUB_START.items)}
+    <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(PUB_START.ask)}</p></div>
+  </div>
+
+  <button class="btn" style="width:100%" data-pub="on">${esc(PUB_START.btn)}</button>
+  <p class="tiny" style="text-align:center;margin-top:9px">${esc(PUB_START.notNow)} is fine. Nothing
+    is recorded until you press that.</p>`;
+}
+
+/* Which body's list to show. Reuses the same answer the growth curves
+   already needed rather than asking a second time. */
+function pubAskSex(kid, first) {
+  return `
+  <div class="card leafy">
+    <p class="bodytext">The list of changes is different depending on which body
+      ${esc(first)} has, so this needs to know which one to show.</p>
+    <p class="tiny" style="margin-top:8px">It is the same answer the growth curves use, so you only
+      answer it once, and you can change it whenever you like. If it is more complicated than the
+      two options, pick the one whose changes you are expecting and read the other half on the other
+      tabs, which are there for everybody at every age.</p>
+  </div>
+  <button class="lrow" data-growth="sex" data-id="f">
+    <span class="licon">${icon('leaf', 18)}</span>
+    <span class="grow"><span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">The girls' list</span>
+    <span class="tiny" style="display:block;margin-top:2px">Breasts, discharge, periods and the rest</span></span>
+  </button>
+  <button class="lrow" data-growth="sex" data-id="m">
+    <span class="licon">${icon('leaf', 18)}</span>
+    <span class="grow"><span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">The boys' list</span>
+    <span class="tiny" style="display:block;margin-top:2px">Voice, growth, and the rest</span></span>
+  </button>`;
+}
+
+/* One row. Tick it, then say roughly when, because the when is what
+   makes the whole list able to tell you anything. */
+function pubRow(kid, item) {
+  const marks = pubMarks(kid);
+  const on = marks[item.id];
+  const editing = store.pubEdit === item.id;
+  const open = store.pubOpen === item.id;
+
+  return `
+  <div class="card flat vaxcard" style="padding:0;overflow:hidden${item.big && !on ? ';border-left:3px solid var(--leaf)' : ''}">
+    <div class="vaxdose${on ? ' on' : ''}" style="padding:12px 13px">
+      <button class="vaxtick" data-pub="tick" data-id="${esc(item.id)}"
+        aria-pressed="${on ? 'true' : 'false'}"
+        aria-label="${esc(on ? 'Unmark ' + item.label : 'Mark ' + item.label + ' as happened')}">
+        ${on ? icon('check', 12, '#fff') : ''}
+      </button>
+      <span class="grow">
+        <span class="vaxdname">${esc(item.label)}</span>
+        <span class="tiny" style="display:block;margin-top:1px">
+          ${on ? esc(pubMonthLabel(on)) : esc(item.typical)}
+        </span>
+      </span>
+      ${on ? `<button class="tiny vaxdate" data-pub="when" data-id="${esc(item.id)}">When</button>` : ''}
+      <button class="tiny vaxdate" data-pub="open" data-id="${esc(item.id)}"
+        aria-label="More about ${esc(item.label)}">${open ? 'Less' : 'What'}</button>
+    </div>
+
+    ${editing ? `
+    <div class="vaxedit">
+      <input class="inp" id="pubmonthin" type="month" value="${esc(on || pubThisMonth())}"
+        max="${esc(pubThisMonth())}">
+      <button class="btn" data-pub="savewhen" data-id="${esc(item.id)}">Save</button>
+    </div>` : ''}
+
+    ${open ? `
+    <div class="vaxbody">
+      <p class="bodytext" style="margin:0">${esc(item.what)}</p>
+      ${item.gapText ? `<p class="tiny" style="margin:8px 0 0">${icon('chart', 10, 'var(--sage)')} ${esc(item.gapText)}.</p>` : ''}
+      ${item.private ? `<p class="tiny" style="margin:8px 0 0">You may never know about this one and
+        there is no need to ask. It is here for the order, not for ticking.</p>` : ''}
+    </div>` : ''}
+  </div>`;
+}
+
+/* The bit that makes filling it in worth doing. */
+function pubHintBlock(kid) {
+  const h = pubPeriodHint(kid.sex, pubMarks(kid), ciToday());
+  if (!h) return '';
+  const first = (kid.name || 'She').split(/\s+/)[0];
+  return `
+  <div class="bpbox surrender">
+    <p class="bpbox-t">What usually comes next</p>
+    <p class="bodytext" style="margin-top:8px">
+      You recorded ${esc(h.from)} in ${esc(pubMonthLabel(h.started))},
+      which is ${esc(h.since === 0 ? 'this month' : h.since + ' month' + (h.since === 1 ? '' : 's') + ' ago')}.
+      ${esc(h.gapText)}.
+    </p>
+    ${h.overdue ? `
+      <p class="bpwarn">${esc(PUB_HINT_OVERDUE)}</p>` : `
+      <p class="bodytext" style="margin-top:9px">On that gap, a first period for ${esc(first)} would
+        land somewhere around ${esc(pubMonthLabel(h.around))}. It is an average and bodies are not
+        averages, so treat it as a heads up rather than a date.</p>
+      <p class="bpclose">Worth putting something in her bag before then. A girl who starts at school
+        with nothing remembers that day for forty years.</p>`}
+  </div>`;
+}
+
+function pubMedBlock(kid) {
+  const meds = childMeds(kid);
+  const adding = !!store.medAdd;
+  const girl = kid.sex === 'f';
+
+  return `
+  <div class="dsec">
+    <h4>${esc(girl ? MED_TITLE : MED_TITLE_ANY)}</h4>
+    <p class="tiny" style="margin:0 0 10px">${esc(MED_INTRO)}</p>
+
+    ${meds.length ? meds.map((m, i) => `
+      <div class="quote">
+        <p class="sit">${icon('pill', 12, 'var(--sage)')} ${esc(m.name || 'Something')}</p>
+        <p class="why" style="margin-top:4px">
+          ${esc((MED_KINDS.filter((k) => k.id === m.kind)[0] || {}).label || 'Ongoing')}${m.since ? esc(', since ' + pubMonthLabel(m.since)) : ''}
+        </p>
+        <button class="chip" style="margin-top:8px" data-pub="delmed" data-id="${esc(String(i))}">Remove</button>
+      </div>`).join('') : `
+      <div class="card flat"><p class="bodytext">${esc(MED_EMPTY)}</p></div>`}
+
+    ${adding ? `
+    <div class="card" style="margin-top:10px">
+      <p class="eyebrow">What kind</p>
+      <div class="chips" style="margin:8px 0 10px">
+        ${MED_KINDS.map((k) => `
+          <button class="chip" data-pub="medkind" data-id="${esc(k.id)}"
+            aria-pressed="${store.medKind === k.id}">${esc(k.label)}</button>`).join('')}
+      </div>
+      ${store.medKind ? `
+        <p class="tiny" style="margin:0 0 9px">${esc((MED_KINDS.filter((k) => k.id === store.medKind)[0] || {}).note || '')}</p>` : ''}
+      <input class="inp" id="mednamein" type="text" placeholder="What is it called"
+        value="${esc(store.medName || '')}" style="width:100%" autocomplete="off">
+      <p class="eyebrow" style="margin-top:10px">Since</p>
+      <input class="inp" id="medsincein" type="month" value="${esc(store.medSince || pubThisMonth())}"
+        max="${esc(pubThisMonth())}" style="width:100%;margin-top:6px">
+      <button class="btn" style="width:100%;margin-top:11px" data-pub="savemed">Save it</button>
+      <button class="chip" style="margin-top:9px" data-pub="cancelmed">Cancel</button>
+    </div>` : `
+    <button class="btn ghost" style="width:100%;margin-top:10px" data-pub="addmed">
+      ${icon('pill', 14, 'var(--deep)')} Add something
+    </button>`}
+
+    ${girl ? `
+      <div class="callout" style="margin-top:12px"><p style="margin:0">${esc(MED_BC_NOTE)}</p></div>
+      ${meds.filter((m) => m.kind === 'bc').length ? `
+      <div class="callout" style="margin-top:9px"><p style="margin:0">${esc(MED_ON_CHART)}</p></div>` : ''}` : ''}
+  </div>`;
+}
+
+/* Every button on the tracker, in one place, so the consent and the
+   delete cannot drift apart from the thing they gate. */
+function pubAction(how, id) {
+  const kid = activeChild();
+  if (!kid) return;
+
+  if (how === 'on') { kid.pubOn = true; kid.updatedAt = Date.now(); flushStore(); return; }
+
+  if (how === 'tick') {
+    const marks = pubMarks(kid);
+    if (marks[id]) {
+      pubSet(kid, id, '');
+      /* Unticking the first period does not quietly bin the dates she
+         logged. Those are a record of something that happened. */
+      if (id === 'period') store.pubEdit = '';
+    } else {
+      pubSet(kid, id, pubThisMonth());
+      store.pubEdit = id;
+    }
+    return;
+  }
+  if (how === 'when') { store.pubEdit = store.pubEdit === id ? '' : id; return; }
+  if (how === 'open') { store.pubOpen = store.pubOpen === id ? '' : id; return; }
+  if (how === 'savewhen') {
+    const el = document.getElementById('pubmonthin');
+    const v = el && el.value ? el.value : '';
+    if (v && v <= pubThisMonth()) pubSet(kid, id, v);
+    store.pubEdit = '';
+    return;
+  }
+
+  if (how === 'askwipe') { store.pubDelete = true; return; }
+  if (how === 'nowipe') { store.pubDelete = false; return; }
+  if (how === 'wipe') {
+    pubWipe(kid);
+    state.view = { type: 'screen', id: 'growingup' };
+    state.growTab = 'now';
+    return;
+  }
+
+  if (how === 'addmed') { store.medAdd = true; store.medKind = ''; store.medName = ''; store.medSince = ''; return; }
+  if (how === 'cancelmed') { store.medAdd = false; return; }
+  if (how === 'medkind') { store.medKind = id; return; }
+  if (how === 'savemed') {
+    const nameEl = document.getElementById('mednamein');
+    const sinceEl = document.getElementById('medsincein');
+    const name = nameEl && nameEl.value ? nameEl.value.trim() : '';
+    if (!name) { store.medName = ''; return; }
+    const meds = childMeds(kid).slice();
+    meds.push({
+      name: name.slice(0, 60),
+      kind: store.medKind || 'other',
+      since: (sinceEl && sinceEl.value) ? sinceEl.value : '',
+    });
+    kid.meds = meds;
+    kid.updatedAt = Date.now();
+    store.medAdd = false; store.medKind = ''; store.medName = ''; store.medSince = '';
+    flushStore();
+    return;
+  }
+  if (how === 'delmed') {
+    const meds = childMeds(kid).slice();
+    const at = Number(id);
+    if (isFinite(at) && at >= 0 && at < meds.length) meds.splice(at, 1);
+    kid.meds = meds;
+    kid.updatedAt = Date.now();
+    flushStore();
+    return;
+  }
+
+  if (how === 'caledit') { store.childCycleEdit = true; return; }
+  if (how === 'caldone') { store.childCycleEdit = false; return; }
+  if (how === 'caltoday') { childPeriodToggle(kid, ciToday()); return; }
+  if (how === 'calhist') { store.childCycleHist = !store.childCycleHist; return; }
+  if (how === 'delperiod') {
+    const l = childPeriods(kid).filter((d) => d !== id);
+    childPeriodsSet(kid, l);
+  }
+}
+
+function pubTrackBlock(c) {
+  const kid = activeChild();
+  if (!kid) return `<div class="card flat"><p class="bodytext">Open a child first.</p></div>`;
+  const first = (kid.name || 'They').split(/\s+/)[0];
+
+  if (!pubShows(c.months)) {
+    return `
+    <div class="card leafy">
+      <p class="bodytext">${esc(first)} is too young for this to be any use yet. It appears here from
+      around seven, which is early enough to catch the first signs and late enough not to be strange.</p>
+      <p class="tiny" style="margin-top:8px">Everything else on this screen is worth reading now.</p>
+    </div>`;
+  }
+
+  if (!pubOn(kid)) return pubStartBlock(kid, first);
+  if (!kid.sex) return pubAskSex(kid, first);
+
+  const marks = pubMarks(kid);
+  const counts = pubCount(kid.sex, marks);
+  const items = pubList(kid.sex);
+  const started = !!marks.period;
+
+  return `
+  <div class="card leafy">
+    <p class="bodytext" style="margin:0">${esc(PUB_INTRO)}</p>
+    <p class="tiny" style="margin-top:8px">${esc(counts.done + ' of ' + counts.total + ' recorded for ' + first + '.')}</p>
+  </div>
+
+  ${pubHintBlock(kid)}
+
+  <div class="dsec">
+    <h4>What has happened so far</h4>
+    ${items.map((it) => pubRow(kid, it)).join('')}
+  </div>
+
+  ${kid.sex === 'f' ? `
+  <div class="dsec">
+    <h4>${esc(CYC_TITLE)}</h4>
+    ${started ? `
+      <p class="bodytext" style="margin:0 0 10px">${esc(childPeriods(kid).length
+        ? childPeriods(kid).length + ' logged. The calendar, her average and what is worth asking a '
+          + 'doctor about are all on her cycle page.'
+        : 'Her first period is recorded. Log each one as it comes and the app works out her own average.')}</p>
+      <button class="btn" style="width:100%" data-go="screen" data-id="childcycle">
+        ${icon('calendar', 14, '#fff')} Open ${esc(first)}'s cycle
+      </button>
+    ` : `
+      <p class="bodytext" style="margin:0">Once you tick the first period above, a calendar appears
+        here, the same one you use for yourself.</p>`}
+  </div>` : ''}
+
+  ${pubMedBlock(kid)}
+
+  <div class="dsec">
+    <h4>${esc(PUB_HANDOVER.title)}</h4>
+    <p class="bodytext">${esc(PUB_HANDOVER.body)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(PUB_DELETE.title)}</h4>
+    <p class="bodytext" style="margin:0 0 10px">${esc(PUB_DELETE.body)}</p>
+    ${store.pubDelete ? `
+      <button class="btn" style="width:100%;background:#A8352A" data-pub="wipe">${esc(PUB_DELETE.confirm)}</button>
+      <button class="chip" style="margin-top:9px" data-pub="nowipe">${esc(PUB_DELETE.cancel)}</button>
+    ` : `
+      <button class="btn ghost" style="width:100%" data-pub="askwipe">${esc(PUB_DELETE.btn)}</button>`}
+  </div>
+
+  ${dsec('Where this comes from', sourceRows(PUB_SOURCES))}`;
+}
+
+/* ------------------------------------------------------------------
+   HER CYCLE, ON ITS OWN SCREEN
+
+   The same calendar component as the parent's, told to draw a
+   different set of dates and told to leave the fertile window out,
+   which is a decision rather than an omission. See cycleCalendar.
+   ------------------------------------------------------------------ */
+function screenChildCycle(c) {
+  const kid = activeChild();
+  if (!kid || kid.sex !== 'f' || !pubOn(kid)) {
+    state.view = { type: 'screen', id: 'growingup' };
+    return screenGrowingUp(c);
+  }
+  const first = (kid.name || 'She').split(/\s+/)[0];
+  const listed = childPeriods(kid);
+  const stats = cycleStats(listed);
+  const len = predictLength(listed, kid.cycleLength);
+  const info = listed.length ? cycleInfo(listed[0], null, len) : null;
+  const editing = !!store.childCycleEdit;
+  const rows = periodHistoryRows(listed);
+  const onBc = childMeds(kid).filter((m) => m.kind === 'bc').length > 0;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="growingup">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(first + "'s cycle")}</h1>
+    <p class="sub">${esc(CYC_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      ${CYC_INTRO.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      <p class="tiny" style="margin:0">${esc(CYC_NO_FERTILE)}</p>
+    </div>
+
+    ${onBc ? `
+    <div class="callout" style="margin-top:11px"><p style="margin:0">${esc(MED_ON_CHART)}</p></div>` : ''}
+
+    <div class="card" style="margin-top:11px">
+      ${info ? `
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="cycday">
+          <span class="cycday-n">${info.dayOfCycle}</span>
+          <span class="cycday-l">day</span>
+        </span>
+        <span class="grow">
+          <span class="eyebrow" style="display:block">${esc(first + "'s cycle")}</span>
+          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink);margin-top:2px">
+            ${esc(listed.length === 1 ? 'One period logged so far' : listed.length + ' periods logged')}
+          </span>
+          <span class="tiny" style="display:block;margin-top:3px">
+            ${stats.cycles
+              ? esc(cycleLengthLine(stats))
+              : 'Log the next one and this becomes her own average rather than a textbook number.'}
+          </span>
+        </span>
+      </div>
+
+      ${cycleCalendar(info, store.calMonth || 0, editing, listed, 'data-childperiod')}
+      ` : `
+      <p class="eyebrow">${icon('calendar', 11, 'var(--sage)')} ${esc(first + "'s cycle")}</p>
+      <p class="bodytext" style="margin-top:6px">Tap the day her last period started and this fills
+        itself in.</p>
+      ${editing ? cycleCalendar({ lastPeriod: ciToday(), cycleLength: CYCLE_AVERAGE_LENGTH },
+        store.calMonth || 0, true, listed, 'data-childperiod') : ''}`}
+
+      <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+        <button class="chip${editing ? ' on' : ''}" data-pub="${editing ? 'caldone' : 'caledit'}"
+          ${editing ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}>
+          ${icon(editing ? 'check' : 'calendar', 12, 'var(--deep)')} ${editing ? 'Done logging' : 'Log a period'}
+        </button>
+        <button class="chip" data-pub="caltoday">Started today</button>
+        ${rows.length ? `<button class="chip" data-pub="calhist">
+          ${store.childCycleHist ? 'Hide' : 'All ' + rows.length + ' logged'}</button>` : ''}
+      </div>
+
+      ${stats.note ? `
+      <p class="tiny" style="margin-top:9px">${icon('chart', 10, 'var(--sage)')} ${esc(stats.note)}</p>` : ''}
+
+      ${store.childCycleHist && rows.length ? `
+      <div class="cychist">
+        ${rows.map((r) => `
+          <div class="cychrow">
+            <span class="grow">
+              <span class="cychdate">${esc(cycleDateLabelWithYear(r.date))}</span>
+              <span class="tiny">${r.gap
+                ? esc(r.gap + ' days after the one before')
+                : 'The earliest one logged'}</span>
+            </span>
+            <button class="tiny vaxdate" data-pub="delperiod" data-id="${esc(r.date)}">Remove</button>
+          </div>`).join('')}
+      </div>` : ''}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(CYC_NORMAL.title)}</h4>
+      ${list(CYC_NORMAL.items)}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(CYC_RED.title)}</h4>
+      ${list(CYC_RED.items, true)}
+      <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(CYC_RED.note)}</p></div>
+    </div>
+
+    ${pubMedBlock(kid)}
+
+    ${dsec('Where this comes from', sourceRows(PUB_SOURCES))}
+    <p class="disclaimer">Estimates from dates, not a test. Anything on the list above is worth an
+      appointment rather than a search.</p>
+  </div>`;
+}
+
+/* ==================================================================
+   CONSENT, AND IF SOMETHING HAPPENS
+
+   The reasoning, the numbers and the rule about what is stated as
+   proven all live in src/data/consent.js.
+
+   TWO THINGS ABOUT THE ORDER HERE.
+
+   The first tab is for a parent whose child has just told them. Not
+   the explainer, not the age guide. Somebody arriving here at eleven
+   at night is not reading, and the two clocks that genuinely close
+   are measured in hours.
+
+   And the promise gets repeated at the bottom of every tab. It is
+   the one thing on this screen that works before anything has
+   happened, and a parent who only ever opens the first tab should
+   still leave with it.
+   ================================================================== */
+
+function conLine(l) {
+  const digits = String(l.contact || '').replace(/[^\d]/g, '');
+  const dial = (digits.length >= 10 || digits.length === 3) ? 'tel:' + digits : '';
+  return `
+  <div class="bpline">
+    <p class="bpline-n">${esc(l.name)}</p>
+    ${dial
+      ? `<a class="bpline-c" href="${esc(dial)}">${esc(l.contact)}</a>`
+      : `<span class="bpline-c">${esc(l.contact)}</span>`}
+    <p class="tiny" style="margin:2px 0 0">${esc(l.detail)}</p>
+    <a class="tiny" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"
+      style="text-decoration:underline">Their website</a>
+  </div>`;
+}
+
+function conPromiseBlock() {
+  return `
+  <div class="bpbox surrender">
+    <p class="bpbox-t">${esc(CON_PROMISE.title)}</p>
+    <p class="bodytext" style="margin-top:8px">${esc(CON_PROMISE.body)}</p>
+    <p class="liftline" style="font-size:16px;margin-top:11px">${esc(CON_PROMISE.words)}</p>
+    <p class="bpclose">${esc(CON_PROMISE.why)}</p>
+  </div>`;
+}
+
+function conToldTab() {
+  return `
+  <div class="card bp">
+    <p class="eyebrow">${icon('heart', 11, '#A85A44')} ${esc(TOLD_HEAD)}</p>
+
+    <div class="bpbox">
+      <p class="bpbox-t">${esc(TOLD_FIRST.title)}</p>
+      <p class="tiny" style="margin:8px 0 0">${esc(TOLD_FIRST.intro)}</p>
+      ${TOLD_FIRST.lines.map((x) => `
+        <p class="liftline" style="font-size:17px;margin-top:10px">${esc(x)}</p>`).join('')}
+      <p class="bpclose">${esc(TOLD_FIRST.then)}</p>
+    </div>
+  </div>
+
+  <div class="bpbox" style="margin-top:12px">
+    <p class="bpbox-t">${esc(TOLD_CLOCKS.title)}</p>
+    <p class="tiny" style="margin:8px 0 0">${esc(TOLD_CLOCKS.intro)}</p>
+    ${TOLD_CLOCKS.items.map((x) => `
+      <div class="bpwho">
+        <span class="bpwho-w">${esc(x.what)} &middot; ${esc(x.when)}</span>
+        <span class="bpwho-s">${esc(x.detail)}</span>
+      </div>`).join('')}
+    <p class="bpwarn">${esc(TOLD_CLOCKS.note)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>Somebody to call, any hour</h4>
+    ${TOLD_LINES.map(conLine).join('')}
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(TOLD_DONT.title)}</h4>
+    <p class="tiny" style="margin:0 0 9px">${esc(TOLD_DONT.intro)}</p>
+    ${list(TOLD_DONT.items, true)}
+    <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(TOLD_DONT.instead)}</p></div>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(TOLD_EC.title)}</h4>
+    <p class="tiny" style="margin:0 0 10px">${esc(TOLD_EC.intro)}</p>
+    ${TOLD_EC.options.map((o) => `
+      <div class="card flat" style="margin-bottom:9px">
+        <p style="margin:0;font-size:14px;font-weight:600;color:var(--ink)">${esc(o.name)}</p>
+        <p class="tiny" style="margin:3px 0 0;color:var(--deep);font-weight:600">${esc(o.window)}</p>
+        <p class="bodytext" style="margin:7px 0 0">${esc(o.how)}</p>
+        <p class="tiny" style="margin:6px 0 0">${esc(o.note)}</p>
+      </div>`).join('')}
+    <div class="callout" style="margin-top:6px"><p style="margin:0">${esc(TOLD_EC.weight)}</p></div>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(TOLD_EXAM.title)}</h4>
+    ${TOLD_EXAM.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+    <div class="callout" style="border-left:3px solid var(--attention, #B5793F)">
+      <p style="margin:0"><strong style="color:var(--deep)">The bit everybody gets wrong:</strong>
+        ${esc(TOLD_EXAM.window)}</p>
+    </div>
+    <p class="bodytext" style="margin:10px 0 0">${esc(TOLD_EXAM.preserve)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(TOLD_REPORT.title)}</h4>
+    ${TOLD_REPORT.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+    <div class="callout"><p style="margin:0">${esc(TOLD_REPORT.ask)}</p></div>
+    <p class="bodytext" style="margin:10px 0 0">${esc(TOLD_REPORT.adults)}</p>
+    <p class="bodytext" style="margin:9px 0 0">${esc(TOLD_REPORT.perp)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(TOLD_LATER.title)}</h4>
+    ${list(TOLD_LATER.items)}
+    <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(TOLD_LATER.note)}</p></div>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(TOLD_AFTER.title)}</h4>
+    ${list(TOLD_AFTER.items)}
+  </div>`;
+}
+
+function conWhatTab() {
+  return `
+  <div class="card leafy">
+    <p class="eyebrow">${icon('info', 11, 'var(--sage)')} ${esc(WHAT_HEAD)}</p>
+    ${WHAT_INTRO.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+  </div>
+
+  <div class="bpbox">
+    <p class="bpbox-t">${esc(WHAT_FREEZE.title)}</p>
+    ${WHAT_FREEZE.body.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+    <p class="bpwarn">${esc(WHAT_FREEZE.say)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(WHAT_CAPACITY.title)}</h4>
+    ${list(WHAT_CAPACITY.items)}
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(WHAT_COERCION.title)}</h4>
+    <p class="tiny" style="margin:0 0 9px">${esc(WHAT_COERCION.intro)}</p>
+    ${list(WHAT_COERCION.items)}
+    <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(WHAT_COERCION.note)}</p></div>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(WHAT_CARRY.title)}</h4>
+    ${list(WHAT_CARRY.items)}
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(WHAT_WHO.title)}</h4>
+    ${WHAT_WHO.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(WHAT_LAW.title)}</h4>
+    ${WHAT_LAW.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+  </div>`;
+}
+
+function conAgeTab(months) {
+  const natural = conStageFor(months);
+  const picked = store.conStage
+    ? CON_BY_AGE.filter((s) => s.id === store.conStage)[0]
+    : null;
+  const st = picked || natural || CON_BY_AGE[0];
+  const off = natural && st.id !== natural.id;
+
+  return `
+  <div class="chips" style="margin-bottom:12px">
+    ${CON_BY_AGE.map((s) => `
+      <button class="chip" data-constage="${esc(s.id)}"
+        aria-pressed="${s.id === st.id}">${esc(s.label)}</button>`).join('')}
+  </div>
+
+  ${off ? `
+  <p class="tiny" style="margin:0 0 10px">Looking at ${esc(st.label.toLowerCase())}.
+    ${natural ? 'Yours is in ' + esc(natural.label.toLowerCase()) + '.' : ''}</p>` : ''}
+
+  <div class="card leafy">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(st.label)}</p>
+    <p class="bodytext" style="margin-top:6px;font-size:15px;line-height:1.55">${esc(st.head)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>What to do at this age</h4>
+    ${st.items.map((x) => `
+      <div class="quote"><p class="why" style="margin:0">${esc(x)}</p></div>`).join('')}
+  </div>`;
+}
+
+function conRaisingTab() {
+  return `
+  <div class="card leafy">
+    <p class="eyebrow">${icon('info', 11, 'var(--sage)')} ${esc(RAISE_HEAD)}</p>
+    ${RAISE_INTRO.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(RAISE_SAY.title)}</h4>
+    ${RAISE_SAY.items.map((x) => `
+      <div class="quote"><p class="why" style="margin:0">${esc(x)}</p></div>`).join('')}
+    <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(RAISE_SAY.not)}</p></div>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(RAISE_FRIENDS.title)}</h4>
+    ${RAISE_FRIENDS.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+    <div class="callout"><p style="margin:0">${esc(RAISE_FRIENDS.home)}</p></div>
+    <p class="tiny" style="margin:10px 0 0">${esc(RAISE_FRIENDS.honest)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>Sons too</h4>
+    <p class="bodytext">${esc(RAISE_BOTH)}</p>
+  </div>`;
+}
+
+function conRowSub(months) {
+  if (months == null) return 'What consent requires, and how to be the person they tell';
+  if (months < 60) return 'Nobody has to hug anybody, and stop means stop the first time';
+  if (months < 108) return 'The rules about touch, and the promise that makes them tell you';
+  if (months < 144) return 'Both directions, and that it is usually somebody they know';
+  if (months < 192) return 'The real definitions, freezing, and what to do for a friend';
+  return 'The practical half, and what to do in the first day if they tell you';
+}
+
+function screenConsent(c) {
+  const tab = state.conTab || 'told';
+  const months = c.months;
+
+  return `
+  ${cornerLeaves()}
+  ${exitButton()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(CON_TITLE)}</h1>
+    <p class="sub">${esc(CON_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('conTab', tab, CON_TABS)}
+
+    ${tab === 'told' ? conToldTab() : ''}
+    ${tab === 'what' ? conWhatTab() : ''}
+    ${tab === 'age' ? conAgeTab(months) : ''}
+    ${tab === 'raising' ? conRaisingTab() : ''}
+
+    ${conPromiseBlock()}
+
+    ${dsec('Where this comes from', sourceRows(CON_SOURCES))}
+    <p class="disclaimer">${esc(CON_DISCLAIMER)}</p>
   </div>`;
 }
 
@@ -40849,7 +42634,7 @@ function cycleInfoNow(ref) {
   return cycleInfo(store.parent.lastPeriod, ref, cycleLen());
 }
 
-function cycleCalendar(info, monthOffset, editing) {
+function cycleCalendar(info, monthOffset, editing, loggedList, periodAttr) {
   if (!info) return '';
   const today = ciToday();
   const parts = today.split('-');
@@ -40867,19 +42652,22 @@ function cycleCalendar(info, monthOffset, editing) {
      us, so the month either side reads correctly too. */
   const start = info.lastPeriod;
   const len = info.cycleLength;
-  const logged = periods();
+  const logged = loggedList || periods();
+  const pAttr = periodAttr || 'data-period';
   const marks = {};
   /* The estimate first, projected forward and back so the months either
      side read correctly. */
   for (let c = -2; c <= 3; c++) {
     const s0 = ciDayBefore(start, -c * len);
     for (let i = 0; i < CYCLE_BLEED_DAYS; i++) marks[ciDayBefore(s0, -i)] = 'bleed';
-    const ov = ciDayBefore(s0, -(len - CYCLE_LUTEAL_DAYS));
-    for (let i = 0; i <= 5; i++) {
-      const d = ciDayBefore(ov, i);
-      if (!marks[d]) marks[d] = 'fertile';
+    if (!periodAttr) {
+      const ov = ciDayBefore(s0, -(len - CYCLE_LUTEAL_DAYS));
+      for (let i = 0; i <= 5; i++) {
+        const d = ciDayBefore(ov, i);
+        if (!marks[d]) marks[d] = 'fertile';
+      }
+      marks[ov] = 'ovul';
     }
-    marks[ov] = 'ovul';
   }
   /* Then anything she actually logged, painted over the top, because a
      day she recorded beats a day the app guessed. */
@@ -40898,7 +42686,7 @@ function cycleCalendar(info, monthOffset, editing) {
     const isStart = !!starts[k];
     const cls = `cal-d ${mark}${isToday ? ' today' : ''}${isStart ? ' logged' : ''}`;
     if (editing) {
-      cells.push(`<button class="${cls}" data-period="${esc(k)}"
+      cells.push(`<button class="${cls}" ${pAttr}="${esc(k)}"
         aria-label="${esc(cycleDateLabelWithYear(k))}${isStart ? ', logged, tap to remove' : ', tap to log a period start'}"
         aria-pressed="${isStart ? 'true' : 'false'}">${d}</button>`);
     } else {
@@ -40919,9 +42707,10 @@ function cycleCalendar(info, monthOffset, editing) {
     </div>
     <div class="callegend">
       <span><i class="k-bleed"></i> Period</span>
+      ${periodAttr ? '' : `
       <span><i class="k-fertile"></i> Fertile window</span>
-      <span><i class="k-ovul"></i> Ovulation</span>
-      <span><i class="k-logged"></i> You logged it</span>
+      <span><i class="k-ovul"></i> Ovulation</span>`}
+      <span><i class="k-logged"></i> ${periodAttr ? 'Logged' : 'You logged it'}</span>
     </div>
     ${editing ? `<p class="tiny" style="margin-top:7px;text-align:center">
       Tap the day a period started. Tap it again to take it off.</p>` : ''}
@@ -43524,6 +45313,8 @@ function screenChild(c) {
       ${childRow('heart', 'CPR, choking and staying safe',
         esc('For ' + getCprForAge(months).label.toLowerCase()) + ', plus what to do when you are at the end of it',
         'data-go="screen" data-id="safety"')}
+      ${months != null && months >= 18 ? childRow('heart', CON_TITLE, conRowSub(months),
+        'data-go="screen" data-id="consent"') : ''}
       ${months != null && months >= 12 ? childRow('note', ONLINE_TITLE, onlineRowSub(months),
         'data-go="screen" data-id="online"') : ''}
       ${childRow('shield', SUP_TITLE,
