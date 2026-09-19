@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-18 18:04">
+<meta name="rsg-build" content="2026-09-18 20:17">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -1364,7 +1364,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-18 18:04';
+const BUILD_STAMP = '2026-09-18 20:17';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -8016,9 +8016,739 @@ const ACTIVITY_SETTINGS = [
 ];
 
 const ACTIVITIES = [
-  /* ---------------- Newborn and infant ---------------- */
+  /* ================================================================
+     THE NEWBORN SHELF WAS NEARLY EMPTY.
+
+     Today's Plan shows three activities a day and it is the headline
+     card on every child's profile. With four activities in range, a
+     five week old's plan repeated every day and a bit, which made the
+     most opened card in the app look broken to the parent who has the
+     most time to stare at it.
+
+     Everything below is new, weighted hardest at the ages where the
+     shelf was barest. The bar for each one: it uses something already
+     in the house or nothing at all, it can be done one handed where
+     the age makes that likely, and it is a real thing rather than a
+     parenting article's idea of a real thing.
+     ================================================================ */
+
+  {
+    id: 'slow-face',
+    title: 'The Slow Face',
+    minMonths: 0, maxMonths: 4, minutes: 4,
+    setting: 'anywhere',
+    skills: ['socialEmotional', 'cognitive'],
+    strategyTags: ['connection-first', 'wait-time'],
+    materials: [],
+    description: 'Your face, about a foot away, moving far more slowly than feels natural.',
+    howTo: [
+      'Hold them facing you, around eight to twelve inches away. That is as far as they can focus.',
+      'Open your mouth wide, or stick your tongue out, and hold it.',
+      'Wait. Count to twenty in your head. It will feel far too long.',
+      'Watch their mouth. Many babies will try to copy, and it takes them a while to organise it.',
+      'Do it again. Stop when they look away, which is them saying enough.',
+    ],
+    makeItEasier: ['Try it right after a feed, when they are awake and calm rather than hungry.'],
+    makeItHarder: ['Add a sound to the shape, and let them work out both.'],
+    whyItHelps: 'Newborns can imitate facial movements far earlier than most people expect. The waiting is the whole activity.',
+  },
+  {
+    id: 'high-contrast-tour',
+    title: 'The Black and White Tour',
+    minMonths: 0, maxMonths: 4, minutes: 5,
+    setting: 'indoor',
+    skills: ['sensory', 'cognitive'],
+    strategyTags: ['narrate'],
+    materials: ['Anything stripy or checked you already own'],
+    description: 'A walk round the house looking at whatever has the strongest edges.',
+    howTo: [
+      'Carry them round and find high contrast things. A striped cushion, a book spine, a dark doorframe against a light wall, a ceiling fan.',
+      'Hold each one about a foot from their face and stay there.',
+      'Say what it is, even though they do not understand yet.',
+      'Move on when they stop looking.',
+    ],
+    makeItEasier: ['Do it in good daylight. Contrast is what they can see, and light is what makes contrast.'],
+    makeItHarder: ['From about two months add colour, and see which they hold on longest.'],
+    whyItHelps: 'Newborn vision is built for edges and contrast long before it is built for detail or soft colour.',
+  },
+  {
+    id: 'narrated-change',
+    title: 'The Narrated Change',
+    minMonths: 0, maxMonths: 12, minutes: 4,
+    setting: 'indoor',
+    skills: ['language', 'socialEmotional'],
+    strategyTags: ['narrate', 'model-language', 'connection-first'],
+    materials: [],
+    description: 'Turning a diaper change into the most reliable language lesson of the day.',
+    howTo: [
+      'Say what you are about to do before you do it. I am going to lift your legs now.',
+      'Name the parts as you go. Arm, foot, tummy, knee.',
+      'Pause after a sentence and look at them, as though waiting for an answer.',
+      'When they make a sound, answer it as if it was a sentence.',
+    ],
+    makeItEasier: ['Pick one thing to name rather than all of it. Feet is a fine whole lesson.'],
+    makeItHarder: ['Ask questions and leave the gap. Where are your toes. Wait. There they are.'],
+    whyItHelps: 'You do this eight times a day anyway. Adding words to it is the cheapest language input there is, and the pause teaches turn taking.',
+  },
+  {
+    id: 'side-lying',
+    title: 'Side Lying Play',
+    minMonths: 0, maxMonths: 5, minutes: 6,
+    setting: 'indoor',
+    skills: ['grossMotor', 'sensory'],
+    strategyTags: ['break-into-steps'],
+    materials: ['A rolled towel'],
+    description: 'The position between back and tummy, which most babies tolerate far better than either.',
+    howTo: [
+      'Lay them on their side on the floor, with a rolled towel along their back to stop them rolling over.',
+      'Bring both hands together in front of their chest.',
+      'Sit in front of them and talk, or put something to look at where they are facing.',
+      'Swap sides, and try to do each side about the same amount.',
+    ],
+    makeItEasier: ['Start with two minutes. Side lying is easier work than tummy time and still counts.'],
+    makeItHarder: ['Put something just out of reach so they have to turn toward it.'],
+    whyItHelps: 'Brings the hands to the middle, which is where reaching starts, and takes pressure off the back of the head.',
+  },
+  {
+    id: 'the-pause-game',
+    title: 'The Pause',
+    minMonths: 1, maxMonths: 8, minutes: 5,
+    setting: 'anywhere',
+    skills: ['language', 'socialEmotional'],
+    strategyTags: ['wait-time', 'connection-first', 'model-language'],
+    materials: [],
+    description: 'A conversation, with them doing half of it.',
+    howTo: [
+      'Say one short thing to them. Hello. You are awake.',
+      'Stop. Look at them. Count five in your head.',
+      'Whatever they do, a sound, a mouth movement, a kick, treat it as their turn.',
+      'Answer what they did. Is that right. Tell me more.',
+      'Keep going as long as they are interested, which may be four turns.',
+    ],
+    makeItEasier: ['Exaggerate your face while you wait, so the gap does not feel empty to them.'],
+    makeItHarder: ['Leave longer gaps, and let them start it rather than you.'],
+    whyItHelps: 'Turn taking is the shape of conversation, and babies learn it months before they have any words to put in it.',
+  },
+  {
+    id: 'bicycle-legs',
+    title: 'Bicycle Legs',
+    minMonths: 1, maxMonths: 8, minutes: 4,
+    setting: 'indoor',
+    skills: ['grossMotor', 'sensory'],
+    strategyTags: ['movement-break', 'connection-first'],
+    materials: [],
+    description: 'Cycling their legs, which is a game and also the thing that shifts trapped wind.',
+    howTo: [
+      'Lay them on their back and hold their ankles gently.',
+      'Cycle the legs slowly, one then the other.',
+      'Then bring both knees up to the tummy and hold for a count of three.',
+      'Sing while you do it, the same song each time.',
+      'Stop if they stiffen or turn away.',
+    ],
+    makeItEasier: ['Do one leg at a time, very slowly.'],
+    makeItHarder: ['Pause with the knees up and let them push back against you.'],
+    whyItHelps: 'Moves wind, stretches hips, and the same song every time turns it into something they recognise.',
+  },
+  {
+    id: 'window-weather',
+    title: 'Watching the Weather',
+    minMonths: 1, maxMonths: 24, minutes: 6,
+    setting: 'indoor',
+    skills: ['language', 'sensory', 'regulation'],
+    strategyTags: ['narrate', 'quiet-space'],
+    materials: [],
+    description: 'Standing at a window, describing whatever is out there. Works at almost any age and costs nothing.',
+    howTo: [
+      'Stand at a window with them facing out.',
+      'Say what you can see. The tree is moving. That car is red. It is raining on the glass.',
+      'Let them look at whatever they are looking at rather than steering them.',
+      'Stay until one of you is done.',
+    ],
+    makeItEasier: ['Pick the window with the most movement outside it.'],
+    makeItHarder: ['From about eighteen months, ask them what they can see and wait.'],
+    whyItHelps: 'A calm shared focus with a running commentary, which is most of what early language needs. It also rescues a lot of difficult afternoons.',
+  },
+  {
+    id: 'sock-hands',
+    title: 'Finding Their Hands',
+    minMonths: 2, maxMonths: 6, minutes: 5,
+    setting: 'indoor',
+    skills: ['fineMotor', 'cognitive', 'sensory'],
+    strategyTags: ['observe-and-note'],
+    materials: ['A clean sock, or a bit of ribbon'],
+    description: 'Making their own hands interesting enough to notice.',
+    howTo: [
+      'Put a brightly coloured sock loosely over one of their hands.',
+      'Lay them on their back and let them find it.',
+      'Say nothing at first. Let them do the work of noticing.',
+      'Swap to the other hand after a few minutes.',
+    ],
+    makeItEasier: ['Guide the hand into their line of sight once, then let go.'],
+    makeItHarder: ['Put something with a light rattle on the sock so moving it makes a sound.'],
+    whyItHelps: 'Discovering that those hands are theirs, and that moving them changes what they see, is the beginning of cause and effect.',
+  },
+  {
+    id: 'mirror-meeting',
+    title: 'Meeting the Baby in the Mirror',
+    minMonths: 2, maxMonths: 18, minutes: 6,
+    setting: 'indoor',
+    skills: ['socialEmotional', 'language'],
+    strategyTags: ['connection-first', 'narrate'],
+    materials: ['Any mirror'],
+    description: 'A face that does exactly what they do, which is endlessly interesting for about a year.',
+    howTo: [
+      'Hold them in front of a mirror, close enough to focus.',
+      'Point at them and name them. There is Tripp.',
+      'Point at you and name yourself.',
+      'Make faces and let them watch both of you at once.',
+      'Wave, and see what happens.',
+    ],
+    makeItEasier: ['Do it during tummy time with a mirror propped in front of them.'],
+    makeItHarder: ['Put a small sticker on their forehead and see if they reach for the mirror or for themselves. That comes at around eighteen months.'],
+    whyItHelps: 'They do not know it is them for a long time, and the not knowing is the interesting part.',
+  },
+  {
+    id: 'kitchen-tour',
+    title: 'The Kitchen Tour',
+    minMonths: 2, maxMonths: 14, minutes: 7,
+    setting: 'indoor',
+    skills: ['sensory', 'language'],
+    strategyTags: ['narrate', 'model-language'],
+    materials: [],
+    description: 'A walk round the kitchen touching and naming things, which is free and works while you wait for a kettle.',
+    howTo: [
+      'Carry them and stop at things. A wooden spoon, a cold tap, a tea towel, the fridge door.',
+      'Let them touch it. Say what it is and what it feels like. Cold. Smooth. Rough.',
+      'Go slowly. Three things properly beats twelve things quickly.',
+      'Skip anything hot, sharp or heavy, obviously.',
+    ],
+    makeItEasier: ['Do two things and stop.'],
+    makeItHarder: ['Ask them to find the cold one, from about a year.'],
+    whyItHelps: 'Texture and temperature words are learned by touching things, and your kitchen is full of them.',
+  },
+  {
+    id: 'towel-roll-tummy',
+    title: 'Tummy Time on a Roll',
+    minMonths: 2, maxMonths: 7, minutes: 6,
+    setting: 'indoor',
+    skills: ['grossMotor'],
+    strategyTags: ['break-into-steps', 'adaptive-tools'],
+    materials: ['A rolled bath towel'],
+    description: 'Tummy time propped up, for the baby who hates tummy time flat.',
+    howTo: [
+      'Roll a bath towel into a firm sausage.',
+      'Lay them tummy down with the roll under their chest and their arms over the front of it.',
+      'Get down at their eye level in front of them.',
+      'Start with two minutes and build up.',
+    ],
+    makeItEasier: ['Use a thicker roll. The higher the chest, the less work it is.'],
+    makeItHarder: ['Thinner roll, then no roll at all.'],
+    whyItHelps: 'Most tummy time refusal is that it is simply too hard. Propping the chest makes it possible, and possible is what builds the strength to do it flat.',
+  },
+  {
+    id: 'muslin-peekaboo',
+    title: 'Peekaboo, The Long Version',
+    minMonths: 4, maxMonths: 14, minutes: 6,
+    setting: 'anywhere',
+    skills: ['cognitive', 'socialEmotional'],
+    strategyTags: ['connection-first', 'wait-time', 'repetition'],
+    materials: ['A muslin or a tea towel'],
+    description: 'Peekaboo played slowly enough that they get to do the thinking.',
+    howTo: [
+      'Put the cloth over your face and stay there for a beat longer than feels right.',
+      'Let them pull it off if they can. Wait and see if they try.',
+      'Then put it over their face and wait.',
+      'Say the same words every single time. That is half of why it works.',
+    ],
+    makeItEasier: ['Leave a gap so they can still see one eye.'],
+    makeItHarder: ['Hide behind a door instead, or hide a toy under the cloth and let them find it.'],
+    whyItHelps: 'The idea that a thing still exists when you cannot see it is one of the biggest ideas of the first year, and this is how it gets practised.',
+  },
+  {
+    id: 'reach-across',
+    title: 'Reaching Across',
+    minMonths: 4, maxMonths: 9, minutes: 5,
+    setting: 'indoor',
+    skills: ['fineMotor', 'grossMotor', 'cognitive'],
+    strategyTags: ['observe-and-note', 'fine-motor-play'],
+    materials: ['Anything they like holding'],
+    description: 'Putting things slightly on the wrong side, so they have to cross the middle to get them.',
+    howTo: [
+      'Sit them supported, or lay them on their back.',
+      'Hold something they want just out to their left, at chest height.',
+      'Wait for them to reach. Let them use whichever hand they want.',
+      'Then move it to the right and do it again.',
+      'Give it to them every few tries rather than teasing.',
+    ],
+    makeItEasier: ['Hold it closer, straight in front, and move out slowly.'],
+    makeItHarder: ['Hold it a little higher, so they have to lift and turn.'],
+    whyItHelps: 'Crossing the midline connects the two sides of the body, and it is the groundwork for rolling, crawling and eventually handwriting.',
+  },
+  {
+    id: 'frozen-cloth',
+    title: 'The Frozen Flannel',
+    minMonths: 5, maxMonths: 20, minutes: 8,
+    setting: 'indoor',
+    skills: ['sensory', 'regulation'],
+    strategyTags: ['quiet-space', 'deep-pressure'],
+    materials: ['A clean flannel or washcloth'],
+    description: 'The cheapest teething thing there is, and it works better than most of what you can buy.',
+    howTo: [
+      'Wet a clean flannel, wring it out, and twist one corner into a point.',
+      'Put it in a sandwich bag in the freezer for about twenty minutes. Cold, not rock solid.',
+      'Give them the pointed corner to chew.',
+      'Stay with them while they have it.',
+      'Wash it after, and keep two or three in rotation.',
+    ],
+    makeItEasier: ['Fridge cold rather than freezer cold if they refuse it.'],
+    makeItHarder: ['Dip the corner in breastmilk or water and freeze it, for a baby already on solids.'],
+    whyItHelps: 'Cold and pressure are what actually help a sore gum, and the texture gives them something to work at.',
+  },
+  {
+    id: 'bath-body-parts',
+    title: 'Naming Them in the Bath',
+    minMonths: 6, maxMonths: 30, minutes: 8,
+    setting: 'indoor',
+    skills: ['language', 'socialEmotional'],
+    strategyTags: ['narrate', 'model-language', 'repetition'],
+    materials: [],
+    description: 'Using the bath you were already running as a body parts lesson.',
+    howTo: [
+      'Name each part as you wash it. Washing your arm. Now your tummy.',
+      'Use the same words in the same order every night.',
+      'After a few weeks, pause before the word and see if they look at the right place.',
+      'Include the private parts by their proper names, in the same ordinary tone as elbow.',
+    ],
+    makeItEasier: ['Pick four parts and stick to those.'],
+    makeItHarder: ['Ask them to wash their own knee, and see if they find it.'],
+    whyItHelps: 'Repetition in a routine is how early words stick. Using proper names for everything, from the start and without embarrassment, is also what body safety guidance asks for.',
+  },
+
+  {
+    id: 'skin-to-skin-anytime',
+    title: 'Skin to Skin, Past the First Day',
+    minMonths: 0, maxMonths: 5, minutes: 20,
+    setting: 'indoor',
+    skills: ['regulation', 'socialEmotional'],
+    strategyTags: ['co-regulate', 'connection-first', 'deep-pressure'],
+    materials: ['A blanket over the top of both of you'],
+    description: 'The thing everybody does in the first hour and then stops doing, which keeps working for months.',
+    howTo: [
+      'Take your top off and strip them to a diaper.',
+      'Lie back, chest to chest, and put a blanket over both of you rather than between you.',
+      'Do nothing else. No phone, no television.',
+      'Twenty minutes is a good target and five minutes still counts.',
+      'Either parent. It is not only for the one who gave birth.',
+    ],
+    makeItEasier: ['Do it during a feed, or while they nap on you in the evening.'],
+    makeItHarder: ['Nothing to make harder. This one is meant to be easy.'],
+    whyItHelps: 'Steadies their heart rate, breathing and temperature, helps supply if you are feeding, and does something real for how you feel too.',
+  },
+  {
+    id: 'wearing-them',
+    title: 'Wearing Them Round the House',
+    minMonths: 0, maxMonths: 12, minutes: 25,
+    setting: 'anywhere',
+    skills: ['regulation', 'sensory', 'language'],
+    strategyTags: ['co-regulate', 'narrate', 'movement-break'],
+    materials: ['A carrier or a wrap'],
+    description: 'Putting them in a carrier and just getting on with your day, which counts as an activity because it is.',
+    howTo: [
+      'Get them in the carrier high enough to kiss the top of their head.',
+      'Check their chin is off their chest and you can see their face without moving fabric.',
+      'Then do whatever you were doing. Washing up, hanging laundry, walking round the garden.',
+      'Talk about what you are doing while you do it.',
+    ],
+    makeItEasier: ['Front facing in, always, for a young baby. Facing out comes much later and for shorter stretches.'],
+    makeItHarder: ['Take it outside and name what you pass.'],
+    whyItHelps: 'Motion and closeness settle most young babies better than anything stationary, and it is the only activity on this list that also empties the dishwasher.',
+  },
+  {
+    id: 'one-song-daily',
+    title: 'The Same Song, Every Day',
+    minMonths: 0, maxMonths: 18, minutes: 4,
+    setting: 'anywhere',
+    skills: ['language', 'regulation', 'socialEmotional'],
+    strategyTags: ['rhyme-and-song', 'repetition', 'connection-first'],
+    materials: [],
+    description: 'Picking one song and doing it at the same moment each day, for months.',
+    howTo: [
+      'Choose one song. It does not matter which, and it does not matter whether you can sing.',
+      'Attach it to a moment. Getting dressed, going in the car seat, the last nappy of the day.',
+      'Do it every single time, same words, same tune.',
+      'After a few weeks, stop just before the last word and wait.',
+    ],
+    makeItEasier: ['Pick something you already know all the words to.'],
+    makeItHarder: ['Add a movement to each line and let them start doing it before you.'],
+    whyItHelps: 'Repetition is how babies learn the pattern of language, and a song tied to a moment becomes a signal that makes the moment easier for years.',
+  },
+  {
+    id: 'light-and-shade',
+    title: 'Light and Shade',
+    minMonths: 0, maxMonths: 6, minutes: 6,
+    setting: 'indoor',
+    skills: ['sensory', 'cognitive'],
+    strategyTags: ['quiet-space', 'observe-and-note'],
+    materials: [],
+    description: 'Finding the places in your house where light moves, and letting them watch.',
+    howTo: [
+      'Look for where light is doing something. Leaf shadows on a wall, a curtain moving, sun through a blind, a slowly turning fan.',
+      'Hold them where they can see it and stay still.',
+      'Say what is happening, quietly.',
+      'Let them watch as long as they want to.',
+    ],
+    makeItEasier: ['Sit with them rather than holding them up, so nobody gets tired.'],
+    makeItHarder: ['Hold something up to make a shadow and move it slowly.'],
+    whyItHelps: 'Slow moving contrast is about the most interesting thing available to new eyes, and this is a rescue for the hour before a nap.',
+  },
+  {
+    id: 'the-hand-tour',
+    title: 'Touching Things, One at a Time',
+    minMonths: 1, maxMonths: 9, minutes: 6,
+    setting: 'anywhere',
+    skills: ['sensory', 'language'],
+    strategyTags: ['narrate', 'wait-time'],
+    materials: ['Things already in the room'],
+    description: 'Taking their hand to four different textures and naming each one properly.',
+    howTo: [
+      'Pick four things with genuinely different surfaces. A towel, a wooden chair leg, a cold window, a soft jumper.',
+      'Open their hand gently and let it rest on the first one.',
+      'Say what it is and what it feels like. Wait a few seconds before moving on.',
+      'Four is plenty. This is slow on purpose.',
+    ],
+    makeItEasier: ['Two textures, and let the back of their hand touch rather than the palm, which is less startling.'],
+    makeItHarder: ['Let them reach for it themselves and choose which one to go back to.'],
+    whyItHelps: 'Texture words are learned by touching, and slowing right down is what lets a young baby actually process each one.',
+  },
+  {
+    id: 'container-dump',
+    title: 'Filling and Tipping Out',
+    minMonths: 8, maxMonths: 20, minutes: 10,
+    setting: 'indoor',
+    skills: ['fineMotor', 'cognitive'],
+    strategyTags: ['fine-motor-play', 'repetition', 'observe-and-note'],
+    materials: ['A plastic tub or saucepan', 'Anything too big to swallow'],
+    description: 'Putting things in a pot and tipping them out again, roughly four hundred times.',
+    howTo: [
+      'Give them a tub and a handful of safe objects. Wooden spoons, fabric blocks, plastic cups.',
+      'Show them once. Put something in, tip it out.',
+      'Then leave them to it and do not organise it for them.',
+      'Refill it when they lose interest, and see if that restarts it.',
+    ],
+    makeItEasier: ['Bigger container, bigger objects, fewer of them.'],
+    makeItHarder: ['A container with a narrower opening, so aim matters.'],
+    whyItHelps: 'In and out is a genuine concept and this is how it gets learned. The repetition that looks pointless is the lesson.',
+  },
+  {
+    id: 'the-drop-game',
+    title: 'The Drop Game',
+    minMonths: 8, maxMonths: 18, minutes: 8,
+    setting: 'indoor',
+    skills: ['cognitive', 'socialEmotional'],
+    strategyTags: ['observe-and-note', 'repetition', 'connection-first'],
+    materials: ['Two or three things that make different sounds when dropped'],
+    description: 'They drop it, you pick it up, they drop it again. Playing along on purpose instead of enduring it.',
+    howTo: [
+      'Sit them in a high chair with a hard floor underneath.',
+      'Give them something to drop. A wooden spoon, a plastic cup, a soft toy.',
+      'When it lands, say what happened. It fell. That one was loud.',
+      'Hand it back. Do it until you are bored, then say all done and mean it.',
+    ],
+    makeItEasier: ['Tie one to the chair with a short ribbon so they can haul it back themselves.'],
+    makeItHarder: ['Offer two things and see if they notice the different sounds.'],
+    whyItHelps: 'This is not them winding you up. It is a repeated experiment about gravity, sound and whether you come back, and knowing that makes it much easier to bear.',
+  },
+  {
+    id: 'chair-tunnel',
+    title: 'A Tunnel Made of Chairs',
+    minMonths: 7, maxMonths: 24, minutes: 10,
+    setting: 'indoor',
+    skills: ['grossMotor', 'cognitive'],
+    strategyTags: ['obstacle-course', 'movement-break', 'heavy-work'],
+    materials: ['Two dining chairs', 'A blanket'],
+    description: 'Thirty seconds of setup, and somewhere to crawl through.',
+    howTo: [
+      'Put two chairs facing each other with a gap between them and drape a blanket over the top.',
+      'Get on the far side and call them through.',
+      'Put something they want at your end the first few times.',
+      'Make it longer with more chairs once they have the idea.',
+    ],
+    makeItEasier: ['Take the blanket off so they can see straight through.'],
+    makeItHarder: ['Add a turn, or something to climb over first.'],
+    whyItHelps: 'Crawling through a space builds the shoulder strength that handwriting needs years later, and going where they cannot see you is its own small act of courage.',
+  },
+  {
+    id: 'ball-roll',
+    title: 'Rolling It Back',
+    minMonths: 8, maxMonths: 26, minutes: 8,
+    setting: 'anywhere',
+    skills: ['grossMotor', 'socialEmotional'],
+    strategyTags: ['connection-first', 'wait-time', 'join-their-play'],
+    materials: ['A ball, or anything that rolls'],
+    description: 'The first proper game with rules, and the rules are that it comes back.',
+    howTo: [
+      'Sit on the floor facing them with your legs open, a metre or so apart.',
+      'Roll the ball slowly to them.',
+      'Wait. Do not reach for it.',
+      'When it comes back, however badly, make it a big deal.',
+      'Add words. My turn. Your turn.',
+    ],
+    makeItEasier: ['Sit closer and use a bigger, slower ball.'],
+    makeItHarder: ['Sit further apart, or roll it to a third person.'],
+    whyItHelps: 'Back and forth with an object is the same shape as conversation, and most children learn it here before they learn it with words.',
+  },
+  {
+    id: 'water-tray',
+    title: 'A Roasting Tin of Water',
+    minMonths: 10, maxMonths: 48, minutes: 15,
+    setting: 'anywhere',
+    skills: ['sensory', 'fineMotor'],
+    strategyTags: ['sensory-bin', 'fine-motor-play', 'quiet-space'],
+    materials: ['A roasting tin or washing up bowl', 'Cups and spoons', 'A towel'],
+    description: 'An inch of water and some cups. Reliably the longest twenty minutes you will buy all week.',
+    howTo: [
+      'Put a towel down and a tin with an inch of warm water on it.',
+      'Add cups, spoons, a funnel, anything that pours.',
+      'Let them tip it about. It will go on the floor. That is the towel’s job.',
+      'Never leave them alone with it, not even for a second, not even an inch.',
+    ],
+    makeItEasier: ['Do it in the bath, where the mess has nowhere to go.'],
+    makeItHarder: ['Add a squirt of washing up liquid, or a few drops of food colouring, or ice cubes.'],
+    whyItHelps: 'Pouring is fine motor work, hand strength and early volume all at once, and water holds attention longer than almost anything else you own.',
+  },
+  {
+    id: 'posting-box',
+    title: 'The Posting Slot',
+    minMonths: 11, maxMonths: 28, minutes: 12,
+    setting: 'indoor',
+    skills: ['fineMotor', 'cognitive'],
+    strategyTags: ['fine-motor-play', 'repetition'],
+    materials: ['A shoebox or a wipes tub', 'Milk bottle lids or large buttons'],
+    description: 'A slot cut in a box, and things that fit through it. Ten minutes to make, weeks of use.',
+    howTo: [
+      'Cut a slot in the lid of a box, just bigger than whatever they will be posting.',
+      'Show them once, then hand it over.',
+      'Let them open the box and get them out themselves. The getting out is half the point.',
+      'Nothing small enough to swallow. Milk bottle lids are about the right size.',
+    ],
+    makeItEasier: ['Cut a bigger hole, or use a round hole rather than a slot.'],
+    makeItHarder: ['Two slots of different shapes, or make them turn the lid to fit.'],
+    whyItHelps: 'Lining a thing up with a hole and letting go at the right moment is real hand and eye work, and the click of it landing is the reward.',
+  },
+  {
+    id: 'painting-with-water',
+    title: 'Painting the House with Water',
+    minMonths: 16, maxMonths: 60, minutes: 20,
+    setting: 'outdoor',
+    skills: ['grossMotor', 'sensory'],
+    strategyTags: ['movement-break', 'heavy-work'],
+    materials: ['A bucket of water', 'A decorating brush'],
+    description: 'A big brush, a bucket of water, and a fence. No mess at all, and it lasts ages.',
+    howTo: [
+      'Fill a bucket with water and give them the biggest brush you have.',
+      'Point them at a fence, a wall, a path, or a shed.',
+      'Let them paint. It dries and disappears, which they will notice and want to fix.',
+      'Stand back.',
+    ],
+    makeItEasier: ['A smaller bucket so it is not too heavy to move.'],
+    makeItHarder: ['Give them a shape to fill in, or ask them to write a letter of their name.'],
+    whyItHelps: 'Big arm movements at a vertical surface build the shoulder stability that neat handwriting needs, and it costs nothing.',
+  },
+  {
+    id: 'sort-the-cutlery',
+    title: 'Sorting the Cutlery',
+    minMonths: 18, maxMonths: 48, minutes: 10,
+    setting: 'indoor',
+    skills: ['cognitive', 'numeracy', 'fineMotor'],
+    strategyTags: ['break-into-steps', 'fine-motor-play'],
+    materials: ['The clean cutlery'],
+    description: 'A real job, done badly, which is exactly the right way for them to do it.',
+    howTo: [
+      'Take the knives out and put them somewhere else.',
+      'Give them the clean spoons and forks and the drawer tray.',
+      'Let them sort them. Say what they are doing rather than correcting it.',
+      'Thank them properly. This is work and they know it.',
+    ],
+    makeItEasier: ['Two kinds only, and start them off with one of each in place.'],
+    makeItHarder: ['Add teaspoons as a third pile, or ask how many forks there are.'],
+    whyItHelps: 'Sorting by a property is early maths, and doing a real job that the household actually needed is worth ten activities invented for them.',
+  },
+  {
+    id: 'animal-walks',
+    title: 'Animal Walks',
+    minMonths: 20, maxMonths: 72, minutes: 8,
+    setting: 'anywhere',
+    skills: ['grossMotor', 'regulation'],
+    strategyTags: ['movement-break', 'heavy-work', 'co-regulate'],
+    materials: [],
+    description: 'Crossing the room as a bear, a crab and a frog. The fastest way to reset a wound up afternoon.',
+    howTo: [
+      'Pick an animal and show them how it moves. Bear on hands and feet, crab on hands and feet facing up, frog jumping from a squat.',
+      'Cross the room and back as that animal.',
+      'Let them pick the next one.',
+      'Four or five crossings is plenty.',
+    ],
+    makeItEasier: ['Shorter distance, and do it alongside them rather than watching.'],
+    makeItHarder: ['Carry something, or go up the stairs as a bear.'],
+    whyItHelps: 'Pushing through the arms is calming for most children, which is why this works so well when somebody is climbing the walls.',
+  },
+  {
+    id: 'torch-shadows',
+    title: 'Torch and Shadows',
+    minMonths: 30, maxMonths: 84, minutes: 15,
+    setting: 'indoor',
+    skills: ['cognitive', 'pretendPlay'],
+    strategyTags: ['quiet-space', 'join-their-play'],
+    materials: ['A torch or a phone light', 'A blank wall'],
+    description: 'A dark room, a torch and a wall. Works as a game and works as a way to come down at bedtime.',
+    howTo: [
+      'Turn the lights off and shine a torch at a blank wall.',
+      'Make a shape with your hand and let them guess it.',
+      'Let them try. Do not correct the shape.',
+      'Move the torch nearer and further and let them see the shadow change size.',
+    ],
+    makeItEasier: ['Use a toy in front of the light rather than hands.'],
+    makeItHarder: ['Tell a story with the shadows, taking a character each.'],
+    whyItHelps: 'Light and shadow is real physics they can control with their hands, and the dark and quiet make it a genuinely calming one.',
+  },
+  {
+    id: 'own-obstacle-course',
+    title: 'An Obstacle Course They Design',
+    minMonths: 36, maxMonths: 96, minutes: 25,
+    setting: 'anywhere',
+    skills: ['grossMotor', 'cognitive'],
+    strategyTags: ['obstacle-course', 'movement-break', 'break-into-steps'],
+    materials: ['Cushions, chairs, tape, whatever is there'],
+    description: 'They design it, you do it. The designing is the part that is good for them.',
+    howTo: [
+      'Tell them they are in charge and you will do whatever they build.',
+      'Give them the materials and get out of the way.',
+      'Do the course exactly as instructed, including the bits that do not work.',
+      'Then swap and let them do it.',
+    ],
+    makeItEasier: ['Start them with two obstacles and ask what should come next.'],
+    makeItHarder: ['Add a rule, such as no hands, or time it and try to beat it.'],
+    whyItHelps: 'Planning a sequence and then watching somebody follow it is real problem solving, and being the one in charge is rarer for them than you think.',
+  },
+  {
+    id: 'real-cooking-job',
+    title: 'A Real Job in the Kitchen',
+    minMonths: 30, maxMonths: 120, minutes: 20,
+    setting: 'indoor',
+    skills: ['fineMotor', 'cognitive', 'socialEmotional'],
+    strategyTags: ['break-into-steps', 'celebrate-partial'],
+    materials: ['Whatever you are already cooking'],
+    description: 'Not a pretend cooking activity. A part of the actual dinner, which is theirs.',
+    howTo: [
+      'Pick one step that is genuinely theirs. Tearing lettuce, mashing potato, stirring a cold bowl, peeling a banana, shaking the dressing.',
+      'Show them once and then let them do it their way.',
+      'Let it be imperfect and serve it anyway.',
+      'Tell whoever else is eating who made that bit.',
+    ],
+    makeItEasier: ['Do it with them hand over hand the first time, then step back.'],
+    makeItHarder: ['Give them two steps in a row, or let them read the next line of the recipe.'],
+    whyItHelps: 'Doing a real thing the family needed, and then watching people eat it, does more for how capable a child feels than any activity invented for them.',
+  },
+  {
+    id: 'drawn-treasure-hunt',
+    title: 'A Treasure Hunt with Drawn Clues',
+    minMonths: 42, maxMonths: 108, minutes: 25,
+    setting: 'anywhere',
+    skills: ['cognitive', 'literacy'],
+    strategyTags: ['break-into-steps', 'checklist'],
+    materials: ['Paper and a pen'],
+    description: 'Five drawn clues round the house, ending in something small. Fifteen minutes to make, an hour of play.',
+    howTo: [
+      'Draw five simple pictures of places. The fridge, a bed, the front door, a shoe, the bath.',
+      'Hide each clue at the place the previous one shows.',
+      'Hand them the first and follow them round.',
+      'Something small at the end. A biscuit is plenty.',
+    ],
+    makeItEasier: ['Three clues, all in one room, and go with them.'],
+    makeItHarder: ['Write the clues as words, or as riddles, and let them go alone.'],
+    whyItHelps: 'A drawing standing for a real place is the same idea as a word standing for a thing, which is the whole foundation of reading.',
+  },
+  {
+    id: 'interview-a-grandparent',
+    title: 'Interview Somebody Old',
+    minMonths: 72, maxMonths: 216, minutes: 30,
+    setting: 'anywhere',
+    skills: ['language', 'socialEmotional', 'literacy'],
+    strategyTags: ['connection-first', 'model-language'],
+    materials: ['A phone to record, or paper'],
+    description: 'Ten questions for a grandparent or an older relative, asked properly and recorded.',
+    howTo: [
+      'Help them write ten questions first. What was your first job. What did you get in trouble for. What is something nobody knows about you.',
+      'Set up a call or a visit, and let them run it.',
+      'Record it, with the person’s permission.',
+      'Do not rescue the awkward pauses. Let them work it out.',
+    ],
+    makeItEasier: ['Five questions, and you ask the first one to get it going.'],
+    makeItHarder: ['Ask them to turn it into a written piece, or a short edited recording.'],
+    whyItHelps: 'Asking a question and then actually listening to the answer is a skill, and this is one of the few recordings a family ends up genuinely glad to have.',
+  },
+  {
+    id: 'money-for-a-thing',
+    title: 'Working Out What It Costs',
+    minMonths: 84, maxMonths: 216, minutes: 25,
+    setting: 'anywhere',
+    skills: ['numeracy', 'cognitive'],
+    strategyTags: ['break-into-steps', 'checklist'],
+    materials: ['Paper, or a phone'],
+    description: 'Taking something they want and working out, properly, how they get it.',
+    howTo: [
+      'Pick the thing they have been asking for and find the real price together.',
+      'Work out what money comes in. Pocket money, birthdays, jobs they could do.',
+      'Divide it out. How many weeks is that.',
+      'Write the number of weeks somewhere they will see it.',
+      'Let the answer be the answer, even when it is a long time.',
+    ],
+    makeItEasier: ['Pick something small, so the number of weeks is small too.'],
+    makeItHarder: ['Add a second option at a different price and let them compare.'],
+    whyItHelps: 'Turning wanting into a number of weeks is the first real experience of a budget, and it lands far harder than being told no.',
+  },
+  {
+    id: 'teach-me-that',
+    title: 'Teach Me Something You Know',
+    minMonths: 120, maxMonths: 216, minutes: 25,
+    setting: 'anywhere',
+    skills: ['language', 'socialEmotional', 'cognitive'],
+    strategyTags: ['connection-first', 'wait-time'],
+    materials: [],
+    description: 'Handing over the expert role to a teenager, entirely and without commentary.',
+    howTo: [
+      'Ask them to teach you something they are good at and you are not. A game, an app, an edit, a skill.',
+      'Be a real beginner. Ask real questions.',
+      'Do not know better. Do not improve their explanation.',
+      'Say thank you at the end and mean it.',
+    ],
+    makeItEasier: ['Ask about something they have already been talking to you about.'],
+    makeItHarder: ['Ask them to teach it to somebody else in the family while you watch.'],
+    whyItHelps: 'Teenagers are corrected constantly. Being the one who knows, in front of a parent who is genuinely learning, is rarer for them than almost anything else on offer.',
+  },
+  {
+    id: 'phones-down-walk',
+    title: 'The Walk with No Phones',
+    minMonths: 96, maxMonths: 216, minutes: 30,
+    setting: 'outdoor',
+    skills: ['socialEmotional', 'regulation'],
+    strategyTags: ['connection-first', 'movement-break', 'wait-time'],
+    materials: [],
+    description: 'A walk, side by side, with nothing to look at and nowhere to be.',
+    howTo: [
+      'Both phones stay at home. Yours as well, and that is the part that matters.',
+      'Walk somewhere ordinary. It does not need to be nice.',
+      'Do not open with a question about school.',
+      'Let there be long silences, and do not fill them.',
+      'Whatever comes up, take it seriously.',
+    ],
+    makeItEasier: ['Twenty minutes, with a destination such as a shop, so it has a reason.'],
+    makeItHarder: ['Make it a regular thing on the same day each week, without announcing that you are making it a thing.'],
+    whyItHelps: 'Side by side with no eye contact is where difficult things get said. The car works for the same reason, and neither is an accident.',
+  },
   {
     id: 'tummy-time-chest',
+
     title: 'Chest to Chest Tummy Time',
     minMonths: 0,
     maxMonths: 4,
@@ -22088,7 +22818,7 @@ const OUT_BAGS = [
     label: 'Newborn and small baby',
     max: 6,
     items: [
-      'Diapers, double what you think, plus wipes and a changing mat',
+      'Diapers: one for every hour you will be out, plus two. Round up, never down',
       'Two full changes of clothes, and one top for you',
       'Muslins, more than one',
       'Feeding kit: bottles and formula, or a cover if you want one, or nothing at all',
@@ -22542,6 +23272,7 @@ const OUT_TRIPS = [
       'The bag you need at stops packed separately from the bag in the boot',
     ],
     perChild: [
+      'Diapers: one per hour of driving plus four, in the cabin rather than the boot',
       'Their own drink, in something that does not spill when it rolls under a seat',
       'Snacks they can manage alone, handed out at stops rather than on the move',
       'Soft things only. Anything hard within reach is a projectile at speed',
@@ -22562,6 +23293,7 @@ const OUT_TRIPS = [
       'Medicine you would not want to hunt for at 2am, in its own bag',
     ],
     perChild: [
+      'Diapers: a full day\u2019s worth plus six. Somebody else\u2019s house at 2am is not the moment to run out',
       'Whatever they sleep in. Sleep bag, comforter, the specific muslin. The most important thing you will pack',
       'Their own fitted sheet. Smell does more than you expect, and hotel cot sheets rarely fit anyway',
       'A travel cot for anyone under two, or a confirmed promise of one',
@@ -22584,6 +23316,7 @@ const OUT_TRIPS = [
       'A plug adapter for every country, and one more than you think',
     ],
     perChild: [
+      'Diapers: three days\u2019 worth and buy the rest there, unless you are going somewhere rural or abroad where your size may not be on the shelf',
       'Four days of clothes and a plan to wash, whatever the length of the trip',
       'One outfit per day plus two for anyone under three',
       'Enough formula or milk for the whole trip plus two days. Brands and availability change by country',
@@ -22608,7 +23341,7 @@ const OUT_TRIPS = [
       'An empty water bottle each, filled on the other side',
     ],
     perChild: [
-      'Twice the diapers you would take for the same hours on the ground. Delays are the whole reason',
+      'Diapers: twice what the same hours on the ground would need. Delays are the reason, and you cannot buy more at thirty thousand feet',
       'A full change of clothes, and a spare top for you, in a bag you can reach without standing up',
       'Feeds for the whole journey plus one extra, planned around takeoff and landing',
       'Something to suck on going up and coming down. Bottle, breast, pacifier, straw cup, lollipop',
@@ -22637,6 +23370,7 @@ const OUT_TRIPS = [
       'Cash in small notes for taxis and markets in port',
     ],
     perChild: [
+      'Diapers for the whole sailing plus three days. The ship shop will have some, at a price that will make you laugh',
       'Swim diapers, and the knowledge that they will not get your child into the main pool. Most lines do not allow children in diapers in any pool, only in a baby splash area if the ship has one',
       'A rash vest and sun cream, reapplied more often than you think at sea',
       'Their own cup with a lid, for the buffet and the cabin',
@@ -23176,6 +23910,40 @@ function diaperDayTotal(months, daycareHours) {
  * BUYING
  * ------------------------------------------------------------------ */
 
+/* ------------------------------------------------------------------
+ * HOW MANY TO TAKE WITH YOU
+ * The other half of the question. Knowing you use seven a day does not
+ * tell you how many to put in a bag for a six hour drive.
+ * ------------------------------------------------------------------ */
+
+const DIAPER_PACKING = {
+  title: 'How many to take with you',
+  headline: 'One for every hour you will be out, plus two. Round up, never down.',
+  body: [
+    'It sounds like too many and it is not. The two spares are for the blowout that needs two, and for the delay nobody planned.',
+    'A diaper weighs nothing and being short of one is the worst twenty minutes of a day out. This is the one thing on this screen where over packing costs you nothing.',
+  ],
+  trips: [
+    { what: 'A couple of hours out', how: 'Four. Two you will use and two you will not.' },
+    { what: 'A whole day out', how: 'Eight to ten, and a full pack of wipes rather than a travel one.' },
+    { what: 'A long car journey', how: 'One per hour plus four, and keep them in the cabin rather than the boot.' },
+    { what: 'A flight', how: 'Double what the same hours on the ground would need. Delays on a plane are the reason, and you cannot go and buy more at thirty thousand feet.' },
+    { what: 'A night away', how: 'A day\u2019s worth plus six, since somebody else\u2019s house at 2am is not the moment to run out.' },
+    { what: 'A week away', how: 'Take three days and buy the rest there, unless you are going somewhere rural or abroad where your size may not be on the shelf.' },
+    { what: 'Left with a grandparent or sitter', how: 'Double what the hours suggest, and show them where the spares are.' },
+  ],
+  alsoNote:
+    'Keep a sealed bag in the car with four diapers, a travel pack of wipes and a full change of '
+    + 'clothes, and forget about it until the day it saves you. Swap the clothes for the next size up '
+    + 'every few months.',
+};
+
+function diapersForHours(hours) {
+  const h = Math.max(0, Math.min(24, Number(hours) || 0));
+  if (!h) return 0;
+  return Math.ceil(h) + 2;
+}
+
 const DIAPER_BUYING = {
   title: 'Buying them without wasting money',
   items: [
@@ -23226,9 +23994,36 @@ const DIAPER_HEALTH_NOTE =
   + 'to be seen rather than a reason to buy more. That is covered properly on the Feeding screen '
   + 'under the newborn rhythm.';
 
+/* WHERE THESE NUMBERS COME FROM, SAID OUT LOUD.
+
+   She asked for a proper source and she was right to. The detailed per
+   age tables in circulation are almost all published by companies that
+   sell diapers, which does not make them wrong and does mean the
+   people writing them have an obvious reason to round up.
+
+   So the top of the range is anchored to the National Diaper Bank
+   Network, who work on diaper need and are not selling anything: up to
+   twelve a day for an infant, at eighty to a hundred dollars or more a
+   month per baby. That figure matches the manufacturer tables at the
+   newborn end, which is a reasonable check on them.
+
+   There is no clinical body publishing a per age breakdown, because it
+   is not a clinical question. It is a household planning question, and
+   the honest thing is to say so on the screen rather than dress a
+   marketing table up as guidance. */
+const DIAPER_SOURCE_NOTE =
+  'Worth knowing where these come from. The top of the range, up to twelve a day for an infant and '
+  + 'eighty to a hundred dollars a month, is from the National Diaper Bank Network, who work on '
+  + 'diaper need and do not sell diapers. The age by age breakdown is the industry\u2019s own, because '
+  + 'nobody else publishes one, and the companies behind it sell diapers. Treat the ranges as a '
+  + 'starting point for your own arithmetic rather than a target, and after a fortnight your own '
+  + 'count beats anybody\u2019s table.';
+
 const DIAPER_SOURCES = [
+  { org: 'National Diaper Bank Network', label: 'What diaper need is, and how many a baby uses', url: 'https://nationaldiaperbanknetwork.org/wp-content/uploads/2022/12/NDBN_DiaperNeed_Overview_Dec_2022-.pdf' },
+  { org: 'National Diaper Bank Network', label: 'Find a diaper bank near you', url: 'https://nationaldiaperbanknetwork.org/' },
   { org: 'AAP', label: 'Diapering and diaper rash, HealthyChildren', url: 'https://www.healthychildren.org/English/ages-stages/baby/diapers-clothing/Pages/default.aspx' },
-  { org: 'CDC', label: 'Infant and toddler health basics', url: 'https://www.cdc.gov/child-development/positive-parenting-tips/infants.html' },
+  { org: 'Pediatrics', label: 'Diaper need and its impact on child health', url: 'https://publications.aap.org/pediatrics/article-abstract/132/2/253/31443/Diaper-Need-and-Its-Impact-on-Child-Health' },
 ];
 
 function showsDiaperContent(months) {
@@ -29917,6 +30712,21 @@ function screenDiapers(c) {
     </div>
 
     <div class="dsec">
+      <h4>${esc(DIAPER_PACKING.title)}</h4>
+      <p class="bodytext" style="margin:0 0 9px;font-weight:600;color:var(--deep)">
+        ${esc(DIAPER_PACKING.headline)}</p>
+      ${DIAPER_PACKING.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      ${DIAPER_PACKING.trips.map((x) => `
+        <div class="quote">
+          <p class="sit">${esc(x.what)}</p>
+          <p class="why" style="margin-top:4px">${esc(x.how)}</p>
+        </div>`).join('')}
+      <div class="callout" style="margin-top:10px">
+        <p style="margin:0">${esc(DIAPER_PACKING.alsoNote)}</p>
+      </div>
+    </div>
+
+    <div class="dsec">
       <h4>${esc(DIAPER_BUYING.title)}</h4>
       ${list(DIAPER_BUYING.items)}
       <p class="sect">${esc(DIAPER_BUYING.sizeUp.title)}</p>
@@ -29943,7 +30753,8 @@ function screenDiapers(c) {
     </div>
 
     <div class="dsec">
-      <h4>Where this comes from</h4>
+      <h4>Where these numbers come from</h4>
+      <p class="bodytext" style="margin:0 0 10px">${esc(DIAPER_SOURCE_NOTE)}</p>
       ${DIAPER_SOURCES.map((sc) => `
         <p class="tiny" style="margin:0 0 6px">
           <strong style="color:var(--deep)">${esc(sc.org)}</strong>
