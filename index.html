@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-19 17:33">
+<meta name="rsg-build" content="2026-09-19 18:01">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1573,7 +1573,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-19 17:33';
+const BUILD_STAMP = '2026-09-19 18:01';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -28027,6 +28027,953 @@ function supportFirstTab(seenBefore) {
 }
 
 
+/* ===== src/data/onlineSafety.js ===== */
+/**
+ * Ready Set Grow: Phones, games and the people on the other side
+ * ==================================================================
+ * She asked for this directly: "talk about the importance to your
+ * children about their phones, social media, not talking to strangers
+ * like on roblox and how strangers can kidnap them etc."
+ *
+ * THE DECISION THAT SHAPES THIS WHOLE FILE
+ * Her instinct is right and the mechanism has moved. A stranger taking
+ * a child by force is real, it happens, and children have died. It is
+ * also, in the United States, on the order of a hundred cases a year.
+ * In the same country the CyberTipline took 21.3 million reports of
+ * suspected child sexual exploitation in 2025.
+ *
+ * So this file does not tell a frightened mother that her fear is
+ * silly. It tells her the fear is pointed at the wrong door. The van
+ * has become a friend request. That honours the instinct and puts her
+ * vigilance somewhere it will actually do something.
+ *
+ * WHAT IS LED WITH, AND WHY THAT ORDER
+ * Contact harms first: grooming, enticement, sextortion. Nobody
+ * serious disputes those. The mental health argument about social
+ * media is led with nowhere in here, because the Surgeon General and
+ * the National Academies looked at overlapping evidence in
+ * consecutive years and reached different conclusions, and a parenting
+ * app that picks a side in a live scientific argument inherits the
+ * argument. The practical advice comes out the same either way.
+ *
+ * WHAT IS NOT REPEATED HERE
+ * Sextortion in the first hour, and what to do when a child is already
+ * being exploited, live in src/data/support.js. That screen has the
+ * quick exit and the hotlines. This one is the ordinary parenting
+ * version: what to set up, what to say, and at what age.
+ *
+ * THE RULE ABOUT PARENTAL CONTROLS
+ * Every control in here is described as what it does and what it does
+ * not do. A parent who believes Snapchat Family Center shows her the
+ * messages is less safe than one who knows it shows her the contact
+ * list, because she has stopped asking.
+ *
+ * Everything checked September 2026 against the source in ONLINE_SOURCES.
+ */
+
+const ONLINE_TITLE = 'Phones, games and who is on the other side';
+
+const ONLINE_SUB = 'What to set up, what to say, and at what age. Written around how this '
+  + 'actually happens rather than how it happens in the news.';
+
+const ONLINE_TABS = [
+  { id: 'real', label: 'How it really happens' },
+  { id: 'age', label: 'What to do at their age' },
+  { id: 'apps', label: 'The apps they use' },
+  { id: 'rules', label: 'Phones and rules that work' },
+];
+
+/* ==================================================================
+   HOW IT REALLY HAPPENS
+   ================================================================== */
+
+const ONLINE_HEAD = 'The van became a friend request.';
+
+const ONLINE_INTRO = [
+  'Almost every parent carries the same picture: a stranger, a vehicle, a parking lot. That does '
+  + 'happen. It is also rare enough to count. The last national estimate put stereotypical '
+  + 'kidnappings, the kind in the picture, at around a hundred a year in the whole United States, '
+  + 'and even within those, nearly four in ten were taken by somebody the child slightly knew '
+  + 'rather than a complete stranger.',
+  'In the same country, in 2025, the national tip line for child exploitation took 21.3 million '
+  + 'reports. Your instinct is not wrong. An adult who wants to hurt your child gets to them by '
+  + 'earning their trust first. That is exactly what you were afraid of. It now happens through a '
+  + 'screen in your own living room, which is both worse and a great deal easier to do something '
+  + 'about.',
+];
+
+const ONLINE_NUMBERS = {
+  title: 'The real shape of it',
+  items: [
+    'Around 100 stereotypical kidnappings a year nationally, the last time it was measured properly. '
+    + 'Eight of the children in that count were killed. It is rare, and it is not nothing.',
+    'Of the missing child cases the national centre worked in 2025, 92 percent were children who had '
+    + 'run away. Running is far and away the commonest way a child goes missing.',
+    '21.3 million reports of suspected child sexual exploitation in 2025, through the tip line alone.',
+    'Over 50,000 reports of financially motivated sextortion in 2025, about 137 a day, up from around '
+    + '36,000 in 2024.',
+    'Nearly six in ten teenage girls say they have been contacted by a stranger on social media in a '
+    + 'way that made them uncomfortable.',
+  ],
+  note: 'Those numbers are not there to frighten you. They are there because knowing which door to '
+    + 'watch is worth more than watching all of them.',
+};
+
+/* The pattern, step by step, because a parent who can name the steps
+   spots step two instead of finding out at step six. */
+const ONLINE_PATTERN = {
+  title: 'What the pattern actually looks like',
+  intro: 'This is the sequence the national centre and the FBI describe. It is not a theory, it is '
+    + 'what these people do, and they do it for a living.',
+  steps: [
+    'They find your child somewhere ordinary. A game, a comment section, a server, a follower list.',
+    'They are lovely. Compliments, shared interests, liking their posts. They are more interested in '
+    + 'your child than almost anybody else is.',
+    'They lie about who they are, usually by being younger. A great many of them claim to be a child '
+    + 'the same age.',
+    'They make the sexual part ordinary before they ask for anything. Jokes, role play, sending '
+    + 'something of their own first. The talk is the grooming, not the goal.',
+    'They ask, usually framed as a swap. You send me one and I will send you one.',
+    'Then it turns, and often it turns in a single message. Pay, or this goes to everybody you know.',
+  ],
+  speed: 'It is much faster than parents expect. The national centre documented a fifteen year old '
+    + 'groomed to the point of an in person meeting in nine days, and in the sextortion cases around '
+    + 'three in ten children faced demands within twenty four hours of first contact.',
+  offPlatform: 'Watch for the move. Getting your child off the platform they met on, into a private '
+    + 'message or an encrypted app, is a step, and it is the step that takes them out of anywhere you '
+    + 'or a moderator can see.',
+};
+
+const ONLINE_GROUPS = {
+  title: 'The part almost no parent has heard of',
+  body: [
+    'They do not always work alone. The FBI has warned about groups of adults operating together '
+    + 'inside gaming clans, servers and follower groups aimed at children. Several of them pose as '
+    + 'children in the same group, so when one of them starts, the others are already there being '
+    + 'friendly.',
+    'The reason it works is the reason it is hard to teach against. A child trusts somebody more when '
+    + 'other children in the group appear to trust them already.',
+  ],
+  teach: 'Which is why "do not talk to strangers" does not hold up online. By the time it matters, '
+    + 'this person is not a stranger. They have been in the group for months.',
+};
+
+const ONLINE_SEXTORTION = {
+  title: 'Boys, and the thing that gets them',
+  body: [
+    'The version aimed at teenage boys is financial. It is not somebody local who wants your son. It '
+    + 'is an organised operation, usually run from overseas, that wants money and is working hundreds '
+    + 'of children at once.',
+    'The FBI puts typical victims at boys aged fourteen to seventeen and has recorded a frightening '
+    + 'number of suicides among them. Children have killed themselves within hours of it starting, '
+    + 'believing there was no way out of it.',
+  ],
+  oneThing: 'If you tell your son one thing about the internet this year, make it this: if this ever '
+    + 'happens, you come to me, I will not be angry, and it will be over by the morning. There is a '
+    + 'full page on what to do in the first hour under If something is happening at home.',
+};
+
+/* ==================================================================
+   BY AGE
+   ================================================================== */
+
+const ONLINE_STAGES = [
+  {
+    id: 'baby', label: 'Under two', from: 0, to: 23,
+    head: 'There is almost nothing to do here, which is the good news.',
+    body: 'A baby does not learn from a screen. The current pediatric position is gentler than the '
+      + 'old one, and occasionally watching something short and good is not damaging, but there is no '
+      + 'version of this where a baby needs it. Video calls with people who love them are a different '
+      + 'thing and are fine.',
+    doNow: [
+      'Decide now, while it is easy, that there are no screens at the table and none in the bedroom. '
+      + 'Starting that at eleven is a fight. Starting it at one is just how your house is.',
+      'Watch your own phone in front of them more than you watch theirs. They are learning what a '
+      + 'phone is for by watching you hold one.',
+    ],
+  },
+  {
+    id: 'toddler', label: 'Two to five', from: 24, to: 59,
+    head: 'Everything they watch, you are in the room for.',
+    body: 'This is the age where co watching does more than any control does. Not because they are in '
+      + 'danger yet, but because watching together is what teaches them that you are part of what '
+      + 'happens on a screen, and that is the habit you need in eight years.',
+    doNow: [
+      'Screens live in the family room. No devices in the bedroom, ever, and starting now means never '
+      + 'having to take one away later.',
+      'Nothing an hour before bed. Sleep is the one harm from screens that nobody argues about.',
+      'Pick what they watch rather than letting an autoplay pick it. The quality of what is on '
+      + 'matters more than the number of minutes.',
+      'Say the sentence early, even now: you will never be in trouble for telling me something.',
+    ],
+  },
+  {
+    id: 'early', label: 'Five to eight', from: 60, to: 107,
+    head: 'Games with other people in them. This is where it starts.',
+    body: 'Roblox and Minecraft arrive around now, and a game with strangers in it is a different '
+      + 'thing from a game. The point of this age is not restriction, it is that you know the names '
+      + 'of the things they play and roughly who is in them.',
+    doNow: [
+      'Link your account to theirs on anything that allows it, and set chat off or friends only.',
+      'Play it with them. Twenty minutes once a week tells you more than any dashboard.',
+      'Teach the one rule they can actually hold at this age: anybody who says keep this between us '
+      + 'is the person you tell me about.',
+      'Teach that nobody they have only met in a game is a friend, however nice they are, and that '
+      + 'the nicest ones are sometimes the problem.',
+    ],
+  },
+  {
+    id: 'middle', label: 'Eight to eleven', from: 108, to: 143,
+    head: 'The years everything changes, and the years most parents wait too long.',
+    body: 'Almost four in ten children aged eight to twelve are already on social media, even though '
+      + 'the minimum age on all of it is thirteen. This is the stretch where a child goes from playing '
+      + 'to having an online life with people in it you have never heard of.',
+    doNow: [
+      'Have the conversation about pictures now, before there is a reason to. If anybody ever asks '
+      + 'you for a picture, that is an adult problem and not yours, and it stops the second you tell me.',
+      'Go through their friends and followers with them, out loud, one by one. Who is this. Where did '
+      + 'you meet them. Have you ever seen their face.',
+      'Explain the swap trick specifically, because it is the one that works on this age. If somebody '
+      + 'sends you one first, that is not them being brave, that is the trick.',
+      'If they are asking for a phone, read the phone section before you answer.',
+    ],
+  },
+  {
+    id: 'tween', label: 'Eleven to thirteen', from: 144, to: 155,
+    head: 'The pressure year. Everybody else has one, and mostly they do.',
+    body: 'Thirteen is the minimum age on Instagram, TikTok, Snapchat, YouTube, Discord and WhatsApp, '
+      + 'not because thirteen is safe but because a privacy law makes under thirteen expensive for '
+      + 'them. Plenty of children are on all of it at eleven with a made up birthday.',
+    doNow: [
+      'If you are going to say no to social media until later, say it now and say it with other '
+      + 'parents, because on their own it is a punishment and together it is just how things are.',
+      'If they are getting accounts, set them up together, on your phone, with the privacy settings '
+      + 'done in front of them and explained.',
+      'Agree what happens when something goes wrong, in advance and in writing if you like. Nobody '
+      + 'loses the phone for telling the truth about something that happened to them.',
+      'Talk about what they are seeing, not only who they are talking to. This is the age bodies and '
+      + 'comparison start to bite.',
+    ],
+  },
+  {
+    id: 'teen', label: 'Thirteen to sixteen', from: 156, to: 191,
+    head: 'The window the sextortion crews aim at.',
+    body: 'Boys aged fourteen to seventeen are the typical target for financially motivated '
+      + 'sextortion, and it moves in hours. Girls are far more likely to report unwanted contact from '
+      + 'strangers. Both of them need the same promise from you.',
+    doNow: [
+      'Say it plainly, to a teenager, out loud: if anybody ever gets a photo of you and threatens you '
+      + 'with it, come to me. Do not pay, do not send more, and I will not be angry. Not once, not '
+      + 'later, not at all.',
+      'Tell them you know it happens to people who are not stupid, because that is the belief that '
+      + 'keeps them silent.',
+      'Keep the phone out of the bedroom overnight. It is the single rule with the clearest evidence '
+      + 'behind it and it is worth the argument.',
+      'Stop reading their messages if you were, and say you have stopped and why. At this age '
+      + 'monitoring buys you less than they will tell you voluntarily.',
+    ],
+  },
+  {
+    id: 'older', label: 'Sixteen to eighteen', from: 192, to: 400,
+    head: 'You are advising now rather than controlling.',
+    body: 'They will have devices and accounts you do not know about, and that is developmentally '
+      + 'correct rather than a failure. What you keep is the relationship, and the relationship is the '
+      + 'only thing that is going to get them to tell you when something goes wrong.',
+    doNow: [
+      'Talk about the ones who are not children. Sending money, meeting somebody from an app, a '
+      + 'person who wants everything private very fast.',
+      'Talk about what they send as much as what they receive, including that an image of somebody '
+      + 'under eighteen is a criminal matter even when both of them are under eighteen.',
+      'Tell them that if a picture of them is out there and they were under eighteen when it was '
+      + 'taken, it can be taken down, for free, without sending it to anybody. It is at '
+      + 'takeitdown.ncmec.org.',
+      'Keep saying the sentence. It does not stop working at sixteen.',
+    ],
+  },
+];
+
+function onlineStageFor(months) {
+  if (months === null || months === undefined) return null;
+  for (let i = 0; i < ONLINE_STAGES.length; i++) {
+    const s = ONLINE_STAGES[i];
+    if (months >= s.from && months <= s.to) return s;
+  }
+  return ONLINE_STAGES[ONLINE_STAGES.length - 1];
+}
+
+/* ==================================================================
+   THE APPS
+   ==================================================================
+   Written to be useful rather than complete. Every entry says what the
+   controls actually do, and where a control is weaker than a parent
+   assumes, it says so, because a false sense of cover is worse than
+   none.
+   ================================================================== */
+
+const ONLINE_APPS = [
+  {
+    id: 'roblox', name: 'Roblox', age: 'No minimum age. Built for young children.',
+    what: 'A platform of millions of games made by other users, most of them fine, some of them not, '
+      + 'with chat in almost all of them. It is very often a child’s first place with strangers in it.',
+    changed: 'It changed a lot recently. Since January 2026 everybody worldwide has to pass an age '
+      + 'check to use chat at all, done by the camera estimating their age. People are sorted into '
+      + 'brackets, under 9, 9 to 12, 13 to 15, 16 to 17, 18 to 20 and 21 plus, and can only chat with '
+      + 'their own bracket and the ones either side. An adult cannot start a conversation with a '
+      + 'twelve year old. Since June 2026 there are separate Roblox Kids accounts for 5 to 8 and '
+      + 'Roblox Select for 9 to 15, with smaller reviewed lists of games.',
+    canDo: [
+      'Turn chat off entirely for an under nine, and turn direct or whisper messages off for an under thirteen.',
+      'Set a content maturity level, and block or allow individual games one at a time.',
+      'Turn off the sensitive issues setting.',
+      'Set Party and Group Party to nobody, and block private server access.',
+      'Set a daily time limit, and a monthly cap on Robux spending with notifications.',
+      'Approve or decline every friend request, and block and report from the connections list.',
+    ],
+    honest: 'What it does not have is a parent PIN or a single lock everything switch, and the '
+      + 'controls loosen as the child gets older. Several state attorneys general have sued Roblox '
+      + 'over child safety, alleging grooming and exposure to explicit content. Those are allegations '
+      + 'in filed cases and none of them has been decided.',
+  },
+  {
+    id: 'discord', name: 'Discord', age: '13 and up',
+    what: 'Servers and voice chat, built around gaming, and the place a lot of game conversations '
+      + 'move to. Private servers are invisible from the outside.',
+    changed: 'From March 2026 teen accounts default differently: messages from people they may not '
+      + 'know go to a separate inbox, sensitive content filters cannot be switched off without '
+      + 'verifying as an adult, and teens cannot get into age restricted servers or channels.',
+    canDo: [
+      'Check whether their account is actually set as a teen account, since the protections hang off that.',
+      'Look at which servers they are in and ask who invited them to each one.',
+      'Turn direct messages from server members off in the privacy settings.',
+    ],
+    honest: 'Discord does not age check most people, so an adult can simply say they are an adult and '
+      + 'a child can simply say they are older. Treat the teen defaults as a floor and not a fence.',
+  },
+  {
+    id: 'snap', name: 'Snapchat', age: '13 and up',
+    what: 'Messages that disappear, which is exactly why children like it and exactly why it is where '
+      + 'a lot of the worst conversations happen.',
+    canDo: [
+      'Family Center shows you their friend list, who they have been talking to, and roughly how much '
+      + 'time they spend. You can report an account on their behalf.',
+    ],
+    honest: 'Family Center does not show you what was said, on purpose, and no setting will. If you '
+      + 'want to know the content of a conversation, the only route is asking your child. Parents who '
+      + 'think Family Center covers this stop asking, which is the worst of both.',
+  },
+  {
+    id: 'meta', name: 'Instagram and TikTok', age: '13 and up',
+    what: 'Where most of the social comparison happens, and where a stranger reaches a child through '
+      + 'comments and message requests rather than through a friend list.',
+    canDo: [
+      'Private account, message requests off from anybody they do not follow, comments limited to '
+      + 'people they follow.',
+      'Go through the follower list together. Anybody they cannot account for comes off.',
+      'TikTok has a separate under thirteen experience in the US with no posting, no comments and no '
+      + 'messaging at all.',
+    ],
+    honest: 'Nearly six in ten teenage girls report being contacted by a stranger on social media in '
+      + 'a way that made them uncomfortable. A private account cuts this down a great deal and does '
+      + 'not end it.',
+  },
+  {
+    id: 'yt', name: 'YouTube', age: '13 for their own account',
+    what: 'The default babysitter, and the place the recommendation engine matters more than the '
+      + 'video they searched for.',
+    canDo: [
+      'Under thirteen, use YouTube Kids or a supervised account rather than yours.',
+      'Turn autoplay off. It is the single setting that changes what a young child ends up watching.',
+      'Watch the history occasionally rather than the live video. It shows you where the algorithm has '
+      + 'been taking them.',
+    ],
+    honest: 'YouTube Kids is filtered by machine and things get through. It is much better than the '
+      + 'main app for a young child and it is not a walled garden.',
+  },
+];
+
+/* ==================================================================
+   RULES THAT ACTUALLY WORK
+   ================================================================== */
+
+const ONLINE_WORKS = {
+  title: 'What the research says actually works',
+  intro: 'The biggest review of this ran to 88 studies. It is worth knowing what came out on top, '
+    + 'because it is not what most parents reach for first.',
+  items: [
+    'Using it together came first. Sitting with them, playing it, watching it, having opinions about it.',
+    'Talking about it came second. Explaining, discussing, having a view, asking questions.',
+    'Restricting it alone came last of the three. It still helps. It helps less than either of the '
+    + 'other two, and on its own it buys less as they get older.',
+    'Monitoring software has the same problem. The researchers who studied it concluded it works '
+    + 'better as something to talk about than as something to rely on, and that it stops being a '
+    + 'viable answer as teenagers get older.',
+  ],
+  note: 'None of that means take the controls off. It means the controls are the floor and the '
+    + 'conversation is the thing.',
+};
+
+const ONLINE_GAP = {
+  title: 'The number that should decide how you react',
+  body: [
+    'Asked what they would do if an adult sent them explicit images online, 40 percent of children '
+    + 'said they would go to a parent or caregiver. Among the children it had actually happened to, '
+    + '10 percent did.',
+    'The gap between forty and ten is fear of what you will do. One in five said they worried about '
+    + 'getting in trouble with their family, one in four felt embarrassed or worried about being '
+    + 'judged, and one in six thought it was their fault.',
+  ],
+  what: 'Which means the most protective thing in this entire page is a promise you make before '
+    + 'anything happens, and then keep on the worst night of your life. You will never be in trouble '
+    + 'for telling me. Not about a photo, not about who you were talking to, not about where you were '
+    + 'or what you took.',
+};
+
+const ONLINE_RULES = {
+  title: 'The rules with the most behind them',
+  items: [
+    'No devices in the bedroom, and none overnight. Charge them in the kitchen. This is the one with '
+    + 'the clearest evidence of all, because it protects sleep, and the sleep harm is the part nobody '
+    + 'argues about.',
+    'Nothing for an hour before bed.',
+    'No phones at the table, and none during homework.',
+    'You hold the app store password, so a new app is a conversation rather than a tap.',
+    'Every account gets set up together, with the privacy settings done in front of them.',
+    'Go through friends and followers out loud, together, every few months.',
+    'Whatever the rules are, they apply to you too, visibly, or they are not rules, they are a rank.',
+  ],
+};
+
+const ONLINE_PHONE = {
+  title: 'When should they get a phone',
+  body: [
+    'There is no research that gives you an age, and anybody who tells you there is has usually read '
+    + 'a survey rather than a study. What surveys do show fairly consistently is that most American '
+    + 'children have one somewhere between ten and twelve, and one recent study raised concerns about '
+    + 'ownership before twelve, though it needs reading carefully before anybody builds a rule on it.',
+    'The more useful question is not the age. It is whether you have already had the conversations '
+    + 'on this page, because a phone is a door and the point is who is allowed through it.',
+  ],
+  together: 'The hardest part of saying no is that they are the only one without one. There is a '
+    + 'pledge called Wait Until 8th that exists entirely to solve that, where a family agrees to hold '
+    + 'off on a smartphone until the end of eighth grade, and the pledge only activates once ten '
+    + 'families from the same grade at the same school have signed. Basic phones and watches are still '
+    + 'allowed. The mechanism is the point. It turns a decision your child can argue with into one '
+    + 'that is just how things are.',
+  middle: [
+    'A watch or a basic phone answers the actual problem, which is usually that you want to reach '
+    + 'them, not that they need an internet in their pocket.',
+    'A smartphone with no social media on it is a real option and most parents forget it exists.',
+    'Whatever they get, it does not sleep in their room.',
+  ],
+};
+
+const ONLINE_SCRIPTS = {
+  title: 'What to actually say',
+  intro: 'Not a lecture about strangers. Short things, said more than once, starting years before '
+    + 'they seem necessary.',
+  items: [
+    'You will never be in trouble for telling me. Not about a photo, not about who you were talking '
+    + 'to, not about where you were.',
+    'Anybody who says keep this between us is the person you tell me about.',
+    'If somebody asks you for a picture, that is an adult problem and not yours, and it stops the '
+    + 'second you tell me.',
+    'If somebody sends you one of themselves first, that is not them being brave. That is the trick.',
+    'Somebody who is very generous very fast wants something.',
+    'If somebody says they already have a picture of you, they are usually lying, and either way '
+    + 'there is a way out and you would not be the first.',
+    'People online are not always the age they say. A lot of them say they are your age on purpose.',
+    'You can leave any conversation without being polite about it.',
+  ],
+};
+
+const ONLINE_WRONG = {
+  title: 'If it has already happened',
+  body: 'Whatever has happened, the first thirty seconds are what your child will remember for the '
+    + 'rest of it. Do not react to the picture, react to them. Then: stop replying but do not delete '
+    + 'anything, screenshot everything, do not pay, report it to the platform and at report.cybertip.org '
+    + 'or 1-800-843-5678, and if an image of somebody under eighteen is out there, takeitdown.ncmec.org '
+    + 'will get it removed for free without you sending it anywhere.',
+  link: 'There is a fuller version, including what to do in the first hour and who to call, under If '
+    + 'something is happening at home.',
+};
+
+const ONLINE_SOURCES = [
+  { org: 'American Academy of Pediatrics', label: 'Digital ecosystems, children and adolescents, the 2026 policy statement',
+    url: 'https://publications.aap.org/pediatrics/article/157/2/e2025075320/206129/Digital-Ecosystems-Children-and-Adolescents-Policy' },
+  { org: 'AAP', label: 'The Family Media Plan, and the age to start social media',
+    url: 'https://www.healthychildren.org/English/fmp/Pages/MediaPlan.aspx' },
+  { org: 'NCMEC', label: 'Online enticement, the grooming pattern, and 2025 sextortion data',
+    url: 'https://www.missingkids.org/theissues/onlineenticement' },
+  { org: 'FBI', label: 'Financially motivated sextortion, and group grooming in games',
+    url: 'https://www.fbi.gov/how-we-can-help-you/scams-and-safety/common-frauds-and-scams/sextortion/financially-motivated-sextortion' },
+  { org: 'OJJDP', label: 'How many stereotypical kidnappings there really are',
+    url: 'https://ojjdp.ojp.gov/sites/g/files/xyckuh176/files/pubs/249249.pdf' },
+  { org: 'Thorn', label: 'Why children do not tell, and the gap between what they say and what they do',
+    url: 'https://www.thorn.org/research/disclosure-and-reporting/' },
+  { org: 'US Surgeon General', label: 'Social media and youth mental health, 2023, including its own caveats',
+    url: 'https://www.hhs.gov/sites/default/files/sg-youth-mental-health-social-media-advisory.pdf' },
+  { org: 'National Academies', label: 'The 2024 report that reached a different conclusion on mental health',
+    url: 'https://www.ncbi.nlm.nih.gov/books/NBK603429/' },
+  { org: 'Roblox', label: 'Age checks, the age brackets, and the full parental controls list',
+    url: 'https://about.roblox.com/parental-controls' },
+  { org: 'Snapchat', label: 'What Family Center shows you and what it does not',
+    url: 'https://parents.snapchat.com/family-center' },
+  { org: 'Wait Until 8th', label: 'The pledge, and how the ten family rule works',
+    url: 'https://www.waituntil8th.org/faqs/' },
+];
+
+/* Where the evidence is genuinely contested, said out loud, because an
+   app that picks a side in a live scientific argument inherits the
+   argument and loses the reader who has read the other side. */
+const ONLINE_HONEST = {
+  title: 'One thing this page is deliberately not telling you',
+  body: 'You will have read that social media is causing a mental health crisis in teenagers. The '
+    + 'Surgeon General issued an advisory saying the evidence is worrying and that we do not yet know '
+    + 'whether it is safe. The National Academies reviewed overlapping evidence the following year and '
+    + 'said it did not support the conclusion that social media causes changes in adolescent health at '
+    + 'the population level. Both are serious bodies. That argument is live and this app is not going '
+    + 'to settle it for you. What is not in dispute is the contact side, the grooming and the '
+    + 'sextortion and the sleep, and everything on this page would be worth doing either way.',
+};
+
+
+/* ===== src/data/growingUp.js ===== */
+/**
+ * Ready Set Grow: Bodies, puberty and the conversations nobody had
+ * ==================================================================
+ * She asked for this alongside the online safety content, and the two
+ * belong together more than they look. A child who has the right words
+ * for their own body, who has been told that no part of them is a
+ * secret, and who knows they will never be in trouble for telling, is
+ * the child who says something on day one instead of month four.
+ *
+ * TWO TRACKS, ON PURPOSE
+ * The body track, which is what is happening to them and when. The
+ * people track, which is consent, privacy, relationships and sex. They
+ * run in parallel from toddlerhood, not from thirteen, because the
+ * groundwork for both is laid at three and the conversation at
+ * thirteen only works if it is the fortieth one rather than the first.
+ *
+ * THE RULE THIS FILE IS WRITTEN UNDER
+ * Say what is known, say how well it is known, and never dress up
+ * expert consensus as proven outcome. The clearest example is the
+ * business of teaching correct anatomical names. Every serious body
+ * recommends it and it is a national education standard by second
+ * grade, and no study has ever isolated that one component and shown
+ * it reduces abuse. This file says exactly that, in those terms,
+ * because a parent who is told something is proven and later finds out
+ * it was not stops believing the rest of the page.
+ *
+ * ON WHOSE VALUES THESE ARE
+ * Not the app's. Families differ enormously on when and how much to
+ * say about sex, and a parenting app has no business ruling on that.
+ * What this does is set out what the evidence shows about outcomes,
+ * plainly, including where it is weaker than the people who quote it
+ * admit, and then get out of the way.
+ *
+ * Everything checked September 2026 against GROW_SOURCES.
+ */
+
+const GROW_TITLE = 'Growing up';
+
+const GROW_SUB = 'Their body, their privacy, and the conversations that work better early. '
+  + 'Two tracks, both starting long before you think they need to.';
+
+const GROW_TABS = [
+  { id: 'now', label: 'Where they are now' },
+  { id: 'body', label: 'What their body does' },
+  { id: 'talking', label: 'How to talk about it' },
+  { id: 'safe', label: 'Bodies and safety' },
+];
+
+const GROW_HEAD = 'The talk does not work. Forty small ones do.';
+
+const GROW_INTRO = [
+  'There is good evidence that how parents talk about this matters, and that what matters is not how '
+  + 'much you say but how specific and how comfortable it is. Vague general talk about sex does very '
+  + 'little. Specific conversations about actual things do measurably more.',
+  'The other consistent finding is that talking about it does not make anything happen sooner. That '
+  + 'worry is the main reason parents wait, and it does not hold up.',
+];
+
+/* ==================================================================
+   THE BODY TRACK
+   ==================================================================
+   Numbers first, because parents come here with a specific question
+   and it is nearly always when, or is this normal.
+   ================================================================== */
+
+const GROW_GIRLS = {
+  title: 'Girls, in order',
+  order: [
+    'Breasts start first, on average around ten, anywhere from eight to twelve. A firm lump under one '
+    + 'nipple is the usual first sign, often on one side only for a while, and often tender. It is not '
+    + 'a lump to worry about.',
+    'Pubic hair, usually soon after, sometimes before.',
+    'The growth spurt, which in girls comes earlier in the process than it does in boys.',
+    'Then the first period, on average about two to two and a half years after the breasts started.',
+  ],
+  menarche: 'The average age of a first period is around twelve. Recent data from a large study of '
+    + 'over seventy thousand women suggests it has drifted earlier, to about eleven point nine, with '
+    + 'the shift most pronounced among Black, Hispanic and Asian participants and those on lower '
+    + 'incomes. Clinical references still say twelve to twelve and a half, so treat around twelve as '
+    + 'the number and earlier than that as unremarkable.',
+  early: 'Breast development before eight is what doctors call precocious and is worth an '
+    + 'appointment. That threshold has not changed. What changed in June 2026 is the response to it: '
+    + 'the current guideline recommends watching and waiting with checks every four to six months for '
+    + 'girls between seven and eight, rather than going straight to testing, and no routine brain scan '
+    + 'in girls aged six to eight without other symptoms. If you have read older advice that early '
+    + 'breast development means urgent testing, that is out of date.',
+  late: 'No breast development by thirteen, or more than three years between breasts starting and a '
+    + 'first period, or no period by fifteen, are all worth an appointment.',
+};
+
+const GROW_PERIODS = {
+  title: 'Periods, the practical part',
+  normal: [
+    'Cycles for a teenager run anywhere from 21 to 45 days apart. That is the adolescent range and it '
+    + 'is wider than the adult one, so do not measure a thirteen year old against a chart written for '
+    + 'a thirty year old.',
+    'A period lasts fewer than seven days.',
+    'Three to six pads or tampons a day is the normal range.',
+    'The first few years are irregular, and that is expected rather than a problem.',
+  ],
+  slower: 'Worth knowing, because it reassures: cycles are taking longer to settle than they used to. '
+    + 'In the same large study, the share of girls whose cycles became regular within two years of '
+    + 'their first period fell from 76 percent in those born in the 1950s and 60s to 56 percent in '
+    + 'those born in the early 2000s.',
+  red: {
+    title: 'Worth a doctor',
+    items: [
+      'No period by fifteen, or by fourteen if there is also a lot of body hair, an eating disorder, '
+      + 'or very heavy exercise.',
+      'Cycles closer together than every 21 days, or further apart than every 45.',
+      'Ninety days between periods, even once.',
+      'Bleeding for more than seven days.',
+      'Soaking through more than one pad or tampon every one to two hours.',
+      'A lot of bruising or bleeding generally, or a bleeding disorder in the family.',
+      'Pain that keeps her off school. Being told period pain is just part of it has left a generation '
+      + 'of women undiagnosed, and severe pain is worth investigating rather than enduring.',
+    ],
+  },
+  before: 'Tell her before it happens, and tell her more than once. Most children can understand the '
+    + 'basics by six or seven. The research on girls who were not told describes information that came '
+    + 'too late, or was wrong, or was not enough, and mothers who felt they did not know enough '
+    + 'themselves to explain it. Put something in her bag before she needs it. A girl who starts at '
+    + 'school with nothing and no idea what is happening remembers that day for forty years.',
+};
+
+const GROW_BOYS = {
+  title: 'Boys, in order',
+  order: [
+    'Testicles get larger first, on average around eleven and a half, anywhere from nine and a half '
+    + 'to fourteen. This is the actual first sign and almost nobody notices it.',
+    'Pubic hair.',
+    'The growth spurt, peaking around the middle of it, often nearly four inches in a year.',
+    'First ejaculation, about a year after the testicles started changing.',
+    'Voice change and facial hair, late, just after the growth spurt peaks. The voice is the sign '
+    + 'everybody watches for and it is one of the last things to happen.',
+  ],
+  erections: 'Tell him about spontaneous erections before they start happening in a classroom. The '
+    + 'pediatric guidance is to explain that they happen to every boy, that they are a normal sign his '
+    + 'body is changing, and that they become less frequent over time.',
+  wet: 'Tell him about wet dreams the same way, and tell him one specific thing that almost nobody '
+    + 'gets told: a wet dream does not mean he was having a sexual dream. Boys who have not been told '
+    + 'that assume something about themselves that is not true. Say clearly that he cannot prevent it '
+    + 'and it is not something he did.',
+  early: 'Signs before nine is precocious and worth an appointment. No testicular enlargement by '
+    + 'fourteen, or more than four years from start to finish, is worth one too.',
+  note: 'Boys get told far less than girls do, by everybody, and a boy who has had none of this '
+    + 'explained assumes whatever the internet tells him. That gap is not neutral.',
+};
+
+const GROW_EARLY_RISK = {
+  title: 'If she is developing early',
+  body: [
+    'Girls who develop noticeably before their friends are more likely to experience anxiety and '
+    + 'depression, to be bullied, to get unwanted sexual attention from both peers and adults, and to '
+    + 'be expected to behave older than they are. Clinicians also flag that Black girls are read as '
+    + 'older and less innocent than they are, a bias that early development makes worse.',
+    'Those are associations rather than proven causes, and researchers are still working out how much '
+    + 'is the early development itself and how much is shared family and genetic factors. It is worth '
+    + 'knowing either way, because the part you can act on is the same.',
+  ],
+  what: [
+    'Talk about it before it is visible, so she is not learning what is happening to her from the way '
+    + 'people look at her.',
+    'Say out loud that a body that looks older does not make her older, and that nobody is allowed to '
+    + 'treat her as older.',
+    'Watch the friendships. Early developing girls often get pulled toward older groups.',
+    'Tell her school if she is being commented on. This is a thing schools are supposed to handle.',
+  ],
+};
+
+/* ==================================================================
+   THE TALKING TRACK
+   ================================================================== */
+
+const GROW_EVIDENCE = {
+  title: 'What actually works, by the research',
+  items: [
+    'Specific beats general by a long way. Talking about condoms, contraception, or what to do in a '
+    + 'particular situation does measurably more than a general conversation about sex.',
+    'Comfort matters as much as content. Conversations that are open, calm and respectful predict '
+    + 'better outcomes. Ones that are awkward and rushed predict very little.',
+    'It does not make them start earlier. This is the fear that keeps parents quiet and it is not '
+    + 'supported.',
+    'Many small conversations beat one big talk, and the guidance is consistent on this from every '
+    + 'direction.',
+    'More talk is not itself the finding. Some studies found that sheer volume of conversation '
+    + 'predicted more permissive attitudes rather than delay. Talking well is the finding, not talking '
+    + 'more.',
+  ],
+  dads: 'The finding worth putting in front of fathers: across 52 studies and over twenty five '
+    + 'thousand adolescents, communication with mothers had a small but real protective effect on '
+    + 'safer sex behaviour, and communication with fathers had essentially none. That is almost '
+    + 'certainly not because fathers cannot do this. It is because they mostly are not doing it. A '
+    + 'father who takes this on is doing something the research has barely had a chance to measure.',
+};
+
+const GROW_SEXED = {
+  title: 'What the evidence says about sex education',
+  strong: {
+    title: 'Where the evidence is strong',
+    items: [
+      'Abstinence only until marriage programmes do not work. A federal evaluation of four of them '
+      + 'found no effect on when young people first had sex. A review of thirteen found no effect on '
+      + 'starting sex, frequency, number of partners or condom use.',
+      'Programmes teaching abstinence along with contraception do better. A review of 66 of them found '
+      + 'favourable effects on sexual activity, number of partners, use of protection, and rates of '
+      + 'sexually transmitted infection and pregnancy.',
+      'Virginity pledges largely do not hold, and young people who took one and then had sex were less '
+      + 'likely to use contraception when they did.',
+    ],
+  },
+  weak: {
+    title: 'Where it is weaker than people admit',
+    body: 'A review of 21 studies of school based teen pregnancy prevention programmes in the United '
+      + 'States found that of thirty comparisons, 24 showed no significant difference in pregnancy '
+      + 'rates, four showed a reduction and two showed an increase. The authors rated the quality of '
+      + 'the evidence low or very low. So: comprehensive sex education performs well on knowledge, '
+      + 'attitudes and protective behaviour, and the effect on actual pregnancy rates in American '
+      + 'schools is much more mixed than the summaries suggest. Anybody quoting a single dramatic '
+      + 'percentage at you is quoting a headline rather than a body of evidence.',
+  },
+  yours: 'What you teach at home is yours to decide and this app has no view on it. What is worth '
+    + 'knowing is that withholding accurate information has not been shown to delay anything, and has '
+    + 'been shown to leave young people less able to protect themselves when they do.',
+};
+
+const GROW_BY_AGE = [
+  {
+    id: 'toddler', label: 'Two to four', from: 18, to: 59,
+    body: 'Correct names and body ownership. Nothing about sex.',
+    items: [
+      'Use the real words. Penis, vulva, vagina, breasts, bottom. Not because a three year old needs '
+      + 'anatomy, but because a made up word tells a child this part is unspeakable, and the child who '
+      + 'cannot name it cannot report it.',
+      'Nobody has to hug or kiss anybody. Offer a high five, a wave, a handshake instead. Grandparents '
+      + 'will survive it.',
+      'Your body is yours. You can say no.',
+      'Start the difference between a surprise and a secret. A surprise is something everybody finds '
+      + 'out and is happy about. A secret is something you are told to keep forever, and we do not '
+      + 'have those in this house.',
+      'Stop asking them to keep small secrets yourself. Do not tell Mum I gave you ice cream teaches '
+      + 'exactly the thing you do not want taught.',
+    ],
+  },
+  {
+    id: 'early', label: 'Five to eight', from: 60, to: 107,
+    body: 'Privacy, the rules about touch, and where babies come from if they ask.',
+    items: [
+      'The parts a swimsuit covers are private. Nobody looks at them or touches them except to keep '
+      + 'them clean or healthy, and a doctor only with you there.',
+      'Say it includes everybody, out loud. Not a teacher, not a cousin, not a coach, not somebody in '
+      + 'the family. Nine in ten children who are abused are abused by somebody they know, and a rule '
+      + 'that only covers strangers covers almost nothing.',
+      'If somebody does, it is not your fault and you are not in trouble, and if they said I would be '
+      + 'angry, they said that to trick you.',
+      'Ask them who else they could tell if they did not want to tell you, and make sure there is '
+      + 'somebody.',
+      'Answer the baby question honestly and briefly. Most children ask around five. A short true '
+      + 'answer now is what makes the longer conversation possible at eleven.',
+      'By this age it is a national education standard that a child can name the body parts correctly '
+      + 'and can say what consent means.',
+    ],
+  },
+  {
+    id: 'middle', label: 'Nine to eleven', from: 108, to: 143,
+    body: 'Puberty, before it starts. Both children, both sets of changes.',
+    items: [
+      'Explain periods to girls by nine at the latest, and explain them to boys too. A boy who knows '
+      + 'what a period is does not become the reason a girl dreads school.',
+      'Explain erections and wet dreams to boys before they happen.',
+      'Explain that everybody goes at a different speed and that being first or last is not a problem '
+      + 'to be solved.',
+      'This is the age to talk about images and bodies online, because they will see things they did '
+      + 'not go looking for. Tell them in advance that if they see something that upsets them, they '
+      + 'can tell you and nothing will be taken away.',
+      'Deodorant, showers, sheets. The practical half matters and children are mortified to ask.',
+    ],
+  },
+  {
+    id: 'teen', label: 'Twelve to fifteen', from: 144, to: 191,
+    body: 'Consent as a real thing rather than a word, and the specifics.',
+    items: [
+      'Consent at this age is not just no means no. It is that somebody who is asleep, drunk, '
+      + 'frightened or being pestered into it has not agreed, and that changing your mind is allowed '
+      + 'at any point.',
+      'Both directions. Your child needs to know their own boundaries are real and that somebody '
+      + 'else’s are too.',
+      'Be specific. What actually protects against pregnancy and infection, what does not, and where '
+      + 'they can get it. General talk about sex does very little and this does more.',
+      'Talk about pressure and about what a good relationship feels like, not just about mechanics.',
+      'An image of somebody under eighteen is a criminal matter even when the two people involved are '
+      + 'both under eighteen. Say it once, plainly, without making it the whole conversation.',
+      'Their first gynecology visit is usually recommended between thirteen and fifteen.',
+    ],
+  },
+  {
+    id: 'older', label: 'Sixteen and up', from: 192, to: 400,
+    body: 'You are a person they can ask now rather than a person who tells them.',
+    items: [
+      'Make sure they know the practical things. Where to get contraception, what testing involves, '
+      + 'what to do the morning after something went wrong.',
+      'Tell them that you would rather know and be worried than not know.',
+      'Talk about what they want out of a relationship, not only what to avoid.',
+      'Keep the door open on the hard version. Assault, coercion, a pregnancy, a diagnosis. The '
+      + 'promise from when they were four is the same promise now.',
+    ],
+  },
+];
+
+function growStageFor(months) {
+  if (months === null || months === undefined) return null;
+  for (let i = 0; i < GROW_BY_AGE.length; i++) {
+    const s = GROW_BY_AGE[i];
+    if (months >= s.from && months <= s.to) return s;
+  }
+  return months < GROW_BY_AGE[0].from ? null : GROW_BY_AGE[GROW_BY_AGE.length - 1];
+}
+
+/* ==================================================================
+   BODIES AND SAFETY
+   ==================================================================
+   The honest section. This is where the claim everybody repeats gets
+   examined rather than repeated.
+   ================================================================== */
+
+const GROW_NAMES = {
+  title: 'The correct words, and what is actually known about them',
+  body: [
+    'Every major child health and child protection body recommends teaching children the correct '
+    + 'anatomical words from as soon as they can talk, and being able to name the body parts correctly '
+    + 'is a national education standard by the end of second grade.',
+    'The reasoning given is twofold. A made up word signals that a part of the body is shameful or '
+    + 'unspeakable, and a child without accurate words is much harder to understand if they try to '
+    + 'tell somebody something.',
+    'What is honestly known: prevention programmes that include this teaching do measurably increase '
+    + 'what children know and how likely they are to disclose. What has never been shown is that '
+    + 'teaching the words on its own reduces abuse, because no study has isolated that one part, and '
+    + 'reviewers note that no programme has yet been shown to reduce actual abuse rates. The claim '
+    + 'that offenders avoid children who know the words comes from offenders being interviewed about '
+    + 'how they chose victims, which is suggestive rather than proof.',
+  ],
+  verdict: 'So: do it, because everybody who works in this recommends it and the cost is nothing. Do '
+    + 'not do it believing it is a shield on its own, because it is not, and the things that go with '
+    + 'it matter more.',
+};
+
+const GROW_BODY_RULES = {
+  title: 'The rules that go with it',
+  items: [
+    'Your body belongs to you and you can always say no, including to family.',
+    'It is not okay for anybody to touch you in a way that makes you uncomfortable. Not Mum, not Dad, '
+    + 'not an aunt or an uncle or a teacher or a friend.',
+    'If somebody does, it is never your fault.',
+    'If somebody tells you not to tell, that is exactly when you tell.',
+    'If somebody says nobody will believe you, or offers you something, or lets you do something you '
+    + 'are not allowed, they are tricking you.',
+    'Nothing is ever so bad that you cannot tell me.',
+  ],
+  who: 'Ask them who else they would tell if they could not tell you, and help them have an answer. '
+    + 'A child needs more than one door.',
+  adults: 'The part for you rather than them: reduce the situations where one adult is alone with '
+    + 'your child unobserved, ask what the supervision policy is wherever they go, and notice if they '
+    + 'suddenly do not want to go somewhere they used to love.',
+};
+
+const GROW_CONSENT = {
+  title: 'Consent, by age',
+  intro: 'There is a proper progression for this, used in schools, and it starts far earlier than '
+    + 'most people assume.',
+  bands: [
+    { when: 'By the end of second grade', what: 'Can say what bodily autonomy and personal boundaries '
+      + 'mean, can say what consent means, and can both state their own boundaries and respect '
+      + 'somebody else’s.' },
+    { when: 'By the end of fifth grade', what: 'Can explain how consent, boundaries and bodily '
+      + 'autonomy relate to each other, and can do both sides of it in practice.' },
+    { when: 'By the end of eighth grade', what: 'Can define sexual consent, and has strategies for '
+      + 'stating boundaries and respecting them.' },
+    { when: 'By the end of high school', what: 'Can describe what sexual consent is, why it matters, '
+      + 'and the legal consequences of sex without it, and can communicate consent and their own '
+      + 'wants.' },
+  ],
+  note: 'Notice how early the first band is. Consent at six is about hugs and tickling and somebody '
+    + 'taking a toy, and it is the same skill.',
+};
+
+const GROW_DISCLOSE = {
+  title: 'If they tell you something',
+  items: [
+    'Stay calm on the outside whatever is happening on the inside. Your face is the thing they will '
+    + 'remember and it decides whether they tell you the rest.',
+    'Believe them. False reports are rare, somewhere between four and eight percent.',
+    'Say it out loud: I believe you, I am glad you told me, this is not your fault.',
+    'Do not interrogate. Do not ask leading questions. What you ask can affect what happens later in a '
+    + 'case, so get the outline and stop.',
+    'Write down what they said in their words, as soon as you can, with the date.',
+    'Then call somebody who does this. Childhelp on 1-800-422-4453 will talk you through what happens '
+    + 'next, and you can call before deciding anything.',
+  ],
+};
+
+const GROW_SOURCES = [
+  { org: 'Endocrine Society', label: 'Central precocious puberty, the June 2026 guideline and the shift to watchful waiting',
+    url: 'https://www.endocrine.org/clinical-practice-guidelines/central-precocious-puberty' },
+  { org: 'AAFP', label: 'Disorders of puberty, the ages and the order things happen in',
+    url: 'https://www.aafp.org/pubs/afp/issues/2017/1101/p590.html' },
+  { org: 'AAP, HealthyChildren', label: 'What to tell boys about erections and wet dreams',
+    url: 'https://www.healthychildren.org/English/ages-stages/gradeschool/puberty/Pages/Concerns-Boys-Have-About-Puberty.aspx' },
+  { org: 'ACOG and AAP', label: 'The menstrual cycle as a vital sign, and the adolescent normal ranges',
+    url: 'https://www.acog.org/clinical/clinical-guidance/committee-opinion/articles/2015/12/menstruation-in-girls-and-adolescents-using-the-menstrual-cycle-as-a-vital-sign' },
+  { org: 'Harvard Chan School', label: 'Periods arriving earlier, and cycles taking longer to settle',
+    url: 'https://hsph.harvard.edu/news/menstrual-periods-are-arriving-earlier-for-younger-generations-especially-among-racial-minority-and-lower-income-individuals/' },
+  { org: 'JAMA Pediatrics', label: 'Parent communication and safer sex, the meta analysis of 52 studies',
+    url: 'https://jamanetwork.com/journals/jamapediatrics/fullarticle/2468100' },
+  { org: 'Journal of Adolescent Health', label: 'Abstinence only until marriage, the updated review of what it does',
+    url: 'https://www.jahonline.org/article/S1054-139X(17)30260-4/fulltext' },
+  { org: 'Prevention Science', label: 'Where school based pregnancy prevention evidence is genuinely weak',
+    url: 'https://link.springer.com/article/10.1007/s11121-017-0861-6' },
+  { org: 'AAP, HealthyChildren', label: 'Correct names for body parts, and why',
+    url: 'https://www.healthychildren.org/English/ages-stages/preschool/Pages/Sexual-Behaviors-Young-Children.aspx' },
+  { org: 'Cochrane', label: 'School based abuse prevention, what it does and does not achieve',
+    url: 'https://www.cochrane.org/evidence/CD004380_school-based-programmes-prevention-child-sexual-abuse' },
+  { org: 'Stop It Now', label: 'The actual words to use with a child about their body',
+    url: 'https://www.stopitnow.org/ohc-content/talking-to-children-and-teens' },
+  { org: 'NCMEC KidSmartz', label: 'Surprises versus secrets, and the four rules for younger children',
+    url: 'https://www.missingkids.org/education/kidsmartz' },
+  { org: 'Darkness to Light', label: 'Five steps, and what the risk actually looks like',
+    url: 'https://www.d2l.org/fall5steps/' },
+  { org: 'Future of Sex Education', label: 'The national standards, and consent by grade',
+    url: 'https://www.advocatesforyouth.org/wp-content/uploads/2020/03/NSES-2020-web.pdf' },
+];
+
+const GROW_DISCLAIMER = 'Information, not medical advice. Ages and ranges are averages and '
+  + 'your child is not an average. Anything that worries you is worth an appointment, and a '
+  + 'pediatrician would far rather see a child who turned out to be fine.';
+
+
 /* ===== src/data/eatingTogether.js ===== */
 /**
  * Ready Set Grow: Eating, Once The Milk Question Is Over
@@ -30659,7 +31606,7 @@ const state = {};
     and nothing throws. That is exactly what happened to the Learning
     tabs, and to Jobs, Growth and the vaccine record with them. The
     build now refuses to finish if a data-sub key is not here. */
- 'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab',
+ 'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab',
  'logDraft', 'draftChildName', 'draftChildBday'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -31845,6 +32792,8 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'vaxrecord') html = screenVaxRecord(c);
   else if (v && v.type === 'screen' && v.id === 'notifications') html = screenPush();
   else if (v && v.type === 'screen' && v.id === 'support') html = screenSupport(c);
+  else if (v && v.type === 'screen' && v.id === 'online') html = screenOnline(c);
+  else if (v && v.type === 'screen' && v.id === 'growingup') html = screenGrowingUp(c);
   else if (v && v.type === 'screen' && v.id === 'plan') html = screenPlan(c);
   else if (v && v.type === 'screen' && v.id === 'sleep') html = screenSleep(c);
   else if (v && v.type === 'screen' && v.id === 'development') html = screenDevelopment(c);
@@ -32315,7 +33264,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -33042,6 +33991,10 @@ function initControls() {
       } else {
         navBack();
       }
+    } else if (t.dataset.onlinestage) {
+      store.onlineStage = store.onlineStage === t.dataset.onlinestage ? '' : t.dataset.onlinestage;
+    } else if (t.dataset.growstage) {
+      store.growStage = store.growStage === t.dataset.growstage ? '' : t.dataset.growstage;
     } else if (t.dataset.exit) {
       quickExit();
       return;
@@ -35643,6 +36596,368 @@ function screenSupport(c) {
     ${tab === 'traffick' ? supTabTraffick() : ''}
 
     <p class="disclaimer">${esc(SUP_DISCLAIMER)}</p>
+  </div>`;
+}
+
+/* ==================================================================
+   PHONES, GAMES AND WHO IS ON THE OTHER SIDE
+
+   Everything about why this exists and why it is ordered the way it
+   is lives in src/data/onlineSafety.js. The short version: her fear
+   was a stranger in a parking lot, and the honest answer is that the
+   mechanism moved rather than that the fear was silly.
+
+   The age tab opens first, because a parent arriving here has a
+   particular child in mind and wants to know what to do about that
+   child this year, not a lecture on the internet.
+   ================================================================== */
+
+function onlineAgeBlock(months) {
+  const natural = onlineStageFor(months);
+  const picked = store.onlineStage
+    ? ONLINE_STAGES.filter((s) => s.id === store.onlineStage)[0]
+    : null;
+  const st = picked || natural || ONLINE_STAGES[0];
+  const off = natural && st.id !== natural.id;
+
+  return `
+  <div class="chips" style="margin-bottom:12px">
+    ${ONLINE_STAGES.map((s) => `
+      <button class="chip" data-onlinestage="${esc(s.id)}"
+        aria-pressed="${s.id === st.id}">${esc(s.label)}</button>`).join('')}
+  </div>
+
+  ${off ? `
+  <p class="tiny" style="margin:0 0 10px">Looking at ${esc(st.label.toLowerCase())}.
+    ${natural ? 'Yours is in ' + esc(natural.label.toLowerCase()) + '.' : ''}</p>` : ''}
+
+  <div class="card leafy">
+    <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} ${esc(st.label)}</p>
+    <p class="bodytext" style="margin-top:6px;font-size:15px;line-height:1.55">${esc(st.head)}</p>
+    <p class="bodytext" style="margin-top:9px">${esc(st.body)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>What to do at this age</h4>
+    ${list(st.doNow)}
+  </div>`;
+}
+
+/* A row that says something true about this child rather than one
+   generic line that is wrong at both ends of childhood. */
+function onlineRowSub(months) {
+  const st = onlineStageFor(months);
+  if (!st) return 'Screens, games, and the people on the other side of them';
+  if (months < 60) return 'Screen rules that are easy now and a fight at eleven';
+  if (months < 108) return 'Games with strangers in them, and what to set up first';
+  if (months < 144) return 'The years it changes, and the conversations to have before it does';
+  if (months < 192) return 'Phones, accounts, and the promise that makes them tell you';
+  return 'What to talk about when you are advising rather than controlling';
+}
+
+function growRowSub(months) {
+  if (months == null) return 'Their body, their privacy, and the conversations that work better early';
+  if (months < 60) return 'The right words, and nobody has to hug anybody';
+  if (months < 108) return 'Privacy, the rules about touch, and where babies come from';
+  if (months < 144) return 'Puberty, explained before it starts rather than after';
+  if (months < 192) return 'What their body is doing, and consent as a real thing';
+  return 'The practical things, and keeping the door open';
+}
+
+function screenOnline(c) {
+  const tab = state.onlineTab || 'age';
+  const months = c.months;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(ONLINE_TITLE)}</h1>
+    <p class="sub">${esc(ONLINE_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('onlineTab', tab, ONLINE_TABS)}
+
+    ${tab === 'age' ? onlineAgeBlock(months) : ''}
+
+    ${tab === 'real' ? `
+      <div class="card leafy">
+        <p class="eyebrow">${icon('info', 11, 'var(--sage)')} ${esc(ONLINE_HEAD)}</p>
+        ${ONLINE_INTRO.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ONLINE_NUMBERS.title)}</h4>
+        ${list(ONLINE_NUMBERS.items)}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(ONLINE_NUMBERS.note)}</p></div>
+      </div>
+
+      <div class="bpbox">
+        <p class="bpbox-t">${esc(ONLINE_PATTERN.title)}</p>
+        <p class="tiny" style="margin:8px 0 0">${esc(ONLINE_PATTERN.intro)}</p>
+        <ol class="bpsteps">
+          ${ONLINE_PATTERN.steps.map((x) => `<li>${esc(x)}</li>`).join('')}
+        </ol>
+        <p class="bpwarn">${esc(ONLINE_PATTERN.speed)}</p>
+        <p class="bpclose">${esc(ONLINE_PATTERN.offPlatform)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ONLINE_GROUPS.title)}</h4>
+        ${ONLINE_GROUPS.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout"><p style="margin:0">${esc(ONLINE_GROUPS.teach)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ONLINE_SEXTORTION.title)}</h4>
+        ${ONLINE_SEXTORTION.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout" style="border-left:3px solid var(--concern, #A85A44)">
+          <p style="margin:0">${esc(ONLINE_SEXTORTION.oneThing)}</p>
+        </div>
+        <button class="btn ghost" style="width:100%;margin-top:11px" data-go="screen" data-id="support">
+          ${icon('shield', 14, 'var(--deep)')} What to do in the first hour
+        </button>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ONLINE_HONEST.title)}</h4>
+        <p class="bodytext">${esc(ONLINE_HONEST.body)}</p>
+      </div>` : ''}
+
+    ${tab === 'apps' ? ONLINE_APPS.map((a) => `
+      <div class="dsec">
+        <div style="display:flex;align-items:baseline;gap:9px">
+          <h4 style="flex:1;margin:0">${esc(a.name)}</h4>
+          <span class="tiny">${esc(a.age)}</span>
+        </div>
+        <p class="bodytext" style="margin:9px 0 0">${esc(a.what)}</p>
+        ${a.changed ? `<p class="bodytext" style="margin:9px 0 0">${esc(a.changed)}</p>` : ''}
+        <p class="sect">What you can actually do</p>
+        ${list(a.canDo)}
+        <div class="callout" style="margin-top:10px">
+          <p style="margin:0"><strong style="color:var(--deep)">Worth knowing:</strong> ${esc(a.honest)}</p>
+        </div>
+      </div>`).join('') : ''}
+
+    ${tab === 'rules' ? `
+      <div class="bpbox">
+        <p class="bpbox-t">${esc(ONLINE_GAP.title)}</p>
+        ${ONLINE_GAP.body.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+        <p class="bpclose">${esc(ONLINE_GAP.what)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ONLINE_RULES.title)}</h4>
+        ${list(ONLINE_RULES.items)}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ONLINE_WORKS.title)}</h4>
+        <p class="tiny" style="margin:0 0 9px">${esc(ONLINE_WORKS.intro)}</p>
+        ${list(ONLINE_WORKS.items)}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(ONLINE_WORKS.note)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ONLINE_PHONE.title)}</h4>
+        ${ONLINE_PHONE.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <p class="sect">The everybody else has one problem</p>
+        <p class="bodytext" style="margin:0 0 9px">${esc(ONLINE_PHONE.together)}</p>
+        <p class="sect">The middle options people forget</p>
+        ${list(ONLINE_PHONE.middle)}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ONLINE_SCRIPTS.title)}</h4>
+        <p class="tiny" style="margin:0 0 9px">${esc(ONLINE_SCRIPTS.intro)}</p>
+        ${ONLINE_SCRIPTS.items.map((x) => `
+          <div class="quote"><p class="why" style="margin:0">${esc(x)}</p></div>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ONLINE_WRONG.title)}</h4>
+        <p class="bodytext" style="margin:0 0 9px">${esc(ONLINE_WRONG.body)}</p>
+        <p class="tiny" style="margin:0 0 10px">${esc(ONLINE_WRONG.link)}</p>
+        <button class="btn ghost" style="width:100%" data-go="screen" data-id="support">
+          ${icon('shield', 14, 'var(--deep)')} ${esc(SUP_TITLE)}
+        </button>
+      </div>` : ''}
+
+    ${dsec('Where this comes from', sourceRows(ONLINE_SOURCES))}
+    <p class="disclaimer">Checked September 2026. Apps change their settings constantly, so treat the
+      controls above as where to look rather than as a permanent map.</p>
+  </div>`;
+}
+
+/* ==================================================================
+   GROWING UP
+
+   Two tracks, bodies and people, both starting at two rather than at
+   thirteen. src/data/growingUp.js carries the reasoning and the rule
+   this is written under, which is to say how well a thing is known
+   rather than only what it says.
+   ================================================================== */
+
+function growNowBlock(months) {
+  const natural = growStageFor(months);
+  const picked = store.growStage
+    ? GROW_BY_AGE.filter((s) => s.id === store.growStage)[0]
+    : null;
+  const st = picked || natural || GROW_BY_AGE[0];
+  const off = natural && st.id !== natural.id;
+
+  return `
+  <div class="chips" style="margin-bottom:12px">
+    ${GROW_BY_AGE.map((s) => `
+      <button class="chip" data-growstage="${esc(s.id)}"
+        aria-pressed="${s.id === st.id}">${esc(s.label)}</button>`).join('')}
+  </div>
+
+  ${!natural && months !== null && months !== undefined ? `
+  <p class="tiny" style="margin:0 0 10px">Nothing here applies yet at this age. It is all here for
+    when it does.</p>` : ''}
+
+  ${off ? `
+  <p class="tiny" style="margin:0 0 10px">Looking at ${esc(st.label.toLowerCase())}.
+    ${natural ? 'Yours is in ' + esc(natural.label.toLowerCase()) + '.' : ''}</p>` : ''}
+
+  <div class="card leafy">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(st.label)}</p>
+    <p class="bodytext" style="margin-top:6px;font-size:15px;line-height:1.55">${esc(st.body)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>What this looks like</h4>
+    ${list(st.items)}
+  </div>`;
+}
+
+function screenGrowingUp(c) {
+  const tab = state.growTab || 'now';
+  const months = c.months;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(GROW_TITLE)}</h1>
+    <p class="sub">${esc(GROW_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('growTab', tab, GROW_TABS)}
+
+    ${tab === 'now' ? growNowBlock(months) : ''}
+
+    ${tab === 'body' ? `
+      <div class="dsec">
+        <h4>${esc(GROW_GIRLS.title)}</h4>
+        ${steps(GROW_GIRLS.order)}
+        <p class="sect">The first period</p>
+        <p class="bodytext" style="margin:0 0 9px">${esc(GROW_GIRLS.menarche)}</p>
+        <p class="sect">Early</p>
+        <p class="bodytext" style="margin:0 0 9px">${esc(GROW_GIRLS.early)}</p>
+        <p class="sect">Late</p>
+        <p class="bodytext">${esc(GROW_GIRLS.late)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(GROW_PERIODS.title)}</h4>
+        <p class="sect" style="margin-top:0">What normal looks like</p>
+        ${list(GROW_PERIODS.normal)}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(GROW_PERIODS.slower)}</p></div>
+        <p class="sect">${esc(GROW_PERIODS.red.title)}</p>
+        ${list(GROW_PERIODS.red.items, true)}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(GROW_PERIODS.before)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(GROW_BOYS.title)}</h4>
+        ${steps(GROW_BOYS.order)}
+        <p class="sect">Erections</p>
+        <p class="bodytext" style="margin:0 0 9px">${esc(GROW_BOYS.erections)}</p>
+        <p class="sect">Wet dreams</p>
+        <p class="bodytext" style="margin:0 0 9px">${esc(GROW_BOYS.wet)}</p>
+        <p class="sect">Early and late</p>
+        <p class="bodytext" style="margin:0 0 9px">${esc(GROW_BOYS.early)}</p>
+        <div class="callout"><p style="margin:0">${esc(GROW_BOYS.note)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(GROW_EARLY_RISK.title)}</h4>
+        ${GROW_EARLY_RISK.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <p class="sect">What helps</p>
+        ${list(GROW_EARLY_RISK.what)}
+      </div>` : ''}
+
+    ${tab === 'talking' ? `
+      <div class="card leafy">
+        <p class="eyebrow">${icon('heart', 11, 'var(--sage)')} ${esc(GROW_HEAD)}</p>
+        ${GROW_INTRO.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(GROW_EVIDENCE.title)}</h4>
+        ${list(GROW_EVIDENCE.items)}
+        <div class="callout" style="margin-top:10px">
+          <p style="margin:0"><strong style="color:var(--deep)">For fathers:</strong> ${esc(GROW_EVIDENCE.dads)}</p>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(GROW_CONSENT.title)}</h4>
+        <p class="tiny" style="margin:0 0 9px">${esc(GROW_CONSENT.intro)}</p>
+        ${GROW_CONSENT.bands.map((b) => `
+          <div class="quote">
+            <p class="sit">${esc(b.when)}</p>
+            <p class="why" style="margin-top:4px">${esc(b.what)}</p>
+          </div>`).join('')}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(GROW_CONSENT.note)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(GROW_SEXED.title)}</h4>
+        <p class="sect" style="margin-top:0">${esc(GROW_SEXED.strong.title)}</p>
+        ${list(GROW_SEXED.strong.items)}
+        <p class="sect">${esc(GROW_SEXED.weak.title)}</p>
+        <p class="bodytext" style="margin:0 0 9px">${esc(GROW_SEXED.weak.body)}</p>
+        <div class="callout"><p style="margin:0">${esc(GROW_SEXED.yours)}</p></div>
+      </div>` : ''}
+
+    ${tab === 'safe' ? `
+      <div class="dsec">
+        <h4>${esc(GROW_NAMES.title)}</h4>
+        ${GROW_NAMES.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout"><p style="margin:0">${esc(GROW_NAMES.verdict)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(GROW_BODY_RULES.title)}</h4>
+        ${GROW_BODY_RULES.items.map((x) => `
+          <div class="quote"><p class="why" style="margin:0">${esc(x)}</p></div>`).join('')}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(GROW_BODY_RULES.who)}</p></div>
+        <p class="sect">Your half of it</p>
+        <p class="bodytext">${esc(GROW_BODY_RULES.adults)}</p>
+      </div>
+
+      <div class="bpbox">
+        <p class="bpbox-t">${esc(GROW_DISCLOSE.title)}</p>
+        <ol class="bpsteps">
+          ${GROW_DISCLOSE.items.map((x) => `<li>${esc(x)}</li>`).join('')}
+        </ol>
+      </div>
+
+      <div class="dsec">
+        <h4>The online half of the same thing</h4>
+        <p class="bodytext" style="margin:0 0 10px">Everything above is about the people who can reach
+          your child in a room. Most of them now reach them through a screen instead, and the
+          groundwork is identical.</p>
+        <button class="btn ghost" style="width:100%" data-go="screen" data-id="online">
+          ${icon('shield', 14, 'var(--deep)')} ${esc(ONLINE_TITLE)}
+        </button>
+      </div>` : ''}
+
+    ${dsec('Where this comes from', sourceRows(GROW_SOURCES))}
+    <p class="disclaimer">${esc(GROW_DISCLAIMER)}</p>
   </div>`;
 }
 
@@ -42200,13 +43515,17 @@ function screenChild(c) {
         'data-go="screen" data-id="vaccines"')}
       ${childRow('pill', 'Something is wrong right now',
         'Fever, rashes, crying that will not stop, and when to call',
-        'data-go="screen" data-id="now"')}`,
+        'data-go="screen" data-id="now"')}
+      ${months != null && months >= 18 ? childRow('leaf', GROW_TITLE, growRowSub(months),
+        'data-go="screen" data-id="growingup"') : ''}`,
 
     safety: () => `
       ${sectHead('safety', months, 'If something happens')}
       ${childRow('heart', 'CPR, choking and staying safe',
         esc('For ' + getCprForAge(months).label.toLowerCase()) + ', plus what to do when you are at the end of it',
         'data-go="screen" data-id="safety"')}
+      ${months != null && months >= 12 ? childRow('note', ONLINE_TITLE, onlineRowSub(months),
+        'data-go="screen" data-id="online"') : ''}
       ${childRow('shield', SUP_TITLE,
         'A caseworker, somebody who frightens you, or somebody targeting your child',
         'data-go="screen" data-id="support"')}`,
