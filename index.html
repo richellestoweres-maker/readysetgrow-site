@@ -2,7 +2,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-18 20:17">
+<meta name="rsg-build" content="2026-09-19 13:42">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
+<meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Ready Set Grow">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="/favicon-32.png" sizes="32x32">
+<link rel="icon" href="/icon-512.png" sizes="512x512">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400&family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap">
@@ -1057,6 +1066,99 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 }
 .updatebtn.ghost{background:transparent;color:var(--deep2);border-color:transparent}
 
+/* ---------- THE FAMILY CHORE CHART ----------
+   A tick row has to be comfortably tappable with one hand while
+   holding something else, so the box is 26px inside a 44px target and
+   the whole row is the button rather than just the box. */
+.chrow{
+  display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;
+  padding:11px 12px;margin-bottom:7px;border-radius:14px;
+  border:1px solid var(--line2);background:var(--surface);
+  font:inherit;cursor:pointer;min-height:48px;
+}
+.chrow.flat{background:var(--surface2);cursor:default}
+.chrow.done{background:var(--leaf3);border-color:var(--leaf)}
+.chrow.done .chlabel{color:var(--muted);text-decoration:line-through}
+.chbox{
+  flex:none;width:24px;height:24px;border-radius:8px;margin-top:1px;
+  border:1.5px solid var(--sage);background:var(--surface);
+  display:flex;align-items:center;justify-content:center;
+}
+.chrow.done .chbox{background:var(--deep);border-color:var(--deep)}
+.chbox.plus{border-style:dashed}
+.chrow.has .chbox.plus{background:var(--deep);border-color:var(--deep);border-style:solid}
+.chlabel{display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.35}
+.chstars{
+  flex:none;display:inline-flex;align-items:center;gap:3px;margin-top:2px;
+  font-size:11.5px;font-weight:700;color:var(--taupe);
+}
+.chx{
+  flex:none;width:30px;height:30px;border:0;background:none;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.chx:hover{background:var(--leaf3)}
+.chadd{
+  display:flex;align-items:center;gap:6px;width:100%;justify-content:center;
+  padding:10px;border-radius:12px;border:1px dashed var(--line);
+  background:none;color:var(--deep);font:inherit;font-size:12.5px;font-weight:600;
+  min-height:42px;cursor:pointer;
+}
+/* the seven days. they must fit across a 320px phone without scrolling,
+   which is why the label is three letters and the count sits under it. */
+.chdays{display:flex;gap:4px;margin:0 0 10px}
+.chdays.sm{margin:10px 0 0}
+.chday{
+  flex:1 1 0;min-width:0;padding:7px 2px;border-radius:11px;
+  border:1px solid var(--line2);background:var(--surface2);
+  font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;
+  min-height:40px;justify-content:center;
+}
+.chday.on{background:var(--deep);border-color:var(--deep)}
+.chday-l{font-size:11px;font-weight:700;color:var(--deep)}
+.chday.on .chday-l{color:#fff}
+.chday-n{font-size:10px;font-weight:600;color:var(--muted);min-height:12px}
+.chday.on .chday-n{color:var(--leaf)}
+.chorecard{border:0;cursor:pointer}
+
+/* ---------- THE LEARNING DAY ----------
+   Each block is a card with a number, so a parent running the morning
+   can see where they are without reading. */
+.lblock{
+  background:var(--surface);border-radius:16px;padding:13px 14px;margin-bottom:10px;
+  box-shadow:0 3px 12px rgba(107,101,80,.06);
+}
+.lblock-h{display:flex;align-items:flex-start;gap:9px;margin-bottom:8px}
+.lnum{
+  flex:none;width:22px;height:22px;border-radius:50%;background:var(--leaf2);
+  color:var(--deep);font-size:11.5px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.lblock-t{display:block;font-size:14.5px;font-weight:700;color:var(--ink);line-height:1.3}
+.lblock-s{display:block;font-size:10.5px;font-weight:700;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--taupe);margin-top:3px}
+
+/* THE ADD TO HOME SCREEN BANNER.
+   Sits inside the page rather than above the header, unlike the update
+   bar, because this one is a suggestion and that one is news. It is
+   quiet on purpose: a row, not a card, no shadow, and a cross that is
+   as easy to hit as the button. */
+.installbar{
+  display:flex;align-items:center;gap:9px;margin:0 0 12px;padding:10px 12px;
+  border:1px solid var(--line2);border-radius:16px;background:var(--surface2);
+  font-size:12.5px;line-height:1.5;color:var(--body);
+}
+.installic{flex:none;display:flex;align-items:center}
+.installgo{
+  flex:none;padding:6px 13px;border-radius:999px;border:1px solid var(--deep);
+  background:var(--deep);color:#fff;font:inherit;font-size:12px;font-weight:600;
+  min-height:32px;cursor:pointer;
+}
+.installx{
+  flex:none;width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  border:0;background:none;border-radius:50%;cursor:pointer;
+}
+.installx:hover{background:var(--leaf3)}
+
 /* The source badge holds a short code, not a logo, and some of those
    codes are words rather than three letters. It sizes to what is in it
    instead of clipping, keeps a square minimum so a row of them lines
@@ -1364,7 +1466,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-18 20:17';
+const BUILD_STAMP = '2026-09-19 13:42';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -24031,6 +24133,1048 @@ function showsDiaperContent(months) {
 }
 
 
+/* ===== src/data/install.js ===== */
+/* PUTTING THE APP ON THE HOME SCREEN
+
+   Ready Set Grow is a website that behaves like an app. That is a real
+   advantage, because there is nothing to download and nothing to
+   update by hand, but it has one honest cost: until somebody puts it
+   on their home screen it lives in a browser tab, and a browser tab is
+   easy to lose.
+
+   This file is only the words. The part that knows whether a phone can
+   be asked, and which phone it is, lives in the app itself, because
+   the two answers are different on Android and on iPhone and there is
+   no way to write one set of steps that is true for both.
+
+   WHY THE STEPS ARE SPELLED OUT FOR IPHONE
+   Android and desktop Chrome hand the browser a real install button,
+   which the app can put in front of somebody and which does the work.
+   iPhone has never fired that event and almost certainly never will,
+   so on an iPhone the only honest thing to do is point at the Share
+   button and say exactly which item to look for. Pretending there is a
+   button would be worse than saying there is not. */
+
+const INSTALL_TITLE = 'Put it on your home screen';
+const INSTALL_SUB = 'One tap to open, and it keeps working with no signal.';
+
+const INSTALL_WHY = [
+  'It opens from your home screen like any other app, with its own icon, instead of you having to remember which tab it was in.',
+  'It opens full screen, so the address bar and the browser buttons are out of the way and you get the whole phone.',
+  'What you have already looked at still opens when you have no signal, which matters in a hospital corridor and in the back of a car.',
+  'Your logs are kept on the phone either way, so nothing is lost by not doing this. It is about getting back to the app quickly at three in the morning.',
+];
+
+const INSTALL_IOS = {
+  title: 'On an iPhone or iPad',
+  note: 'Safari only. Chrome on an iPhone cannot do this, so if you are in Chrome, open readysetgrow-app.com in Safari first.',
+  steps: [
+    'Tap the Share button at the bottom of Safari, the square with the arrow pointing up out of it.',
+    'Scroll down the list until you see Add to Home Screen.',
+    'Tap it, then tap Add in the top right corner.',
+    'Close Safari. The sprout icon is now on your home screen.',
+  ],
+};
+
+const INSTALL_ANDROID = {
+  title: 'On an Android phone',
+  note: 'Chrome, Samsung Internet and Edge all handle this the same way.',
+  steps: [
+    'Tap Install below and say yes to the box that appears.',
+    'If no box appears, tap the three dots in the top right of the browser.',
+    'Choose Install app, or Add to Home screen if that is what it says.',
+    'The sprout icon is now in your app drawer and on your home screen.',
+  ],
+};
+
+const INSTALL_DESKTOP = {
+  title: 'On a computer',
+  note: 'Chrome and Edge. Safari on a Mac does this from the File menu instead, under Add to Dock.',
+  steps: [
+    'Tap Install below, or look for the small install icon at the right hand end of the address bar.',
+    'Say yes, and the app opens in its own window with no address bar.',
+    'It will be in your applications list from then on.',
+  ],
+};
+
+/* SAID OUT LOUD BECAUSE SOMEBODY WILL ASK
+
+   A parent who installs an app expects it to be able to buzz them. This
+   one cannot yet. Saying so here is better than them finding out by
+   missing something. */
+const INSTALL_NOTIFY = {
+  title: 'About reminders',
+  body: [
+    'The app does not send you notifications yet. Nothing buzzes, nothing appears on your lock screen, and nothing is waiting for you unless you open it.',
+    'That is being worked on. On an iPhone it can only ever work once the app is on your home screen, which is the other reason this page exists.',
+    'Until then, the menu in the top corner tells you what is waiting the moment you open the app.',
+  ],
+};
+
+const INSTALL_ALREADY = 'You are already running it from your home screen. Nothing more to do.';
+const INSTALL_BANNER = 'Put Ready Set Grow on your home screen so it is one tap away.';
+
+
+/* ===== src/data/chores.js ===== */
+/**
+ * Ready Set Grow: Chores and the family chart
+ * ------------------------------------------------------------------
+ * A chore chart that covers the whole house, adults included, because a
+ * chart with only the children on it teaches a child that jobs are a
+ * thing done by children.
+ *
+ * WHAT THIS FILE IS AND IS NOT
+ * It is the library: every job, the earliest age it is reasonable to
+ * hand over, roughly how long it takes, and what it is worth in stars.
+ * It is not the chart. The chart is what a family builds out of this,
+ * and that lives in the app's own store, because it is theirs.
+ *
+ * ON THE AGES
+ * Every minMonths below is the earliest age a typical child can have a
+ * go, not the age they will do it well, and definitely not a deadline.
+ * A three year old setting the table puts forks in the wrong place.
+ * That is the job being done. The sources are at the bottom and they
+ * do not fully agree with each other, which is worth knowing: the
+ * American Academy of Pediatrics list starts at five, the Montessori
+ * practical life tradition starts around twelve months, and both are
+ * describing real children. Where they differ this file leans early,
+ * because the cost of offering too soon is a child who says no, and
+ * the cost of offering too late is a twelve year old who has never
+ * been asked.
+ *
+ * FIELDS
+ *   minMonths   earliest reasonable age to offer it
+ *   area        which part of the house, for grouping
+ *   minutes     honest, including the part where they lose interest
+ *   stars       1 small, 2 middling, 3 a real piece of work
+ *   withYou     true when it is a job done alongside an adult, not alone
+ *   note        only where there is something specific worth saying
+ *   adult       true for the jobs that are an adult's, listed so the
+ *               grown ups can be on the chart too
+ */
+
+const CHORE_AREAS = [
+  { id: 'tidy', label: 'Tidying up' },
+  { id: 'kitchen', label: 'Kitchen' },
+  { id: 'laundry', label: 'Laundry' },
+  { id: 'bathroom', label: 'Bathroom' },
+  { id: 'floors', label: 'Floors and surfaces' },
+  { id: 'pets', label: 'Pets' },
+  { id: 'outside', label: 'Outside' },
+  { id: 'self', label: 'Looking after themselves' },
+  { id: 'house', label: 'Running the house' },
+];
+
+const CHORES = [
+  /* ---------------- AROUND EIGHTEEN MONTHS ----------------
+     The age almost every list skips, and the age a child most wants
+     to help. A toddler who is handed a job now is not being put to
+     work, they are being let in. */
+  { id: 'toys-in-basket', label: 'Put toys in the basket', area: 'tidy', minMonths: 16, minutes: 5, stars: 1, withYou: true },
+  { id: 'nappy-in-bin', label: 'Put their nappy in the bin', area: 'self', minMonths: 16, minutes: 1, stars: 1 },
+  { id: 'cup-to-sink', label: 'Carry their cup to the sink', area: 'kitchen', minMonths: 16, minutes: 1, stars: 1 },
+  { id: 'clothes-in-hamper', label: 'Put dirty clothes in the basket', area: 'laundry', minMonths: 16, minutes: 1, stars: 1 },
+  { id: 'wipe-a-spill', label: 'Wipe a spill with a cloth', area: 'floors', minMonths: 16, minutes: 2, stars: 1, note: 'Keep a small cloth somewhere they can reach it. Half the point is that they get it themselves.' },
+  { id: 'feed-pet-with-you', label: 'Help fill the pet bowl', area: 'pets', minMonths: 16, minutes: 2, stars: 1, withYou: true },
+  { id: 'books-on-shelf', label: 'Put books back on the shelf', area: 'tidy', minMonths: 18, minutes: 3, stars: 1 },
+  { id: 'shoes-away', label: 'Put their shoes away', area: 'tidy', minMonths: 18, minutes: 1, stars: 1 },
+
+  /* ---------------- TWO ---------------- */
+  { id: 'water-a-plant', label: 'Water a plant', area: 'house', minMonths: 24, minutes: 3, stars: 1, note: 'A tiny jug, filled by you. Overwatering one plant is a cheap lesson.' },
+  { id: 'napkins-out', label: 'Put the napkins on the table', area: 'kitchen', minMonths: 24, minutes: 2, stars: 1 },
+  { id: 'wipe-the-table', label: 'Wipe the table after a meal', area: 'kitchen', minMonths: 24, minutes: 3, stars: 1 },
+  { id: 'load-the-washer', label: 'Put clothes into the washing machine', area: 'laundry', minMonths: 24, minutes: 4, stars: 1, withYou: true },
+  { id: 'match-socks', label: 'Match up the socks', area: 'laundry', minMonths: 24, minutes: 6, stars: 1, note: 'One of the few jobs that is also a sorting lesson, which is why it is worth the mess.' },
+  { id: 'dust-low-down', label: 'Dust the low shelves', area: 'floors', minMonths: 30, minutes: 5, stars: 1, note: 'A sock on each hand works better than a duster and they will do it for longer.' },
+
+  /* ---------------- THREE ---------------- */
+  { id: 'make-bed-roughly', label: 'Pull their own covers up', area: 'self', minMonths: 36, minutes: 3, stars: 1, note: 'It will look terrible. Leave it.' },
+  { id: 'clear-own-plate', label: 'Clear their own plate', area: 'kitchen', minMonths: 36, minutes: 2, stars: 1 },
+  { id: 'feed-the-pet', label: 'Feed the pet', area: 'pets', minMonths: 36, minutes: 4, stars: 2 },
+  { id: 'groceries-away', label: 'Help put the shopping away', area: 'kitchen', minMonths: 36, minutes: 8, stars: 2, withYou: true },
+  { id: 'sort-by-colour', label: 'Sort the laundry into piles', area: 'laundry', minMonths: 36, minutes: 6, stars: 1 },
+  { id: 'toys-out-of-garden', label: 'Bring the toys in from outside', area: 'outside', minMonths: 36, minutes: 5, stars: 1 },
+  { id: 'put-own-laundry-away', label: 'Put their own clothes in the drawer', area: 'laundry', minMonths: 36, minutes: 6, stars: 2 },
+
+  /* ---------------- FOUR ---------------- */
+  { id: 'set-the-table', label: 'Set the table', area: 'kitchen', minMonths: 48, minutes: 6, stars: 2 },
+  { id: 'tidy-own-room', label: 'Tidy their own room', area: 'tidy', minMonths: 48, minutes: 12, stars: 2, note: 'Give one instruction at a time. Tidy your room means nothing at four. Books on the shelf does.' },
+  { id: 'wipe-the-sink', label: 'Wipe the bathroom sink', area: 'bathroom', minMonths: 48, minutes: 4, stars: 1 },
+  { id: 'sweep-small', label: 'Sweep up with a small brush', area: 'floors', minMonths: 48, minutes: 6, stars: 1, note: 'A child sized broom is the difference between a job and a fight.' },
+  { id: 'empty-small-bins', label: 'Empty the small bins', area: 'house', minMonths: 48, minutes: 5, stars: 1 },
+  { id: 'make-own-snack', label: 'Make their own simple snack', area: 'kitchen', minMonths: 48, minutes: 6, stars: 2, note: 'Spreading, pouring from a small jug, peeling a banana. A low shelf with a few safe things on it does most of the work.' },
+  { id: 'carry-in-shopping', label: 'Carry in a light bag of shopping', area: 'outside', minMonths: 48, minutes: 4, stars: 1 },
+
+  /* ---------------- FIVE TO SIX ---------------- */
+  { id: 'make-own-bed', label: 'Make their own bed', area: 'self', minMonths: 60, minutes: 5, stars: 2 },
+  { id: 'water-and-feed-pet', label: 'Feed and water the pet, both', area: 'pets', minMonths: 60, minutes: 6, stars: 2 },
+  { id: 'wash-plastic-dishes', label: 'Wash the plastic dishes', area: 'kitchen', minMonths: 60, minutes: 10, stars: 2 },
+  { id: 'dust-properly', label: 'Dust a whole room', area: 'floors', minMonths: 60, minutes: 10, stars: 2 },
+  { id: 'recycling-out', label: 'Take the recycling out', area: 'house', minMonths: 60, minutes: 5, stars: 1 },
+  { id: 'bring-in-post', label: 'Bring in the post', area: 'outside', minMonths: 60, minutes: 2, stars: 1 },
+  { id: 'water-the-flowers', label: 'Water the flowers outside', area: 'outside', minMonths: 60, minutes: 8, stars: 1 },
+  { id: 'pack-own-bag', label: 'Pack their own school bag', area: 'self', minMonths: 66, minutes: 6, stars: 2, note: 'Let them get to school without something once. The lesson does not land any other way.' },
+
+  /* ---------------- SIX TO EIGHT ---------------- */
+  { id: 'rake-leaves', label: 'Rake the leaves', area: 'outside', minMonths: 72, minutes: 20, stars: 3 },
+  { id: 'vacuum-a-room', label: 'Vacuum one room', area: 'floors', minMonths: 72, minutes: 10, stars: 2 },
+  { id: 'wipe-counters', label: 'Wipe down the kitchen counters', area: 'kitchen', minMonths: 72, minutes: 6, stars: 2 },
+  { id: 'unload-lower-rack', label: 'Empty the bottom of the dishwasher', area: 'kitchen', minMonths: 72, minutes: 6, stars: 2 },
+  { id: 'peel-veg', label: 'Peel the vegetables', area: 'kitchen', minMonths: 78, minutes: 10, stars: 2, withYou: true },
+  { id: 'walk-dog-with-adult', label: 'Walk the dog with an adult', area: 'pets', minMonths: 72, minutes: 25, stars: 2, withYou: true },
+  { id: 'weed-a-bed', label: 'Weed one flower bed', area: 'outside', minMonths: 78, minutes: 20, stars: 3 },
+  { id: 'pack-own-lunch', label: 'Pack their own lunch', area: 'kitchen', minMonths: 78, minutes: 10, stars: 2 },
+
+  /* ---------------- EIGHT TO TEN ---------------- */
+  { id: 'vacuum-the-house', label: 'Vacuum the whole downstairs', area: 'floors', minMonths: 96, minutes: 25, stars: 3 },
+  { id: 'help-cook-dinner', label: 'Help cook dinner', area: 'kitchen', minMonths: 96, minutes: 30, stars: 3, withYou: true },
+  { id: 'walk-the-dog', label: 'Walk the dog', area: 'pets', minMonths: 96, minutes: 25, stars: 3, note: 'Down to your street and your dog, not their age. Some ten year olds can. Some cannot.' },
+  { id: 'unload-dishwasher', label: 'Empty the whole dishwasher', area: 'kitchen', minMonths: 96, minutes: 10, stars: 2 },
+  { id: 'bins-to-kerb', label: 'Take the bins out to the kerb', area: 'house', minMonths: 96, minutes: 6, stars: 2 },
+  { id: 'fold-and-put-away', label: 'Fold the laundry and put it away', area: 'laundry', minMonths: 96, minutes: 20, stars: 3 },
+  { id: 'wash-the-car', label: 'Wash the car', area: 'outside', minMonths: 102, minutes: 40, stars: 3, withYou: true },
+  { id: 'tidy-shared-rooms', label: 'Tidy the living room', area: 'tidy', minMonths: 96, minutes: 12, stars: 2 },
+
+  /* ---------------- ELEVEN TO TWELVE ---------------- */
+  { id: 'clean-the-kitchen', label: 'Clean the kitchen after dinner', area: 'kitchen', minMonths: 132, minutes: 25, stars: 3 },
+  { id: 'change-own-sheets', label: 'Change their own bedsheets', area: 'self', minMonths: 132, minutes: 12, stars: 2 },
+  { id: 'full-load-laundry', label: 'Do a load of laundry start to finish', area: 'laundry', minMonths: 132, minutes: 20, stars: 3 },
+  { id: 'clean-the-bathroom', label: 'Clean the bathroom', area: 'bathroom', minMonths: 132, minutes: 25, stars: 3, note: 'Show them which products must never be mixed before they do this alone. Bleach and anything with ammonia in it is the one that matters.' },
+  { id: 'cook-simple-meal', label: 'Cook a simple meal with you nearby', area: 'kitchen', minMonths: 132, minutes: 40, stars: 3, withYou: true },
+  { id: 'watch-sibling', label: 'Watch a younger sibling while you are in the house', area: 'house', minMonths: 138, minutes: 30, stars: 2 },
+  { id: 'mow-with-supervision', label: 'Mow the lawn with you there', area: 'outside', minMonths: 138, minutes: 40, stars: 3, withYou: true, note: 'Closed shoes, no one else in the garden, and you outside with them the first several times.' },
+
+  /* ---------------- THIRTEEN AND UP ---------------- */
+  { id: 'cook-for-everyone', label: 'Cook a meal for the family', area: 'kitchen', minMonths: 156, minutes: 60, stars: 3, note: 'Once a week is the version that actually sticks, and it teaches more than the cooking.' },
+  { id: 'own-laundry-fully', label: 'Manage all of their own laundry', area: 'laundry', minMonths: 156, minutes: 30, stars: 3 },
+  { id: 'deep-clean-room', label: 'Properly clean their own room', area: 'tidy', minMonths: 156, minutes: 45, stars: 3 },
+  { id: 'mow-the-lawn', label: 'Mow the lawn', area: 'outside', minMonths: 156, minutes: 45, stars: 3 },
+  { id: 'shop-with-a-list', label: 'Do a shop from a list', area: 'house', minMonths: 156, minutes: 45, stars: 3 },
+  { id: 'iron-something', label: 'Iron their own clothes', area: 'laundry', minMonths: 156, minutes: 15, stars: 2 },
+  { id: 'younger-bedtime', label: 'Run a younger sibling’s bedtime', area: 'house', minMonths: 168, minutes: 30, stars: 3 },
+  { id: 'car-basics', label: 'Check the oil and the tyres', area: 'outside', minMonths: 180, minutes: 15, stars: 2, withYou: true },
+  { id: 'book-own-appointment', label: 'Book their own appointment', area: 'self', minMonths: 192, minutes: 10, stars: 2, note: 'Phoning a receptionist is a skill, and the first time is easier with you in the room and not on the phone.' },
+
+  /* ---------------- THE GROWN UPS ----------------
+     Here so the chart is honest. A child looking at the week should
+     see their name next to two jobs and a parent's name next to nine.
+     That is the actual arithmetic of a household and it is worth them
+     seeing it. */
+  { id: 'a-meal-plan', label: 'Plan the week’s meals', area: 'house', adult: true, minutes: 25, stars: 0 },
+  { id: 'a-grocery-shop', label: 'Do the food shop', area: 'house', adult: true, minutes: 60, stars: 0 },
+  { id: 'a-cook-dinner', label: 'Cook dinner', area: 'kitchen', adult: true, minutes: 45, stars: 0 },
+  { id: 'a-dishes', label: 'Do the dishes', area: 'kitchen', adult: true, minutes: 20, stars: 0 },
+  { id: 'a-laundry', label: 'Wash, dry and fold a load', area: 'laundry', adult: true, minutes: 30, stars: 0 },
+  { id: 'a-bathrooms', label: 'Clean the bathrooms', area: 'bathroom', adult: true, minutes: 30, stars: 0 },
+  { id: 'a-floors', label: 'Hoover and mop through', area: 'floors', adult: true, minutes: 40, stars: 0 },
+  { id: 'a-bins', label: 'Bins and recycling', area: 'house', adult: true, minutes: 10, stars: 0 },
+  { id: 'a-bills', label: 'Pay the bills', area: 'house', adult: true, minutes: 25, stars: 0 },
+  { id: 'a-school-admin', label: 'School forms, emails and money', area: 'house', adult: true, minutes: 20, stars: 0 },
+  { id: 'a-appointments', label: 'Book and keep track of appointments', area: 'house', adult: true, minutes: 20, stars: 0 },
+  { id: 'a-bedtime', label: 'Bedtime routine', area: 'house', adult: true, minutes: 45, stars: 0 },
+  { id: 'a-school-run', label: 'School run', area: 'house', adult: true, minutes: 40, stars: 0 },
+  { id: 'a-bath-time', label: 'Bath time', area: 'house', adult: true, minutes: 30, stars: 0 },
+  { id: 'a-pet-vet', label: 'Pet food, vet and worming', area: 'pets', adult: true, minutes: 20, stars: 0 },
+  { id: 'a-yard', label: 'Garden and yard', area: 'outside', adult: true, minutes: 60, stars: 0 },
+  { id: 'a-car', label: 'Car, fuel and servicing', area: 'outside', adult: true, minutes: 30, stars: 0 },
+  { id: 'a-tidy-round', label: 'The evening tidy round', area: 'tidy', adult: true, minutes: 15, stars: 0 },
+];
+
+const CHORE_INTRO =
+  'A chart is not really about getting the house clean. It is about a child knowing that this '
+  + 'house runs on somebody doing things, that they are somebody, and that what they did is seen.';
+
+const CHORE_WHY = {
+  title: 'Why bother with a chart at all',
+  items: [
+    'A job with their name on it is different from being asked. Being asked can be argued with. A chart is just what Tuesday looks like.',
+    'It stops the whole thing living in your head. You are not remembering who was supposed to feed the dog, the chart is.',
+    'Everyone on it, adults included, means a child can see the real share of the work rather than assuming the house cleans itself.',
+    'Doing a job badly and being thanked anyway is how a child ends up willing to do it again. The clean floor is not the point.',
+  ],
+};
+
+const CHORE_START = {
+  title: 'Handing a job over without it becoming a fight',
+  steps: [
+    'One new job at a time. A list of six arriving at once is the fastest way to lose all six.',
+    'Show them once, slowly, with almost no talking. Narrating over your own hands makes it harder to watch.',
+    'Give them the right sized thing. A child sized broom, a small jug, a cloth on a low hook. Most refusals are a tool problem wearing a mood.',
+    'Same time every day. Attached to something that already happens, such as after dinner or before the bath, rather than a time of day.',
+    'Let it be done badly and leave it that way. Redoing it in front of them tells them the job was never really theirs.',
+    'Thank the effort out loud and be specific. You put every book back is worth more than good job.',
+  ],
+};
+
+const CHORE_WHEN_THEY_WONT = {
+  title: 'When they will not do it',
+  items: [
+    'Check the job before you check the child. Too long, too vague or too hard is usually the answer, and the fix is to shrink it rather than push harder.',
+    'Do the first thirty seconds with them. Starting is the part that is hard, not the job.',
+    'Nagging does not work and it costs you. Agree one checkpoint instead, such as before screens, and hold that rather than asking six times.',
+    'A consequence that is a lost privilege lands better than a punishment. The bike goes away until the bin goes out is a sentence a child can act on.',
+    'If it has become a daily war, take that job off them for a fortnight and give them a different one. You are not conceding, you are changing the ground.',
+  ],
+};
+
+const CHORE_STARS_NOTE = {
+  title: 'About the stars',
+  body: [
+    'Stars are on by default because most young children like a total that goes up, and it gives you something specific to notice out loud.',
+    'You can turn them off in one tap if you would rather chores were simply what we all do here. Plenty of families feel strongly about that and the chart works exactly the same without them.',
+    'If you pay pocket money, the usual advice is to keep it separate from the basic jobs. Everyone tidies because they live here. The extra jobs, the car, the garage, the windows, are the ones that can carry money.',
+  ],
+};
+
+const CHORE_SAFETY = {
+  title: 'The short safety list',
+  items: [
+    'Never mix bleach with anything containing ammonia, which includes most glass cleaners. Say this out loud before a child cleans a bathroom alone.',
+    'Lawnmowers, knives and the oven are supervised jobs for a long time after a child is technically capable of them.',
+    'A child walking a dog alone is a question about your street and your dog, not about their birthday.',
+  ],
+};
+
+const CHORE_SOURCES = [
+  { label: 'Age appropriate chores for children', org: 'American Academy of Pediatrics', url: 'https://www.healthychildren.org/English/family-life/family-dynamics/communication-discipline/Pages/Chores-and-Responsibility.aspx' },
+  { label: 'Chores and children', org: 'American Academy of Child and Adolescent Psychiatry', url: 'https://www.aacap.org/AACAP/Families_and_Youth/Facts_for_Families/FFF-Guide/Chores_and_Children-125.aspx' },
+  { label: 'Age appropriate family work', org: 'Montessori Academy', url: 'https://montessoriacademy.com.au/montessori-at-home/getting-started/age-appropriate-family-work/' },
+];
+
+const CHORE_DAYS = [
+  { id: 0, label: 'Sunday', short: 'Sun' },
+  { id: 1, label: 'Monday', short: 'Mon' },
+  { id: 2, label: 'Tuesday', short: 'Tue' },
+  { id: 3, label: 'Wednesday', short: 'Wed' },
+  { id: 4, label: 'Thursday', short: 'Thu' },
+  { id: 5, label: 'Friday', short: 'Fri' },
+  { id: 6, label: 'Saturday', short: 'Sat' },
+];
+
+function choreById(id) {
+  return CHORES.filter((c) => c.id === id)[0] || null;
+}
+
+/* Everything a child of this age could reasonably be offered. Open
+   ended on purpose: a twelve year old can still be the one who feeds
+   the cat, and taking the easy jobs away as they grow is how you end
+   up with a teenager whose only jobs are the horrible ones. */
+function choresForMonths(months) {
+  const m = Number(months);
+  if (!isFinite(m)) return [];
+  return CHORES.filter((c) => !c.adult && m >= c.minMonths);
+}
+
+/* The ones that have come into range recently, for the nudge that says
+   they are old enough for this now. Six months is wide enough that a
+   parent who opens the app once a month still sees it. */
+function choresNewlyPossible(months, windowMonths = 6) {
+  const m = Number(months);
+  if (!isFinite(m)) return [];
+  return CHORES.filter((c) => !c.adult && c.minMonths <= m && c.minMonths > m - windowMonths);
+}
+
+function adultChores() {
+  return CHORES.filter((c) => !!c.adult);
+}
+
+function choreAreaLabel(id) {
+  const a = CHORE_AREAS.filter((x) => x.id === id)[0];
+  return a ? a.label : '';
+}
+
+/* Grouped by area, in the order CHORE_AREAS declares, with empty areas
+   dropped. Used by the picker so a parent scans headings rather than
+   one long alphabetical wall. */
+function choresByArea(list) {
+  const out = [];
+  CHORE_AREAS.forEach((area) => {
+    const items = (list || []).filter((c) => c.area === area.id);
+    if (items.length) out.push({ area: area, items: items });
+  });
+  return out;
+}
+
+
+/* ===== src/data/learning.js ===== */
+/**
+ * Ready Set Grow: The learning day
+ * ------------------------------------------------------------------
+ * What a structured day actually looks like, block by block, from
+ * about eighteen months up. Written for a parent teaching at home, and
+ * for a parent whose child is in a nursery and who wants to know what
+ * on earth they do all day.
+ *
+ * WHY A RHYTHM AND NOT A CURRICULUM
+ * Every good early years programme is a rhythm first. The same shape
+ * every day, in the same order, with the content swapped in and out.
+ * The rhythm is what lets a two year old cope, because they know what
+ * comes next. The content is the easy part and it changes weekly. So
+ * this file is the rhythm, and the subjects hang off it.
+ *
+ * IT IS DELIBERATELY SHORTER THAN A SCHOOL DAY
+ * A nursery day is long because of childcare, not because of learning.
+ * The actual taught minutes inside a preschool day are small, and the
+ * rest is play, outside, food and sleep. A parent at home can cover
+ * the same ground in a fraction of the hours and should be told that
+ * plainly, because the alternative is a mother who thinks she is
+ * failing at nine in the morning.
+ *
+ * WHERE THE NUMBERS COME FROM
+ * Block lengths follow the HighScope daily routine, which publishes
+ * real minute counts, and the widely used circle time lengths by age.
+ * The movement minutes are the World Health Organization figure for
+ * under fives. Sources at the bottom. Where a number is our judgement
+ * rather than a published one, it says so.
+ */
+
+const LEARN_INTRO =
+  'The same shape every day, in the same order. That is most of what a nursery is actually doing, '
+  + 'and it is the part you can do at home.';
+
+const LEARN_BLOCK_KINDS = [
+  { id: 'circle', label: 'Together' },
+  { id: 'work', label: 'Their own work' },
+  { id: 'taught', label: 'Taught' },
+  { id: 'move', label: 'Moving' },
+  { id: 'outside', label: 'Outside' },
+  { id: 'calm', label: 'Calm' },
+  { id: 'care', label: 'Food and rest' },
+];
+
+const LEARN_BANDS = [
+  /* ============================================================
+     EIGHTEEN MONTHS TO TWO
+     The age she asked about by name. Almost nothing published is
+     aimed here, because it sits between baby classes and preschool.
+     What it needs is not lessons, it is the shape: the same three
+     or four moments in the same order, so the day becomes something
+     a toddler can predict.
+     ============================================================ */
+  {
+    id: 'first',
+    label: 'Eighteen months to two',
+    minMonths: 16, maxMonths: 24,
+    sum: 'About an hour of structure, spread across a morning. Everything else is play.',
+    note: 'If they walk off halfway through a block, the block is over. That is not a failure, it is the information.',
+    blocks: [
+      {
+        id: 'hello', kind: 'circle', name: 'Hello time', minutes: '3 to 5',
+        what: 'The same tiny opening every single day, so they learn that the day has a beginning.',
+        doThis: [
+          'The same hello song, with the same hand actions, every day. Do not change it for months.',
+          'Say their name and let them say it back, however it comes out.',
+          'Go to the window and say what the weather is doing. Two sentences.',
+          'One last song with a big finish, which is the signal that hello time is done.',
+        ],
+        need: ['Nothing'],
+      },
+      {
+        id: 'onething', kind: 'taught', name: 'One thing together', minutes: '5 to 10',
+        what: 'A single material, on a tray, that you show them how to use and then hand over.',
+        doThis: [
+          'Put out one thing only. Posting coins into a slot, a jug of water and two cups, a bowl of pasta and a spoon.',
+          'Show them once, slowly, with almost no words. Your hands, not your voice.',
+          'Then stop talking and let them do it wrong for as long as they want to.',
+          'Put it away together when they lose interest, which is part of the lesson.',
+        ],
+        need: ['One tray', 'One activity, from the kitchen is fine'],
+      },
+      {
+        id: 'move1', kind: 'move', name: 'Moving', minutes: '20 to 30',
+        what: 'Big muscles. At this age this is the learning, not the break from it.',
+        doThis: [
+          'Cushions on the floor to climb over, a tunnel out of chairs and a sheet, stairs with you behind them.',
+          'Music on and dance, stop the music, everybody freeze. They will not get it for weeks and then suddenly will.',
+          'Carrying heavy things across the room. A full laundry basket is perfect and it is also a job.',
+        ],
+        need: ['Cushions', 'Music'],
+      },
+      {
+        id: 'outside1', kind: 'outside', name: 'Outside', minutes: '30 to 40',
+        what: 'Every day, in almost every weather. This is the single highest value block on the list.',
+        doThis: [
+          'No plan. Walking slowly and letting them stop at everything counts and is better than a playground.',
+          'Name three things out loud while you are out. Just name them.',
+          'Let them carry something home. A stick, a leaf, a stone.',
+        ],
+        need: ['Coat', 'Wellies'],
+      },
+      {
+        id: 'books1', kind: 'calm', name: 'Books', minutes: '5 to 10',
+        what: 'On your lap, the same books over and over, which is exactly what they need.',
+        doThis: [
+          'Let them choose, even when it is the same one for the ninth day.',
+          'Point at a thing and name it, then wait. The waiting is where the language comes from.',
+          'Stop when they get down. Finishing the book is not the goal.',
+        ],
+        need: ['Four or five board books, low down where they can reach them'],
+      },
+    ],
+  },
+
+  /* ============================================================
+     TWO TO THREE
+     Free choice appears properly here, and the taught block gets
+     long enough to be worth calling taught.
+     ============================================================ */
+  {
+    id: 'two',
+    label: 'Two to three',
+    minMonths: 24, maxMonths: 36,
+    sum: 'About two hours of shape across the morning, most of it their own play.',
+    note: 'Two is the age where the whole thing falls apart if the order changes. Keep the order even when you change what is in it.',
+    blocks: [
+      {
+        id: 'circle2', kind: 'circle', name: 'Circle time', minutes: '5 to 8',
+        what: 'Settle, learn one small thing, move, close. That order, every day.',
+        doThis: [
+          'Opening song with actions.',
+          'The day of the week and the weather. Two minutes, with a picture or a real look out of the window.',
+          'Count something real. Everyone here, the buttons on their cardigan, the apples in the bowl.',
+          'One short book, and stop to ask what happens next even though they cannot answer yet.',
+          'A movement song to reset them, then the same closing line every day.',
+        ],
+        need: ['Nothing', 'A calendar or weather chart if you want one, but it is optional'],
+      },
+      {
+        id: 'work2', kind: 'work', name: 'Their own work', minutes: '30 to 45',
+        what: 'They choose, you stay out of it. The longest block of the day and the most important.',
+        doThis: [
+          'Four or five things out on a low shelf, not twenty in a toy box. Rotate what is out every week or two.',
+          'Sit nearby and say nothing unless asked. Narrating play interrupts it.',
+          'When they get stuck, ask one question rather than fixing it. What could you try.',
+          'Tidy up together at the end with the same tidy up song every time.',
+        ],
+        need: ['A low shelf', 'Four or five activities, rotated'],
+      },
+      {
+        id: 'taught2', kind: 'taught', name: 'Small group time', minutes: '10 to 15',
+        what: 'One skill, one material, led by you. This is where the letters and colours and numbers actually live.',
+        doThis: [
+          'Pick one thing for the whole week. One colour, one shape, the number three.',
+          'Same material every day that week, used slightly differently each day.',
+          'Say the word far more often than feels sensible. Repetition is the lesson.',
+        ],
+        need: ['Whatever the week’s one thing needs'],
+      },
+      {
+        id: 'move2', kind: 'move', name: 'Music and moving', minutes: '10 to 15',
+        what: 'Deliberate, not just running about. Beat, stopping, and copying.',
+        doThis: [
+          'Clap the beat of a song, then clap their name in syllables. This is early reading, though it does not look like it.',
+          'Ribbons or scarves and move them high, low, fast, slow.',
+          'Animal walks across the room. Bear, crab, frog.',
+        ],
+        need: ['Music', 'Scarves or tea towels'],
+      },
+      {
+        id: 'outside2', kind: 'outside', name: 'Outside', minutes: '30 to 40',
+        what: 'Still every day. Under fives need about three hours of moving across the whole day and this is the reliable chunk of it.',
+        doThis: [
+          'Somewhere to climb, somewhere to run, and water or sand if you can manage it.',
+          'Take one indoor thing outside. Cars in the mud, chalk on the path, a paintbrush and a bucket of water.',
+        ],
+        need: ['Outdoor clothes'],
+      },
+      {
+        id: 'story2', kind: 'calm', name: 'Story and rest', minutes: '15',
+        what: 'The wind down, and the signal that the working part of the day is finished.',
+        doThis: [
+          'Lights down, one longer book, and no questions this time.',
+          'Then quiet time whether or not they still nap.',
+        ],
+        need: ['Books'],
+      },
+    ],
+  },
+
+  /* ============================================================
+     THREE TO FOUR
+     The full plan, do, review shape becomes possible, and this is
+     where a home day starts to look properly like a preschool day.
+     ============================================================ */
+  {
+    id: 'three',
+    label: 'Three to four',
+    minMonths: 36, maxMonths: 54,
+    sum: 'About two and a half to three hours, and it now has a beginning, a middle and an end they can describe.',
+    note: 'The big change at three is that they can say what they are going to do before they do it. That is worth building the morning around.',
+    blocks: [
+      {
+        id: 'circle3', kind: 'circle', name: 'Circle time', minutes: '8 to 12',
+        what: 'Longer, and now it can carry real content.',
+        doThis: [
+          'Hello song, then the calendar. Day, month, weather, how many days until something they care about.',
+          'The letter or sound of the week. Say it, find it, make its shape with their body.',
+          'Count to twenty together, and count a real set of ten things.',
+          'A book with questions in the middle of it.',
+          'Movement song, closing line.',
+        ],
+        need: ['A calendar', 'The week’s letter somewhere they can see it'],
+      },
+      {
+        id: 'plan3', kind: 'circle', name: 'Planning', minutes: '5 to 10',
+        what: 'They say out loud what they are going to do and where. It sounds small and it changes everything.',
+        doThis: [
+          'Ask where are you going to work today, and what are you going to do there.',
+          'Take it seriously and write it down in front of them. Writing it down is half the point.',
+          'Do not steer them. A plan you chose is not a plan.',
+        ],
+        need: ['Paper and a pen'],
+      },
+      {
+        id: 'work3', kind: 'work', name: 'Work time', minutes: '45 to 60',
+        what: 'They carry out the plan, or abandon it for something better, which is allowed.',
+        doThis: [
+          'Areas rather than a toy box. A building corner, a drawing table, a pretend corner, a book corner.',
+          'Stay out unless invited. Join at their level when you are.',
+          'Comment on what you see rather than praising it. You used every single blue one.',
+        ],
+        need: ['Three or four defined areas, however small'],
+      },
+      {
+        id: 'recall3', kind: 'circle', name: 'Tidy up and tell me', minutes: '10',
+        what: 'They tidy, then they tell you what they did. The telling is a language lesson wearing a costume.',
+        doThis: [
+          'Same tidy up song, every day.',
+          'Then ask what did you make, what was hard, what will you do tomorrow.',
+          'Let them show you rather than only tell you if that is easier.',
+        ],
+        need: ['Nothing'],
+      },
+      {
+        id: 'taught3', kind: 'taught', name: 'Taught time', minutes: '15 to 20',
+        what: 'You lead. One skill, done properly, sat at a table.',
+        doThis: [
+          'Rotate through the week. Letters and sounds, numbers, writing and fine motor, colours and feelings, and something about the world.',
+          'Fifteen minutes is plenty. Stop before they are done rather than after.',
+          'Do it at the same table every time so sitting there means working.',
+        ],
+        need: ['Pencils, paper, scissors, glue'],
+      },
+      {
+        id: 'outside3', kind: 'outside', name: 'Outside', minutes: '40 to 60',
+        what: 'The block most likely to be cut and the one that should never be.',
+        doThis: [
+          'At least one thing that gets them properly out of breath.',
+          'Take the learning out with you. Chalk letters on the path, count the cars, find five things that are red.',
+        ],
+        need: ['Chalk', 'A bucket'],
+      },
+      {
+        id: 'calm3', kind: 'calm', name: 'Yoga or quiet', minutes: '10',
+        what: 'A deliberate down shift before food. It is also where they learn that a body can be calmed on purpose.',
+        doThis: [
+          'Four or five poses with animal names and hold each one while you count to five.',
+          'Lie on their back with a soft toy on their tummy and watch it go up and down.',
+          'One slow breath in through the nose, out through the mouth, five times.',
+        ],
+        need: ['A mat or a rug', 'A small soft toy'],
+      },
+      {
+        id: 'story3', kind: 'calm', name: 'Story and rest', minutes: '20',
+        what: 'A longer book, and quiet time after it whether or not they nap.',
+        doThis: [
+          'Chapter books start to work here. A few pages a day of the same one.',
+          'Quiet time in their room with books counts. It does not have to be sleep.',
+        ],
+        need: ['Books'],
+      },
+    ],
+  },
+
+  /* ============================================================
+     FOUR TO FIVE
+     The pre school year. Letters become reading, marks become
+     writing, and a second language is worth putting in the day.
+     ============================================================ */
+  {
+    id: 'four',
+    label: 'Four to five',
+    minMonths: 54, maxMonths: 72,
+    sum: 'Around three hours. The taught part roughly doubles, and it can now sit still long enough to be taught.',
+    note: 'This is the year the gap opens between what they can do and what they will sit down for. Keep the sitting blocks short and the rest of it moving.',
+    blocks: [
+      {
+        id: 'circle4', kind: 'circle', name: 'Circle time', minutes: '10 to 15',
+        what: 'The longest circle time will ever need to be.',
+        doThis: [
+          'Calendar, weather, and how many days in the month. Real counting on a real grid.',
+          'The sound of the week, words that start with it, and writing it in the air.',
+          'A book with proper discussion. What do you think happens next and why do you think that.',
+          'Something they share with you, one at a time, which is the beginning of taking turns to speak.',
+        ],
+        need: ['A calendar', 'A whiteboard or a big sheet of paper'],
+      },
+      {
+        id: 'plan4', kind: 'circle', name: 'Planning', minutes: '5 to 10',
+        what: 'Same as three, but now they can plan two steps and you can hold them to it.',
+        doThis: [
+          'Where, what, and what you will need for it.',
+          'Write it as a list and let them draw next to it.',
+        ],
+        need: ['Paper and a pen'],
+      },
+      {
+        id: 'work4', kind: 'work', name: 'Work time', minutes: '45 to 60',
+        what: 'Longer projects that survive to the next day start to be possible.',
+        doThis: [
+          'Let something stay built overnight. A model that is not knocked down is a new idea at this age.',
+          'Add real tools. A stapler, a hole punch, sellotape, safety scissors.',
+        ],
+        need: ['A shelf or corner where work in progress can live'],
+      },
+      {
+        id: 'recall4', kind: 'circle', name: 'Tidy up and tell me', minutes: '10',
+        what: 'Now they can be asked what was hard, and answer it.',
+        doThis: [
+          'What did you do, what went wrong, what will you change tomorrow.',
+        ],
+        need: ['Nothing'],
+      },
+      {
+        id: 'taught4', kind: 'taught', name: 'Taught time', minutes: '20 to 30',
+        what: 'Split it. Two short blocks with something physical in between works far better than one long one.',
+        doThis: [
+          'Letters and sounds on Monday and Thursday, numbers on Tuesday and Friday, writing every day for five minutes.',
+          'Writing means their own name first, then letters that are in it.',
+          'Stop at the first sign it has become a battle. Tomorrow is fine.',
+        ],
+        need: ['Pencils', 'Lined paper', 'Their name written out to copy'],
+      },
+      {
+        id: 'lang4', kind: 'taught', name: 'A second language', minutes: '10',
+        what: 'Short and daily beats long and weekly. It does not need you to be fluent.',
+        doThis: [
+          'Ten minutes, same time every day. Songs and naming, not grammar.',
+          'Name things you are already touching. The apple, the door, the water.',
+          'Count to ten in it every single day until it is automatic.',
+        ],
+        need: ['Nothing', 'Songs in that language if you can find them'],
+      },
+      {
+        id: 'outside4', kind: 'outside', name: 'Outside', minutes: '45 to 60',
+        what: 'At this age at least an hour of the day should be properly energetic.',
+        doThis: [
+          'Bikes, scooters, climbing, balls. Something with a skill in it that they can get better at.',
+          'Take the taught thing outside once a week. Chalk maths on the path, a letter hunt, measuring things with a stick.',
+        ],
+        need: ['Chalk', 'A ball'],
+      },
+      {
+        id: 'calm4', kind: 'calm', name: 'Yoga and feelings', minutes: '10 to 15',
+        what: 'Poses, and then naming what their body is doing, which is where emotional vocabulary comes from.',
+        doThis: [
+          'Five poses, held and counted.',
+          'Then ask what colour they feel like today and why, and tell them yours.',
+          'Name the feeling out loud when you see it during the day. You look frustrated. That is the whole lesson.',
+        ],
+        need: ['A mat', 'A feelings chart if you like one, but your own face works'],
+      },
+      {
+        id: 'story4', kind: 'calm', name: 'Story', minutes: '20',
+        what: 'A chapter a day of something with a plot they have to hold in their head.',
+        doThis: [
+          'Ask what happened yesterday before you start.',
+          'Let them be bored for a moment. Holding a story across days is the skill.',
+        ],
+        need: ['A chapter book'],
+      },
+    ],
+  },
+
+  /* ============================================================
+     FIVE TO SIX
+     Home education proper. Reading and writing become the spine.
+     ============================================================ */
+  {
+    id: 'five',
+    label: 'Five to six',
+    minMonths: 72, maxMonths: 96,
+    sum: 'Three to four hours, and for the first time the taught blocks are the point rather than the seasoning.',
+    note: 'A home educated five year old covers in about two focused hours what a class of twenty takes most of a day to cover. That is not a shortcut, it is the arithmetic of one to one.',
+    blocks: [
+      {
+        id: 'circle5', kind: 'circle', name: 'Morning together', minutes: '10',
+        what: 'Shorter than four. It becomes a briefing rather than a lesson.',
+        doThis: [
+          'Date, the plan for the day, and one thing to look forward to.',
+          'A poem or a song. The same one all week until they know it.',
+        ],
+        need: ['Nothing'],
+      },
+      {
+        id: 'read5', kind: 'taught', name: 'Reading', minutes: '20',
+        what: 'Daily, non negotiable, and short.',
+        doThis: [
+          'Ten minutes of them reading to you, ten of you reading to them well above their own level.',
+          'Sounding out, then re reading the same sentence smoothly. The second read is where it sticks.',
+          'Stop while they still want to carry on.',
+        ],
+        need: ['Reading books at their level', 'One book far above it'],
+      },
+      {
+        id: 'write5', kind: 'taught', name: 'Writing', minutes: '15 to 20',
+        what: 'Letter formation, then real sentences about real things.',
+        doThis: [
+          'Five minutes of forming letters properly, which matters more than it sounds.',
+          'Then one sentence about something true. What they did yesterday, what they want for lunch.',
+          'Do not correct the spelling of a five year old sentence. Correct one thing, once.',
+        ],
+        need: ['Lined paper', 'A pencil that fits their hand'],
+      },
+      {
+        id: 'maths5', kind: 'taught', name: 'Numbers', minutes: '15 to 20',
+        what: 'Always with objects first, then on paper.',
+        doThis: [
+          'Count, add and take away with real things they can move. Buttons, pasta, coins.',
+          'Only write it down after they have done it with their hands.',
+          'Measure and weigh something real once a week.',
+        ],
+        need: ['Something countable', 'A tape measure', 'Kitchen scales'],
+      },
+      {
+        id: 'work5', kind: 'work', name: 'Project time', minutes: '45',
+        what: 'One big thing they are working on across weeks, chosen by them.',
+        doThis: [
+          'Let it be strange and let it be theirs. Volcanoes, a shop, a comic, a model of the house.',
+          'Your job is materials and questions, not direction.',
+        ],
+        need: ['Junk modelling box', 'Tape, glue, scissors'],
+      },
+      {
+        id: 'lang5', kind: 'taught', name: 'A second language', minutes: '10 to 15',
+        what: 'Still daily. Now it can carry short sentences.',
+        doThis: [
+          'Ten minutes, same slot. Songs, then simple back and forth.',
+          'Label five things in the house in that language and leave the labels up.',
+        ],
+        need: ['Sticky labels'],
+      },
+      {
+        id: 'outside5', kind: 'outside', name: 'Outside', minutes: '60',
+        what: 'An hour, and ideally with other children in it at least twice a week.',
+        doThis: [
+          'A sport, a club, a park with people they know. The social half stops being automatic once they are not in a class.',
+        ],
+        need: ['Nothing'],
+      },
+      {
+        id: 'calm5', kind: 'calm', name: 'Quiet and read', minutes: '20',
+        what: 'Alone, with a book, not being taught. The habit is the point.',
+        doThis: [
+          'Same time every day. They can look at pictures. It still counts.',
+        ],
+        need: ['Books they chose themselves'],
+      },
+    ],
+  },
+];
+
+/* THE THINGS THAT MATTER MORE THAN THE PLAN
+   If a parent only reads one screen, it should be this one. */
+const LEARN_RULES = {
+  title: 'Five things worth more than any curriculum',
+  items: [
+    'Same order every day. The content can change daily, the order should not change for months. Children cope with what they can predict.',
+    'Watch the child, not the clock. When a block stops working it is over, and the usual reason is that it was too long rather than that they were naughty.',
+    'Under fives need about three hours of moving a day. Not a break from learning. At this age it is a large part of the learning.',
+    'Talk far more than you think you need to, and then wait. The waiting after a question is where the language actually happens.',
+    'Sitting down blocks are short at every age on this list. Fifteen to twenty minutes is a lot for a four year old and there is no prize for more.',
+  ],
+};
+
+const LEARN_AT_HOME = {
+  title: 'If you are teaching at home',
+  items: [
+    'You are not replacing a nursery day. Most of a nursery day is care, food, sleep and the logistics of twenty children. The taught part is an hour or two.',
+    'One to one is enormously faster than one to twenty. If you have covered the morning blocks by eleven, you have not cut corners, you have finished.',
+    'The bit that does not come free at home is other children. That has to be deliberately arranged, and it matters more than any worksheet.',
+    'Keep one book where you write what you did each day, even a line. On the bad weeks it is the only evidence that you have been doing this, and you will need it.',
+    'Home education is regulated differently in every state. Check what your state actually requires before you build a year around anything.',
+  ],
+};
+
+/* ------------------------------------------------------------------
+   THE SUBJECTS
+   Not lessons yet, which is honest. This is what each one is, when it
+   genuinely starts, and what a parent should be doing about it now.
+   The lessons themselves are the next piece of work.
+   ------------------------------------------------------------------ */
+const LEARN_SUBJECTS = [
+  {
+    id: 'letters', label: 'Letters and sounds', startsMonths: 36,
+    what: 'Recognising letters, and knowing the sound each one makes, which is the part that matters for reading.',
+    now: [
+      'Start with the letters in their own name. Always.',
+      'Teach the sound rather than the name. Buh, not bee. Sounding out a word does not work with letter names.',
+      'One letter a week is fast enough. Find it in books, in the street, on packets.',
+    ],
+  },
+  {
+    id: 'writing', label: 'Writing', startsMonths: 42,
+    what: 'Marks first, then their name, then letters, then words. The hand has to be ready before any of it.',
+    now: [
+      'Before pencils, do the things that build the hand. Tearing paper, pegs, squeezing sponges, playdough, threading.',
+      'Their own name is the first real word, and usually the capital letter followed by small ones.',
+      'Do not correct a young child’s spelling. Invented spelling is a stage, not an error.',
+    ],
+  },
+  {
+    id: 'numbers', label: 'Numbers', startsMonths: 24,
+    what: 'Counting out loud is not the same as knowing how many. The second one is the real skill.',
+    now: [
+      'Count real objects and touch each one as you say it. This is the whole foundation.',
+      'Ask how many after counting. A child who counts to ten but cannot say how many there were is not counting yet.',
+      'Numbers live in the kitchen. Three spoons, two cups, one more.',
+    ],
+  },
+  {
+    id: 'colours', label: 'Colours', startsMonths: 18,
+    what: 'Naming them, sorting by them, and then something more interesting than that.',
+    now: [
+      'Sorting comes before naming. Put all the red ones here, long before they can say red.',
+      'Name the colour of things you are already holding all day long.',
+      'Mixing two colours to make a third is the first real science experiment most children do.',
+    ],
+  },
+  {
+    id: 'feelings', label: 'Colours and feelings', startsMonths: 36,
+    what: 'Giving feelings a colour gives a young child a handle on them before they have the words. It is a teaching device rather than a fact about colours, and it works.',
+    now: [
+      'Pick four feelings and give each one a colour together. Let them choose which is which.',
+      'Ask what colour they are today, and answer it yourself first so it is not an interrogation.',
+      'Name the feeling out loud when you see it, without fixing it. You are really cross. That is it.',
+      'A feeling with a name is a feeling that can be talked about instead of thrown.',
+    ],
+  },
+  {
+    id: 'language', label: 'A second language', startsMonths: 0,
+    what: 'There is no minimum age. From birth is fine, and two languages do not cause a speech delay.',
+    now: [
+      'A bilingual child hits the same milestones as any other child. Their words are split across two languages, so each one looks smaller until you add them together.',
+      'Consistency beats fluency. Ten minutes at the same time every day does more than an hour on Sundays.',
+      'You do not have to be fluent. Songs, counting and naming objects is a real start, and the accent you are worried about matters less than the exposure.',
+      'Once school starts, English takes over fast. Families who keep the other language going usually protect a specific time for it, such as after school until bedtime.',
+    ],
+  },
+  {
+    id: 'music', label: 'Music and beat', startsMonths: 12,
+    what: 'Clapping a rhythm is early reading in disguise, because hearing the parts of a word is the skill underneath it.',
+    now: [
+      'Clap their name in syllables. Het, tie, lee.',
+      'Same songs over and over. Familiarity is what lets them join in.',
+      'Loud and quiet, fast and slow, stop and go. Those four pairs are most of early music.',
+    ],
+  },
+  {
+    id: 'yoga', label: 'Yoga and calming', startsMonths: 30,
+    what: 'Less about flexibility and more about a child learning that a body can be deliberately settled.',
+    now: [
+      'Animal poses with names, held while you count. Five poses is a session.',
+      'A soft toy on the tummy to watch the breath move it.',
+      'Do it at the same point in the day so it becomes the signal rather than the treatment.',
+    ],
+  },
+  {
+    id: 'world', label: 'The world around them', startsMonths: 30,
+    what: 'Weather, growing things, where food comes from, what happens when you mix or freeze or float something.',
+    now: [
+      'Grow one thing they can watch. Beans on cotton wool works in a week.',
+      'Ask what do you think will happen before you do anything, and let a wrong answer stand.',
+      'Weather every morning at the window is a science lesson that costs nothing.',
+    ],
+  },
+];
+
+/* ------------------------------------------------------------------
+   SUPPLIES
+   Deliberately short. The most common way a parent gives up on this is
+   deciding they need to buy things first.
+   ------------------------------------------------------------------ */
+const LEARN_SUPPLIES = {
+  title: 'What you actually need',
+  core: [
+    'A low shelf they can reach, with four or five things on it, not twenty.',
+    'Trays. One activity per tray is the single trick that makes this work.',
+    'Paper, chunky pencils, safety scissors, glue, sticky tape.',
+    'Playdough, or flour and salt and oil to make it.',
+    'A small jug, a small brush and dustpan, a cloth on a low hook.',
+    'Books, low down, that they can get themselves.',
+  ],
+  laterOn: [
+    'A whiteboard and pens, from about three.',
+    'Lined paper and pencils that fit a small hand, from about four.',
+    'Buttons, pasta or coins for counting, and a tape measure.',
+    'A mat for the calm block.',
+  ],
+  freeStuff: [
+    'Cardboard boxes, jar lids, clothes pegs, a muffin tin, dried pasta, a colander and pipe cleaners cover most of what a bought activity kit contains.',
+    'The kitchen is the best sensory shelf in the house and everything on it is already paid for.',
+  ],
+};
+
+/* ON THE KITS
+   She wants to be able to send parents to a box they can order. That
+   needs a supplier and it needs one we have actually checked, so this
+   says plainly that it does not exist yet rather than linking to
+   whatever comes up first. */
+const LEARN_KITS = {
+  title: 'About buying a kit',
+  body: [
+    'There are boxes you can subscribe to that post you a month of activities with the bits included, and for some families that is the difference between doing this and not.',
+    'We are not recommending one yet. A recommendation here would be us taking money to point you somewhere, and we would rather check a supplier properly first.',
+    'In the meantime everything in this section can be done with what is already in your kitchen, and the list above says exactly what.',
+  ],
+};
+
+const LEARN_SOURCES = [
+  { label: 'The daily routine, with published block lengths', org: 'HighScope', url: 'https://www.nj.gov/education/earlychildhood/preschool/docs/HighScopeDailyRoutine.pdf' },
+  { label: 'Physical activity, sedentary behaviour and sleep under five', org: 'World Health Organization', url: 'https://www.ncbi.nlm.nih.gov/books/NBK541169/' },
+  { label: 'Dual language development', org: 'Zero to Three', url: 'https://www.zerotothree.org/resource/dual-language-development-double-the-benefit/' },
+  { label: 'Promoting preschoolers\u2019 emergent writing', org: 'NAEYC', url: 'https://www.naeyc.org/resources/pubs/yc/nov2017/emergent-writing' },
+  { label: 'Circle time, recommended length by age', org: 'Brightwheel', url: 'https://mybrightwheel.com/blog/circle-time' },
+];
+
+function learnBandFor(months) {
+  const m = Number(months);
+  if (!isFinite(m)) return null;
+  for (let i = 0; i < LEARN_BANDS.length; i++) {
+    const b = LEARN_BANDS[i];
+    if (m >= b.minMonths && m < b.maxMonths) return b;
+  }
+  /* Older than the last band still gets the last band rather than
+     nothing, because a seven year old being home educated is a real
+     person and an empty screen helps nobody. */
+  if (m >= LEARN_BANDS[LEARN_BANDS.length - 1].maxMonths) return LEARN_BANDS[LEARN_BANDS.length - 1];
+  return null;
+}
+
+function learnBandById(id) {
+  return LEARN_BANDS.filter((b) => b.id === id)[0] || null;
+}
+
+/* WHEN THE LEARNING TAB EXISTS
+   From sixteen months, because that is where the first band starts,
+   and it never goes away, because home educating parents keep going
+   and the last band holds them. */
+function showsLearning(months) {
+  return isFinite(Number(months)) && Number(months) >= 16;
+}
+
+function subjectsFor(months) {
+  const m = Number(months);
+  if (!isFinite(m)) return [];
+  return LEARN_SUBJECTS.filter((s) => m >= s.startsMonths);
+}
+
+function blockKindLabel(id) {
+  const k = LEARN_BLOCK_KINDS.filter((x) => x.id === id)[0];
+  return k ? k.label : '';
+}
+
+
 /* ===== src/data/breakingPoint.js ===== */
 /**
  * Ready Set Grow: When A Parent Is At The End Of It
@@ -25442,6 +26586,7 @@ const ICON = {
   user:'<circle cx="12" cy="8" r="3.7"/><path d="M4.9 20.2a7.1 7.1 0 0 1 14.2 0"/>',
   gear:'<circle cx="12" cy="12" r="3.1"/><path d="M19.1 14.6a1.6 1.6 0 0 0 .3 1.8l.1.1a1.9 1.9 0 1 1-2.7 2.7l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5v.2a1.9 1.9 0 1 1-3.8 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a1.9 1.9 0 1 1-2.7-2.7l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1h-.2a1.9 1.9 0 1 1 0-3.8h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a1.9 1.9 0 1 1 2.7-2.7l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5v-.2a1.9 1.9 0 1 1 3.8 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a1.9 1.9 0 1 1 2.7 2.7l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1h.2a1.9 1.9 0 1 1 0 3.8h-.1a1.6 1.6 0 0 0-1.5 1Z"/>',
   camera:'<path d="M3.5 8.5h3l1.6-2.4h6.8L16.5 8.5h4a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5h-17A1.5 1.5 0 0 1 2 18v-8a1.5 1.5 0 0 1 1.5-1.5Z"/><circle cx="12" cy="13.6" r="3.4"/>',
+  close:'<path d="M6 6l12 12M18 6L6 18"/>',
   flower:'<circle cx="12" cy="10" r="2.1"/><path d="M12 7.9c0-2 .8-3.6 2-3.6s1.4 2 .4 3.3M12 7.9c0-2-.8-3.6-2-3.6s-1.4 2-.4 3.3M14.1 10c2 0 3.6.8 3.6 2s-2 1.4-3.3.4M9.9 10c-2 0-3.6.8-3.6 2s2 1.4 3.3.4M12 12.1V20M12 16c1.6 0 3-1 3.4-2"/>',
 };
 
@@ -26437,6 +27582,34 @@ const store = {
      would be a small haunting. */
   menuOpen: false,
 
+  /* THE FAMILY CHORE CHART.
+     choreJobs is the chart itself: one entry per job per person, with
+     the days it falls on. choreDone is what has actually been ticked,
+     keyed by date then by job, and trimmed to about ten weeks so a
+     family who uses this for years does not carry every tick forever.
+     choreAdults is anybody on the chart who is not the parent and not
+     a child, such as a partner or a grandparent. */
+  choreJobs: [],
+  choreDone: {},
+  choreAdults: [],
+  choreStarsOn: true,
+  choreTab: 'today',
+  choreDay: null,
+  chorePick: null,
+
+  /* Which age band of the learning day is being looked at, when it is
+     not simply the active child's own. */
+  learnBand: '',
+  learnTab: 'day',
+
+  /* The day the add to home screen banner was waved away. It comes back
+     a week later rather than never, because somebody who says not now
+     in a hospital car park genuinely might say yes on the sofa, and
+     somebody who never wants it will wave it away twice and then it
+     stops for good. */
+  installHidden: '',
+  installWaves: 0,
+
   /* Which month the cycle calendar is showing, 0 being this one. */
   calMonth: 0,
   children: [],
@@ -26623,6 +27796,12 @@ function flushStore() {
          would be gone by the afternoon. */
       memories: store.memories,
       memDayHidden: store.memDayHidden,
+      installHidden: store.installHidden,
+      choreJobs: store.choreJobs,
+      choreDone: store.choreDone,
+      choreAdults: store.choreAdults,
+      choreStarsOn: store.choreStarsOn,
+      installWaves: store.installWaves,
       onboard: store.onboard,
       nudge: store.nudge,
       planLift: store.planLift,
@@ -26727,6 +27906,15 @@ function loadStore() {
     store.posts = Array.isArray(saved.posts) ? saved.posts : [];
     store.memories = Array.isArray(saved.memories) ? saved.memories : [];
     store.memDayHidden = typeof saved.memDayHidden === 'string' ? saved.memDayHidden : '';
+    store.installHidden = typeof saved.installHidden === 'string' ? saved.installHidden : '';
+    store.choreJobs = Array.isArray(saved.choreJobs) ? saved.choreJobs : [];
+    store.choreDone = (saved.choreDone && typeof saved.choreDone === 'object') ? saved.choreDone : {};
+    store.choreAdults = Array.isArray(saved.choreAdults) ? saved.choreAdults : [];
+    /* Only a saved false turns stars off. A store from before this
+       existed has neither, and those families get stars, which is the
+       default everywhere else. */
+    store.choreStarsOn = saved.choreStarsOn === false ? false : true;
+    store.installWaves = Number(saved.installWaves) || 0;
     store.deletedMemoryIds = Array.isArray(saved.deletedMemoryIds) ? saved.deletedMemoryIds : [];
     store.onboard = (saved.onboard && typeof saved.onboard === 'object')
       ? saved.onboard : { open: false, done: false, step: 'hello', line: '', lineFrom: '' };
@@ -27745,6 +28933,9 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'privacy') html = screenPrivacy(c);
   else if (v && v.type === 'screen' && v.id === 'rules') html = screenRules(c);
   else if (v && v.type === 'screen' && v.id === 'about') html = screenAbout(c);
+  else if (v && v.type === 'screen' && v.id === 'install') html = screenInstall();
+  else if (v && v.type === 'screen' && v.id === 'chores') html = screenChores();
+  else if (v && v.type === 'screen' && v.id === 'learning') html = screenLearning(c);
   else if (v && v.type === 'screen' && v.id === 'plan') html = screenPlan(c);
   else if (v && v.type === 'screen' && v.id === 'sleep') html = screenSleep(c);
   else if (v && v.type === 'screen' && v.id === 'development') html = screenDevelopment(c);
@@ -28211,7 +29402,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -28568,6 +29759,56 @@ function initControls() {
       return;
     } else if (t.dataset.update === 'later') {
       update.dismissed = true;
+    } else if (t.dataset.learnband) {
+      store.learnBand = t.dataset.learnband;
+      saveStore();
+    } else if (t.dataset.chore === 'tick') {
+      choreToggle(t.dataset.id);
+    } else if (t.dataset.chore === 'day') {
+      store.choreDay = Number(t.dataset.id);
+    } else if (t.dataset.chore === 'pick') {
+      store.chorePick = {
+        personId: t.dataset.id,
+        day: t.dataset.day === undefined ? choreTodayIndex() : Number(t.dataset.day),
+      };
+    } else if (t.dataset.chore === 'donepick') {
+      store.chorePick = null;
+    } else if (t.dataset.chore === 'add') {
+      choreAdd(t.dataset.id, t.dataset.who, Number(t.dataset.day));
+    } else if (t.dataset.chore === 'offday') {
+      choreSetDay(t.dataset.id, Number(t.dataset.day), false);
+    } else if (t.dataset.chore === 'toggleday') {
+      const job = choreJobs().filter((j) => j.id === t.dataset.id)[0];
+      const d = Number(t.dataset.day);
+      choreSetDay(t.dataset.id, d, !(job && (job.days || []).indexOf(d) !== -1));
+    } else if (t.dataset.chore === 'remove') {
+      choreRemove(t.dataset.id);
+    } else if (t.dataset.chore === 'stars') {
+      store.choreStarsOn = !choreStarsOn();
+      saveStore();
+    } else if (t.dataset.chore === 'deladult') {
+      choreRemoveAdult(t.dataset.id);
+    } else if (t.dataset.chore === 'addadult') {
+      /* Read straight off the field rather than keeping the name in the
+         store as it is typed. A value in the markup rebuilds the input
+         on every keystroke, which is what broke the Willow chat. */
+      const f = document.getElementById('choreadult');
+      if (f && f.value.trim()) { choreAddAdult(f.value); f.value = ''; }
+    } else if (t.dataset.install === 'go') {
+      doInstall();
+      return;
+    } else if (t.dataset.install === 'open') {
+      /* Tapping through counts as a wave for the same reason saying not
+         now does. Either way the question has been put and answered, and
+         the banner does not need to ask again this week. */
+      store.installHidden = ciToday();
+      store.installWaves = (store.installWaves || 0) + 1;
+      navPush();
+      state.view = { type: 'screen', id: 'install' };
+    } else if (t.dataset.install === 'later') {
+      store.installHidden = ciToday();
+      store.installWaves = (store.installWaves || 0) + 1;
+      saveStore();
     } else if (t.dataset.willow === 'open') {
       willow.open = true;
       willow.stick = true;
@@ -34685,6 +35926,11 @@ function cornerMenu(who) {
       <span class="grow"><span class="cmenu-t">Community rules</span>
       <span class="cmenu-s">How the rooms work, and what gets a post taken down</span></span>
     </button>
+    <button class="cmenu-row" data-go="screen" data-id="install">
+      <span class="cmenu-ic">${icon('home', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">${esc(isInstalled() ? 'On your home screen' : INSTALL_TITLE)}</span>
+      <span class="cmenu-s">${esc(isInstalled() ? 'Already installed on this device' : 'One tap to open, and it works with no signal')}</span></span>
+    </button>
     <button class="cmenu-row" data-go="screen" data-id="about">
       <span class="cmenu-ic">${icon('info', 15, 'var(--deep)')}</span>
       <span class="grow"><span class="cmenu-t">About this app</span>
@@ -36357,6 +37603,8 @@ function screenHome(c) {
     ${first ? `<p class="hello">${esc(first)}</p>` : ''}
   </div>
   <div class="sc">
+    ${installBanner()}
+    ${choreCard()}
 
     <div class="kidrow home">
       ${parentCircle()}
@@ -37364,11 +38612,26 @@ function screenChild(c) {
         c.topics.length ? esc(c.topics.slice(0, 4).map((t) => t.label).join(', ')) : 'Practical care, picked for this age',
         'data-go="screen" data-id="topics"')}`,
 
-    together: () => `
+    together: () => {
+      const jobs = kid ? choreJobsFor(kid.id).length : 0;
+      const canDo = months == null ? 0 : choresForMonths(months).length;
+      const fresh = months == null ? [] : choresNewlyPossible(months);
+      return `
       ${sectHead('together', months, 'Things to do together')}
       ${childRow('puzzle', 'Activities',
         esc(c.activities.length + ' that fit this age'),
-        'data-go="screen" data-id="activities"')}`,
+        'data-go="screen" data-id="activities"')}
+      ${showsLearning(months) ? childRow('book', 'Learning',
+        esc('What a structured day looks like at ' + (learnBandFor(months) || {}).label.toLowerCase()),
+        'data-go="screen" data-id="learning"') : ''}
+      ${canDo ? childRow('check', 'Jobs',
+        esc(jobs
+          ? jobs + (jobs === 1 ? ' job on the family chart' : ' jobs on the family chart')
+          : (fresh.length
+            ? 'Old enough now for ' + fresh[0].label.toLowerCase()
+            : canDo + ' things they are old enough to have a go at')),
+        'data-go="screen" data-id="chores"') : ''}`;
+    },
 
     where: () => {
       const rows = [
@@ -39521,6 +40784,15 @@ function parentPayload() {
   return JSON.parse(JSON.stringify({
     parent: store.parent,
     bagChecked: store.bagChecked || [],
+    /* THE CHORE CHART SYNCS AT THE HOUSEHOLD LEVEL.
+       Two parents sharing a child have to be looking at the same
+       chart, or one of them ticks the bins on her phone and the other
+       is still being told the bins need doing. The ticks travel too,
+       for exactly that reason. */
+    choreJobs: store.choreJobs || [],
+    choreDone: store.choreDone || {},
+    choreAdults: store.choreAdults || [],
+    choreStarsOn: store.choreStarsOn !== false,
     /* Carried so the greeting that already appeared on her phone does
        not appear again on the laptop the same afternoon. */
     birthdaySeen: store.birthdaySeen || {},
@@ -39761,6 +41033,11 @@ async function cloudFirstSync() {
     store.parent.situation = normalizeSituation(store.parent.situation);
     store.posts = Array.isArray(remoteUser.posts) ? remoteUser.posts : (store.posts || []);
     store.bagChecked = Array.isArray(remoteUser.bagChecked) ? remoteUser.bagChecked : [];
+    store.choreJobs = Array.isArray(remoteUser.choreJobs) ? remoteUser.choreJobs : [];
+    store.choreDone = (remoteUser.choreDone && typeof remoteUser.choreDone === 'object')
+      ? remoteUser.choreDone : {};
+    store.choreAdults = Array.isArray(remoteUser.choreAdults) ? remoteUser.choreAdults : [];
+    store.choreStarsOn = remoteUser.choreStarsOn === false ? false : true;
     store.birthdaySeen = (remoteUser.birthdaySeen && typeof remoteUser.birthdaySeen === 'object')
       ? remoteUser.birthdaySeen : {};
     store.parentUpdatedAt = remotePt;
@@ -40198,6 +41475,914 @@ function cloudStatusLine() {
   return { tone: 'plain', title: 'Saved on this device', text: 'Sign in to keep it on your account too.' };
 }
 
+
+/* =================================================================
+   THE FAMILY CHORE CHART
+
+   A weekly grid of who does what on which day, which fills today's
+   list on its own. Set it up in September and it still works in
+   November, which is the whole reason it is a week and not a list.
+
+   EVERYONE IS ON IT, NOT JUST THE CHILDREN
+   A chart with only children on it quietly teaches that jobs are a
+   thing children do. So the grown ups are people on this chart too,
+   with their own rows and their own jobs, and a child looking at
+   Tuesday sees two jobs with their name and nine with a parent's.
+   That arithmetic is worth seeing.
+
+   WHO TICKS
+   Anybody with the app open. It is not locked to a parent, because a
+   six year old who cannot tick their own box has not really been
+   given the job. What a parent gets is the chart in front of them,
+   which is enough.
+
+   STARS ARE ON BY DEFAULT AND COME OFF IN ONE TAP
+   Plenty of families feel strongly that helping at home should not be
+   paid or scored. They are not wrong, and the chart works identically
+   with the stars hidden.
+   ================================================================= */
+
+const CHORE_ME = 'me';
+
+function choreNewId() {
+  return 'j' + Date.now() + Math.floor(Math.random() * 1000);
+}
+
+/* Everyone the chart can hand a job to. The parent, any other adults
+   they have added, and every real child. Example children are left
+   out, because a chart is not a demo. */
+function chorePeople() {
+  const out = [{
+    id: CHORE_ME,
+    name: (store.parent.name || 'You').trim() || 'You',
+    kind: 'adult',
+    months: null,
+  }];
+  (store.choreAdults || []).forEach((a) => {
+    out.push({ id: a.id, name: a.name || 'Someone', kind: 'adult', months: null });
+  });
+  store.children.filter((k) => !isExampleChild(k)).forEach((k) => {
+    const s = getAgeSummary({ name: k.name, birthday: k.birthday });
+    const months = s.age ? s.age.totalMonths : null;
+    /* A baby is not on the chart. Not out of tidiness: a row with a
+       name and no possible job on it invites somebody to invent one,
+       and the youngest thing on the list is already sixteen months. */
+    if (months != null && !choresForMonths(months).length) return;
+    out.push({
+      id: k.id,
+      name: (k.name || 'Unnamed').split(/\s+/)[0],
+      kind: 'child',
+      months: months,
+    });
+  });
+  return out;
+}
+
+function chorePerson(id) {
+  return chorePeople().filter((p) => p.id === id)[0] || null;
+}
+
+function choreJobs() {
+  return Array.isArray(store.choreJobs) ? store.choreJobs : [];
+}
+
+/* A job whose person has been removed from the family, or whose chore
+   id no longer exists in the library, is dropped on the way out rather
+   than deleted from the store. Deleting somebody's whole chart because
+   a chore got renamed in a build would be an unpleasant surprise. */
+function choreLiveJobs() {
+  const ids = {};
+  chorePeople().forEach((p) => { ids[p.id] = true; });
+  return choreJobs().filter((j) => ids[j.personId] && choreById(j.choreId));
+}
+
+function choreJobsFor(personId, day) {
+  return choreLiveJobs().filter((j) => j.personId === personId
+    && (day === undefined || day === null || (j.days || []).indexOf(day) !== -1));
+}
+
+function choreJobsOnDay(day) {
+  return choreLiveJobs().filter((j) => (j.days || []).indexOf(day) !== -1);
+}
+
+function choreTodayIndex() {
+  return new Date().getDay();
+}
+
+function choreDoneFor(dayKey) {
+  const all = (store.choreDone && typeof store.choreDone === 'object') ? store.choreDone : {};
+  return all[dayKey] || {};
+}
+
+function choreIsDone(jobId, dayKey) {
+  return !!choreDoneFor(dayKey || ciToday())[jobId];
+}
+
+function choreToggle(jobId) {
+  const key = ciToday();
+  if (!store.choreDone || typeof store.choreDone !== 'object') store.choreDone = {};
+  if (!store.choreDone[key]) store.choreDone[key] = {};
+  if (store.choreDone[key][jobId]) delete store.choreDone[key][jobId];
+  else store.choreDone[key][jobId] = true;
+  choreTrimDone();
+  saveStore();
+}
+
+/* Ten weeks of history is plenty to draw a star total from, and it
+   stops the saved store growing without limit for a family that uses
+   this for years. */
+function choreTrimDone() {
+  const all = store.choreDone;
+  if (!all || typeof all !== 'object') return;
+  const keys = Object.keys(all).sort();
+  const over = keys.length - 70;
+  for (let i = 0; i < over; i++) delete all[keys[i]];
+}
+
+function choreStarsOn() {
+  return store.choreStarsOn !== false;
+}
+
+/* Stars earned. Counted from the done record rather than stored, so it
+   can never drift away from what is actually ticked. */
+function choreStars(personId, sinceDays) {
+  if (!choreStarsOn()) return 0;
+  const byId = {};
+  choreLiveJobs().forEach((j) => { byId[j.id] = j; });
+  const all = (store.choreDone && typeof store.choreDone === 'object') ? store.choreDone : {};
+  const keys = Object.keys(all);
+  let cut = '';
+  if (sinceDays) {
+    const d = new Date();
+    d.setDate(d.getDate() - sinceDays);
+    cut = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+      + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  let total = 0;
+  keys.forEach((k) => {
+    if (cut && k < cut) return;
+    Object.keys(all[k] || {}).forEach((jobId) => {
+      const job = byId[jobId];
+      if (!job || job.personId !== personId) return;
+      const ch = choreById(job.choreId);
+      if (ch) total += (ch.stars || 0);
+    });
+  });
+  return total;
+}
+
+function choreAdd(choreId, personId, day) {
+  if (!Array.isArray(store.choreJobs)) store.choreJobs = [];
+  /* The same job twice for the same person is never what anybody
+     meant, so an existing one gains the day instead. */
+  const found = store.choreJobs.filter((j) => j.choreId === choreId && j.personId === personId)[0];
+  if (found) {
+    if ((found.days || []).indexOf(day) === -1) found.days = (found.days || []).concat([day]);
+  } else {
+    store.choreJobs.push({ id: choreNewId(), choreId: choreId, personId: personId, days: [day] });
+  }
+  saveStore();
+}
+
+function choreSetDay(jobId, day, on) {
+  const job = choreJobs().filter((j) => j.id === jobId)[0];
+  if (!job) return;
+  const days = (job.days || []).filter((d) => d !== day);
+  job.days = on ? days.concat([day]).sort() : days;
+  /* A job on no days at all is not a job. */
+  if (!job.days.length) store.choreJobs = choreJobs().filter((j) => j.id !== jobId);
+  saveStore();
+}
+
+function choreRemove(jobId) {
+  store.choreJobs = choreJobs().filter((j) => j.id !== jobId);
+  saveStore();
+}
+
+function choreAddAdult(name) {
+  const clean = (name || '').trim();
+  if (!clean) return;
+  if (!Array.isArray(store.choreAdults)) store.choreAdults = [];
+  store.choreAdults.push({ id: 'a' + Date.now() + Math.floor(Math.random() * 1000), name: clean });
+  saveStore();
+}
+
+function choreRemoveAdult(id) {
+  store.choreAdults = (store.choreAdults || []).filter((a) => a.id !== id);
+  store.choreJobs = choreJobs().filter((j) => j.personId !== id);
+  saveStore();
+}
+
+/* What is still outstanding today, for the card on Home. */
+function choreOutstanding() {
+  const day = choreTodayIndex();
+  const key = ciToday();
+  return choreJobsOnDay(day).filter((j) => !choreIsDone(j.id, key));
+}
+
+function choreStarRow(n) {
+  if (!choreStarsOn() || !n) return '';
+  return `<span class="chstars">${icon('star', 11, 'var(--taupe)')} ${esc(String(n))}</span>`;
+}
+
+/* ---------------- THE CARD ON HOME ---------------- */
+function choreCard() {
+  /* Before there is a chart at all, the card is the way in. It only
+     appears once at least one child is old enough to be given
+     something, so a household of one newborn never sees it. */
+  if (!choreLiveJobs().length) {
+    const ready = chorePeople().filter((p) => p.kind === 'child');
+    if (!ready.length) return '';
+    return `
+    <button class="card flat chorecard" data-go="screen" data-id="chores" style="width:100%;text-align:left">
+      <p class="eyebrow">${icon('check', 11, 'var(--sage)')} Jobs</p>
+      <p class="bodytext" style="margin:5px 0 0">
+        ${esc(ready.length === 1 ? ready[0].name + ' is old enough to have a job of their own.' : 'Everyone here is old enough for a job of their own.')}
+        Start a chart for the week.
+      </p>
+    </button>`;
+  }
+  const left = choreOutstanding();
+  const day = CHORE_DAYS[choreTodayIndex()];
+  const names = [];
+  left.forEach((j) => {
+    const p = chorePerson(j.personId);
+    if (p && names.indexOf(p.name) === -1) names.push(p.name);
+  });
+  return `
+  <button class="card flat chorecard" data-go="screen" data-id="chores" style="width:100%;text-align:left">
+    <p class="eyebrow">${icon('check', 11, 'var(--sage)')} ${esc(day.label)}</p>
+    ${left.length ? `
+      <p class="bodytext" style="margin:5px 0 0">
+        ${esc(left.length === 1 ? 'One job left today' : left.length + ' jobs left today')}${names.length ? esc(', for ' + listJoin(names)) : ''}.
+      </p>` : `
+      <p class="bodytext" style="margin:5px 0 0">Everything on today's chart is done.</p>`}
+  </button>`;
+}
+
+/* Oxford comma deliberately absent, because she does not use one. */
+function listJoin(arr) {
+  const a = (arr || []).slice();
+  if (!a.length) return '';
+  if (a.length === 1) return a[0];
+  const last = a.pop();
+  return a.join(', ') + ' and ' + last;
+}
+
+/* ---------------- THE BOARD ---------------- */
+function screenChores() {
+  const tab = store.choreTab || 'today';
+  const tabs = [
+    { id: 'today', label: 'Today' },
+    { id: 'week', label: 'The week' },
+    { id: 'who', label: 'Who does what' },
+    { id: 'how', label: 'How to start' },
+  ];
+  const body = tab === 'week' ? choreWeekTab()
+    : tab === 'who' ? choreWhoTab()
+      : tab === 'how' ? choreHowTab()
+        : choreTodayTab();
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">Jobs</h1>
+    <p class="sub">${esc(CHORE_INTRO)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('choreTab', tab, tabs)}
+    ${store.chorePick ? chorePicker() : body}
+  </div>`;
+}
+
+function choreTodayTab() {
+  const day = choreTodayIndex();
+  const key = ciToday();
+  const people = chorePeople();
+  const any = choreJobsOnDay(day).length;
+
+  if (!choreLiveJobs().length) return choreEmpty();
+
+  return `
+  ${!any ? `
+    <div class="card flat">
+      <p class="bodytext">Nothing is on the chart for ${esc(CHORE_DAYS[day].label.toLowerCase())}. That is allowed.
+      One clear day a week is a good idea rather than an oversight.</p>
+    </div>` : ''}
+  ${people.map((p) => {
+    const jobs = choreJobsFor(p.id, day);
+    if (!jobs.length) return '';
+    const doneN = jobs.filter((j) => choreIsDone(j.id, key)).length;
+    return `
+    <div class="dsec">
+      <h4>${esc(p.name)} ${esc(doneN + ' of ' + jobs.length)}${p.kind === 'child' ? esc(' ') : ''}</h4>
+      ${jobs.map((j) => choreTickRow(j, key)).join('')}
+    </div>`;
+  }).join('')}
+  ${choreStarsOn() ? `
+    <div class="dsec">
+      <h4>Stars this week</h4>
+      ${people.filter((p) => p.kind === 'child' && choreJobsFor(p.id).length).map((p) => `
+        <div class="lrow" style="pointer-events:none">
+          <span class="grow" style="font-size:14px;font-weight:600;color:var(--ink)">${esc(p.name)}</span>
+          <span class="tiny">${esc(String(choreStars(p.id, 7)))} this week, ${esc(String(choreStars(p.id)))} altogether</span>
+        </div>`).join('')}
+    </div>` : ''}`;
+}
+
+function choreTickRow(job, key) {
+  const ch = choreById(job.choreId);
+  if (!ch) return '';
+  const done = choreIsDone(job.id, key);
+  return `
+  <button class="chrow${done ? ' done' : ''}" data-chore="tick" data-id="${esc(job.id)}">
+    <span class="chbox">${done ? icon('check', 13, '#fff') : ''}</span>
+    <span class="grow">
+      <span class="chlabel">${esc(ch.label)}</span>
+      <span class="tiny" style="display:block;margin-top:2px">
+        ${esc(ch.minutes + ' min')}${ch.withYou ? ', with you' : ''}${ch.note ? '' : ''}
+      </span>
+    </span>
+    ${choreStarRow(ch.stars)}
+  </button>`;
+}
+
+function choreEmpty() {
+  return `
+  <div class="card leafy">
+    <p class="bodytext">Nothing on the chart yet. Add one job for one person and see how the week goes
+    before you add any more. A chart with six new jobs on it on day one is a chart nobody looks at on day three.</p>
+  </div>
+  ${chorePeople().map((p) => `
+    <button class="lrow" data-chore="pick" data-id="${esc(p.id)}">
+      <span class="licon">${icon(p.kind === 'child' ? 'star' : 'user', 18)}</span>
+      <span class="grow">
+        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Give ${esc(p.name)} a job</span>
+        <span class="tiny" style="display:block;margin-top:2px">${esc(p.kind === 'child'
+    ? (p.months == null ? 'Add their birthday to see what fits' : choresForMonths(p.months).length + ' things they are old enough for')
+    : 'The jobs that are already yours, written down')}</span>
+      </span>
+      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+    </button>`).join('')}`;
+}
+
+function choreWeekTab() {
+  const sel = typeof store.choreDay === 'number' ? store.choreDay : choreTodayIndex();
+  const people = chorePeople();
+  return `
+  <div class="chdays">
+    ${CHORE_DAYS.map((d) => {
+    const n = choreJobsOnDay(d.id).length;
+    return `
+    <button class="chday${sel === d.id ? ' on' : ''}" data-chore="day" data-id="${esc(String(d.id))}">
+      <span class="chday-l">${esc(d.short)}</span>
+      <span class="chday-n">${esc(n ? String(n) : '')}</span>
+    </button>`;
+  }).join('')}
+  </div>
+  <p class="tiny" style="margin:0 0 12px">Tap a day to see it, then give somebody a job on it.</p>
+  ${people.map((p) => {
+    const jobs = choreJobsFor(p.id, sel);
+    return `
+    <div class="dsec">
+      <h4>${esc(p.name)}</h4>
+      ${jobs.length ? jobs.map((j) => {
+    const ch = choreById(j.choreId);
+    return `
+        <div class="chrow flat">
+          <span class="grow"><span class="chlabel">${esc(ch.label)}</span>
+          <span class="tiny" style="display:block;margin-top:2px">${esc(ch.minutes + ' min')}${ch.withYou ? ', with you' : ''}</span></span>
+          ${choreStarRow(ch.stars)}
+          <button class="chx" data-chore="offday" data-id="${esc(j.id)}" data-day="${esc(String(sel))}"
+            aria-label="Take this off ${esc(CHORE_DAYS[sel].label)}">${icon('close', 12, 'var(--muted)')}</button>
+        </div>`;
+  }).join('') : `<p class="tiny" style="margin:0 0 8px">Nothing on ${esc(CHORE_DAYS[sel].short)}.</p>`}
+      <button class="chadd" data-chore="pick" data-id="${esc(p.id)}" data-day="${esc(String(sel))}">
+        ${icon('plus', 13, 'var(--deep)')} Add a job for ${esc(p.name)}
+      </button>
+    </div>`;
+  }).join('')}`;
+}
+
+function choreWhoTab() {
+  const people = chorePeople();
+  return `
+  ${people.map((p) => {
+    const jobs = choreJobsFor(p.id);
+    return `
+    <div class="dsec">
+      <h4>${esc(p.name)}${p.kind === 'child' && choreStarsOn() ? esc(', ' + choreStars(p.id) + ' stars') : ''}</h4>
+      ${jobs.length ? jobs.map((j) => {
+    const ch = choreById(j.choreId);
+    return `
+        <div class="card flat" style="padding:11px 12px">
+          <div style="display:flex;align-items:flex-start;gap:8px">
+            <span class="grow"><span class="chlabel">${esc(ch.label)}</span>
+            <span class="tiny" style="display:block;margin-top:2px">${esc(choreAreaLabel(ch.area))}, ${esc(ch.minutes + ' min')}</span></span>
+            ${choreStarRow(ch.stars)}
+            <button class="chx" data-chore="remove" data-id="${esc(j.id)}"
+              aria-label="Take ${esc(ch.label)} off the chart">${icon('close', 12, 'var(--muted)')}</button>
+          </div>
+          <div class="chdays sm">
+            ${CHORE_DAYS.map((d) => `
+              <button class="chday${(j.days || []).indexOf(d.id) !== -1 ? ' on' : ''}"
+                data-chore="toggleday" data-id="${esc(j.id)}" data-day="${esc(String(d.id))}">
+                <span class="chday-l">${esc(d.short)}</span>
+              </button>`).join('')}
+          </div>
+          ${ch.note ? `<p class="tiny" style="margin:8px 0 0">${esc(ch.note)}</p>` : ''}
+        </div>`;
+  }).join('') : `<p class="tiny" style="margin:0 0 8px">No jobs yet.</p>`}
+      <button class="chadd" data-chore="pick" data-id="${esc(p.id)}">
+        ${icon('plus', 13, 'var(--deep)')} Add a job for ${esc(p.name)}
+      </button>
+      ${p.id !== CHORE_ME && p.kind === 'adult' ? `
+        <button class="tiny" data-chore="deladult" data-id="${esc(p.id)}"
+          style="background:none;border:0;color:var(--muted);text-decoration:underline;padding:6px 0">
+          Take ${esc(p.name)} off the chart
+        </button>` : ''}
+    </div>`;
+  }).join('')}
+
+  <div class="dsec">
+    <h4>Somebody else who helps</h4>
+    <p class="tiny" style="margin:0 0 8px">A partner, a grandparent, an older stepchild, anyone who is part of how
+    this house runs. They get their own row and their own jobs.</p>
+    <div style="display:flex;gap:8px">
+      <input class="inp grow" id="choreadult" type="text" autocomplete="off" placeholder="Their name" value="">
+      <button class="btn" data-chore="addadult" style="flex:none">Add</button>
+    </div>
+  </div>
+
+  <div class="dsec">
+    <h4>Stars</h4>
+    <button class="lrow" data-chore="stars">
+      <span class="licon">${icon('star', 18)}</span>
+      <span class="grow">
+        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(choreStarsOn() ? 'Stars are on' : 'Stars are off')}</span>
+        <span class="tiny" style="display:block;margin-top:2px">${esc(choreStarsOn()
+    ? 'Tap to hide them. The chart works exactly the same.'
+    : 'Tap to turn them back on.')}</span>
+      </span>
+    </button>
+  </div>`;
+}
+
+function chorePicker() {
+  const pick = store.chorePick || {};
+  const p = chorePerson(pick.personId);
+  if (!p) { store.chorePick = null; return choreTodayTab(); }
+  const day = typeof pick.day === 'number' ? pick.day : choreTodayIndex();
+  const have = {};
+  choreJobsFor(p.id, day).forEach((j) => { have[j.choreId] = true; });
+
+  const pool = p.kind === 'adult'
+    ? adultChores()
+    : (p.months == null ? [] : choresForMonths(p.months));
+  const groups = choresByArea(pool);
+
+  return `
+  <div class="card leafy">
+    <p class="bodytext" style="margin:0">
+      A job for ${esc(p.name)} on ${esc(CHORE_DAYS[day].label)}.
+      ${p.kind === 'child' && p.months != null
+    ? esc('Everything here is something a ' + childAgeWord(p.months) + ' can have a go at. It will not be done well and that is the job being done.')
+    : esc('The work that is already yours, written down so it is on the chart with everybody else’s.')}
+    </p>
+  </div>
+  ${p.kind === 'child' && p.months == null ? `
+    <div class="card flat"><p class="bodytext">Add their birthday on their profile and this fills up.</p></div>` : ''}
+  ${groups.map((g) => `
+    <div class="dsec">
+      <h4>${esc(g.area.label)}</h4>
+      ${g.items.map((ch) => `
+        <button class="chrow pick${have[ch.id] ? ' has' : ''}" data-chore="add"
+          data-id="${esc(ch.id)}" data-who="${esc(p.id)}" data-day="${esc(String(day))}">
+          <span class="chbox plus">${have[ch.id] ? icon('check', 13, '#fff') : icon('plus', 13, 'var(--deep)')}</span>
+          <span class="grow">
+            <span class="chlabel">${esc(ch.label)}</span>
+            <span class="tiny" style="display:block;margin-top:2px">${esc(ch.minutes + ' min')}${ch.withYou ? ', with you' : ''}</span>
+          </span>
+          ${choreStarRow(ch.stars)}
+        </button>`).join('')}
+    </div>`).join('')}
+  <button class="bigbtn" data-chore="donepick">Done</button>`;
+}
+
+/* A rough word for how old they are, for one sentence of copy. It does
+   not need to be precise and a precise one reads like a form. */
+function childAgeWord(months) {
+  if (months < 24) return 'toddler';
+  if (months < 60) return String(Math.floor(months / 12)) + ' year old';
+  if (months < 156) return String(Math.floor(months / 12)) + ' year old';
+  return 'teenager';
+}
+
+function choreHowTab() {
+  return `
+  <div class="card leafy">
+    <p class="bodytext">${esc(CHORE_INTRO)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(CHORE_WHY.title)}</h4>
+    ${list(CHORE_WHY.items)}
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(CHORE_START.title)}</h4>
+    <ol class="nlist">${CHORE_START.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(CHORE_WHEN_THEY_WONT.title)}</h4>
+    ${list(CHORE_WHEN_THEY_WONT.items)}
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(CHORE_STARS_NOTE.title)}</h4>
+    ${CHORE_STARS_NOTE.body.map((b) => `<p class="bodytext" style="margin:0 0 9px">${esc(b)}</p>`).join('')}
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(CHORE_SAFETY.title)}</h4>
+    ${list(CHORE_SAFETY.items, true)}
+  </div>
+
+  ${dsec('Where this comes from', sourceRows(CHORE_SOURCES))}`;
+}
+
+/* =================================================================
+   THE LEARNING DAY
+
+   What a structured day actually looks like, block by block, for a
+   parent teaching at home and for a parent who wants to know what
+   their child does all day at nursery.
+
+   IT SHOWS ONE BAND AT A TIME, STARTING AT THEIR AGE
+   The bands are pickable, because a mother with a two year old and a
+   four year old needs to see both, and because looking a year ahead is
+   half of why anybody opens a page like this.
+
+   IT DOES NOT PRETEND TO BE SIX HOURS
+   The taught part of a nursery day is an hour or two. The rest is
+   care, food, sleep and the logistics of twenty children. Saying that
+   plainly is the single most useful thing on the screen, because the
+   alternative is somebody at home concluding by nine in the morning
+   that she is already failing.
+   ================================================================= */
+
+function learnBandChoice(months) {
+  const picked = store.learnBand ? learnBandById(store.learnBand) : null;
+  return picked || learnBandFor(months) || LEARN_BANDS[0];
+}
+
+function screenLearning(c) {
+  const months = c.months;
+  const band = learnBandChoice(months);
+  const tab = store.learnTab || 'day';
+  const tabs = [
+    { id: 'day', label: 'The day' },
+    { id: 'subjects', label: 'Subjects' },
+    { id: 'kit', label: 'What you need' },
+    { id: 'how', label: 'Running it' },
+  ];
+  const body = tab === 'subjects' ? learnSubjectsTab(months)
+    : tab === 'kit' ? learnKitTab()
+      : tab === 'how' ? learnHowTab()
+        : learnDayTab(band, months);
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">Learning</h1>
+    <p class="sub">${esc(LEARN_INTRO)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('learnTab', tab, tabs)}
+    ${body}
+  </div>`;
+}
+
+function learnDayTab(band, months) {
+  const natural = learnBandFor(months);
+  const off = natural && band.id !== natural.id;
+  return `
+  <div class="chips" style="margin-bottom:12px">
+    ${LEARN_BANDS.map((b) => `
+      <button class="chip" data-learnband="${esc(b.id)}" aria-pressed="${b.id === band.id}">${esc(b.label)}</button>`).join('')}
+  </div>
+  ${off && natural ? `
+    <p class="tiny" style="margin:0 0 10px">You are looking at ${esc(band.label.toLowerCase())}.
+    <button class="tiny" data-learnband="${esc(natural.id)}"
+      style="background:none;border:0;padding:0;color:var(--deep);text-decoration:underline">Back to their age</button></p>` : ''}
+
+  <div class="card leafy">
+    <p class="bodytext" style="margin:0 0 6px"><strong>${esc(band.label)}</strong></p>
+    <p class="bodytext" style="margin:0">${esc(band.sum)}</p>
+  </div>
+  ${band.note ? `<p class="tiny" style="margin:0 0 14px">${esc(band.note)}</p>` : ''}
+
+  ${band.blocks.map((b, i) => `
+    <div class="lblock">
+      <div class="lblock-h">
+        <span class="lnum">${esc(String(i + 1))}</span>
+        <span class="grow">
+          <span class="lblock-t">${esc(b.name)}</span>
+          <span class="lblock-s">${esc(blockKindLabel(b.kind))} &middot; ${esc(b.minutes)} min</span>
+        </span>
+      </div>
+      <p class="bodytext" style="margin:0 0 8px">${esc(b.what)}</p>
+      ${list(b.doThis)}
+      ${(b.need || []).length ? `
+        <p class="tiny" style="margin:8px 0 0">You need: ${esc(b.need.join(', ').toLowerCase())}.</p>` : ''}
+    </div>`).join('')}
+
+  <div class="dsec">
+    <h4>${esc(LEARN_RULES.title)}</h4>
+    ${list(LEARN_RULES.items)}
+  </div>`;
+}
+
+function learnSubjectsTab(months) {
+  const now = subjectsFor(months);
+  const later = LEARN_SUBJECTS.filter((s) => now.indexOf(s) === -1);
+  return `
+  <div class="card leafy">
+    <p class="bodytext" style="margin:0">Each of these hangs off a block in the day rather than being a lesson of
+    its own. The ages are when it is worth starting, not when it should be finished.</p>
+  </div>
+  ${now.map(learnSubjectCard).join('')}
+  ${later.length ? `
+    <div class="dsec">
+      <h4>Not yet</h4>
+      ${later.map((s) => `
+        <div class="card flat" style="padding:11px 12px">
+          <p class="bodytext" style="margin:0"><strong>${esc(s.label)}</strong></p>
+          <p class="tiny" style="margin:4px 0 0">Worth starting around ${esc(learnAgeWord(s.startsMonths))}. ${esc(s.what)}</p>
+        </div>`).join('')}
+    </div>` : ''}`;
+}
+
+function learnSubjectCard(s) {
+  return `
+  <div class="dsec">
+    <h4>${esc(s.label)}</h4>
+    <p class="bodytext" style="margin:0 0 8px">${esc(s.what)}</p>
+    ${list(s.now)}
+  </div>`;
+}
+
+function learnAgeWord(months) {
+  if (months <= 0) return 'birth';
+  if (months < 24) return String(months) + ' months';
+  const y = months / 12;
+  return (y === Math.floor(y) ? String(y) : String(Math.floor(y)) + ' and a half') + ' years';
+}
+
+function learnKitTab() {
+  return `
+  <div class="card leafy">
+    <p class="bodytext" style="margin:0">The commonest way this stops before it starts is somebody deciding they
+    have to buy things first. You do not.</p>
+  </div>
+  <div class="dsec">
+    <h4>${esc(LEARN_SUPPLIES.title)}</h4>
+    ${list(LEARN_SUPPLIES.core)}
+  </div>
+  <div class="dsec">
+    <h4>Worth adding later</h4>
+    ${list(LEARN_SUPPLIES.laterOn)}
+  </div>
+  <div class="dsec">
+    <h4>Already in your kitchen</h4>
+    ${list(LEARN_SUPPLIES.freeStuff)}
+  </div>
+  <div class="dsec">
+    <h4>${esc(LEARN_KITS.title)}</h4>
+    ${LEARN_KITS.body.map((b) => `<p class="bodytext" style="margin:0 0 9px">${esc(b)}</p>`).join('')}
+  </div>`;
+}
+
+function learnHowTab() {
+  return `
+  <div class="dsec">
+    <h4>${esc(LEARN_RULES.title)}</h4>
+    ${list(LEARN_RULES.items)}
+  </div>
+  <div class="dsec">
+    <h4>${esc(LEARN_AT_HOME.title)}</h4>
+    ${list(LEARN_AT_HOME.items)}
+  </div>
+  ${dsec('Where this comes from', sourceRows(LEARN_SOURCES))}`;
+}
+
+/* =================================================================
+   PUTTING THE APP ON THE HOME SCREEN
+
+   Ready Set Grow is a website. That is a genuine advantage, because
+   there is nothing to download and nothing to update by hand, and a
+   parent who is handed a link can be reading it eight seconds later.
+   It has one cost: a website lives in a tab, and a tab at three in the
+   morning is a thing you have to go and find.
+
+   Putting it on the home screen fixes that, and while it is there the
+   browser also keeps a copy of the page, so it opens in a hospital
+   corridor with no signal.
+
+   THE TWO PHONES DO NOT WORK THE SAME WAY, AND THAT CANNOT BE HIDDEN
+   Android and desktop Chrome fire beforeinstallprompt, which hands the
+   page a real install button. A tap does the whole thing.
+
+   iPhone has never fired that event. Not once, not in any version, and
+   there is no sign it ever will. On an iPhone the only route is Share
+   then Add to Home Screen, done by hand, in Safari, and Chrome on an
+   iPhone cannot do it at all. So the app detects which of those two
+   worlds it is in and either shows a button or shows the steps. It
+   never shows a button that does nothing, which is what most sites do
+   and which is worse than saying so.
+   ================================================================= */
+
+const install = {
+  /* The saved beforeinstallprompt event. It can only be used once, and
+     only in direct response to a tap, which is why it is kept rather
+     than acted on the moment it arrives. */
+  prompt: null,
+  busy: false,
+  done: false,
+};
+
+/* Already running from the home screen. Both spellings are needed:
+   the standard one, and the old Apple property that iOS Safari still
+   uses and which is the only thing that answers on an iPhone. */
+function isInstalled() {
+  try {
+    if (window.navigator && window.navigator.standalone === true) return true;
+    if (typeof window.matchMedia === 'function'
+      && window.matchMedia('(display-mode: standalone)').matches) return true;
+  } catch (err) {}
+  return false;
+}
+
+/* Which set of steps to show. Deliberately blunt: the point is only to
+   pick the right instructions, so an unknown phone falls through to the
+   computer steps, which are the most forgiving. */
+function installPlatform() {
+  const ua = String((navigator && navigator.userAgent) || '');
+  const touchMac = /Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 1;
+  if (/iPad|iPhone|iPod/.test(ua) || touchMac) return 'ios';
+  if (/Android/.test(ua)) return 'android';
+  return 'desktop';
+}
+
+/* iPhone Chrome, Firefox and Edge all run Safari underneath but none of
+   them carry Add to Home Screen. Somebody following the steps in the
+   wrong browser will scroll a list that does not contain the thing they
+   are looking for and conclude the app is broken, so it is said up
+   front instead. */
+function iosWrongBrowser() {
+  const ua = String((navigator && navigator.userAgent) || '');
+  return installPlatform() === 'ios' && /CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+}
+
+function canPromptInstall() {
+  return !!install.prompt;
+}
+
+async function doInstall() {
+  if (!install.prompt || install.busy) return;
+  install.busy = true;
+  render();
+  try {
+    install.prompt.prompt();
+    const res = await install.prompt.userChoice;
+    if (res && res.outcome === 'accepted') install.done = true;
+  } catch (err) {
+    /* A prompt that was already used, or a browser that changed its
+       mind. Nothing to say about it. The steps are on screen anyway. */
+  }
+  /* Used up either way. The browser will fire a fresh one later if it
+     still wants to. */
+  install.prompt = null;
+  install.busy = false;
+  render();
+}
+
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    /* Stopping the default is what keeps the browser from putting its
+       own bar across the bottom of the screen at whatever moment it
+       likes, usually the moment somebody is halfway through typing. */
+    e.preventDefault();
+    install.prompt = e;
+    render();
+  });
+  window.addEventListener('appinstalled', () => {
+    install.done = true;
+    install.prompt = null;
+    store.installHidden = '';
+    saveStore();
+    render();
+  });
+}
+
+/* WHEN THE QUIET BANNER ON HOME IS ALLOWED TO APPEAR
+
+   Not on the first visit, because somebody who has not decided whether
+   they like the app yet does not want to be asked to keep it. Not if
+   it is already installed. Not if there is nothing in here worth
+   coming back to. And not more than twice ever. */
+function showInstallBanner() {
+  if (isInstalled() || install.done) return false;
+  if (installPlatform() === 'desktop' && !canPromptInstall()) return false;
+  if ((store.installWaves || 0) >= 2) return false;
+  /* Something of their own in here. An example child does not count. */
+  const real = store.children.filter((k) => !isExampleChild(k)).length;
+  if (!real) return false;
+  const hidden = store.installHidden || '';
+  if (hidden) {
+    const days = (Date.now() - Date.parse(hidden + 'T00:00:00')) / 86400000;
+    if (!(days >= 7)) return false;
+  }
+  return true;
+}
+
+function installBanner() {
+  if (!showInstallBanner()) return '';
+  return `
+  <div class="installbar">
+    <span class="installic">${icon('home', 15, 'var(--deep)')}</span>
+    <span class="grow">${esc(INSTALL_BANNER)}</span>
+    <button class="installgo" data-install="open">Show me</button>
+    <button class="installx" data-install="later" aria-label="Not now">${icon('close', 12, 'var(--muted)')}</button>
+  </div>`;
+}
+
+function screenInstall() {
+  const plat = installPlatform();
+  const here = plat === 'ios' ? INSTALL_IOS : (plat === 'android' ? INSTALL_ANDROID : INSTALL_DESKTOP);
+  const others = [INSTALL_IOS, INSTALL_ANDROID, INSTALL_DESKTOP].filter((x) => x !== here);
+  const installed = isInstalled() || install.done;
+
+  const steps = (sec) => `
+    <div class="dsec">
+      <h4>${esc(sec.title)}</h4>
+      <p class="tiny" style="margin:0 0 9px">${esc(sec.note)}</p>
+      <ol class="nlist">
+        ${sec.steps.map((x) => `<li>${esc(x)}</li>`).join('')}
+      </ol>
+    </div>`;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">${esc(INSTALL_TITLE)}</h1>
+    <p class="sub">${esc(INSTALL_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${installed ? `
+      <div class="card leafy">
+        <p class="bodytext">${esc(INSTALL_ALREADY)}</p>
+      </div>` : `
+      <div class="card leafy">
+        ${list(INSTALL_WHY)}
+      </div>
+
+      ${canPromptInstall() ? `
+        <button class="bigbtn" data-install="go"${install.busy ? ' disabled' : ''}>
+          ${esc(install.busy ? 'Asking your browser' : 'Install Ready Set Grow')}
+        </button>` : ''}
+
+      ${iosWrongBrowser() ? `
+        <div class="card flat">
+          <p class="bodytext"><strong>You are not in Safari.</strong> On an iPhone, only Safari can add an app to
+          the home screen. Open readysetgrow-app.com in Safari and the steps below will work.</p>
+        </div>` : ''}
+
+      ${steps(here)}
+
+      <div class="dsec">
+        <h4>On your other devices</h4>
+        <p class="tiny" style="margin:0 0 9px">You can have it on as many as you like. Sign in on
+        each one and they stay in step with each other.</p>
+        ${others.map((sec) => `
+          <p class="bodytext" style="margin:0 0 4px"><strong>${esc(sec.title)}</strong></p>
+          <ol class="nlist" style="margin:0 0 12px">
+            ${sec.steps.map((x) => `<li>${esc(x)}</li>`).join('')}
+          </ol>`).join('')}
+      </div>`}
+
+    <div class="dsec">
+      <h4>${esc(INSTALL_NOTIFY.title)}</h4>
+      ${INSTALL_NOTIFY.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+    </div>
+
+    ${privacyLine()}
+  </div>`;
+}
 
 /* =================================================================
    IS THIS COPY OF THE APP STILL CURRENT?
@@ -41297,6 +43482,45 @@ if (typeof setInterval === 'function') {
 if (typeof window !== 'undefined' && window.addEventListener) {
   window.addEventListener('focus', () => { try { checkForUpdate(false); } catch (err) {} });
   window.addEventListener('online', () => { try { checkForUpdate(true); } catch (err) {} });
+}
+
+/* THE SERVICE WORKER.
+
+   Registered last, and on purpose after everything else has started,
+   because it is the least urgent thing in the file. It is what lets
+   the app be installed on a home screen and what lets it open with no
+   signal.
+
+   IT IS NETWORK FIRST. Look at sw.js for why, but the short version is
+   that a cache first worker would turn the stale copy problem into a
+   permanent one, and that problem has already cost a real afternoon.
+
+   It only registers over https or on localhost, which means the file
+   protocol and the odd preview host quietly skip it rather than
+   throwing. */
+if (typeof navigator !== 'undefined' && navigator.serviceWorker
+  && (location.protocol === 'https:' || location.hostname === 'localhost'
+    || location.hostname === '127.0.0.1')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then((reg) => {
+      /* A waiting worker means a newer one is sitting behind the one
+         currently running. Tell it to take over now rather than on some
+         future full quit, since the page itself is fetched fresh either
+         way and there is nothing to lose. */
+      if (reg.waiting) reg.waiting.postMessage('skip-waiting');
+      reg.addEventListener('updatefound', () => {
+        const w = reg.installing;
+        if (!w) return;
+        w.addEventListener('statechange', () => {
+          if (w.state === 'installed' && reg.waiting) reg.waiting.postMessage('skip-waiting');
+        });
+      });
+    }).catch(() => {
+      /* A browser that will not have it, a private window, or a host
+         serving from a path we do not control. The app works exactly as
+         it did before service workers existed. */
+    });
+  });
 }
 
 </script>
