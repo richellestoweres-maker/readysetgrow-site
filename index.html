@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-19 17:27">
+<meta name="rsg-build" content="2026-09-19 17:33">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1573,7 +1573,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-19 17:27';
+const BUILD_STAMP = '2026-09-19 17:33';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -26536,13 +26536,15 @@ const VAX_VISITS = [
     note: 'These two have a wide window on purpose. They get done at whichever visit falls inside it.' },
   { id: 'm12', label: 'The 12 month visit', when: '12 to 15 months', from: 13, to: 15.9 },
   { id: 'm15', label: 'The 15 to 18 month visit', when: '15 to 18 months', from: 16, to: 20.9 },
-  { id: 'm18', label: 'The second hepatitis A', when: 'At least 6 months after the first one', from: 21, to: 59.9 },
+  { id: 'm18', label: 'Between 18 months and 4 years', when: 'The quiet stretch, one dose in it', from: 21, to: 59.9,
+    note: 'Almost nothing is due in these years. The one to finish is the second hepatitis A, at least six months after the first.' },
   { id: 'y4', label: 'Before they start school', when: '4 to 6 years', from: 60, to: 137.9,
     note: 'The big one. Four boosters together, and most states want them on the form before kindergarten.' },
   { id: 'y11', label: 'The 11 to 12 year visit', when: '11 to 12 years', from: 138, to: 143.9 },
-  { id: 'y12', label: 'The follow up after that one', when: '6 to 12 months later', from: 144, to: 191.9 },
+  { id: 'y12', label: 'Between 12 and 16 years', when: 'The follow up doses', from: 144, to: 191.9,
+    note: 'The second HPV dose comes 6 to 12 months after the first. A series started at 15 or older needs a third.' },
   { id: 'y16', label: 'The 16 year visit', when: '16 years', from: 192, to: 195.9 },
-  { id: 'y17', label: 'The last of them', when: '16 to 18 years', from: 196, to: 400 },
+  { id: 'y17', label: 'The late teen ones', when: '16 to 18 years', from: 196, to: 400 },
 ];
 
 /* Every one off dose that belongs to this visit, in the order the
