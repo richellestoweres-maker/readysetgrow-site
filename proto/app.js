@@ -3725,6 +3725,15 @@ function screenNow(c) {
       <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
     </button>` : ''}
 
+    <button class="lrow" data-go="screen" data-id="support" style="align-items:flex-start">
+      <span class="licon" style="background:#F7E9E4">${icon('shield', 18)}</span>
+      <span class="grow">
+        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(SUP_TITLE)}</span>
+        <span class="tiny" style="display:block;margin-top:2px">A caseworker, somebody who frightens you, or somebody targeting your child. With a button that gets you off the screen in one tap.</span>
+      </span>
+      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+    </button>
+
     ${askBlock(c)}
 
     ${fever ? `
@@ -9952,6 +9961,13 @@ function cornerMenu(who) {
       </button>`).join('')}
 
     <div class="cmenu-rule"></div>
+    <button class="cmenu-row" data-go="screen" data-id="support">
+      <span class="cmenu-ic">${icon('shield', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">${esc(SUP_TITLE)}</span>
+      <span class="cmenu-s">A caseworker, somebody who frightens you, or somebody targeting your child</span></span>
+    </button>
+
+    <div class="cmenu-rule"></div>
     <p class="cmenu-h">Your account</p>
     <button class="cmenu-row" data-tab="settings">
       <span class="cmenu-ic">${icon('user', 15, 'var(--deep)')}</span>
@@ -9983,11 +9999,6 @@ function cornerMenu(who) {
       <span class="cmenu-ic">${icon('leaf', 15, 'var(--deep)')}</span>
       <span class="grow"><span class="cmenu-t">Where you are right now</span>
       <span class="cmenu-s">What the app brings forward and what it puts away</span></span>
-    </button>
-    <button class="cmenu-row" data-go="screen" data-id="support">
-      <span class="cmenu-ic">${icon('shield', 15, 'var(--deep)')}</span>
-      <span class="grow"><span class="cmenu-t">${esc(SUP_TITLE)}</span>
-      <span class="cmenu-s">A caseworker, somebody who frightens you, or somebody targeting your child</span></span>
     </button>
 
     <div class="cmenu-rule"></div>
