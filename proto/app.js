@@ -1094,7 +1094,8 @@ const store = {
      child's own. */
   signStage: '',
 
-  vaxTab: 'list',
+  vaxTab: 'visits',
+  vaxVisit: '',
   vaxOpen: '',
   vaxEdit: '',
   vaxError: '',
@@ -3314,6 +3315,8 @@ function initControls() {
       return;
     } else if (t.dataset.push === 'kind') {
       pushToggleKind(t.dataset.id);
+    } else if (t.dataset.vax === 'visit') {
+      store.vaxVisit = store.vaxVisit === t.dataset.id ? '' : t.dataset.id;
     } else if (t.dataset.vax === 'open') {
       store.vaxOpen = store.vaxOpen === t.dataset.id ? '' : t.dataset.id;
       store.vaxEdit = '';
@@ -16296,9 +16299,14 @@ function screenVaxRecord(c) {
   const months = childMonths(kid);
   const rec = vaxRecord(kid);
   const counts = vaxCounts(rec, vaxSkipped(kid));
-  const tab = store.vaxTab || 'list';
+  /* BY VISIT FIRST, AND BY DEFAULT.
+     The list by vaccine is how a schedule is printed. By visit is how
+     a parent lives it, which is the whole of her question: are all the
+     vaccine check offs by age. */
+  const tab = store.vaxTab || 'visits';
   const tabs = [
-    { id: 'list', label: 'The record' },
+    { id: 'visits', label: 'By visit' },
+    { id: 'list', label: 'By vaccine' },
     { id: 'schedule', label: 'Where things stand' },
   ];
 
@@ -16311,8 +16319,84 @@ function screenVaxRecord(c) {
   </div>
   <div class="sc">
     ${subTabs('vaxTab', tab, tabs)}
-    ${tab === 'schedule' ? vaxStandTab() : vaxListTab(kid, first, months, counts)}
+    ${tab === 'schedule' ? vaxStandTab() : ''}
+    ${tab === 'list' ? vaxListTab(kid, first, months, counts) : ''}
+    ${tab === 'visits' ? vaxVisitsTab(kid, first, months, counts) : ''}
   </div>`;
+}
+
+/* THE RECORD, BY APPOINTMENT.
+
+   Same doses, same ticks, same keys. The only thing that changes is
+   the grouping, and the grouping is the point: a parent remembers the
+   four month visit, not the third dose of Hib.
+
+   The visit this child is at opens by itself, so somebody with a
+   twelve year old does not scroll past the newborn shots to find their
+   place. Everything else is collapsed with its count on the row, which
+   is the whole answer at a glance for the visits already behind them. */
+function vaxVisitsTab(kid, first, months, counts) {
+  const rec = vaxRecord(kid);
+  const skipped = vaxSkipped(kid);
+  const here = vaxVisitNow(months);
+  const open = store.vaxVisit || here;
+
+  const tone = {
+    done: { word: 'All recorded', color: 'var(--sage)' },
+    'about now': { word: 'Around now', color: 'var(--attention, #B5793F)' },
+    'was due': { word: 'Usually done by now', color: 'var(--muted)' },
+    later: { word: 'Later on', color: 'var(--faint)' },
+    unknown: { word: '', color: 'var(--faint)' },
+  };
+
+  return `
+  <div class="card leafy">
+    <p class="bodytext" style="margin:0">${esc(VAX_VISITS_INTRO)}</p>
+    <p class="tiny" style="margin:8px 0 0">${esc(counts.given + ' of the ' + counts.total + ' one off doses recorded so far.')}</p>
+  </div>
+
+  ${VAX_VISITS.map((v) => {
+    const vc = vaxVisitCounts(v, rec, skipped);
+    const st = vaxVisitState(v, months, vc);
+    const isOpen = open === v.id;
+    const doses = vaxVisitDoses(v);
+    if (!doses.length) return '';
+    const t = tone[st] || tone.unknown;
+    return `
+    <div class="card flat vaxcard" style="padding:0;overflow:hidden${v.id === here ? ';border-left:3px solid var(--sage)' : ''}">
+      <button class="vaxhead" data-vax="visit" data-id="${esc(v.id)}">
+        <span class="grow">
+          <span class="vaxname">${esc(v.label)}${v.id === here ? ' (they are here now)' : ''}</span>
+          <span class="tiny" style="display:block;margin-top:2px">${esc(v.when)} &middot; ${esc(vc.given + ' of ' + vc.total + ' recorded')}${t.word ? esc(' \u00b7 ' + t.word) : ''}</span>
+        </span>
+        <span class="chev">${icon(isOpen ? 'chevdown' : 'chev', 15, 'var(--faint)')}</span>
+      </button>
+      ${isOpen ? `
+        <div class="vaxbody">
+          ${v.note ? `<p class="tiny" style="margin:0 0 10px">${esc(v.note)}</p>` : ''}
+          ${doses.map((x) => vaxIsSkipped(kid, x.series.id) ? `
+            <div class="vaxdose">
+              <span class="vaxtick" aria-hidden="true"></span>
+              <span class="grow">
+                <span class="vaxdname" style="color:var(--muted)">${esc(x.series.label)}</span>
+                <span class="tiny" style="display:block;margin-top:1px">Marked as not being given</span>
+              </span>
+            </div>` : `
+            <p class="sect" style="margin:10px 0 2px">${esc(x.series.label)}</p>
+            ${vaxDoseRow(kid, x.series, x.dose, months)}`).join('')}
+        </div>` : ''}
+    </div>`;
+  }).join('')}
+
+  <div class="dsec">
+    <h4>${esc(VAX_SEASONAL_NOTE.title)}</h4>
+    <p class="bodytext" style="margin:0 0 10px">${esc(VAX_SEASONAL_NOTE.body)}</p>
+    <button class="btn ghost" style="width:100%" data-sub="vaxTab" data-val="list">
+      ${icon('note', 14, 'var(--deep)')} Open the list by vaccine
+    </button>
+  </div>
+
+  <p class="tiny" style="margin-top:10px">${esc(VAX_RECORD_NOTE)}</p>`;
 }
 
 function vaxListTab(kid, first, months, counts) {
