@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-19 15:08">
+<meta name="rsg-build" content="2026-09-19 15:34">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1066,6 +1066,17 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 }
 .updatebtn.ghost{background:transparent;color:var(--deep2);border-color:transparent}
 
+/* a chip that is a label rather than a button, for the later signing
+   bands where the thing to work on is a concept and not a sign with a
+   picture of a hand next to it */
+.chip.plain{background:var(--surface2);border-style:dashed;color:var(--muted);cursor:default}
+
+.hoursrow{
+  display:flex;align-items:baseline;gap:10px;padding:9px 0;
+  border-bottom:1px solid var(--line2);font-size:13.5px;color:var(--ink);
+}
+.hoursrow:last-child{border-bottom:0}
+
 /* a hashtag inside a post. inline so it flows with the sentence, and
    a real button so it is reachable by keyboard and by a screen reader
    rather than a coloured span that only a mouse can find. */
@@ -1530,7 +1541,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-19 15:08';
+const BUILD_STAMP = '2026-09-19 15:34';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -23824,8 +23835,36 @@ function prettyCode(code) {
   return c.slice(0, 5) + ' ' + c.slice(5);
 }
 
+/* THE CHARACTERS PEOPLE ACTUALLY TYPE INSTEAD.
+   The alphabet already leaves out the pairs that look alike, O and 0,
+   I and 1, S and 5. That stops a code being generated with an
+   ambiguous character in it. It does not stop somebody reading a Q off
+   a screen and typing an O, which is exactly what happens, and then
+   the app tells them the code is wrong when the code is fine.
+
+   So the ones that were deliberately excluded are mapped back to the
+   one character they could possibly have meant. This is safe precisely
+   because the excluded ones can never legitimately appear: an O in a
+   typed code is always a mistake, and Q is the only thing it can have
+   been. */
+const CODE_FIXUPS = { O: 'Q', '0': 'Q', I: 'J', '1': 'J', S: '2', '5': '2' };
+
 function cleanCode(typed) {
-  return String(typed || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, CODE_LENGTH);
+  const raw = String(typed || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  let out = '';
+  for (let i = 0; i < raw.length && out.length < CODE_LENGTH; i++) {
+    const ch = raw[i];
+    out += Object.prototype.hasOwnProperty.call(CODE_FIXUPS, ch) ? CODE_FIXUPS[ch] : ch;
+  }
+  return out;
+}
+
+/* Which character is the problem, so the app can say so rather than
+   repeating that the code is ten long when it already is. */
+function badCodeChar(typed) {
+  const c = cleanCode(typed);
+  for (let i = 0; i < c.length; i++) if (CODE_ALPHABET.indexOf(c[i]) === -1) return c[i];
+  return '';
 }
 
 function codeLooksRight(typed) {
@@ -23837,7 +23876,12 @@ function codeLooksRight(typed) {
 
 /* Long enough to send it and have them get to it. Short enough that a
    forgotten code in an old text message stops working. */
-const CODE_HOURS = 48;
+/* A week rather than two days. The person on the other end of this is
+   usually a husband at work or a grandmother who checks her messages
+   in the evening, and a code that died overnight was the commonest way
+   this failed. The rules cap it at seven days and this sits on that
+   cap deliberately. */
+const CODE_HOURS = 168;
 
 function codeExpiry(now) {
   return (Number(now) || Date.now()) + CODE_HOURS * 60 * 60 * 1000;
@@ -23891,11 +23935,70 @@ const SHARE_LEAVE_NOTE =
 const SHARE_EMPTY_OWNER = 'Nobody else can see your children.';
 const SHARE_EMPTY_JOINED = 'You have not been given access to anybody else’s child.';
 
+/* ------------------------------------------------------------------
+   THE LINK
+
+   Typing a ten character code off one phone into another is the part
+   that fails, and it failed here for a real husband on a real evening.
+   So the code is still there, and nobody should ever have to use it.
+
+   The link carries the code in the address. Tapping it opens the app
+   with the invite already in hand: somebody who is signed in is added
+   on the spot, and somebody who is not sees why they are being asked
+   to make an account before they make it, and is added the moment
+   they do.
+   ------------------------------------------------------------------ */
+const SHARE_ORIGIN = 'https://readysetgrow-app.com';
+
+function shareLink(code, origin) {
+  return (origin || SHARE_ORIGIN) + '/?join=' + encodeURIComponent(cleanCode(code));
+}
+
+function joinCodeFromUrl(search) {
+  const m = String(search || '').match(/[?&]join=([^&]+)/i);
+  if (!m) return '';
+  let raw = '';
+  try { raw = decodeURIComponent(m[1]); } catch (err) { raw = m[1]; }
+  const c = cleanCode(raw);
+  return codeLooksRight(c) ? c : '';
+}
+
+function shareMessage(ownerName, names, code, origin) {
+  const who = String(ownerName || '').trim();
+  const kids = (names || []).filter(Boolean);
+  const about = kids.length === 0 ? 'our child'
+    : (kids.length === 1 ? kids[0] : kids.slice(0, -1).join(', ') + ' and ' + kids[kids.length - 1]);
+  return (who ? who + ' wants' : 'Somebody wants') + ' to share ' + about
+    + ' with you on Ready Set Grow. Tap this and it sets itself up.\n\n'
+    + shareLink(code, origin);
+}
+
+const SHARE_LINK_TITLE = 'Send them the link';
+const SHARE_LINK_NOTE =
+  'This is the easy way. Text them the link and tapping it does the rest, so nobody has to read '
+  + 'ten characters off one phone and type them into another.';
+const SHARE_LINK_BTN = 'Send the link';
+const SHARE_LINK_COPIED = 'Copied. Paste it into a message.';
+
+const SHARE_INVITED_TITLE = 'You have been invited';
+function shareInvitedLine(ownerName, names) {
+  const who = String(ownerName || '').trim();
+  const kids = (names || []).filter(Boolean);
+  const about = kids.length === 0 ? 'their child'
+    : (kids.length === 1 ? kids[0] : kids.slice(0, -1).join(', ') + ' and ' + kids[kids.length - 1]);
+  return (who ? who : 'Somebody') + ' wants to share ' + about + ' with you.';
+}
+const SHARE_INVITED_SIGNUP =
+  'Make an account and you will be added straight away. It is the account that holds the access, '
+  + 'which is why there has to be one.';
+const SHARE_INVITED_WORKING = 'Setting that up now.';
+
 const SHARE_JOIN_TITLE = 'Somebody gave you a code';
 const SHARE_JOIN_HELP = 'Ten characters. Upper or lower case, the spaces do not matter.';
 
 const SHARE_ERRORS = {
-  shape: 'That does not look like one of our codes. It is ten characters long.',
+  shape: 'That is not ten characters. Check you have the whole thing.',
+  badChar: 'There is no letter like that in our codes. Look at it again, they are easy to misread.',
   missing: 'That code does not exist. Check it again, they are easy to mistype.',
   expired: 'That code has expired. Ask them to make you a new one, it takes a second.',
   used: 'That code has already been used. Codes only work once, so ask for a fresh one.',
@@ -24584,6 +24687,14 @@ function choresByArea(list) {
  * comes next. The content is the easy part and it changes weekly. So
  * this file is the rhythm, and the subjects hang off it.
  *
+ * IT GOES ALL THE WAY TO EIGHTEEN
+ * It stopped at six for a while, which was wrong. Families home
+ * educate through high school, and the part they most need help with
+ * is the end of it, where the work has to start counting for something
+ * outside the house. The hours per band follow the published
+ * homeschool guidance, which is roughly one to two hours at five and
+ * four to five at sixteen.
+ *
  * IT IS DELIBERATELY SHORTER THAN A SCHOOL DAY
  * A nursery day is long because of childcare, not because of learning.
  * The actual taught minutes inside a preschool day are small, and the
@@ -24769,7 +24880,7 @@ const LEARN_BANDS = [
   {
     id: 'three',
     label: 'Three to four',
-    minMonths: 36, maxMonths: 54,
+    minMonths: 36, maxMonths: 48,
     sum: 'About two and a half to three hours, and it now has a beginning, a middle and an end they can describe.',
     note: 'The big change at three is that they can say what they are going to do before they do it. That is worth building the morning around.',
     blocks: [
@@ -24864,7 +24975,7 @@ const LEARN_BANDS = [
   {
     id: 'four',
     label: 'Four to five',
-    minMonths: 54, maxMonths: 72,
+    minMonths: 48, maxMonths: 60,
     sum: 'Around three hours. The taught part roughly doubles, and it can now sit still long enough to be taught.',
     note: 'This is the year the gap opens between what they can do and what they will sit down for. Keep the sitting blocks short and the rest of it moving.',
     blocks: [
@@ -24963,9 +25074,9 @@ const LEARN_BANDS = [
   {
     id: 'five',
     label: 'Five to six',
-    minMonths: 72, maxMonths: 96,
-    sum: 'Three to four hours, and for the first time the taught blocks are the point rather than the seasoning.',
-    note: 'A home educated five year old covers in about two focused hours what a class of twenty takes most of a day to cover. That is not a shortcut, it is the arithmetic of one to one.',
+    minMonths: 60, maxMonths: 72,
+    sum: 'Two hours or so, and for the first time the taught blocks are the point rather than the seasoning.',
+    note: 'A home educated five year old covers in about two focused hours what a class of twenty takes most of a day to cover. That is not a shortcut, it is the arithmetic of one to one, and the published homeschool guidance says the same.',
     blocks: [
       {
         id: 'circle5', kind: 'circle', name: 'Morning together', minutes: '10',
@@ -25042,6 +25153,261 @@ const LEARN_BANDS = [
       },
     ],
   },
+  /* ============================================================
+     SIX TO ELEVEN
+     The primary years. This is the first band where the day has
+     subjects in it rather than blocks, and the first where a parent
+     is genuinely teaching rather than setting things up.
+     ============================================================ */
+  {
+    id: 'primary',
+    label: 'Six to eleven',
+    minMonths: 72, maxMonths: 132,
+    sum: 'Two and a half to three and a half hours of actual work. That is the whole school day at this age and the published homeschool guidance agrees.',
+    note: 'The hardest part of this band is believing you have done enough by lunchtime. You have. A class of twenty five needs the rest of the day for the twenty five, not for the learning.',
+    blocks: [
+      {
+        id: 'p-open', kind: 'circle', name: 'Opening', minutes: '10',
+        what: 'A short start that makes it a working morning rather than a continuation of breakfast.',
+        doThis: [
+          'The date, the plan for the day written where they can see it, and one thing they are looking forward to.',
+          'A poem, a psalm, a piece of music or a painting. The same one all week. This is the whole of what people mean by morning basket and it costs ten minutes.',
+        ],
+        need: ['A whiteboard or a sheet of paper for the day’s list'],
+      },
+      {
+        id: 'p-maths', kind: 'taught', name: 'Maths', minutes: '30 to 45',
+        what: 'The subject that suffers most from being skipped and least from being short.',
+        doThis: [
+          'New idea first, while they are fresh, then practice. Never the other way round.',
+          'Ten minutes of something already learned at the end of every session. Spaced review is the difference between knowing it in March and knowing it in September.',
+          'Stop at the time, not at the end of the page. Finishing the page is not the lesson.',
+        ],
+        need: ['A curriculum or a workbook you trust', 'Something countable', 'Squared paper'],
+      },
+      {
+        id: 'p-read', kind: 'taught', name: 'Reading and language', minutes: '30 to 45',
+        what: 'Reading aloud to them, them reading to you, and the mechanics of spelling and grammar in small doses.',
+        doThis: [
+          'Read aloud to them every day, far above their own reading level, for as long as they will sit. This is the single highest value thing in the band and it stays true until they leave.',
+          'Ten to fifteen minutes of them reading to you, and then them reading alone.',
+          'Spelling and grammar in ten minute pieces rather than in an hour on Fridays.',
+        ],
+        need: ['A read aloud book', 'Reading books at their level'],
+      },
+      {
+        id: 'p-write', kind: 'taught', name: 'Writing', minutes: '20 to 30',
+        what: 'Something written every day, and only one thing corrected at a time.',
+        doThis: [
+          'Narration first. They tell you what happened in the read aloud, then they write a version of it. That single exercise carries comprehension, sequencing and composition at once.',
+          'Copy a well written sentence a day. It teaches punctuation without a punctuation lesson.',
+          'Correct one thing. A page returned covered in red teaches them that writing is dangerous.',
+        ],
+        need: ['Lined paper', 'A pencil'],
+      },
+      {
+        id: 'p-world', kind: 'work', name: 'History, science or the world', minutes: '45',
+        what: 'One of them a day rather than all of them every day. Rotate across the week.',
+        doThis: [
+          'Read about it, talk about it, then make something or write something about it.',
+          'Six weeks on one topic beats six topics in six weeks. Depth is what they remember.',
+          'Once a week, do the thing rather than read about it. Grow it, build it, visit it, cook it.',
+        ],
+        need: ['Library books', 'Junk modelling box'],
+      },
+      {
+        id: 'p-out', kind: 'outside', name: 'Outside and moving', minutes: '60',
+        what: 'An hour, and at least twice a week with other children in it.',
+        doThis: [
+          'A sport, a club, a park with people they know. The social half stops being automatic the moment they are not in a class, and it has to be deliberately arranged.',
+        ],
+        need: ['Nothing'],
+      },
+      {
+        id: 'p-own', kind: 'calm', name: 'Their own time', minutes: '45 or more',
+        what: 'Not taught, not scheduled, not screens. Boredom included.',
+        doThis: [
+          'Leave them alone with it. What they choose when nobody is directing them is most of who they are becoming.',
+          'Quiet reading counts and is worth protecting as a fixed habit.',
+        ],
+        need: ['Books they chose themselves'],
+      },
+    ],
+  },
+
+  /* ============================================================
+     ELEVEN TO FOURTEEN
+     Middle school. The year a home educated child starts working
+     rather than being worked with, and the year most families find
+     hardest to get right.
+     ============================================================ */
+  {
+    id: 'middle',
+    label: 'Eleven to fourteen',
+    minMonths: 132, maxMonths: 168,
+    sum: 'Three to four hours, and the shift that matters is that some of it is now theirs to run rather than yours.',
+    note: 'The job in this band is to hand over the running of the day, one piece at a time, while they are still at your table and a bad week costs nothing. If you are still telling a fourteen year old what to do at nine every morning, that is the thing to change.',
+    blocks: [
+      {
+        id: 'm-plan', kind: 'circle', name: 'Their plan, not yours', minutes: '10',
+        what: 'They write the day. You look at it and say yes or ask one question.',
+        doThis: [
+          'Give them the week on a Monday and let them decide what lands on which day.',
+          'Let a badly planned Thursday actually be a bad Thursday. That is the lesson and it is cheap now and expensive at nineteen.',
+        ],
+        need: ['A planner or a notebook they own'],
+      },
+      {
+        id: 'm-maths', kind: 'taught', name: 'Maths', minutes: '45 to 60',
+        what: 'Pre algebra and then algebra. The band where a shaky foundation starts to show, and the band to fix it in.',
+        doThis: [
+          'If fractions, decimals and percentages are not solid, stop and fix that before algebra. Everything after it sits on those three.',
+          'They attempt it alone first and bring you the stuck ones. Sitting next to them for the whole hour is why some children never learn to be stuck productively.',
+          'A video lesson is a fine teacher here and you are allowed to use one.',
+        ],
+        need: ['A proper curriculum', 'Squared paper'],
+      },
+      {
+        id: 'm-eng', kind: 'taught', name: 'English', minutes: '45',
+        what: 'Longer writing, and reading something they would not have picked.',
+        doThis: [
+          'One piece of real writing a week, drafted and then improved, rather than something new every day.',
+          'Teach the paragraph properly. It is the unit everything later is built out of.',
+          'Keep reading aloud to them. Eleven is not too old and they will not say they like it.',
+        ],
+        need: ['A novel', 'Somewhere to keep drafts'],
+      },
+      {
+        id: 'm-sci', kind: 'taught', name: 'Science', minutes: '45',
+        what: 'Now with real vocabulary, real measurement and written up results.',
+        doThis: [
+          'Write it up properly. What I thought would happen, what I did, what happened, why I think that is.',
+          'Rotate biology, chemistry and physics by term rather than mixing them.',
+        ],
+        need: ['Measuring things', 'A notebook kept as a lab book'],
+      },
+      {
+        id: 'm-hist', kind: 'work', name: 'History, geography and the arts', minutes: '45',
+        what: 'Two or three of these across a week, not all of them every day.',
+        doThis: [
+          'Primary sources start to work here. A real letter, a real photograph, a real map.',
+          'Let them argue with it. Why would somebody have written that, and who was not asked.',
+        ],
+        need: ['Library books', 'A map'],
+      },
+      {
+        id: 'm-skill', kind: 'work', name: 'Something they chose', minutes: '45',
+        what: 'A skill they picked, pursued for a term at a time. This is not a reward block, it is the point.',
+        doThis: [
+          'An instrument, a language, code, a craft, a sport, a business. Theirs to pick and theirs to abandon at the end of a term, not in week two.',
+          'Your job is materials, a teacher if one is needed, and staying out of it.',
+        ],
+        need: ['Whatever it is'],
+      },
+      {
+        id: 'm-life', kind: 'care', name: 'Running a life', minutes: '30',
+        what: 'The subject school does not teach and a home can.',
+        doThis: [
+          'Cook one family meal a week from start to washing up.',
+          'Their own laundry, their own room, their own alarm clock.',
+          'Money. An amount, a period, and no rescuing halfway through it.',
+        ],
+        need: ['Nothing you do not already own'],
+      },
+      {
+        id: 'm-out', kind: 'outside', name: 'Out of the house', minutes: '60',
+        what: 'Every day, and with people their own age several times a week.',
+        doThis: [
+          'This is the band where isolation does real damage and the band where a parent is most tempted to let it slide. Put it in the diary.',
+        ],
+        need: ['Nothing'],
+      },
+    ],
+  },
+
+  /* ============================================================
+     FOURTEEN TO EIGHTEEN
+     High school. The band where the work has to start counting for
+     something outside the house, and where the parent's job turns
+     into record keeping and getting out of the way.
+     ============================================================ */
+  {
+    id: 'high',
+    label: 'Fourteen to eighteen',
+    minMonths: 168, maxMonths: 240,
+    sum: 'Four to five hours, mostly run by them. Your job shifts from teaching to keeping the records and opening doors.',
+    note: 'Start the transcript in the first week of ninth grade, not in the spring of twelfth. Reconstructing four years of work from memory is the single most common regret in home educating high school, and it is entirely avoidable.',
+    blocks: [
+      {
+        id: 'h-own', kind: 'circle', name: 'They run the day', minutes: '10',
+        what: 'A check in, not a briefing. What is on today, what is due, where are you stuck.',
+        doThis: [
+          'Weekly is enough by sixteen. Daily is too much by then and they will tell you so.',
+          'Hold them to deadlines you did not set. Somebody else will, soon, and it will matter more.',
+        ],
+        need: ['A planner they own'],
+      },
+      {
+        id: 'h-core', kind: 'taught', name: 'The four that count', minutes: '3 to 4 hours total',
+        what: 'English, maths, science and social studies. Most states expect four years of English and three to four of the rest, and a transcript that shows them.',
+        doThis: [
+          'One credit is roughly 120 to 180 hours of work, or a finished textbook. Write down which definition you are using and stay with it.',
+          'Outsource what you cannot teach. A community college class, an online course, a tutor. Using one is not failing at this.',
+          'Community college classes taken at sixteen and seventeen often count twice, once for high school and once for college. That is the single best value move available in this band.',
+        ],
+        need: ['Curricula you have chosen on purpose', 'A record of hours or chapters'],
+      },
+      {
+        id: 'h-elect', kind: 'work', name: 'Their own subjects', minutes: '45 to 60',
+        what: 'The electives. This is where a home educated transcript gets genuinely interesting rather than a thinner version of a school one.',
+        doThis: [
+          'Depth in one or two things beats a scattering. Three years of the same instrument, language or trade says more than eight abandoned ones.',
+          'Real work counts. A job, a business, caring for a relative, running the family books. Name it, hour it, put it on the transcript.',
+        ],
+        need: ['Whatever it is'],
+      },
+      {
+        id: 'h-record', kind: 'care', name: 'The record', minutes: '15 a week',
+        what: 'Fifteen minutes a week that saves a catastrophic fortnight in year twelve.',
+        doThis: [
+          'What was studied, roughly how long, what was produced, what the grade was and how you decided it.',
+          'Keep a folder of actual work. Essays, lab reports, photographs of things made.',
+          'Check what your own state requires, because it varies enormously and some of it has deadlines.',
+        ],
+        need: ['A spreadsheet or a folder', 'Somewhere to keep the work'],
+      },
+      {
+        id: 'h-after', kind: 'work', name: 'What comes next', minutes: 'An hour a week from sixteen',
+        what: 'College, trade, work or a year of something else. All four are real answers and the planning for each starts early.',
+        doThis: [
+          'Test dates, application windows and financial aid deadlines go in a calendar in ninth grade, not later.',
+          'If it is a trade or an apprenticeship, find out now what they actually want to see, because it is rarely what a college wants.',
+          'Two people who are not their parent who will write about them. Start building those relationships years before you need the letters.',
+        ],
+        need: ['A calendar', 'A list of deadlines'],
+      },
+      {
+        id: 'h-life', kind: 'care', name: 'Running a life', minutes: '30',
+        what: 'The things an eighteen year old is assumed to know and mostly does not.',
+        doThis: [
+          'A bank account, a budget, and what a payslip actually says.',
+          'How to file a tax return, in the year they first earn anything.',
+          'Cooking six meals properly. Booking their own appointments. Changing a tyre.',
+          'What a lease says, what insurance is for, and what an interest rate does over time.',
+        ],
+        need: ['Nothing bought'],
+      },
+      {
+        id: 'h-out', kind: 'outside', name: 'A life outside the house', minutes: 'Most days',
+        what: 'Work, volunteering, a team, a class, a church, a band. Somewhere they are known by people who are not related to them.',
+        doThis: [
+          'A job is worth more than another elective at this age, for reasons that have nothing to do with the money.',
+          'Leaving home at eighteen from a house where everything happened inside it is the hard version. Make it the easy version.',
+        ],
+        need: ['Nothing'],
+      },
+    ],
+  },
 ];
 
 /* THE THINGS THAT MATTER MORE THAN THE PLAN
@@ -25064,8 +25430,26 @@ const LEARN_AT_HOME = {
     'One to one is enormously faster than one to twenty. If you have covered the morning blocks by eleven, you have not cut corners, you have finished.',
     'The bit that does not come free at home is other children. That has to be deliberately arranged, and it matters more than any worksheet.',
     'Keep one book where you write what you did each day, even a line. On the bad weeks it is the only evidence that you have been doing this, and you will need it.',
-    'Home education is regulated differently in every state. Check what your state actually requires before you build a year around anything.',
+    'Home education is regulated differently in every state. Check what your state actually requires before you build a year around anything. Texas and Florida set no minimum hours at all. California expects you to match the school year. Alabama names a number of days and a number of hours.',
+    'From about fourteen, start keeping the record as you go. A transcript reconstructed from memory in the spring of the final year is the commonest regret in home educating high school and it is entirely avoidable.',
   ],
+};
+
+/* HOW LONG A DAY ACTUALLY IS, BY AGE
+   Printed because the commonest mistake a new home educating parent
+   makes is trying to reproduce a six hour school day and concluding
+   after a fortnight that they cannot do this. */
+const LEARN_HOURS = {
+  title: 'How long a day actually is',
+  rows: [
+    { band: 'Five and under', hours: 'One to two hours' },
+    { band: 'Six to eight', hours: 'Two to two and a half hours' },
+    { band: 'Eight to eleven', hours: 'Two and a half to three and a half hours' },
+    { band: 'Eleven to fourteen', hours: 'Three to four hours' },
+    { band: 'Fourteen to eighteen', hours: 'Four to five hours' },
+  ],
+  note: 'These are hours of actual work, not hours in a building. One to one is enormously faster than one '
+    + 'to twenty five, and a school day is long because of the twenty five rather than because of the learning.',
 };
 
 /* ------------------------------------------------------------------
@@ -25207,6 +25591,7 @@ const LEARN_SOURCES = [
   { label: 'Dual language development', org: 'Zero to Three', url: 'https://www.zerotothree.org/resource/dual-language-development-double-the-benefit/' },
   { label: 'Promoting preschoolers\u2019 emergent writing', org: 'NAEYC', url: 'https://www.naeyc.org/resources/pubs/yc/nov2017/emergent-writing' },
   { label: 'Circle time, recommended length by age', org: 'Brightwheel', url: 'https://mybrightwheel.com/blog/circle-time' },
+  { label: 'Homeschool hours by grade, and what states require', org: 'Outschool', url: 'https://outschool.com/homeschool/hours-by-grade' },
 ];
 
 function learnBandFor(months) {
@@ -27300,6 +27685,220 @@ const SIGN_GROUPS = [
   },
 ];
 
+/* ==================================================================
+   SIGNING BY AGE
+
+   The word list on its own was a flat pile of twenty three signs with
+   no answer to the two questions a parent actually asks: when do I
+   start, and what comes after these.
+
+   So this is the progression. Each band says what a child can
+   genuinely do at that age, what to add, and what changes. The bands
+   keep going to eighteen, because a hearing family that starts at six
+   months and stops at two has taught their child a handful of gestures,
+   and a deaf child's family that stops at two has a problem.
+
+   THE HONEST SHAPE OF IT
+   Signing to a baby is not the same activity as learning ASL. The
+   first is a small set of useful words used by hearing parents, and it
+   is genuinely useful. The second is a language with its own grammar
+   that belongs to a community. The early bands are the first thing.
+   From about five, the bands are the second thing, and they say so.
+
+   WHERE THE AGES COME FROM
+   Families can start from birth. Babies typically give a sign back
+   somewhere around eight to twelve months, and earlier if the family
+   started early, with some producing a rough milk as early as six or
+   seven months. Nothing here promises that, because a baby who signs
+   at fourteen months is not late.
+   ================================================================== */
+
+const SIGN_STAGES = [
+  {
+    id: 's-birth',
+    label: 'Birth to six months',
+    minMonths: 0, maxMonths: 6,
+    expect: 'Nothing back, for months. That is not a sign it is not working, it is the whole first stage.',
+    howMany: 'Three or four signs, used constantly.',
+    focus: ['Milk', 'More', 'All done, or finished', 'Mum or Dad'],
+    doThis: [
+      'Start now. There is no age at which it is too early and the adults need the practice more than the baby does.',
+      'Sign it while it is happening and while they are looking at your face. A sign made to the back of a head did not happen.',
+      'Say the word out loud every single time you make the sign. The two together is the entire method.',
+      'Three or four signs is the right number. A family that learns forty and uses none has done nothing.',
+    ],
+    next: 'The first one comes back somewhere around eight to twelve months, and it is usually milk.',
+  },
+  {
+    id: 's-six',
+    label: 'Six to twelve months',
+    minMonths: 6, maxMonths: 12,
+    expect: 'The first signs come back, roughly eight to twelve months. They will be sloppy and they still count.',
+    howMany: 'Five to eight, and no more until those five are theirs.',
+    focus: ['Milk', 'More', 'Eat, or food', 'All done, or finished', 'Help', 'Sleep', 'Water'],
+    doThis: [
+      'Accept any approximation. A hand opening and closing near the face is milk. Do not correct it.',
+      'Answer the sign immediately and out loud. You want more. Here is more. That is the loop that teaches it.',
+      'Everybody in the house signs. A language used by one parent is not a language, it is a habit.',
+      'When one sign is solid, add one. Not five.',
+    ],
+    next: 'Somewhere after a year the pace changes completely and they start collecting them.',
+  },
+  {
+    id: 's-one',
+    label: 'One to eighteen months',
+    minMonths: 12, maxMonths: 18,
+    expect: 'They start asking for signs. Point at a thing and look at you, which is a request for its name.',
+    howMany: 'Fifteen to twenty five, and they will drive it now rather than you.',
+    focus: ['Please', 'Thank you', 'Dog', 'Cat', 'Ball', 'Book', 'Bath', 'Hurt or pain'],
+    doThis: [
+      'Follow what they are interested in rather than a list. A child who loves dogs learns dog in a day and learns napkin never.',
+      'Sign the thing they just pointed at, then wait. The waiting is where it lands.',
+      'Add hurt. It is the one that changes an inconsolable evening into a pointed finger.',
+      'Keep signing after they can say the word. Dropping it the moment speech arrives teaches them the signs were a temporary measure.',
+    ],
+    next: 'Two signs together, which is the beginning of grammar rather than vocabulary.',
+  },
+  {
+    id: 's-two',
+    label: 'Eighteen months to three',
+    minMonths: 18, maxMonths: 36,
+    expect: 'Two signs joined together. More milk. Dad car. That is a sentence and it is a real milestone.',
+    howMany: 'Whatever they will take. Fifty is normal at this point.',
+    focus: ['Play', 'Outside', 'Friend', 'Sorry', 'Wait', 'Stop', 'Scared', 'Happy', 'Sad', 'Angry'],
+    doThis: [
+      'Put feelings in now. A two year old who can sign angry before they can say it is a two year old having fewer of the other kind of afternoon.',
+      'Join two signs yourself, constantly, so they hear the shape of it.',
+      'Start signing while you read. Pick three signs in a familiar book and do them every time.',
+      'If this is a hearing family and the signing has become something the child does and the adults have stopped, that is the moment it dies. Pick it back up.',
+    ],
+    next: 'Letters, and the first idea that signing is a language rather than a set of words.',
+  },
+  {
+    id: 's-three',
+    label: 'Three to five',
+    minMonths: 36, maxMonths: 60,
+    expect: 'They can copy a handshape deliberately and hold it, which is what fingerspelling needs.',
+    howMany: 'A hundred or more if it is part of the day. Plus their own name in letters.',
+    focus: ['Where', 'Who', 'What', 'Again'],
+    alsoLearn: ['Their own name, spelled', 'Colours', 'Numbers to ten'],
+    doThis: [
+      'Teach their name first, letter by letter, as a shape rather than as spelling. Most children learn it as one movement and that is correct.',
+      'Question signs matter more than nouns here, because they are what turns signing into conversation.',
+      'Introduce the idea that this is a language that Deaf people use, not a baby thing. Age three is not too early and it sets up everything after it.',
+      'Watch signed stories together. They will copy the face before they copy the hands, which is exactly right.',
+    ],
+    next: 'The grammar, which is where it stops being English with your hands.',
+  },
+  {
+    id: 's-five',
+    label: 'Five to eight',
+    minMonths: 60, maxMonths: 96,
+    expect: 'Old enough to learn that ASL has its own grammar and is not English translated.',
+    howMany: 'This is where a word count stops being the measure. It becomes a class rather than a list.',
+    focus: [],
+    alsoLearn: ['The full alphabet', 'Numbers past ten', 'Yes and no questions', 'Facial grammar'],
+    doThis: [
+      'Teach that the face is grammar and not decoration. Eyebrows up is a yes or no question, eyebrows down is a question with an answer. Getting this wrong is the commonest thing hearing signers do.',
+      'Word order is different. ASL puts the topic first. Store, I go. Teaching them English word order with signs on top of it is teaching them something that is not ASL.',
+      'Find a real teacher, ideally a Deaf one. Past this point a hearing parent learning from videos is the ceiling rather than the floor.',
+      'Go to something. A Deaf coffee night, a signed story time at a library, an ASL club. A language with no people in it does not survive.',
+    ],
+    next: 'Holding a conversation with somebody who is not you.',
+  },
+  {
+    id: 's-eight',
+    label: 'Eight to twelve',
+    minMonths: 96, maxMonths: 144,
+    expect: 'Can hold a real conversation if they have had real exposure, and will outpace a parent who is self taught.',
+    howMany: 'Fluency is the goal now, not vocabulary.',
+    focus: [],
+    alsoLearn: ['Classifiers', 'Telling a story in ASL', 'Deaf history', 'Talking to somebody who is not family'],
+    doThis: [
+      'Classifiers are the thing that makes signing look like signing rather than like a dictionary. A flat hand becoming a car, a moving finger becoming a person walking. They come from watching fluent signers, not from a list.',
+      'Teach some Deaf history. Deaf schools, the 1880 Milan conference that banned signing in education for most of a century, Gallaudet, Deaf President Now. A child who signs and knows none of this has half of it.',
+      'Let them talk to Deaf adults without you translating for them. Standing between your child and a conversation is a habit that is easy to form.',
+      'If they are ahead of you now, say so out loud and let them teach you. That is a good thing that parents often handle badly.',
+    ],
+    next: 'A language on a transcript, and a possible career.',
+  },
+  {
+    id: 's-teen',
+    label: 'Twelve to eighteen',
+    minMonths: 144, maxMonths: 240,
+    expect: 'Can reach real fluency, and can take it seriously as a subject rather than a family habit.',
+    howMany: 'Course level. Think in credits and levels rather than in words.',
+    focus: [],
+    alsoLearn: ['ASL as a world language credit', 'Deaf culture properly', 'Interpreting, and its ethics'],
+    doThis: [
+      'Forty five states, Texas included, have laws or regulations letting ASL count as a world language. It can go on a high school transcript and be accepted by most universities. Check your own state and your own target colleges, because the detail varies.',
+      'Culture, not just language. Deaf is a culture with a capital D, and being fluent without understanding that is the thing Deaf adults complain about most.',
+      'If they are thinking about interpreting, the ethics are the hard part rather than the signing. A child of Deaf adults who has interpreted for their parents since they were seven already knows why.',
+      'Keep them in Deaf spaces where they are not the most fluent person in the room. That is the only place fluency keeps growing.',
+    ],
+    next: '',
+  },
+];
+
+function signStageFor(months) {
+  const m = Number(months);
+  if (!isFinite(m)) return null;
+  for (let i = 0; i < SIGN_STAGES.length; i++) {
+    const s = SIGN_STAGES[i];
+    if (m >= s.minMonths && m < s.maxMonths) return s;
+  }
+  return m >= 240 ? SIGN_STAGES[SIGN_STAGES.length - 1] : null;
+}
+
+function signStageById(id) {
+  return SIGN_STAGES.filter((s) => s.id === id)[0] || null;
+}
+
+/* Every sign in the book, flat, so a stage can name a word and the
+   screen can find how to make it without the two lists having to be
+   kept in step by hand. */
+function allSigns() {
+  const out = [];
+  SIGN_GROUPS.forEach((g) => g.signs.forEach((s) => out.push(s)));
+  EXTRA_SIGNS.forEach((s) => out.push(s));
+  return out;
+}
+
+function signByWord(word) {
+  const w = String(word || '').toLowerCase();
+  return allSigns().filter((s) => String(s.word).toLowerCase() === w)[0] || null;
+}
+
+/* The words a stage asks for that are not in the themed groups. Kept
+   separate so the groups stay readable as groups. */
+const EXTRA_SIGNS = [
+  { word: 'Sleep', how: 'Open hand in front of your face, draw it down past your chin closing it as you go, ending with your eyes shut.', hook: 'Your face closing for the night.', why: 'Lets them tell you they are done before the meltdown tells you.' },
+  { word: 'Angry', how: 'Claw your hand in front of your stomach and pull it up sharply towards your chest.', hook: 'Something boiling up out of your middle.', why: 'A two year old who can sign this before they can say it has fewer of the other kind of afternoon.' },
+  { word: 'Mum or Dad', how: 'Thumb of an open hand to the chin for mum, to the forehead for dad. Fingers spread, tap twice.', hook: 'Low for mum, high for dad. That is the only thing to remember.', why: 'Lets a baby ask for a specific person rather than crying at whoever is nearest.' },
+  { word: 'Ball', how: 'Curve both hands as though holding a ball and tap the fingertips together twice.', hook: 'You are holding the ball.', why: 'One of the first things a toddler wants badly enough to ask for.' },
+  { word: 'Bath', how: 'Two fists on your chest, rubbing up and down.', hook: 'Scrubbing yourself.', why: 'Warns them what is coming, which is most of what stops a bath time fight.' },
+  { word: 'Hurt or pain', how: 'Point both index fingers at each other and jab them together twice, near wherever hurts.', hook: 'Two points of pain meeting.', why: 'The single most useful sign in the book. It turns an inconsolable hour into a pointed finger.' },
+  { word: 'Play', how: 'Both hands in the Y shape, thumb and pinky out, and shake them from the wrists.', hook: 'Loose and waggling, which is what play looks like.', why: 'Gives them a way to ask for your attention that is not pulling at you.' },
+  { word: 'Outside', how: 'Open hand near your chest, close it into a grabbing shape as you pull it outward and up.', hook: 'Pulling yourself out through a door.', why: 'The request that prevents the most afternoons from going wrong.' },
+  { word: 'Friend', how: 'Hook your two index fingers together, then swap which one is on top.', hook: 'Two people linked, both ways round.', why: 'Comes into its own the moment there are other children.' },
+  { word: 'Sorry', how: 'Make a fist and rub it in a circle over your chest.', hook: 'Rubbing the feeling in your chest.', why: 'A two year old can mean it long before they can say it.' },
+  { word: 'Wait', how: 'Both hands up, palms up, fingers wiggling.', hook: 'Fingers drumming while you wait.', why: 'A visible answer to a demand, which works far better than the word does.' },
+  { word: 'Stop', how: 'Bring the edge of one flat hand down sharply onto the palm of the other.', hook: 'A chopping halt.', why: 'Clear, unmistakable, and it works across a room without shouting.' },
+  { word: 'Scared', how: 'Both hands in loose fists in front of your chest, then open them suddenly towards each other.', hook: 'Your heart jumping.', why: 'Naming fear is most of what shrinks it.' },
+  { word: 'Again', how: 'One hand flat, palm up. The other hand bent, arcing over and tapping into that palm.', hook: 'Coming back round to the same place.', why: 'Ends the whining version of the same request.' },
+  { word: 'Where', how: 'Index finger up, shaken side to side.', hook: 'A finger looking around.', why: 'Builds joint attention, and it is the first question sign most children use.' },
+  { word: 'Who', how: 'Thumb on your chin, index finger bending twice near your lips.', hook: 'Mouthing the question.', why: 'Turns signing into conversation rather than requests.' },
+  { word: 'What', how: 'Both hands out, palms up, shaken slightly.', hook: 'The universal shrug, and in ASL it is a real sign.', why: 'One of the first three question signs.' },
+];
+
+const SIGN_STAGE_TITLE = 'Where to start, and what comes next';
+const SIGN_STAGE_INTRO =
+  'Signing is not one thing you do at one age. It starts before they can sit up and it can end in a '
+  + 'language on a transcript, and what to do changes completely along the way.';
+const SIGN_STAGE_NOT_LATE =
+  'If you are starting at three, or at eight, you have not missed anything. Start at the band that '
+  + 'fits them now and use the earlier signs as the first words.';
+
 const HOW_TO_PRACTICE = {
   title: 'Making it stick',
   headline: 'How to make it actually stick, for the adults more than for the child.',
@@ -27393,6 +27992,8 @@ const SIGN_MYTHS = [
 ];
 
 const SIGN_SOURCES = [
+  { label: 'States recognising ASL as a world language', org: 'National Association of the Deaf', url: 'https://www.nad.org/wp-content/uploads/2023/12/2023-States_Recognizing_ASL.pdf' },
+  { label: 'The first signs to teach a new baby', org: 'The Learning Center for the Deaf', url: 'https://www.tlcdeaf.org/about/news/top-five-signs-teach-your-new-baby' },
   { org: 'CDC', label: 'Hearing loss in children, treatment and intervention', url: 'https://www.cdc.gov/hearing-loss-children/treatment/' },
   { org: 'NIDCD', label: 'American Sign Language', url: 'https://www.nidcd.nih.gov/health/american-sign-language' },
   { org: 'AAP', label: 'Hearing loss and your baby', url: 'https://www.healthychildren.org/English/health-issues/conditions/ear-nose-throat/Pages/Hearing-Loss.aspx' },
@@ -28949,6 +29550,13 @@ const store = {
   /* Willow's draft for today, and whether it has been sent. Keyed by
      the day so yesterday's cannot be posted by accident. */
   willowPost: null,
+  /* Whether the invite link was copied rather than shared, so the
+     button can say so. Never persisted. */
+  shareLinkCopied: false,
+
+  /* Which signing band is being looked at, when it is not simply the
+     child's own. */
+  signStage: '',
 
   vaxTab: 'list',
   vaxOpen: '',
@@ -29124,6 +29732,15 @@ const state = {};
  'liftUsed', 'liftDate', 'pumpTab', 'pumpGoal',
  'pumpProblem', 'flangeMm', 'ppTab', 'ppStage', 'askQuery', 'askAsked',
  'tab', 'view', 'undGroup', 'lensBand', 'feedTab', 'outTab', 'safetyTab',
+ /* EVERY SUB TAB KEY HAS TO BE IN THIS LIST.
+    The one handler for every tab strip writes state[key], and state is
+    a view onto store for the names below and a plain object for
+    anything else. A key that is missing gets written to a property
+    nothing reads, so the tab lights up, the screen does not change,
+    and nothing throws. That is exactly what happened to the Learning
+    tabs, and to Jobs, Growth and the vaccine record with them. The
+    build now refuses to finish if a data-sub key is not here. */
+ 'learnTab', 'choreTab', 'growthTab', 'vaxTab',
  'logDraft', 'draftChildName', 'draftChildBday'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -30774,7 +31391,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -31131,6 +31748,9 @@ function initControls() {
       return;
     } else if (t.dataset.update === 'later') {
       update.dismissed = true;
+    } else if (t.dataset.share === 'link') {
+      inviteSend(t.dataset.code);
+      return;
     } else if (t.dataset.feedtag) {
       feed.tag = t.dataset.feedtag === '__clear' ? '' : t.dataset.feedtag;
       feed.view = 'foryou';
@@ -31223,6 +31843,9 @@ function initControls() {
         store.growthCopied = true;
         setTimeout(() => { store.growthCopied = false; render(); }, 1800);
       }
+    } else if (t.dataset.signstage) {
+      store.signStage = t.dataset.signstage;
+      saveStore();
     } else if (t.dataset.learnband) {
       store.learnBand = t.dataset.learnband;
       saveStore();
@@ -32809,6 +33432,63 @@ function signRowSub(months) {
   return 'The first signs, what ASL actually is, and where to learn it';
 }
 
+/* WHERE THIS CHILD IS NOW, AND WHAT COMES NEXT.
+
+   The word list on its own answered neither of the two questions a
+   parent asks, which are when do I start and what happens after these
+   twenty three. This puts their own age at the top, with the band
+   either side reachable, so somebody can look forward without being
+   told their four year old is behind. */
+function signStageBlock(months) {
+  const natural = signStageFor(months);
+  const picked = store.signStage ? signStageById(store.signStage) : null;
+  const st = picked || natural || SIGN_STAGES[0];
+  const off = natural && st.id !== natural.id;
+
+  return `
+  <div class="dsec">
+    <h4>${esc(SIGN_STAGE_TITLE)}</h4>
+    <p class="tiny" style="margin:0 0 10px">${esc(SIGN_STAGE_INTRO)}</p>
+    <div class="chips" style="margin-bottom:12px">
+      ${SIGN_STAGES.map((x) => `
+        <button class="chip" data-signstage="${esc(x.id)}" aria-pressed="${x.id === st.id}">${esc(x.label)}</button>`).join('')}
+    </div>
+    ${off && natural ? `
+      <p class="tiny" style="margin:0 0 10px">Looking at ${esc(st.label.toLowerCase())}.
+      <button class="tiny" data-signstage="${esc(natural.id)}"
+        style="background:none;border:0;padding:0;color:var(--deep);text-decoration:underline">Back to their age</button></p>` : ''}
+
+    <div class="card leafy">
+      <p class="bodytext" style="margin:0 0 6px"><strong>${esc(st.label)}</strong></p>
+      <p class="bodytext" style="margin:0">${esc(st.expect)}</p>
+      <p class="tiny" style="margin:8px 0 0">${esc(st.howMany)}</p>
+    </div>
+
+    ${st.focus.length ? `
+      <p class="tiny" style="margin:0 0 8px">Signs to be working on</p>
+      <div class="chips" style="margin-bottom:12px">
+        ${st.focus.map((w) => `<span class="chip">${esc(w)}</span>`).join('')}
+      </div>` : ''}
+    ${(st.alsoLearn || []).length ? `
+      <p class="tiny" style="margin:0 0 8px">${esc(st.focus.length ? 'And the parts that are not one sign' : 'What this band is about')}</p>
+      <div class="chips" style="margin-bottom:12px">
+        ${st.alsoLearn.map((w) => `<span class="chip plain">${esc(w)}</span>`).join('')}
+      </div>` : ''}
+
+    ${list(st.doThis)}
+
+    ${st.focus.map((w) => signByWord(w)).filter(Boolean).map((sg) => `
+      <div class="quote" style="margin-top:9px">
+        <p class="sit">${icon('hand', 12, 'var(--sage)')} ${esc(sg.word)}</p>
+        <p class="why" style="margin-top:4px">${esc(sg.how)}</p>
+        <p class="tiny" style="margin-top:5px"><strong style="color:var(--deep)">Remember it:</strong> ${esc(sg.hook)}</p>
+      </div>`).join('')}
+
+    ${st.next ? `<p class="tiny" style="margin-top:10px">Next: ${esc(st.next)}</p>` : ''}
+    <p class="tiny" style="margin-top:8px">${esc(SIGN_STAGE_NOT_LATE)}</p>
+  </div>`;
+}
+
 function screenSigns(c) {
   const months = c.months;
   const lensOn = signLensOn();
@@ -32840,6 +33520,8 @@ function screenSigns(c) {
     </div>
 
     ${deafFirst ? accessBlock : ''}
+
+    ${signStageBlock(months)}
 
     ${SIGN_GROUPS.map((g) => `
       <div class="dsec">
@@ -33510,13 +34192,18 @@ function screenSharing(c) {
     <div class="dsec">
       <h4>Their code</h4>
       <p class="tiny" style="margin:0 0 10px">For ${esc(made.names.join(', '))}.</p>
-      <div class="card" style="text-align:center;padding:20px 16px">
-        <p style="font-family:var(--serif);font-size:30px;letter-spacing:3px;color:var(--ink);margin:0">
+      <div class="card" style="padding:18px 16px">
+        <p class="bodytext" style="margin:0 0 10px">${esc(SHARE_LINK_NOTE)}</p>
+        <button class="btn" style="width:100%" data-share="link" data-code="${esc(made.code)}">
+          ${esc(store.shareLinkCopied ? SHARE_LINK_COPIED : SHARE_LINK_BTN)}
+        </button>
+        <p class="tiny" style="margin:14px 0 8px;text-align:center">Or read them the code.</p>
+        <p style="font-family:var(--serif);font-size:30px;letter-spacing:3px;color:var(--ink);margin:0;text-align:center">
           ${esc(prettyCode(made.code))}
         </p>
-        <p class="tiny" style="margin-top:8px">${esc(codeLeft(made.at + CODE_HOURS * 3600000, Date.now()))}</p>
-        <button class="btn" style="width:100%;margin-top:14px" data-share="copy" data-code="${esc(made.code)}">
-          ${esc(store.shareCopied ? 'Copied' : 'Copy the code')}
+        <p class="tiny" style="margin-top:8px;text-align:center">${esc(codeLeft(made.at + CODE_HOURS * 3600000, Date.now()))}</p>
+        <button class="chip" style="margin-top:12px;width:100%" data-share="copy" data-code="${esc(made.code)}">
+          ${esc(store.shareCopied ? 'Copied' : 'Copy just the code')}
         </button>
         <button class="chip" style="margin-top:9px" data-share="dropcode" data-code="${esc(made.code)}">
           Cancel this code
@@ -37144,6 +37831,8 @@ function screenAuth() {
       : 'Everything is where you left it.'}</p>
   </div>
   <div class="sc" style="max-width:430px">
+
+    ${inviteDoorBlock()}
 
     <div class="chips" style="margin-bottom:16px">
       <button class="chip" data-auth="mode" data-val="signup" aria-pressed="${signup}">Create account</button>
@@ -42449,6 +43138,9 @@ async function cloudStart(app, uid) {
     /* After, not before. The account's own children reconcile first,
        then anything shared with it is added on top. */
     sharePullAll();
+    /* A link tapped before there was an account. This is the moment
+       there is one, so it is the moment to spend the invite. */
+    if (invite.code) inviteRedeem();
   } catch (err) {
     cloud.started = false;
     cloudSetStatus('error', String((err && err.message) || err));
@@ -42712,7 +43404,17 @@ async function shareJoin() {
   const box = document.getElementById('shareIn');
   if (box && box.value) share.joinInput = box.value;
   const code = cleanCode(share.joinInput);
-  if (!codeLooksRight(code)) { share.error = SHARE_ERRORS.shape; render(); return; }
+  if (!codeLooksRight(code)) {
+    /* Say which half is wrong. Telling somebody the code is ten
+       characters long while they are staring at ten characters is how
+       a working feature gets reported as broken. */
+    const bad = badCodeChar(code);
+    share.error = bad
+      ? SHARE_ERRORS.badChar + ' The ' + bad + ' is the problem.'
+      : SHARE_ERRORS.shape;
+    render();
+    return;
+  }
   share.busy = true;
   share.error = '';
   share.joined = '';
@@ -42968,6 +43670,103 @@ function cloudStatusLine() {
   return { tone: 'plain', title: 'Saved on this device', text: 'Sign in to keep it on your account too.' };
 }
 
+
+/* =================================================================
+   THE INVITE LINK
+
+   Sharing already worked through a ten character code. Typing that
+   code off one phone into another is the part that failed, in real
+   life, for a real husband on a real evening, and the app told him the
+   code was ten characters long while he was looking at ten characters.
+
+   So the code stays and nobody has to use it. A link carries it. Tap
+   the link and the app knows who invited you before you have done
+   anything, and joins you the moment there is an account to join with.
+
+   THE CODE IS TAKEN OUT OF THE ADDRESS BAR IMMEDIATELY
+   It is a single use credential sitting in a URL, which is fine while
+   it is travelling through one text message and not fine sitting in
+   somebody's history, in a screenshot, or in whatever a shared browser
+   syncs. It is read once into memory, the address is rewritten without
+   it, and it never goes to disk.
+   ================================================================= */
+
+const invite = {
+  code: '',        // the pending code, in memory only
+  done: false,
+};
+
+function inviteTake() {
+  if (typeof location === 'undefined') return;
+  const code = joinCodeFromUrl(location.search || '');
+  const open = (String(location.search || '').match(/[?&]open=([a-z]+)/i) || [])[1] || '';
+  if (!code && !open) return;
+  if (code) invite.code = code;
+  /* Out of the address bar before anything renders. */
+  try {
+    const clean = location.pathname + location.hash;
+    history.replaceState(null, '', clean || '/');
+  } catch (err) {}
+  if (open) {
+    try { pushOpenTarget(open); } catch (err) {}
+  }
+}
+
+/* WHY THE DOOR DOES NOT NAME WHO INVITED YOU.
+   It would be nicer if it did. Reading the invite needs an account,
+   because the rules will not let a stranger read one, and that rule is
+   worth more than the nicety: without it anybody could walk the invite
+   collection and learn children's names. So the door says somebody,
+   and the name appears the moment there is an account to see it with. */
+
+/* Called once there is an account. Runs the same redemption the typed
+   code runs, so there is only one path that can be wrong. */
+async function inviteRedeem() {
+  if (!invite.code || invite.done) return;
+  if (!sharingOn()) return;
+  invite.done = true;
+  share.joinInput = invite.code;
+  invite.code = '';
+  state.tab = 'home';
+  state.view = { type: 'screen', id: 'sharing' };
+  render();
+  await shareJoin();
+}
+
+/* The banner on the sign in door, so somebody who has just been sent a
+   link by their husband knows why they are being asked to make an
+   account before they decide whether to. */
+function inviteDoorBlock() {
+  if (!invite.code) return '';
+  return `
+  <div class="card leafy" style="margin-bottom:14px">
+    <p class="eyebrow">${icon('people', 11, 'var(--sage)')} ${esc(SHARE_INVITED_TITLE)}</p>
+    <p class="bodytext" style="margin-top:6px">Somebody wants to share a child with you.</p>
+    <p class="tiny" style="margin-top:8px">${esc(SHARE_INVITED_SIGNUP)}</p>
+  </div>`;
+}
+
+/* The share sheet, which on a phone is the row of apps with Messages
+   at the front of it. Falls back to the clipboard on a desktop, where
+   there is no sheet to open. */
+async function inviteSend(code) {
+  const names = ((share.made && share.made.names) || []);
+  const text = shareMessage(store.parent.name, names, code, location.origin);
+  try {
+    if (navigator.share) {
+      await navigator.share({ text: text });
+      return;
+    }
+  } catch (err) {
+    /* Dismissing the sheet throws, and that is not an error worth
+       showing anybody. */
+    if (String((err && err.name) || '') === 'AbortError') return;
+  }
+  copyText(text);
+  store.shareLinkCopied = true;
+  render();
+  setTimeout(() => { store.shareLinkCopied = false; render(); }, 2200);
+}
 
 /* =================================================================
    FOR YOU, TOPICS, AND WILLOW'S DAILY POST
@@ -44946,6 +45745,18 @@ function learnHowTab() {
     ${list(LEARN_RULES.items)}
   </div>
   <div class="dsec">
+    <h4>${esc(LEARN_HOURS.title)}</h4>
+    <div class="card flat" style="padding:4px 12px">
+      ${LEARN_HOURS.rows.map((r) => `
+        <div class="hoursrow">
+          <span class="grow">${esc(r.band)}</span>
+          <span class="tiny" style="text-align:right">${esc(r.hours)}</span>
+        </div>`).join('')}
+    </div>
+    <p class="tiny" style="margin:9px 0 0">${esc(LEARN_HOURS.note)}</p>
+  </div>
+
+  <div class="dsec">
     <h4>${esc(LEARN_AT_HOME.title)}</h4>
     ${list(LEARN_AT_HOME.items)}
   </div>
@@ -46227,6 +47038,11 @@ function willowPanel() {
    Please leave this here.
    ----------------------------------------------------------------- */
 loadStore();
+/* Before the first render and before anything is written anywhere: the
+   invite code comes out of the address bar into memory, and the address
+   is rewritten without it. A single use credential should not sit in
+   somebody's history. */
+inviteTake();
 initControls();
 restoreSession();
 render();
