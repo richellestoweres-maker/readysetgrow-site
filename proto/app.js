@@ -1277,7 +1277,7 @@ const state = {};
     and nothing throws. That is exactly what happened to the Learning
     tabs, and to Jobs, Growth and the vaccine record with them. The
     build now refuses to finish if a data-sub key is not here. */
- 'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab',
+ 'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab',
  'logDraft', 'draftChildName', 'draftChildBday'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -2465,6 +2465,8 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'support') html = screenSupport(c);
   else if (v && v.type === 'screen' && v.id === 'online') html = screenOnline(c);
   else if (v && v.type === 'screen' && v.id === 'growingup') html = screenGrowingUp(c);
+  else if (v && v.type === 'screen' && v.id === 'childcycle') html = screenChildCycle(c);
+  else if (v && v.type === 'screen' && v.id === 'consent') html = screenConsent(c);
   else if (v && v.type === 'screen' && v.id === 'plan') html = screenPlan(c);
   else if (v && v.type === 'screen' && v.id === 'sleep') html = screenSleep(c);
   else if (v && v.type === 'screen' && v.id === 'development') html = screenDevelopment(c);
@@ -2935,7 +2937,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3176,6 +3178,10 @@ function initControls() {
       else if (how === 'done') { store.cycleEdit = false; flushStore(); }
       else if (how === 'history') { store.cycleHistory = !store.cycleHistory; flushStore(); }
       else if (how === 'today') { periodToggle(ciToday()); return; }
+    } else if (t.dataset.childperiod) {
+      const kid = activeChild();
+      if (kid) childPeriodToggle(kid, t.dataset.childperiod);
+      return;
     } else if (t.dataset.period) {
       periodToggle(t.dataset.period);
       return;
@@ -3662,6 +3668,11 @@ function initControls() {
       } else {
         navBack();
       }
+    } else if (t.dataset.pub) {
+      pubAction(t.dataset.pub, t.dataset.id);
+      if (t.dataset.pub === 'caledit' || t.dataset.pub === 'caldone') { /* falls through to render */ }
+    } else if (t.dataset.constage) {
+      store.conStage = store.conStage === t.dataset.constage ? '' : t.dataset.constage;
     } else if (t.dataset.onlinestage) {
       store.onlineStage = store.onlineStage === t.dataset.onlinestage ? '' : t.dataset.onlinestage;
     } else if (t.dataset.growstage) {
@@ -6193,6 +6204,16 @@ function supTabTraffick() {
     </div>
 
     <div class="dsec">
+      <h4>If it was not a stranger</h4>
+      <p class="bodytext" style="margin:0 0 10px">For a teenager this is far more often somebody they
+        know, and often somebody they are seeing. What consent actually requires, and what to do in
+        the first day if your child tells you something, is written out in full.</p>
+      <button class="btn ghost" style="width:100%" data-go="screen" data-id="consent">
+        ${icon('heart', 14, 'var(--deep)')} ${esc(CON_TITLE)}
+      </button>
+    </div>
+
+    <div class="dsec">
       <h4>${esc(TRAF_PREVENT.title)}</h4>
       <p class="tiny" style="margin:0 0 9px">${esc(TRAF_PREVENT.intro)}</p>
       ${TRAF_PREVENT.items.map((x) => `
@@ -6503,9 +6524,19 @@ function growNowBlock(months) {
   </div>`;
 }
 
+function growTabsFor(months) {
+  const base = GROW_TABS.slice();
+  if (!pubShows(months)) return base;
+  /* Second, not first. Somebody arriving here is usually reading
+     rather than recording, and the reading is what the screen is
+     mostly for. */
+  return [base[0], { id: 'track', label: PUB_TITLE }].concat(base.slice(1));
+}
+
 function screenGrowingUp(c) {
-  const tab = state.growTab || 'now';
   const months = c.months;
+  let tab = state.growTab || 'now';
+  if (growTabsFor(months).filter((x) => x.id === tab).length === 0) tab = 'now';
 
   return `
   ${cornerLeaves()}
@@ -6515,9 +6546,10 @@ function screenGrowingUp(c) {
     <p class="sub">${esc(GROW_SUB)}</p>
   </div>
   <div class="sc">
-    ${subTabs('growTab', tab, GROW_TABS)}
+    ${subTabs('growTab', tab, growTabsFor(months))}
 
     ${tab === 'now' ? growNowBlock(months) : ''}
+    ${tab === 'track' ? pubTrackBlock(c) : ''}
 
     ${tab === 'body' ? `
       <div class="dsec">
@@ -6586,6 +6618,16 @@ function screenGrowingUp(c) {
       </div>
 
       <div class="dsec">
+        <h4>The long version of all of this</h4>
+        <p class="bodytext" style="margin:0 0 10px">Consent properly, what it looks like at each age,
+          how to be the person they tell, and what to do in the first day if they ever do. It is the
+          most important screen in this app and it is one tap away.</p>
+        <button class="btn" style="width:100%" data-go="screen" data-id="consent">
+          ${icon('heart', 14, '#fff')} ${esc(CON_TITLE)}
+        </button>
+      </div>
+
+      <div class="dsec">
         <h4>${esc(GROW_SEXED.title)}</h4>
         <p class="sect" style="margin-top:0">${esc(GROW_SEXED.strong.title)}</p>
         ${list(GROW_SEXED.strong.items)}
@@ -6629,6 +6671,773 @@ function screenGrowingUp(c) {
 
     ${dsec('Where this comes from', sourceRows(GROW_SOURCES))}
     <p class="disclaimer">${esc(GROW_DISCLAIMER)}</p>
+  </div>`;
+}
+
+/* ==================================================================
+   KEEPING TRACK OF PUBERTY, AND A DAUGHTER'S CYCLE
+
+   Everything about why this is opt in, why it can be deleted in one
+   tap, and why birth control is recorded as a medication rather than
+   as a statement, lives in src/data/puberty.js.
+
+   WHAT IS SHOWN TO WHOM, which was her question:
+
+     The TRACKER is fitted to the child. A girl gets the girls' list,
+     a boy gets the boys' list, the cycle only exists for a girl who
+     has started, and none of it appears before seven. It is a record
+     of one particular body and showing the wrong body's list would be
+     both useless and strange.
+
+     The READING is not fitted and never will be. Every age band and
+     both sets of changes stay reachable on every child's profile at
+     every age, because a mother of a son still needs to know what a
+     period is, a parent reading ahead is doing the right thing, and
+     an app that decides which half of puberty a family is allowed to
+     read about has overstepped.
+   ================================================================== */
+
+function pubMarks(kid) {
+  return (kid && kid.pub && typeof kid.pub === 'object') ? kid.pub : {};
+}
+
+function pubOn(kid) {
+  return !!(kid && kid.pubOn);
+}
+
+function pubSet(kid, id, value) {
+  if (!kid) return;
+  if (!kid.pub || typeof kid.pub !== 'object') kid.pub = {};
+  if (value) kid.pub[id] = value; else delete kid.pub[id];
+  kid.updatedAt = Date.now();
+  saveStore();
+}
+
+/* Today as YYYY-MM, since month is the granularity the whole of this
+   works in. Nobody knows the day. */
+function pubThisMonth() {
+  return String(ciToday()).slice(0, 7);
+}
+
+function childPeriods(kid) {
+  return normalizePeriods(Array.isArray((kid || {}).periods) ? kid.periods : []);
+}
+
+function childPeriodsSet(kid, list) {
+  if (!kid) return;
+  kid.periods = normalizePeriods(list);
+  kid.updatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+function childPeriodToggle(kid, date) {
+  const list = childPeriods(kid);
+  const at = list.indexOf(date);
+  if (at === -1) list.push(date); else list.splice(at, 1);
+  childPeriodsSet(kid, list);
+  /* Logging a period IS the first period being recorded, so the
+     checklist stops asking about something that has demonstrably
+     already happened. */
+  if (at === -1 && !pubMarks(kid).period) pubSet(kid, 'period', String(date).slice(0, 7));
+}
+
+function childMeds(kid) {
+  return Array.isArray((kid || {}).meds) ? kid.meds : [];
+}
+
+function pubWipe(kid) {
+  if (!kid) return;
+  delete kid.pub;
+  delete kid.periods;
+  delete kid.meds;
+  delete kid.cycleLength;
+  kid.pubOn = false;
+  kid.updatedAt = Date.now();
+  store.pubDelete = false;
+  flushStore();
+}
+
+/* The door. Nothing is recorded until somebody has read what this is
+   and pressed the button, which is the whole of the consent design. */
+function pubStartBlock(kid, first) {
+  return `
+  <div class="card leafy">
+    <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} ${esc(PUB_START.title)}</p>
+    ${PUB_START.body.map((x) => `<p class="bodytext" style="margin-top:8px">${esc(x)}</p>`).join('')}
+  </div>
+
+  <div class="dsec">
+    <h4>What you should know first</h4>
+    ${list(PUB_START.items)}
+    <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(PUB_START.ask)}</p></div>
+  </div>
+
+  <button class="btn" style="width:100%" data-pub="on">${esc(PUB_START.btn)}</button>
+  <p class="tiny" style="text-align:center;margin-top:9px">${esc(PUB_START.notNow)} is fine. Nothing
+    is recorded until you press that.</p>`;
+}
+
+/* Which body's list to show. Reuses the same answer the growth curves
+   already needed rather than asking a second time. */
+function pubAskSex(kid, first) {
+  return `
+  <div class="card leafy">
+    <p class="bodytext">The list of changes is different depending on which body
+      ${esc(first)} has, so this needs to know which one to show.</p>
+    <p class="tiny" style="margin-top:8px">It is the same answer the growth curves use, so you only
+      answer it once, and you can change it whenever you like. If it is more complicated than the
+      two options, pick the one whose changes you are expecting and read the other half on the other
+      tabs, which are there for everybody at every age.</p>
+  </div>
+  <button class="lrow" data-growth="sex" data-id="f">
+    <span class="licon">${icon('leaf', 18)}</span>
+    <span class="grow"><span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">The girls' list</span>
+    <span class="tiny" style="display:block;margin-top:2px">Breasts, discharge, periods and the rest</span></span>
+  </button>
+  <button class="lrow" data-growth="sex" data-id="m">
+    <span class="licon">${icon('leaf', 18)}</span>
+    <span class="grow"><span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">The boys' list</span>
+    <span class="tiny" style="display:block;margin-top:2px">Voice, growth, and the rest</span></span>
+  </button>`;
+}
+
+/* One row. Tick it, then say roughly when, because the when is what
+   makes the whole list able to tell you anything. */
+function pubRow(kid, item) {
+  const marks = pubMarks(kid);
+  const on = marks[item.id];
+  const editing = store.pubEdit === item.id;
+  const open = store.pubOpen === item.id;
+
+  return `
+  <div class="card flat vaxcard" style="padding:0;overflow:hidden${item.big && !on ? ';border-left:3px solid var(--leaf)' : ''}">
+    <div class="vaxdose${on ? ' on' : ''}" style="padding:12px 13px">
+      <button class="vaxtick" data-pub="tick" data-id="${esc(item.id)}"
+        aria-pressed="${on ? 'true' : 'false'}"
+        aria-label="${esc(on ? 'Unmark ' + item.label : 'Mark ' + item.label + ' as happened')}">
+        ${on ? icon('check', 12, '#fff') : ''}
+      </button>
+      <span class="grow">
+        <span class="vaxdname">${esc(item.label)}</span>
+        <span class="tiny" style="display:block;margin-top:1px">
+          ${on ? esc(pubMonthLabel(on)) : esc(item.typical)}
+        </span>
+      </span>
+      ${on ? `<button class="tiny vaxdate" data-pub="when" data-id="${esc(item.id)}">When</button>` : ''}
+      <button class="tiny vaxdate" data-pub="open" data-id="${esc(item.id)}"
+        aria-label="More about ${esc(item.label)}">${open ? 'Less' : 'What'}</button>
+    </div>
+
+    ${editing ? `
+    <div class="vaxedit">
+      <input class="inp" id="pubmonthin" type="month" value="${esc(on || pubThisMonth())}"
+        max="${esc(pubThisMonth())}">
+      <button class="btn" data-pub="savewhen" data-id="${esc(item.id)}">Save</button>
+    </div>` : ''}
+
+    ${open ? `
+    <div class="vaxbody">
+      <p class="bodytext" style="margin:0">${esc(item.what)}</p>
+      ${item.gapText ? `<p class="tiny" style="margin:8px 0 0">${icon('chart', 10, 'var(--sage)')} ${esc(item.gapText)}.</p>` : ''}
+      ${item.private ? `<p class="tiny" style="margin:8px 0 0">You may never know about this one and
+        there is no need to ask. It is here for the order, not for ticking.</p>` : ''}
+    </div>` : ''}
+  </div>`;
+}
+
+/* The bit that makes filling it in worth doing. */
+function pubHintBlock(kid) {
+  const h = pubPeriodHint(kid.sex, pubMarks(kid), ciToday());
+  if (!h) return '';
+  const first = (kid.name || 'She').split(/\s+/)[0];
+  return `
+  <div class="bpbox surrender">
+    <p class="bpbox-t">What usually comes next</p>
+    <p class="bodytext" style="margin-top:8px">
+      You recorded ${esc(h.from)} in ${esc(pubMonthLabel(h.started))},
+      which is ${esc(h.since === 0 ? 'this month' : h.since + ' month' + (h.since === 1 ? '' : 's') + ' ago')}.
+      ${esc(h.gapText)}.
+    </p>
+    ${h.overdue ? `
+      <p class="bpwarn">${esc(PUB_HINT_OVERDUE)}</p>` : `
+      <p class="bodytext" style="margin-top:9px">On that gap, a first period for ${esc(first)} would
+        land somewhere around ${esc(pubMonthLabel(h.around))}. It is an average and bodies are not
+        averages, so treat it as a heads up rather than a date.</p>
+      <p class="bpclose">Worth putting something in her bag before then. A girl who starts at school
+        with nothing remembers that day for forty years.</p>`}
+  </div>`;
+}
+
+function pubMedBlock(kid) {
+  const meds = childMeds(kid);
+  const adding = !!store.medAdd;
+  const girl = kid.sex === 'f';
+
+  return `
+  <div class="dsec">
+    <h4>${esc(girl ? MED_TITLE : MED_TITLE_ANY)}</h4>
+    <p class="tiny" style="margin:0 0 10px">${esc(MED_INTRO)}</p>
+
+    ${meds.length ? meds.map((m, i) => `
+      <div class="quote">
+        <p class="sit">${icon('pill', 12, 'var(--sage)')} ${esc(m.name || 'Something')}</p>
+        <p class="why" style="margin-top:4px">
+          ${esc((MED_KINDS.filter((k) => k.id === m.kind)[0] || {}).label || 'Ongoing')}${m.since ? esc(', since ' + pubMonthLabel(m.since)) : ''}
+        </p>
+        <button class="chip" style="margin-top:8px" data-pub="delmed" data-id="${esc(String(i))}">Remove</button>
+      </div>`).join('') : `
+      <div class="card flat"><p class="bodytext">${esc(MED_EMPTY)}</p></div>`}
+
+    ${adding ? `
+    <div class="card" style="margin-top:10px">
+      <p class="eyebrow">What kind</p>
+      <div class="chips" style="margin:8px 0 10px">
+        ${MED_KINDS.map((k) => `
+          <button class="chip" data-pub="medkind" data-id="${esc(k.id)}"
+            aria-pressed="${store.medKind === k.id}">${esc(k.label)}</button>`).join('')}
+      </div>
+      ${store.medKind ? `
+        <p class="tiny" style="margin:0 0 9px">${esc((MED_KINDS.filter((k) => k.id === store.medKind)[0] || {}).note || '')}</p>` : ''}
+      <input class="inp" id="mednamein" type="text" placeholder="What is it called"
+        value="${esc(store.medName || '')}" style="width:100%" autocomplete="off">
+      <p class="eyebrow" style="margin-top:10px">Since</p>
+      <input class="inp" id="medsincein" type="month" value="${esc(store.medSince || pubThisMonth())}"
+        max="${esc(pubThisMonth())}" style="width:100%;margin-top:6px">
+      <button class="btn" style="width:100%;margin-top:11px" data-pub="savemed">Save it</button>
+      <button class="chip" style="margin-top:9px" data-pub="cancelmed">Cancel</button>
+    </div>` : `
+    <button class="btn ghost" style="width:100%;margin-top:10px" data-pub="addmed">
+      ${icon('pill', 14, 'var(--deep)')} Add something
+    </button>`}
+
+    ${girl ? `
+      <div class="callout" style="margin-top:12px"><p style="margin:0">${esc(MED_BC_NOTE)}</p></div>
+      ${meds.filter((m) => m.kind === 'bc').length ? `
+      <div class="callout" style="margin-top:9px"><p style="margin:0">${esc(MED_ON_CHART)}</p></div>` : ''}` : ''}
+  </div>`;
+}
+
+/* Every button on the tracker, in one place, so the consent and the
+   delete cannot drift apart from the thing they gate. */
+function pubAction(how, id) {
+  const kid = activeChild();
+  if (!kid) return;
+
+  if (how === 'on') { kid.pubOn = true; kid.updatedAt = Date.now(); flushStore(); return; }
+
+  if (how === 'tick') {
+    const marks = pubMarks(kid);
+    if (marks[id]) {
+      pubSet(kid, id, '');
+      /* Unticking the first period does not quietly bin the dates she
+         logged. Those are a record of something that happened. */
+      if (id === 'period') store.pubEdit = '';
+    } else {
+      pubSet(kid, id, pubThisMonth());
+      store.pubEdit = id;
+    }
+    return;
+  }
+  if (how === 'when') { store.pubEdit = store.pubEdit === id ? '' : id; return; }
+  if (how === 'open') { store.pubOpen = store.pubOpen === id ? '' : id; return; }
+  if (how === 'savewhen') {
+    const el = document.getElementById('pubmonthin');
+    const v = el && el.value ? el.value : '';
+    if (v && v <= pubThisMonth()) pubSet(kid, id, v);
+    store.pubEdit = '';
+    return;
+  }
+
+  if (how === 'askwipe') { store.pubDelete = true; return; }
+  if (how === 'nowipe') { store.pubDelete = false; return; }
+  if (how === 'wipe') {
+    pubWipe(kid);
+    state.view = { type: 'screen', id: 'growingup' };
+    state.growTab = 'now';
+    return;
+  }
+
+  if (how === 'addmed') { store.medAdd = true; store.medKind = ''; store.medName = ''; store.medSince = ''; return; }
+  if (how === 'cancelmed') { store.medAdd = false; return; }
+  if (how === 'medkind') { store.medKind = id; return; }
+  if (how === 'savemed') {
+    const nameEl = document.getElementById('mednamein');
+    const sinceEl = document.getElementById('medsincein');
+    const name = nameEl && nameEl.value ? nameEl.value.trim() : '';
+    if (!name) { store.medName = ''; return; }
+    const meds = childMeds(kid).slice();
+    meds.push({
+      name: name.slice(0, 60),
+      kind: store.medKind || 'other',
+      since: (sinceEl && sinceEl.value) ? sinceEl.value : '',
+    });
+    kid.meds = meds;
+    kid.updatedAt = Date.now();
+    store.medAdd = false; store.medKind = ''; store.medName = ''; store.medSince = '';
+    flushStore();
+    return;
+  }
+  if (how === 'delmed') {
+    const meds = childMeds(kid).slice();
+    const at = Number(id);
+    if (isFinite(at) && at >= 0 && at < meds.length) meds.splice(at, 1);
+    kid.meds = meds;
+    kid.updatedAt = Date.now();
+    flushStore();
+    return;
+  }
+
+  if (how === 'caledit') { store.childCycleEdit = true; return; }
+  if (how === 'caldone') { store.childCycleEdit = false; return; }
+  if (how === 'caltoday') { childPeriodToggle(kid, ciToday()); return; }
+  if (how === 'calhist') { store.childCycleHist = !store.childCycleHist; return; }
+  if (how === 'delperiod') {
+    const l = childPeriods(kid).filter((d) => d !== id);
+    childPeriodsSet(kid, l);
+  }
+}
+
+function pubTrackBlock(c) {
+  const kid = activeChild();
+  if (!kid) return `<div class="card flat"><p class="bodytext">Open a child first.</p></div>`;
+  const first = (kid.name || 'They').split(/\s+/)[0];
+
+  if (!pubShows(c.months)) {
+    return `
+    <div class="card leafy">
+      <p class="bodytext">${esc(first)} is too young for this to be any use yet. It appears here from
+      around seven, which is early enough to catch the first signs and late enough not to be strange.</p>
+      <p class="tiny" style="margin-top:8px">Everything else on this screen is worth reading now.</p>
+    </div>`;
+  }
+
+  if (!pubOn(kid)) return pubStartBlock(kid, first);
+  if (!kid.sex) return pubAskSex(kid, first);
+
+  const marks = pubMarks(kid);
+  const counts = pubCount(kid.sex, marks);
+  const items = pubList(kid.sex);
+  const started = !!marks.period;
+
+  return `
+  <div class="card leafy">
+    <p class="bodytext" style="margin:0">${esc(PUB_INTRO)}</p>
+    <p class="tiny" style="margin-top:8px">${esc(counts.done + ' of ' + counts.total + ' recorded for ' + first + '.')}</p>
+  </div>
+
+  ${pubHintBlock(kid)}
+
+  <div class="dsec">
+    <h4>What has happened so far</h4>
+    ${items.map((it) => pubRow(kid, it)).join('')}
+  </div>
+
+  ${kid.sex === 'f' ? `
+  <div class="dsec">
+    <h4>${esc(CYC_TITLE)}</h4>
+    ${started ? `
+      <p class="bodytext" style="margin:0 0 10px">${esc(childPeriods(kid).length
+        ? childPeriods(kid).length + ' logged. The calendar, her average and what is worth asking a '
+          + 'doctor about are all on her cycle page.'
+        : 'Her first period is recorded. Log each one as it comes and the app works out her own average.')}</p>
+      <button class="btn" style="width:100%" data-go="screen" data-id="childcycle">
+        ${icon('calendar', 14, '#fff')} Open ${esc(first)}'s cycle
+      </button>
+    ` : `
+      <p class="bodytext" style="margin:0">Once you tick the first period above, a calendar appears
+        here, the same one you use for yourself.</p>`}
+  </div>` : ''}
+
+  ${pubMedBlock(kid)}
+
+  <div class="dsec">
+    <h4>${esc(PUB_HANDOVER.title)}</h4>
+    <p class="bodytext">${esc(PUB_HANDOVER.body)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(PUB_DELETE.title)}</h4>
+    <p class="bodytext" style="margin:0 0 10px">${esc(PUB_DELETE.body)}</p>
+    ${store.pubDelete ? `
+      <button class="btn" style="width:100%;background:#A8352A" data-pub="wipe">${esc(PUB_DELETE.confirm)}</button>
+      <button class="chip" style="margin-top:9px" data-pub="nowipe">${esc(PUB_DELETE.cancel)}</button>
+    ` : `
+      <button class="btn ghost" style="width:100%" data-pub="askwipe">${esc(PUB_DELETE.btn)}</button>`}
+  </div>
+
+  ${dsec('Where this comes from', sourceRows(PUB_SOURCES))}`;
+}
+
+/* ------------------------------------------------------------------
+   HER CYCLE, ON ITS OWN SCREEN
+
+   The same calendar component as the parent's, told to draw a
+   different set of dates and told to leave the fertile window out,
+   which is a decision rather than an omission. See cycleCalendar.
+   ------------------------------------------------------------------ */
+function screenChildCycle(c) {
+  const kid = activeChild();
+  if (!kid || kid.sex !== 'f' || !pubOn(kid)) {
+    state.view = { type: 'screen', id: 'growingup' };
+    return screenGrowingUp(c);
+  }
+  const first = (kid.name || 'She').split(/\s+/)[0];
+  const listed = childPeriods(kid);
+  const stats = cycleStats(listed);
+  const len = predictLength(listed, kid.cycleLength);
+  const info = listed.length ? cycleInfo(listed[0], null, len) : null;
+  const editing = !!store.childCycleEdit;
+  const rows = periodHistoryRows(listed);
+  const onBc = childMeds(kid).filter((m) => m.kind === 'bc').length > 0;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="growingup">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(first + "'s cycle")}</h1>
+    <p class="sub">${esc(CYC_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      ${CYC_INTRO.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      <p class="tiny" style="margin:0">${esc(CYC_NO_FERTILE)}</p>
+    </div>
+
+    ${onBc ? `
+    <div class="callout" style="margin-top:11px"><p style="margin:0">${esc(MED_ON_CHART)}</p></div>` : ''}
+
+    <div class="card" style="margin-top:11px">
+      ${info ? `
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="cycday">
+          <span class="cycday-n">${info.dayOfCycle}</span>
+          <span class="cycday-l">day</span>
+        </span>
+        <span class="grow">
+          <span class="eyebrow" style="display:block">${esc(first + "'s cycle")}</span>
+          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink);margin-top:2px">
+            ${esc(listed.length === 1 ? 'One period logged so far' : listed.length + ' periods logged')}
+          </span>
+          <span class="tiny" style="display:block;margin-top:3px">
+            ${stats.cycles
+              ? esc(cycleLengthLine(stats))
+              : 'Log the next one and this becomes her own average rather than a textbook number.'}
+          </span>
+        </span>
+      </div>
+
+      ${cycleCalendar(info, store.calMonth || 0, editing, listed, 'data-childperiod')}
+      ` : `
+      <p class="eyebrow">${icon('calendar', 11, 'var(--sage)')} ${esc(first + "'s cycle")}</p>
+      <p class="bodytext" style="margin-top:6px">Tap the day her last period started and this fills
+        itself in.</p>
+      ${editing ? cycleCalendar({ lastPeriod: ciToday(), cycleLength: CYCLE_AVERAGE_LENGTH },
+        store.calMonth || 0, true, listed, 'data-childperiod') : ''}`}
+
+      <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+        <button class="chip${editing ? ' on' : ''}" data-pub="${editing ? 'caldone' : 'caledit'}"
+          ${editing ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}>
+          ${icon(editing ? 'check' : 'calendar', 12, 'var(--deep)')} ${editing ? 'Done logging' : 'Log a period'}
+        </button>
+        <button class="chip" data-pub="caltoday">Started today</button>
+        ${rows.length ? `<button class="chip" data-pub="calhist">
+          ${store.childCycleHist ? 'Hide' : 'All ' + rows.length + ' logged'}</button>` : ''}
+      </div>
+
+      ${stats.note ? `
+      <p class="tiny" style="margin-top:9px">${icon('chart', 10, 'var(--sage)')} ${esc(stats.note)}</p>` : ''}
+
+      ${store.childCycleHist && rows.length ? `
+      <div class="cychist">
+        ${rows.map((r) => `
+          <div class="cychrow">
+            <span class="grow">
+              <span class="cychdate">${esc(cycleDateLabelWithYear(r.date))}</span>
+              <span class="tiny">${r.gap
+                ? esc(r.gap + ' days after the one before')
+                : 'The earliest one logged'}</span>
+            </span>
+            <button class="tiny vaxdate" data-pub="delperiod" data-id="${esc(r.date)}">Remove</button>
+          </div>`).join('')}
+      </div>` : ''}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(CYC_NORMAL.title)}</h4>
+      ${list(CYC_NORMAL.items)}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(CYC_RED.title)}</h4>
+      ${list(CYC_RED.items, true)}
+      <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(CYC_RED.note)}</p></div>
+    </div>
+
+    ${pubMedBlock(kid)}
+
+    ${dsec('Where this comes from', sourceRows(PUB_SOURCES))}
+    <p class="disclaimer">Estimates from dates, not a test. Anything on the list above is worth an
+      appointment rather than a search.</p>
+  </div>`;
+}
+
+/* ==================================================================
+   CONSENT, AND IF SOMETHING HAPPENS
+
+   The reasoning, the numbers and the rule about what is stated as
+   proven all live in src/data/consent.js.
+
+   TWO THINGS ABOUT THE ORDER HERE.
+
+   The first tab is for a parent whose child has just told them. Not
+   the explainer, not the age guide. Somebody arriving here at eleven
+   at night is not reading, and the two clocks that genuinely close
+   are measured in hours.
+
+   And the promise gets repeated at the bottom of every tab. It is
+   the one thing on this screen that works before anything has
+   happened, and a parent who only ever opens the first tab should
+   still leave with it.
+   ================================================================== */
+
+function conLine(l) {
+  const digits = String(l.contact || '').replace(/[^\d]/g, '');
+  const dial = (digits.length >= 10 || digits.length === 3) ? 'tel:' + digits : '';
+  return `
+  <div class="bpline">
+    <p class="bpline-n">${esc(l.name)}</p>
+    ${dial
+      ? `<a class="bpline-c" href="${esc(dial)}">${esc(l.contact)}</a>`
+      : `<span class="bpline-c">${esc(l.contact)}</span>`}
+    <p class="tiny" style="margin:2px 0 0">${esc(l.detail)}</p>
+    <a class="tiny" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"
+      style="text-decoration:underline">Their website</a>
+  </div>`;
+}
+
+function conPromiseBlock() {
+  return `
+  <div class="bpbox surrender">
+    <p class="bpbox-t">${esc(CON_PROMISE.title)}</p>
+    <p class="bodytext" style="margin-top:8px">${esc(CON_PROMISE.body)}</p>
+    <p class="liftline" style="font-size:16px;margin-top:11px">${esc(CON_PROMISE.words)}</p>
+    <p class="bpclose">${esc(CON_PROMISE.why)}</p>
+  </div>`;
+}
+
+function conToldTab() {
+  return `
+  <div class="card bp">
+    <p class="eyebrow">${icon('heart', 11, '#A85A44')} ${esc(TOLD_HEAD)}</p>
+
+    <div class="bpbox">
+      <p class="bpbox-t">${esc(TOLD_FIRST.title)}</p>
+      <p class="tiny" style="margin:8px 0 0">${esc(TOLD_FIRST.intro)}</p>
+      ${TOLD_FIRST.lines.map((x) => `
+        <p class="liftline" style="font-size:17px;margin-top:10px">${esc(x)}</p>`).join('')}
+      <p class="bpclose">${esc(TOLD_FIRST.then)}</p>
+    </div>
+  </div>
+
+  <div class="bpbox" style="margin-top:12px">
+    <p class="bpbox-t">${esc(TOLD_CLOCKS.title)}</p>
+    <p class="tiny" style="margin:8px 0 0">${esc(TOLD_CLOCKS.intro)}</p>
+    ${TOLD_CLOCKS.items.map((x) => `
+      <div class="bpwho">
+        <span class="bpwho-w">${esc(x.what)} &middot; ${esc(x.when)}</span>
+        <span class="bpwho-s">${esc(x.detail)}</span>
+      </div>`).join('')}
+    <p class="bpwarn">${esc(TOLD_CLOCKS.note)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>Somebody to call, any hour</h4>
+    ${TOLD_LINES.map(conLine).join('')}
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(TOLD_DONT.title)}</h4>
+    <p class="tiny" style="margin:0 0 9px">${esc(TOLD_DONT.intro)}</p>
+    ${list(TOLD_DONT.items, true)}
+    <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(TOLD_DONT.instead)}</p></div>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(TOLD_EC.title)}</h4>
+    <p class="tiny" style="margin:0 0 10px">${esc(TOLD_EC.intro)}</p>
+    ${TOLD_EC.options.map((o) => `
+      <div class="card flat" style="margin-bottom:9px">
+        <p style="margin:0;font-size:14px;font-weight:600;color:var(--ink)">${esc(o.name)}</p>
+        <p class="tiny" style="margin:3px 0 0;color:var(--deep);font-weight:600">${esc(o.window)}</p>
+        <p class="bodytext" style="margin:7px 0 0">${esc(o.how)}</p>
+        <p class="tiny" style="margin:6px 0 0">${esc(o.note)}</p>
+      </div>`).join('')}
+    <div class="callout" style="margin-top:6px"><p style="margin:0">${esc(TOLD_EC.weight)}</p></div>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(TOLD_EXAM.title)}</h4>
+    ${TOLD_EXAM.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+    <div class="callout" style="border-left:3px solid var(--attention, #B5793F)">
+      <p style="margin:0"><strong style="color:var(--deep)">The bit everybody gets wrong:</strong>
+        ${esc(TOLD_EXAM.window)}</p>
+    </div>
+    <p class="bodytext" style="margin:10px 0 0">${esc(TOLD_EXAM.preserve)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(TOLD_REPORT.title)}</h4>
+    ${TOLD_REPORT.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+    <div class="callout"><p style="margin:0">${esc(TOLD_REPORT.ask)}</p></div>
+    <p class="bodytext" style="margin:10px 0 0">${esc(TOLD_REPORT.adults)}</p>
+    <p class="bodytext" style="margin:9px 0 0">${esc(TOLD_REPORT.perp)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(TOLD_LATER.title)}</h4>
+    ${list(TOLD_LATER.items)}
+    <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(TOLD_LATER.note)}</p></div>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(TOLD_AFTER.title)}</h4>
+    ${list(TOLD_AFTER.items)}
+  </div>`;
+}
+
+function conWhatTab() {
+  return `
+  <div class="card leafy">
+    <p class="eyebrow">${icon('info', 11, 'var(--sage)')} ${esc(WHAT_HEAD)}</p>
+    ${WHAT_INTRO.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+  </div>
+
+  <div class="bpbox">
+    <p class="bpbox-t">${esc(WHAT_FREEZE.title)}</p>
+    ${WHAT_FREEZE.body.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+    <p class="bpwarn">${esc(WHAT_FREEZE.say)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(WHAT_CAPACITY.title)}</h4>
+    ${list(WHAT_CAPACITY.items)}
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(WHAT_COERCION.title)}</h4>
+    <p class="tiny" style="margin:0 0 9px">${esc(WHAT_COERCION.intro)}</p>
+    ${list(WHAT_COERCION.items)}
+    <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(WHAT_COERCION.note)}</p></div>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(WHAT_CARRY.title)}</h4>
+    ${list(WHAT_CARRY.items)}
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(WHAT_WHO.title)}</h4>
+    ${WHAT_WHO.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(WHAT_LAW.title)}</h4>
+    ${WHAT_LAW.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+  </div>`;
+}
+
+function conAgeTab(months) {
+  const natural = conStageFor(months);
+  const picked = store.conStage
+    ? CON_BY_AGE.filter((s) => s.id === store.conStage)[0]
+    : null;
+  const st = picked || natural || CON_BY_AGE[0];
+  const off = natural && st.id !== natural.id;
+
+  return `
+  <div class="chips" style="margin-bottom:12px">
+    ${CON_BY_AGE.map((s) => `
+      <button class="chip" data-constage="${esc(s.id)}"
+        aria-pressed="${s.id === st.id}">${esc(s.label)}</button>`).join('')}
+  </div>
+
+  ${off ? `
+  <p class="tiny" style="margin:0 0 10px">Looking at ${esc(st.label.toLowerCase())}.
+    ${natural ? 'Yours is in ' + esc(natural.label.toLowerCase()) + '.' : ''}</p>` : ''}
+
+  <div class="card leafy">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(st.label)}</p>
+    <p class="bodytext" style="margin-top:6px;font-size:15px;line-height:1.55">${esc(st.head)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>What to do at this age</h4>
+    ${st.items.map((x) => `
+      <div class="quote"><p class="why" style="margin:0">${esc(x)}</p></div>`).join('')}
+  </div>`;
+}
+
+function conRaisingTab() {
+  return `
+  <div class="card leafy">
+    <p class="eyebrow">${icon('info', 11, 'var(--sage)')} ${esc(RAISE_HEAD)}</p>
+    ${RAISE_INTRO.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(RAISE_SAY.title)}</h4>
+    ${RAISE_SAY.items.map((x) => `
+      <div class="quote"><p class="why" style="margin:0">${esc(x)}</p></div>`).join('')}
+    <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(RAISE_SAY.not)}</p></div>
+  </div>
+
+  <div class="dsec">
+    <h4>${esc(RAISE_FRIENDS.title)}</h4>
+    ${RAISE_FRIENDS.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+    <div class="callout"><p style="margin:0">${esc(RAISE_FRIENDS.home)}</p></div>
+    <p class="tiny" style="margin:10px 0 0">${esc(RAISE_FRIENDS.honest)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>Sons too</h4>
+    <p class="bodytext">${esc(RAISE_BOTH)}</p>
+  </div>`;
+}
+
+function conRowSub(months) {
+  if (months == null) return 'What consent requires, and how to be the person they tell';
+  if (months < 60) return 'Nobody has to hug anybody, and stop means stop the first time';
+  if (months < 108) return 'The rules about touch, and the promise that makes them tell you';
+  if (months < 144) return 'Both directions, and that it is usually somebody they know';
+  if (months < 192) return 'The real definitions, freezing, and what to do for a friend';
+  return 'The practical half, and what to do in the first day if they tell you';
+}
+
+function screenConsent(c) {
+  const tab = state.conTab || 'told';
+  const months = c.months;
+
+  return `
+  ${cornerLeaves()}
+  ${exitButton()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(CON_TITLE)}</h1>
+    <p class="sub">${esc(CON_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('conTab', tab, CON_TABS)}
+
+    ${tab === 'told' ? conToldTab() : ''}
+    ${tab === 'what' ? conWhatTab() : ''}
+    ${tab === 'age' ? conAgeTab(months) : ''}
+    ${tab === 'raising' ? conRaisingTab() : ''}
+
+    ${conPromiseBlock()}
+
+    ${dsec('Where this comes from', sourceRows(CON_SOURCES))}
+    <p class="disclaimer">${esc(CON_DISCLAIMER)}</p>
   </div>`;
 }
 
@@ -10520,7 +11329,7 @@ function cycleInfoNow(ref) {
   return cycleInfo(store.parent.lastPeriod, ref, cycleLen());
 }
 
-function cycleCalendar(info, monthOffset, editing) {
+function cycleCalendar(info, monthOffset, editing, loggedList, periodAttr) {
   if (!info) return '';
   const today = ciToday();
   const parts = today.split('-');
@@ -10538,19 +11347,22 @@ function cycleCalendar(info, monthOffset, editing) {
      us, so the month either side reads correctly too. */
   const start = info.lastPeriod;
   const len = info.cycleLength;
-  const logged = periods();
+  const logged = loggedList || periods();
+  const pAttr = periodAttr || 'data-period';
   const marks = {};
   /* The estimate first, projected forward and back so the months either
      side read correctly. */
   for (let c = -2; c <= 3; c++) {
     const s0 = ciDayBefore(start, -c * len);
     for (let i = 0; i < CYCLE_BLEED_DAYS; i++) marks[ciDayBefore(s0, -i)] = 'bleed';
-    const ov = ciDayBefore(s0, -(len - CYCLE_LUTEAL_DAYS));
-    for (let i = 0; i <= 5; i++) {
-      const d = ciDayBefore(ov, i);
-      if (!marks[d]) marks[d] = 'fertile';
+    if (!periodAttr) {
+      const ov = ciDayBefore(s0, -(len - CYCLE_LUTEAL_DAYS));
+      for (let i = 0; i <= 5; i++) {
+        const d = ciDayBefore(ov, i);
+        if (!marks[d]) marks[d] = 'fertile';
+      }
+      marks[ov] = 'ovul';
     }
-    marks[ov] = 'ovul';
   }
   /* Then anything she actually logged, painted over the top, because a
      day she recorded beats a day the app guessed. */
@@ -10569,7 +11381,7 @@ function cycleCalendar(info, monthOffset, editing) {
     const isStart = !!starts[k];
     const cls = `cal-d ${mark}${isToday ? ' today' : ''}${isStart ? ' logged' : ''}`;
     if (editing) {
-      cells.push(`<button class="${cls}" data-period="${esc(k)}"
+      cells.push(`<button class="${cls}" ${pAttr}="${esc(k)}"
         aria-label="${esc(cycleDateLabelWithYear(k))}${isStart ? ', logged, tap to remove' : ', tap to log a period start'}"
         aria-pressed="${isStart ? 'true' : 'false'}">${d}</button>`);
     } else {
@@ -10590,9 +11402,10 @@ function cycleCalendar(info, monthOffset, editing) {
     </div>
     <div class="callegend">
       <span><i class="k-bleed"></i> Period</span>
+      ${periodAttr ? '' : `
       <span><i class="k-fertile"></i> Fertile window</span>
-      <span><i class="k-ovul"></i> Ovulation</span>
-      <span><i class="k-logged"></i> You logged it</span>
+      <span><i class="k-ovul"></i> Ovulation</span>`}
+      <span><i class="k-logged"></i> ${periodAttr ? 'Logged' : 'You logged it'}</span>
     </div>
     ${editing ? `<p class="tiny" style="margin-top:7px;text-align:center">
       Tap the day a period started. Tap it again to take it off.</p>` : ''}
@@ -13195,6 +14008,8 @@ function screenChild(c) {
       ${childRow('heart', 'CPR, choking and staying safe',
         esc('For ' + getCprForAge(months).label.toLowerCase()) + ', plus what to do when you are at the end of it',
         'data-go="screen" data-id="safety"')}
+      ${months != null && months >= 18 ? childRow('heart', CON_TITLE, conRowSub(months),
+        'data-go="screen" data-id="consent"') : ''}
       ${months != null && months >= 12 ? childRow('note', ONLINE_TITLE, onlineRowSub(months),
         'data-go="screen" data-id="online"') : ''}
       ${childRow('shield', SUP_TITLE,

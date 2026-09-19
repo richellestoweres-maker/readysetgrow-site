@@ -91,6 +91,8 @@ order = [
     ('support',             SRC/'data/support.js'),
     ('onlineSafety',        SRC/'data/onlineSafety.js'),
     ('growingUp',           SRC/'data/growingUp.js'),
+    ('puberty',             SRC/'data/puberty.js'),
+    ('consent',             SRC/'data/consent.js'),
     ('eatingTogether',      SRC/'data/eatingTogether.js'),
     ('childSections',       SRC/'data/childSections.js'),
     ('signLanguage',        SRC/'data/signLanguage.js'),
@@ -193,52 +195,53 @@ check_syntax(bundle, 'the data bundle')
 shell = (OUT/'shell.html').read_text()
 app   = (OUT/'app.js').read_text()
 
-# Two `function foo` declarations in one scope is legal JavaScript: the
-# last one silently wins. That is how the pumping screen ended up
-# labelling standard practice as an unstudied parent tip, because an
-# older evidenceTag was shadowed by a newer one with different rules.
-# Legal, silent, and wrong, so fail on it.
-def check_duplicate_functions(text, label):
-    import collections
-    names = re.findall(r'^function\s+([A-Za-z_$][\w$]*)', text, re.M)
-    dupes = sorted(n for n, count in collections.Counter(names).items() if count > 1)
-    if dupes:
-        print('DUPLICATE TOP LEVEL FUNCTIONS IN %s:' % label)
-        for n in dupes:
-            print('  %s is declared %d times, only the last one runs' % (n, names.count(n)))
-        raise SystemExit(1)
+# A CONSTANT THAT DOES NOT EXIST.
+#
+# The consent screen shipped for about a minute referring to CON_LINES
+# when the data file exports TOLD_LINES. Nothing caught it. It is not a
+# collision, it is not a syntax error, and it is not an unlisted file.
+# It is a ReferenceError that only fires when somebody opens that one
+# tab, which on that screen meant a parent on the worst night of their
+# life getting a blank page.
+#
+# WHAT THIS LOOKS FOR, AND WHY IT IS NARROW
+# Names in SHOUTING_CASE *with an underscore*, which is the shape every
+# data export in this repo uses: FEEDING_STANCE, CON_LINES, PUB_START.
+# The first version of this gate had no underscore rule and flagged
+# sixty hex colours, the letters CPR, and the word TOMORROW inside a
+# wordmark. A gate that cries wolf gets switched off, so this one only
+# looks at the shape that has actually broken.
+#
+# Quoted strings are stripped first, or every Firebase error code the
+# app compares against reads as a missing constant.
+def check_constants(bundle_text, app_text):
+    def declared(text):
+        names = set(re.findall(r'^\s*(?:const|let|var|function)\s+([A-Z][A-Z0-9]*_[A-Z0-9_]*)', text, re.M))
+        return names
+    defined = declared(bundle_text) | declared(app_text)
 
-check_syntax(app, 'proto/app.js')
-check_duplicate_functions(app, 'proto/app.js')
+    code = re.sub(r'/\*.*?\*/', ' ', app_text, flags=re.S)
+    code = re.sub(r'//[^\n]*', ' ', code)
+    code = re.sub(r"'(?:[^'\\\n]|\\.)*'", " '' ", code)
+    code = re.sub(r'"(?:[^"\\\n]|\\.)*"', ' "" ', code)
 
-# A top level const is unreadable until the line that declares it has
-# run, so anything declared BELOW the boot block does not exist yet when
-# the first screen paints. The failure is a bare ReferenceError into a
-# blank page, and it has now happened three times, every time by somebody
-# appending a new section to the end of the file without noticing the
-# boot block was already there. So the rule is checked rather than
-# remembered: boot goes last, and nothing is declared after it.
-def check_boot_is_last(text, label):
-    lines = text.split('\n')
-    boot = None
-    for i, l in enumerate(lines):
-        if l.strip() == 'loadStore();' and not l.startswith(' '):
-            boot = i
-    if boot is None:
-        print('NO BOOT BLOCK FOUND IN %s' % label)
-        raise SystemExit(1)
-    bad = [(i + 1, l) for i, l in enumerate(lines[boot:], start=boot)
-           if re.match(r'^(const|let|class)\s', l)]
-    if bad:
-        print('DECLARED AFTER THE BOOT BLOCK IN %s:' % label)
-        for i, l in bad:
-            print('  line %d  %s' % (i, l[:80]))
-        print('These do not exist yet when the first render runs.')
-        print('Move the boot block (loadStore/initControls/restoreSession/render)')
-        print('back to the very end of the file.')
-        raise SystemExit(1)
+    # Regex literals are code, not strings, so the stripping above does
+    # not touch them, and the Willow error handling matches on Google's
+    # error codes by name. Those three are text inside a pattern, not
+    # identifiers, and they are named here rather than loosening the
+    # rule for everything.
+    code = re.sub(r'/(?:[^/\\\n\[]|\\.|\[(?:[^\]\\]|\\.)*\])+/[gimsuy]*', ' RE ', code)
 
-check_boot_is_last(app, 'proto/app.js')
+    used = set(re.findall(r'(?<![\w$.])([A-Z][A-Z0-9]*_[A-Z0-9_]*)(?![\w$])', code))
+    missing = sorted(n for n in used if n not in defined)
+    if missing:
+        print('THESE CONSTANTS ARE USED BUT NEVER DEFINED: %s' % ', '.join(missing))
+        print('A name that does not exist throws a ReferenceError the moment that screen renders,')
+        print('and nothing else in this build would have noticed.')
+        raise SystemExit(1)
+    print('constants: %d shouting case names, all of them resolve' % len(used))
+
+check_constants(bundle, app)
 
 def check_sub_tabs(text, label):
     """Every tab strip key must be a key the state proxy knows about.
