@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-20 11:01">
+<meta name="rsg-build" content="2026-09-20 13:50">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1573,7 +1573,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-20 11:01';
+const BUILD_STAMP = '2026-09-20 13:50';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -33157,6 +33157,67 @@ const TEAR_LONG = {
     + 'no evidence it helps.',
 };
 
+/* Pelvic floor physiotherapy, added because she asked for it and
+   because it is the one thing routinely offered in some countries and
+   never mentioned in others. The evidence is reported at its real
+   strength, which is strong for preventing urinary incontinence and
+   not established for bowel control, and bowel control is the thing
+   that matters most after a severe tear. Saying so is better than
+   sending a woman away expecting something the trials do not
+   promise. */
+const PELVIC = {
+  title: 'You can see a pelvic floor physiotherapist',
+  what: [
+    'A physiotherapist who specialises in the pelvic floor, which is the sling of muscle holding up '
+    + 'your bladder, bowel and womb. Nine months of carrying a baby and then giving birth is a lot '
+    + 'to ask of it.',
+    'The appointment usually starts with questions and an examination, which with your consent '
+    + 'includes an internal one. That is the part that makes it worth going, because it is what '
+    + 'tells you whether your pelvic floor is weak or actually too tight, whether the exercises you '
+    + 'are doing are working the right muscles, and whether the abdominal muscles have separated. '
+    + 'Those things need different treatment, and a leaflet cannot tell them apart.',
+  ],
+  who: {
+    title: 'Worth asking for if',
+    items: [
+      'You had a third or fourth degree tear. British guidance says physiotherapy should be offered '
+      + 'for six to twelve weeks after the repair.',
+      'You leak urine when you cough, laugh, sneeze, run or lift',
+      'You leak wind or stool, or you have to get to a toilet urgently',
+      'You feel heaviness, dragging or a bulge',
+      'Sex hurts',
+      'There is a gap down the middle of your stomach that has not closed',
+      'You are not sure you are doing the exercises properly, which is reason enough on its own',
+    ],
+  },
+  evidence: {
+    title: 'What it does and does not do, honestly',
+    body: [
+      'Forty six trials covering ten thousand eight hundred and thirty two women. The strongest '
+      + 'finding is for prevention: women who did structured pelvic floor training before they had '
+      + 'any leaking were about twenty nine percent less likely to be leaking urine three to six '
+      + 'months after birth, on high quality evidence.',
+      'It is weaker for treatment. In women who already had leaking, the trials did not show a '
+      + 'clear benefit.',
+      'And for bowel control, which is the thing that matters most after a severe tear, it is not '
+      + 'established. The pooled result pointed the right way but crossed no effect entirely.',
+    ],
+    honest: 'So it is still recommended after a severe tear, and that recommendation rests on '
+      + 'clinical judgement and on it being harmless rather than on proof that it fixes bowel '
+      + 'control. Worth doing. Not worth being promised.',
+  },
+  access: 'In Britain it is on the NHS, and after a severe tear it should be offered rather than '
+    + 'requested, though in practice asking for the referral is faster than waiting to be offered '
+    + 'one. In France a course of pelvic rehabilitation after birth is routine. In America there is '
+    + 'no equivalent expectation in any guidance, access depends on your insurance, and you will '
+    + 'very likely have to ask for it by name. The name to use is pelvic floor physical therapy.',
+  when: 'Gentle exercises can start within a few days of giving birth. An appointment usually makes '
+    + 'most sense from about six weeks, which is when the six to twelve week review after a severe '
+    + 'tear sits anyway.',
+  notLate: 'And it is not too late. Women go years after a birth and still get help. If you are '
+    + 'reading this with a five year old, that still counts.',
+};
+
 const TEAR_TOLD = {
   title: 'Ask what happened to you',
   body: 'There is no published evidence on how often women are told what degree of tear they had, '
@@ -43125,6 +43186,19 @@ function screenBirth(c) {
         ${list(TEAR_AFTER.warn.items, true)}
       </div>
 
+      <div class="card" style="border-left:3px solid var(--sage)">
+        <p class="eyebrow">${esc(PELVIC.title)}</p>
+        ${PELVIC.what.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+        <p class="bodytext" style="margin-top:12px;font-weight:600">${esc(PELVIC.who.title)}</p>
+        ${list(PELVIC.who.items)}
+        <p class="bodytext" style="margin-top:12px;font-weight:600">${esc(PELVIC.evidence.title)}</p>
+        ${PELVIC.evidence.body.map((x) => `<p class="bodytext" style="margin:7px 0 0">${esc(x)}</p>`).join('')}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(PELVIC.evidence.honest)}</p></div>
+        <p class="bodytext" style="margin-top:11px">${esc(PELVIC.access)}</p>
+        <p class="tiny" style="margin-top:9px">${esc(PELVIC.when)}</p>
+        <p class="tiny" style="margin-top:7px">${esc(PELVIC.notLate)}</p>
+      </div>
+
       <div class="dsec">
         <h4>${esc(TEAR_LONG.title)}</h4>
         ${TEAR_LONG.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
@@ -44606,6 +44680,21 @@ function screenPostpartum(c) {
     </div>` : ''}
     ${subTabs('ppTab', tab, PP_TABS)}
     ${body}
+    <div class="dsec">
+      <h4>${esc(PELVIC.title)}</h4>
+      <p class="bodytext">${esc(PELVIC.what[0])}</p>
+      <p class="bodytext" style="margin-top:10px;font-weight:600">${esc(PELVIC.who.title)}</p>
+      ${list(PELVIC.who.items)}
+      <p class="tiny" style="margin-top:9px">${esc(PELVIC.notLate)}</p>
+      <button class="lrow" style="margin-top:8px" data-go="screen" data-id="birth">
+        <span class="licon">${icon('book', 18)}</span>
+        <span class="grow">
+          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">What it does, and what it does not</span>
+          <span class="tiny" style="display:block;margin-top:2px">The evidence at its real strength, with tearing and recovery</span>
+        </span>
+        <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+      </button>
+    </div>
     <p class="sect">Support lines</p>
     ${MATERNAL_SUPPORT_LINES.map(supportLine).join('')}
     ${dsec('Sources', sourceRows(POSTPARTUM_SOURCES))}
