@@ -1188,8 +1188,10 @@ export const TEAR_TOLD = {
    would rather not can leave it alone.
    ================================================================== */
 
-export const WRONG_WARN = 'This tab has the numbers in it. There is nothing here you need to read '
-  + 'to be safe, and plenty of people would rather not. It will keep.';
+export const WRONG_WARN = 'None of this is here to frighten you. It is here because hearing a word '
+  + 'you have never heard before, in the middle of it happening, is far worse than having read it '
+  + 'once calmly beforehand. Almost everything on this page is rare, and the numbers are printed so '
+  + 'that you can see how rare rather than having to guess.';
 
 export const WRONG_PROPORTION = {
   title: 'Before any of it, the proportion',
