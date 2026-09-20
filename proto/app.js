@@ -1005,6 +1005,9 @@ function newChildRecord(name, birthday) {
        rows in src/data/birth.js. On the baby's record for the same
        reason as everything else here: it syncs by itself. */
     birthPrefs: {},
+    /* How a day felt, keyed YYYY-MM-DD. See src/data/cycleLog.js. On
+       her own record, so it syncs with everything else about her. */
+    cycleDays: {},
     /* Weights, lengths and head measurements, one entry per occasion,
        always stored in kilograms and centimetres whatever the parent
        reads. See src/data/growth.js. */
@@ -2852,6 +2855,10 @@ function initControls() {
         saveBtn.disabled = false;
       }
     }
+    else if (e.target.matches('[data-cyclog]')) {
+      store.cyclogDate = e.target.value || ciToday();
+      render();
+    }
     else if (e.target.matches('[data-momcinote]')) {
       momCiDraft().note = e.target.value;
       saveStore();
@@ -2980,7 +2987,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3737,6 +3744,14 @@ function initControls() {
       else if (how === 'bornno') { store.expBorn = false; store.expError = ''; }
       else if (how === 'bornsave') expBornSave();
       else if (how === 'kind') { store.draftExpecting = t.dataset.id === 'expecting'; }
+    } else if (t.dataset.cyclog) {
+      const how = t.dataset.cyclog;
+      const who = t.dataset.who || 'me';
+      if (how === 'set') cyclogToggle(who, t.dataset.kind, t.dataset.id);
+      else if (how === 'wipe') store.cyclogWipe = true;
+      else if (how === 'wipeno') store.cyclogWipe = false;
+      else if (how === 'wipeyes') cyclogClearAll(who);
+      else if (how === 'first') cyclogFirstAnswer(t.dataset.val);
     } else if (t.dataset.birth) {
       const how = t.dataset.birth;
       if (how === 'pref') birthPrefSet(t.dataset.row, t.dataset.val);
@@ -7117,6 +7132,13 @@ function pubTrackBlock(c) {
     <p class="tiny" style="margin-top:8px">${esc(counts.done + ' of ' + counts.total + ' recorded for ' + first + '.')}</p>
   </div>
 
+  ${/* The direct question, asked from nine, which is the early end of
+       ordinary. Before that it would be alarming, and after fifteen it
+       would be late. Asked rather than assumed from an age, because the
+       spread is the whole point. */
+    kid.sex === 'f' && !started && typeof c.months === 'number' && c.months >= 108
+      ? cyclogFirstAsk(kid, first) : ''}
+
   ${pubHintBlock(kid)}
 
   <div class="dsec">
@@ -7267,7 +7289,9 @@ function screenChildCycle(c) {
 
     ${pubMedBlock(kid)}
 
-    ${dsec('Where this comes from', sourceRows(PUB_SOURCES))}
+    ${cyclogBlock(kid.id, true)}
+
+    ${dsec('Where this comes from', sourceRows(PUB_SOURCES.concat(CYCLOG_SOURCES)))}
     <p class="disclaimer">Estimates from dates, not a test. Anything on the list above is worth an
       appointment rather than a search.</p>
   </div>`;
@@ -7833,6 +7857,231 @@ function screenExpecting(c) {
 }
 
 
+
+
+/* ==================================================================
+   THE DAY LOG
+
+   How a day felt, for a mother and for a daughter, on the same
+   vocabulary. The reasoning, including why the teenager gets the
+   adult words rather than a softened version, is in
+   src/data/cycleLog.js.
+
+   WHERE IT IS STORED
+   A mother's days live on store.parent, which is sent whole to the
+   cloud and saved whole to this browser, so nothing had to be added
+   to any key list. A daughter's live on her own child record, which
+   syncs for the same reason everything else about her does.
+   ================================================================== */
+
+/* who is 'me' or a child id. One function, two owners, so the two
+   screens cannot drift apart. */
+function cyclogDays(who) {
+  if (who === 'me') {
+    const p = store.parent || {};
+    if (!p.cycleDays || typeof p.cycleDays !== 'object') return {};
+    return p.cycleDays;
+  }
+  const k = store.children.filter((x) => x.id === who)[0];
+  if (!k || !k.cycleDays || typeof k.cycleDays !== 'object') return {};
+  return k.cycleDays;
+}
+
+function cyclogWrite(who, date, entry) {
+  const clean = cyclogEmpty(entry) ? null : entry;
+  if (who === 'me') {
+    const p = store.parent;
+    if (!p.cycleDays || typeof p.cycleDays !== 'object') p.cycleDays = {};
+    if (clean) p.cycleDays[date] = clean; else delete p.cycleDays[date];
+    store.parentUpdatedAt = Date.now();
+  } else {
+    const k = store.children.filter((x) => x.id === who)[0];
+    if (!k) return;
+    if (!k.cycleDays || typeof k.cycleDays !== 'object') k.cycleDays = {};
+    if (clean) k.cycleDays[date] = clean; else delete k.cycleDays[date];
+    k.updatedAt = Date.now();
+  }
+  flushStore();
+}
+
+function cyclogDate() {
+  return store.cyclogDate || ciToday();
+}
+
+/* Tapping a chip toggles it. Flow is single choice because a day has
+   one flow, mood and symptoms are multiple because a day does not
+   have one of either. */
+function cyclogToggle(who, kind, id) {
+  const date = cyclogDate();
+  const cur = cyclogDays(who)[date];
+  const e = {
+    flow: cur ? cur.flow : '',
+    moods: cur && Array.isArray(cur.moods) ? cur.moods.slice() : [],
+    sx: cur && Array.isArray(cur.sx) ? cur.sx.slice() : [],
+  };
+  if (kind === 'flow') {
+    e.flow = e.flow === id ? '' : id;
+  } else {
+    const arr = kind === 'mood' ? e.moods : e.sx;
+    const at = arr.indexOf(id);
+    if (at === -1) arr.push(id); else arr.splice(at, 1);
+  }
+  cyclogWrite(who, date, e);
+}
+
+function cyclogClearAll(who) {
+  if (who === 'me') {
+    delete (store.parent || {}).cycleDays;
+    store.parentUpdatedAt = Date.now();
+  } else {
+    const k = store.children.filter((x) => x.id === who)[0];
+    if (k) { delete k.cycleDays; k.updatedAt = Date.now(); }
+  }
+  store.cyclogWipe = false;
+  flushStore();
+}
+
+function cyclogChips(who, kind, items) {
+  const e = cyclogDays(who)[cyclogDate()] || {};
+  const on = (id) => (kind === 'flow'
+    ? e.flow === id
+    : ((kind === 'mood' ? e.moods : e.sx) || []).indexOf(id) !== -1);
+  return `<div class="chips">${items.map((i) => `
+    <button class="chip" data-cyclog="set" data-who="${esc(who)}" data-kind="${esc(kind)}"
+      data-id="${esc(i.id)}" aria-pressed="${on(i.id)}">${esc(i.label)}</button>`).join('')}</div>`;
+}
+
+/* The recent days, newest first. Six is enough to see a pattern
+   starting and short enough not to become a wall. */
+function cyclogRecent(who) {
+  const days = cyclogDays(who);
+  const keys = Object.keys(days).filter((d) => !cyclogEmpty(days[d])).sort().reverse().slice(0, 6);
+  if (!keys.length) return '';
+  return `
+  <div class="dsec">
+    <h4>Recent days</h4>
+    ${keys.map((d) => `
+      <div class="quote">
+        <p class="sit">${esc(cycleDateLabelWithYear(d))}</p>
+        <p class="why" style="margin-top:4px">${esc(cyclogSummary(days[d]))}</p>
+      </div>`).join('')}
+  </div>`;
+}
+
+function cyclogPattern(who) {
+  const counts = cyclogCounts(cyclogDays(who));
+  if (counts.n < 3) return '';
+  const mood = cyclogTop(counts, 'mood', 3);
+  const sx = cyclogTop(counts, 'sx', 4);
+  const line = (label, arr) => (arr.length
+    ? `<p class="bodytext" style="margin:0 0 7px"><strong>${esc(label)}</strong> ${
+      arr.map((x) => esc(x.label.toLowerCase()) + ' (' + x.n + ')').join(', ')}</p>`
+    : '');
+  return `
+  <div class="card" style="border-left:3px solid var(--sage)">
+    <p class="eyebrow">Across ${counts.n} logged days</p>
+    <div style="margin-top:9px">
+      ${line('Most often felt', mood)}
+      ${line('Most often noted', sx)}
+    </div>
+    <p class="tiny" style="margin-top:4px">Counts only. Nothing here is being interpreted for you,
+      and it is the sort of thing worth taking to an appointment rather than reading into.</p>
+  </div>`;
+}
+
+/* who is 'me' or a child id. teen adds the privacy card and the
+   worth mentioning list, because a girl in her first couple of years
+   is the one most likely to be told to put up with it. */
+function cyclogBlock(who, teen) {
+  const date = cyclogDate();
+  const entry = cyclogDays(who)[date] || {};
+  const filled = !cyclogEmpty(entry);
+  return `
+  <div class="dsec">
+    <h4>${esc(CYCLOG_TITLE)}</h4>
+    <p class="bodytext">${esc(CYCLOG_SUB)}</p>
+    ${teen ? '' : `<p class="tiny" style="margin-top:8px">${esc(CYCLOG_MOM)}</p>`}
+  </div>
+
+  ${teen ? `
+    <div class="card leafy">
+      <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} ${esc(CYCLOG_TEEN.title)}</p>
+      ${CYCLOG_TEEN.body.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+      <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(CYCLOG_TEEN.ask)}</p></div>
+    </div>` : ''}
+
+  <div class="card" style="margin-top:11px">
+    <p class="eyebrow">Which day</p>
+    <input class="inp" id="cyclogDateIn" type="date" max="${esc(ciToday())}"
+      value="${esc(date)}" style="width:100%;margin-top:7px" data-cyclog="date">
+    <p class="tiny" style="margin-top:9px;font-weight:600;color:var(--deep)">Bleeding</p>
+    ${cyclogChips(who, 'flow', CYCLOG_FLOW)}
+    <p class="tiny" style="margin-top:11px;font-weight:600;color:var(--deep)">Mood</p>
+    ${cyclogChips(who, 'mood', CYCLOG_MOODS)}
+    <p class="tiny" style="margin-top:11px;font-weight:600;color:var(--deep)">Body</p>
+    ${cyclogChips(who, 'sx', CYCLOG_SYMPTOMS)}
+    ${filled ? `
+      <div class="callout" style="margin-top:11px"><p style="margin:0">${esc(cyclogSummary(entry))}</p></div>
+    ` : `
+      <p class="tiny" style="margin-top:11px">Nothing logged for this day yet. Tap anything above and
+        it saves as you go.</p>`}
+  </div>
+
+  ${cyclogPattern(who)}
+  ${cyclogRecent(who)}
+
+  <div class="dsec">
+    <h4>${esc(CYCLOG_WHEN_ASK.title)}</h4>
+    <p class="bodytext">${esc(CYCLOG_WHEN_ASK.intro)}</p>
+    ${list(CYCLOG_WHEN_ASK.items, true)}
+    <p class="tiny" style="margin-top:9px">${esc(CYCLOG_WHEN_ASK.note)}</p>
+  </div>
+
+  <p class="tiny" style="margin-top:9px">${esc(CYCLOG_HONEST)}</p>
+
+  ${Object.keys(cyclogDays(who)).length ? `
+    ${store.cyclogWipe ? `
+      <div class="card" style="border:1.5px solid #E4C9BF;background:#FCF4F1;margin-top:11px">
+        <p class="bodytext" style="margin:0">Delete every logged day? The period dates on the
+          calendar are kept, only the moods and symptoms go.</p>
+        <button class="btn" style="width:100%;margin-top:11px;background:#A8352A"
+          data-cyclog="wipeyes" data-who="${esc(who)}">Delete them</button>
+        <button class="chip" style="margin-top:9px" data-cyclog="wipeno">Keep them</button>
+      </div>
+    ` : `
+      <button class="chip" style="margin-top:11px" data-cyclog="wipe"
+        data-who="${esc(who)}">Delete every logged day</button>`}
+  ` : ''}`;
+}
+
+/* The direct question, asked once she is old enough for the answer to
+   be either way. Menarche runs from about nine to about fifteen and
+   both ends are ordinary, so the app asks rather than assuming from
+   an age. */
+function cyclogFirstAsk(kid, first) {
+  return `
+  <div class="card" style="border-left:3px solid var(--sage)">
+    <p class="eyebrow">${esc(CYCLOG_FIRST.title.replace('she', first))}</p>
+    <p class="bodytext" style="margin-top:8px">${esc(CYCLOG_FIRST.body)}</p>
+    <div class="chips" style="margin-top:11px">
+      <button class="chip" data-cyclog="first" data-val="yes">${esc(CYCLOG_FIRST.yes)}</button>
+      <button class="chip" data-cyclog="first" data-val="no">${esc(CYCLOG_FIRST.no)}</button>
+      <button class="chip" data-cyclog="first" data-val="skip">${esc(CYCLOG_FIRST.skip)}</button>
+    </div>
+    ${store.cyclogFirst === 'no' ? `
+      <p class="tiny" style="margin-top:10px">${esc(CYCLOG_FIRST.notYet)}</p>` : ''}
+  </div>`;
+}
+
+function cyclogFirstAnswer(val) {
+  const kid = activeChild();
+  store.cyclogFirst = val;
+  if (val === 'yes' && kid) {
+    if (!pubMarks(kid).period) pubSet(kid, 'period', pubThisMonth());
+    state.view = { type: 'screen', id: 'childcycle' };
+  }
+  flushStore();
+}
 
 /* ==================================================================
    BIRTH
@@ -13135,7 +13384,9 @@ function cycleWidget() {
 
     <p class="tiny" style="margin-top:9px">Estimates from the dates you logged, not a test and not
     birth control.</p>
-  </div>`;
+  </div>
+
+  ${cyclogBlock('me', false)}`;
 }
 
 /* -----------------------------------------------------------------
@@ -17745,6 +17996,7 @@ function normalizeChild(k) {
     logs: Array.isArray(k.logs) ? k.logs : [],
     bishop: Array.isArray(k.bishop) ? k.bishop : [],
     birthPrefs: k.birthPrefs && typeof k.birthPrefs === 'object' ? k.birthPrefs : {},
+    cycleDays: k.cycleDays && typeof k.cycleDays === 'object' ? k.cycleDays : {},
     updatedAt: Number(k.updatedAt) || 0,
   });
 }
