@@ -1098,6 +1098,67 @@ export const TEAR_LONG = {
     + 'no evidence it helps.',
 };
 
+/* Pelvic floor physiotherapy, added because she asked for it and
+   because it is the one thing routinely offered in some countries and
+   never mentioned in others. The evidence is reported at its real
+   strength, which is strong for preventing urinary incontinence and
+   not established for bowel control, and bowel control is the thing
+   that matters most after a severe tear. Saying so is better than
+   sending a woman away expecting something the trials do not
+   promise. */
+export const PELVIC = {
+  title: 'You can see a pelvic floor physiotherapist',
+  what: [
+    'A physiotherapist who specialises in the pelvic floor, which is the sling of muscle holding up '
+    + 'your bladder, bowel and womb. Nine months of carrying a baby and then giving birth is a lot '
+    + 'to ask of it.',
+    'The appointment usually starts with questions and an examination, which with your consent '
+    + 'includes an internal one. That is the part that makes it worth going, because it is what '
+    + 'tells you whether your pelvic floor is weak or actually too tight, whether the exercises you '
+    + 'are doing are working the right muscles, and whether the abdominal muscles have separated. '
+    + 'Those things need different treatment, and a leaflet cannot tell them apart.',
+  ],
+  who: {
+    title: 'Worth asking for if',
+    items: [
+      'You had a third or fourth degree tear. British guidance says physiotherapy should be offered '
+      + 'for six to twelve weeks after the repair.',
+      'You leak urine when you cough, laugh, sneeze, run or lift',
+      'You leak wind or stool, or you have to get to a toilet urgently',
+      'You feel heaviness, dragging or a bulge',
+      'Sex hurts',
+      'There is a gap down the middle of your stomach that has not closed',
+      'You are not sure you are doing the exercises properly, which is reason enough on its own',
+    ],
+  },
+  evidence: {
+    title: 'What it does and does not do, honestly',
+    body: [
+      'Forty six trials covering ten thousand eight hundred and thirty two women. The strongest '
+      + 'finding is for prevention: women who did structured pelvic floor training before they had '
+      + 'any leaking were about twenty nine percent less likely to be leaking urine three to six '
+      + 'months after birth, on high quality evidence.',
+      'It is weaker for treatment. In women who already had leaking, the trials did not show a '
+      + 'clear benefit.',
+      'And for bowel control, which is the thing that matters most after a severe tear, it is not '
+      + 'established. The pooled result pointed the right way but crossed no effect entirely.',
+    ],
+    honest: 'So it is still recommended after a severe tear, and that recommendation rests on '
+      + 'clinical judgement and on it being harmless rather than on proof that it fixes bowel '
+      + 'control. Worth doing. Not worth being promised.',
+  },
+  access: 'In Britain it is on the NHS, and after a severe tear it should be offered rather than '
+    + 'requested, though in practice asking for the referral is faster than waiting to be offered '
+    + 'one. In France a course of pelvic rehabilitation after birth is routine. In America there is '
+    + 'no equivalent expectation in any guidance, access depends on your insurance, and you will '
+    + 'very likely have to ask for it by name. The name to use is pelvic floor physical therapy.',
+  when: 'Gentle exercises can start within a few days of giving birth. An appointment usually makes '
+    + 'most sense from about six weeks, which is when the six to twelve week review after a severe '
+    + 'tear sits anyway.',
+  notLate: 'And it is not too late. Women go years after a birth and still get help. If you are '
+    + 'reading this with a five year old, that still counts.',
+};
+
 export const TEAR_TOLD = {
   title: 'Ask what happened to you',
   body: 'There is no published evidence on how often women are told what degree of tear they had, '
