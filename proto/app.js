@@ -2937,7 +2937,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3671,6 +3671,8 @@ function initControls() {
     } else if (t.dataset.pub) {
       pubAction(t.dataset.pub, t.dataset.id);
       if (t.dataset.pub === 'caledit' || t.dataset.pub === 'caldone') { /* falls through to render */ }
+    } else if (t.dataset.safety) {
+      store.safetyAll = store.safetyAll === t.dataset.safety ? '' : t.dataset.safety;
     } else if (t.dataset.constage) {
       store.conStage = store.conStage === t.dataset.constage ? '' : t.dataset.constage;
     } else if (t.dataset.onlinestage) {
@@ -7441,6 +7443,35 @@ function screenConsent(c) {
   </div>`;
 }
 
+/* THIS CHILD'S STEPS FIRST, AND ONLY THIS CHILD'S BY DEFAULT.
+
+   Every age card used to be on the screen at once, which meant that
+   somebody whose toddler had stopped breathing scrolled past infant
+   CPR to reach the right one. On the one screen in this app where
+   seconds are the whole point, that was the wrong default.
+
+   The other ages are not deleted, because the child on the floor is
+   not always yours. They are one tap away behind a row that says so,
+   and the tap is remembered only for as long as the app is open, so
+   the next person to open this screen in a hurry gets the fast
+   version again. */
+function safetyAgeCards(all, mine, key) {
+  if (store.safetyAll === key) return all;
+  const match = all.filter((c2) => c2.id === mine.id);
+  return match.length ? match : all;
+}
+
+function safetyMoreBtn(all, key) {
+  const open = store.safetyAll === key;
+  if (!open && all.length < 2) return '';
+  return `
+  <button class="btn ghost" style="width:100%;margin-top:4px" data-safety="${esc(key)}">
+    ${open ? 'Show only their age again' : 'Steps for a different age'}
+  </button>
+  ${open ? '' : `<p class="tiny" style="margin-top:7px;text-align:center">The child in front of you is not
+    always yours. Every age is still here.</p>`}`;
+}
+
 function screenSafety(c) {
   const months = c.months;
   const tab = state.safetyTab || 'cpr';
@@ -7489,7 +7520,7 @@ function screenSafety(c) {
         <p class="tiny" style="margin-top:8px">${esc(WHATS_NEW_2025.unchanged)}</p>
       </div>
 
-      ${CPR_BY_AGE.map((card) => `
+      ${safetyAgeCards(CPR_BY_AGE, cpr, 'cpr').map((card) => `
         <div class="dsec">
           <h4>${esc(card.label)}${card.id === cpr.id ? ' (this is ' + esc(state.name || 'your child') + ')' : ''}</h4>
           <p class="sect" style="margin-top:0">Check first</p>
@@ -7506,7 +7537,8 @@ function screenSafety(c) {
             <p class="tiny" style="margin:4px 0 0"><strong style="color:var(--deep)">Ratio:</strong> ${esc(card.ratio)}</p>
           </div>
           <p class="bodytext" style="margin-top:9px">${esc(card.note)}</p>
-        </div>`).join('')}` : ''}
+        </div>`).join('')}
+      ${safetyMoreBtn(CPR_BY_AGE, 'cpr')}` : ''}
 
     ${tab === 'choking' ? `
       <div class="card leafy">
@@ -7515,7 +7547,7 @@ function screenSafety(c) {
           <p class="bodytext" style="margin:9px 0 0">${esc(p)}</p>`).join('')}
       </div>
 
-      ${CHOKING_BY_AGE.map((card) => `
+      ${safetyAgeCards(CHOKING_BY_AGE, choke, 'choke').map((card) => `
         <div class="dsec">
           <h4>${esc(card.label)}${card.id === choke.id ? ' (this is ' + esc(state.name || 'your child') + ')' : ''}</h4>
           ${steps(card.steps)}
@@ -7523,6 +7555,7 @@ function screenSafety(c) {
             <p style="margin:0"><strong style="color:var(--deep)">Never:</strong> ${esc(card.neverDo)}</p>
           </div>
         </div>`).join('')}
+      ${safetyMoreBtn(CHOKING_BY_AGE, 'choke')}
 
       ${(() => {
         const d = ANTI_CHOKING_DEVICES;
