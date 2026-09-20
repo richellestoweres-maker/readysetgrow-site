@@ -8261,6 +8261,19 @@ function screenBirth(c) {
         ${list(TEAR_AFTER.warn.items, true)}
       </div>
 
+      <div class="card" style="border-left:3px solid var(--sage)">
+        <p class="eyebrow">${esc(PELVIC.title)}</p>
+        ${PELVIC.what.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+        <p class="bodytext" style="margin-top:12px;font-weight:600">${esc(PELVIC.who.title)}</p>
+        ${list(PELVIC.who.items)}
+        <p class="bodytext" style="margin-top:12px;font-weight:600">${esc(PELVIC.evidence.title)}</p>
+        ${PELVIC.evidence.body.map((x) => `<p class="bodytext" style="margin:7px 0 0">${esc(x)}</p>`).join('')}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(PELVIC.evidence.honest)}</p></div>
+        <p class="bodytext" style="margin-top:11px">${esc(PELVIC.access)}</p>
+        <p class="tiny" style="margin-top:9px">${esc(PELVIC.when)}</p>
+        <p class="tiny" style="margin-top:7px">${esc(PELVIC.notLate)}</p>
+      </div>
+
       <div class="dsec">
         <h4>${esc(TEAR_LONG.title)}</h4>
         ${TEAR_LONG.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
@@ -9742,6 +9755,21 @@ function screenPostpartum(c) {
     </div>` : ''}
     ${subTabs('ppTab', tab, PP_TABS)}
     ${body}
+    <div class="dsec">
+      <h4>${esc(PELVIC.title)}</h4>
+      <p class="bodytext">${esc(PELVIC.what[0])}</p>
+      <p class="bodytext" style="margin-top:10px;font-weight:600">${esc(PELVIC.who.title)}</p>
+      ${list(PELVIC.who.items)}
+      <p class="tiny" style="margin-top:9px">${esc(PELVIC.notLate)}</p>
+      <button class="lrow" style="margin-top:8px" data-go="screen" data-id="birth">
+        <span class="licon">${icon('book', 18)}</span>
+        <span class="grow">
+          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">What it does, and what it does not</span>
+          <span class="tiny" style="display:block;margin-top:2px">The evidence at its real strength, with tearing and recovery</span>
+        </span>
+        <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+      </button>
+    </div>
     <p class="sect">Support lines</p>
     ${MATERNAL_SUPPORT_LINES.map(supportLine).join('')}
     ${dsec('Sources', sourceRows(POSTPARTUM_SOURCES))}
