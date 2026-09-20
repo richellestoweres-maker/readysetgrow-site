@@ -992,6 +992,19 @@ function newChildRecord(name, birthday) {
        See src/data/expecting.js. */
     expecting: false,
     dueDate: null,
+    /* Cervical checks before an induction, newest last. Each entry is
+       { date, dil, eff, sta, con, pos }, the five components of the
+       Bishop score, so that a woman whose cervix is taking a long
+       time can see whether the number is moving instead of holding one
+       figure from a corridor conversation and nothing to compare it
+       with. Lives on the baby's own record, which means it syncs with
+       everything else about them and needs nothing added anywhere.
+       See src/data/induction.js. */
+    bishop: [],
+    /* What she has said matters to her about the birth, keyed by the
+       rows in src/data/birth.js. On the baby's record for the same
+       reason as everything else here: it syncs by itself. */
+    birthPrefs: {},
     /* Weights, lengths and head measurements, one entry per occasion,
        always stored in kilograms and centimetres whatever the parent
        reads. See src/data/growth.js. */
@@ -1295,7 +1308,7 @@ const state = {};
     and nothing throws. That is exactly what happened to the Learning
     tabs, and to Jobs, Growth and the vaccine record with them. The
     build now refuses to finish if a data-sub key is not here. */
- 'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab',
+ 'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab',
  'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -2486,6 +2499,9 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'childcycle') html = screenChildCycle(c);
   else if (v && v.type === 'screen' && v.id === 'consent') html = screenConsent(c);
   else if (v && v.type === 'screen' && v.id === 'expecting') html = screenExpecting(c);
+  else if (v && v.type === 'screen' && v.id === 'trying') html = screenTrying(c);
+  else if (v && v.type === 'screen' && v.id === 'induction') html = screenInduction(c);
+  else if (v && v.type === 'screen' && v.id === 'birth') html = screenBirth(c);
   /* Any route that lands on a normal child profile for a baby who is
      not born yet is sent to the seed profile instead, rather than
      drawing a page of milestones for somebody with no age. */
@@ -2964,7 +2980,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3709,6 +3725,11 @@ function initControls() {
     } else if (t.dataset.pub) {
       pubAction(t.dataset.pub, t.dataset.id);
       if (t.dataset.pub === 'caledit' || t.dataset.pub === 'caldone') { /* falls through to render */ }
+    } else if (t.dataset.ttc) {
+      const how = t.dataset.ttc;
+      if (how === 'askwipe') store.ttcDelete = true;
+      else if (how === 'nowipe') store.ttcDelete = false;
+      else if (how === 'wipe') { ttcWipe(); state.view = null; state.tab = 'home'; }
     } else if (t.dataset.exp) {
       const how = t.dataset.exp;
       if (how === 'signs') store.expSigns = !store.expSigns;
@@ -3716,6 +3737,33 @@ function initControls() {
       else if (how === 'bornno') { store.expBorn = false; store.expError = ''; }
       else if (how === 'bornsave') expBornSave();
       else if (how === 'kind') { store.draftExpecting = t.dataset.id === 'expecting'; }
+    } else if (t.dataset.birth) {
+      const how = t.dataset.birth;
+      if (how === 'pref') birthPrefSet(t.dataset.row, t.dataset.val);
+      else if (how === 'prefclear') birthPrefClear();
+      else if (how === 'role') store.birthRole = store.birthRole === t.dataset.id ? '' : t.dataset.id;
+      else if (how === 'pain') store.birthPain = store.birthPain === t.dataset.id ? '' : t.dataset.id;
+      else if (how === 'event') store.birthEvent = store.birthEvent === t.dataset.id ? '' : t.dataset.id;
+      /* The complications tab stays shut until she opens it, and the
+         fact that she opened it is not remembered, so it is shut again
+         next time rather than ambushing her. */
+      else if (how === 'wrong') store.birthWrong = !store.birthWrong;
+    } else if (t.dataset.ind) {
+      const how = t.dataset.ind;
+      if (how === 'set') {
+        const d = store.bishopDraft && typeof store.bishopDraft === 'object' ? store.bishopDraft : {};
+        const row = t.dataset.row;
+        const val = Number(t.dataset.val);
+        /* Tapping the chosen answer again clears that row, so a
+           mis-tap does not leave a total standing that nobody meant. */
+        if (d[row] === val) delete d[row]; else d[row] = val;
+        store.bishopDraft = d;
+      } else if (how === 'save') indSaveCheck();
+      else if (how === 'clear') store.bishopDraft = {};
+      else if (how === 'del') indDeleteCheck(t.dataset.id);
+      else if (how === 'method') {
+        store.indMethod = store.indMethod === t.dataset.id ? '' : t.dataset.id;
+      }
     } else if (t.dataset.safety) {
       store.safetyAll = store.safetyAll === t.dataset.safety ? '' : t.dataset.safety;
     } else if (t.dataset.constage) {
@@ -7661,6 +7709,20 @@ function screenExpecting(c) {
         </div>` : ''}
       ${where && !where.tooEarly && !where.tooLate ? expWeekBlock(kid, where) : ''}
 
+      ${where && (where.week >= 28 || where.overdue) ? `
+        <div class="card" style="border-left:3px solid var(--sage)">
+          <p class="eyebrow">${icon('note', 11, 'var(--sage)')} If induction comes up</p>
+          <p class="bodytext" style="margin-top:8px">There is a chart that decides what happens
+            first, and whether your waters get broken now or later. It is five numbers out of
+            thirteen and it is in your notes. You are allowed to ask for it.</p>
+          <button class="btn" style="width:100%;margin-top:11px" data-go="screen" data-id="birth">
+            ${esc(BIRTH_TITLE)}, all of it
+          </button>
+          <button class="chip" style="margin-top:9px" data-go="screen" data-id="induction">
+            ${esc(IND_TITLE)}
+          </button>
+        </div>` : ''}
+
       ${expCallNowBlock()}
 
       <div class="dsec">
@@ -7683,6 +7745,22 @@ function screenExpecting(c) {
           <span class="grow">
             <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Your health while pregnant</span>
             <span class="tiny" style="display:block;margin-top:2px">What to watch, and the infections nobody mentions</span>
+          </span>
+          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+        </button>
+        <button class="lrow" data-go="screen" data-id="birth">
+          <span class="licon">${icon('book', 18)}</span>
+          <span class="grow">
+            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Birth, all of it</span>
+            <span class="tiny" style="display:block;margin-top:2px">Pain relief, who is with you, tearing, and what can go wrong</span>
+          </span>
+          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+        </button>
+        <button class="lrow" data-go="screen" data-id="induction">
+          <span class="licon">${icon('note', 18)}</span>
+          <span class="grow">
+            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Induction, and the chart</span>
+            <span class="tiny" style="display:block;margin-top:2px">The five numbers, and what to ask before they break your water</span>
           </span>
           <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
         </button>
@@ -7755,6 +7833,1191 @@ function screenExpecting(c) {
     </div>
 
     <p class="disclaimer">${esc(EXP_DISCLAIMER)}</p>
+  </div>`;
+}
+
+
+
+/* ==================================================================
+   BIRTH
+
+   Built from one message asking for all of it: the cascade, who is in
+   the room, home against hospital, every kind of pain relief, and
+   tearing against cutting. The reasoning, the rules and the sourcing
+   are in src/data/birth.js.
+
+   FIVE TABS AND THE LAST ONE IS BEHIND A DOOR. The complications tab
+   is genuinely frightening reading and plenty of people would rather
+   not, so it opens with a line saying so and it is last in the strip
+   rather than first. Nothing in the rest of the screen depends on
+   having read it.
+
+   THE PREFERENCES LIVE ON THE BABY'S RECORD, which means they sync
+   with everything else about that baby and nothing had to be added to
+   the parent key list in flushStore. See newChildRecord.
+   ================================================================== */
+
+/* One link in the cascade. The verdict drives the colour, so that
+   which claims hold and which do not is legible before reading. */
+function birthCascadeRow(l) {
+  const edge = l.verdict === 'holds' ? 'var(--sage)'
+    : l.verdict === 'fails' ? 'var(--concern, #A85A44)' : 'var(--attention, #B5793F)';
+  return `
+  <div class="card" style="border-left:3px solid ${edge};margin-bottom:11px">
+    <p class="eyebrow" style="color:${edge}">${esc(CASCADE_VERDICTS[l.verdict])}</p>
+    <p class="bodytext" style="margin-top:7px;font-weight:600">${esc(l.claim)}</p>
+    <p class="bodytext" style="margin-top:8px">${esc(l.body)}</p>
+    <p class="tiny" style="margin-top:9px">${esc(l.twist)}</p>
+  </div>`;
+}
+
+function birthPrefRow(row, picked) {
+  return `
+  <div class="dsec">
+    <h4>${esc(row.q)}</h4>
+    <div class="chips">
+      ${row.options.map((o) => `
+        <button class="chip" data-birth="pref" data-row="${esc(row.id)}" data-val="${esc(o.v)}"
+          aria-pressed="${picked === o.v}">${esc(o.label)}</button>`).join('')}
+    </div>
+  </div>`;
+}
+
+/* The saved answers read back as sentences, because a list of chips
+   is not something anybody can take to an appointment. */
+function birthPrefSummary(prefs) {
+  const said = [];
+  for (let i = 0; i < PREF_ROWS.length; i++) {
+    const r = PREF_ROWS[i];
+    const v = prefs[r.id];
+    if (!v) continue;
+    for (let j = 0; j < r.options.length; j++) {
+      if (r.options[j].v === v) said.push({ q: r.q, a: r.options[j].label });
+    }
+  }
+  if (!said.length) return `<p class="bodytext">${esc(PREF_EMPTY)}</p>`;
+  return said.map((s) => `
+    <div class="quote">
+      <p class="sit">${esc(s.q)}</p>
+      <p class="why" style="margin-top:4px">${esc(s.a)}</p>
+    </div>`).join('');
+}
+
+function birthRoleBlock(r) {
+  const open = store.birthRole === r.id;
+  return `
+  <div class="card" style="margin-bottom:10px">
+    <p class="eyebrow">${esc(r.name)}</p>
+    <p class="tiny" style="margin:5px 0 0">${esc(r.what)}</p>
+    ${open ? `
+      <p class="bodytext" style="margin-top:10px">${esc(r.does)}</p>
+      <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(r.worth)}</p></div>
+    ` : ''}
+    <button class="chip" style="margin-top:10px" data-birth="role" data-id="${esc(r.id)}">
+      ${open ? 'Close' : 'More'}
+    </button>
+  </div>`;
+}
+
+/* A place of birth table, printed as two rows because the whole point
+   is that first babies and later babies get different answers. */
+function birthPlaceTable(t) {
+  /* Settings run down the page and the two parity columns run across,
+     rather than the other way round. Four setting names across a phone
+     either cut off or turn into abbreviations nobody can read, and the
+     comparison that matters is first baby against later baby, which is
+     now two adjacent numbers on the same line. */
+  const num = (v) => `<td style="padding:9px 4px;font-size:17px;font-weight:700;color:var(--ink);
+    text-align:center;font-variant-numeric:tabular-nums;width:74px">${v}</td>`;
+  return `
+  <table style="border-collapse:collapse;width:100%;margin-top:10px">
+    <tr>
+      <td></td>
+      <td style="padding:0 4px 5px;font-size:11px;color:var(--muted);text-align:center">First baby</td>
+      <td style="padding:0 4px 5px;font-size:11px;color:var(--muted);text-align:center">Later baby</td>
+    </tr>
+    ${PLACE_SETTINGS.map((c, i) => `
+      <tr${i ? ' style="border-top:1px solid rgba(0,0,0,.06)"' : ''}>
+        <td style="padding:9px 6px 9px 0;font-size:13px;line-height:1.3;color:var(--ink)">${esc(c.label)}</td>
+        ${num(t.first[c.id])}
+        ${num(t.later[c.id])}
+      </tr>`).join('')}
+  </table>
+  <p class="tiny" style="margin-top:10px">${esc(t.says)}</p>`;
+}
+
+function birthPainBlock(o) {
+  const open = store.birthPain === o.id;
+  return `
+  <div class="card" style="margin-bottom:10px">
+    <p class="eyebrow">${esc(o.name)}</p>
+    <p class="tiny" style="margin:5px 0 0">${esc(PAIN_KINDS[o.kind])}</p>
+    ${open ? `
+      <p class="bodytext" style="margin-top:10px">${esc(o.what)}</p>
+      <p class="bodytext" style="margin-top:9px"><strong>What it gives you.</strong> ${esc(o.gives)}</p>
+      <p class="bodytext" style="margin-top:9px"><strong>What it costs you.</strong> ${esc(o.costs)}</p>
+      ${o.myth ? `<div class="callout" style="margin-top:10px"><p style="margin:0">${esc(o.myth)}</p></div>` : ''}
+      ${o.where ? `<p class="tiny" style="margin-top:9px">${esc(o.where)}</p>` : ''}
+      ${o.numbers ? `
+        <p class="bodytext" style="margin-top:11px;font-weight:600">The numbers</p>
+        ${list(o.numbers)}
+        <p class="tiny" style="margin-top:4px">${esc(o.numbersFrom)}</p>` : ''}
+    ` : ''}
+    <button class="chip" style="margin-top:10px" data-birth="pain" data-id="${esc(o.id)}">
+      ${open ? 'Close' : 'What it gives and what it costs'}
+    </button>
+  </div>`;
+}
+
+function birthEventBlock(e) {
+  const open = store.birthEvent === e.id;
+  return `
+  <div class="card" style="margin-bottom:10px">
+    <p class="eyebrow">${esc(e.name)}</p>
+    <p class="tiny" style="margin:5px 0 0">${esc(e.rate)}</p>
+    ${open ? `
+      <p class="bodytext" style="margin-top:10px">${esc(e.what)}</p>
+      <p class="bodytext" style="margin-top:9px"><strong>What they do.</strong> ${esc(e.does)}</p>
+      <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(e.honest)}</p></div>
+      ${e.after ? `<p class="tiny" style="margin-top:9px">${esc(e.after)}</p>` : ''}
+    ` : ''}
+    <button class="chip" style="margin-top:10px" data-birth="event" data-id="${esc(e.id)}">
+      ${open ? 'Close' : 'What happens'}
+    </button>
+  </div>`;
+}
+
+function birthReduceBlock(r) {
+  const edge = r.strength === 'best' ? 'var(--sage)'
+    : r.strength === 'maybe' ? 'var(--attention, #B5793F)' : 'var(--muted)';
+  return `
+  <div class="card" style="border-left:3px solid ${edge};margin-bottom:10px">
+    <p class="eyebrow" style="color:${edge}">${esc(TEAR_STRENGTH[r.strength])}</p>
+    <p class="bodytext" style="margin-top:7px;font-weight:600">${esc(r.name)}</p>
+    <p class="bodytext" style="margin-top:8px">${esc(r.body)}</p>
+    ${r.honest ? `<p class="tiny" style="margin-top:9px">${esc(r.honest)}</p>` : ''}
+  </div>`;
+}
+
+function screenBirth(c) {
+  const kid = activeChild();
+  const seed = kid && isExpecting(kid) ? kid : null;
+  const prefs = seed && seed.birthPrefs && typeof seed.birthPrefs === 'object' ? seed.birthPrefs : {};
+  const tab = state.birthTab || 'yours';
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <p class="eyebrow" style="margin-top:6px">All of it, including the parts nobody says</p>
+    <h1 class="title sm">${esc(BIRTH_TITLE)}</h1>
+    <p class="sub">${esc(BIRTH_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('birthTab', tab, BIRTH_TABS)}
+
+    ${tab === 'yours' ? `
+      <div class="card leafy">
+        <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(BIRTH_HEAD)}</p>
+        ${BIRTH_INTRO.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(CASCADE_TITLE)}</h4>
+        ${CASCADE_INTRO.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        ${CASCADE_LINKS.map(birthCascadeRow).join('')}
+        <div class="callout"><p style="margin:0">${esc(CASCADE_CLOSE)}</p></div>
+      </div>
+
+      <div class="bpbox surrender">
+        <p class="bpbox-t">${esc(CASCADE_STRUCTURE.title)}</p>
+        ${CASCADE_STRUCTURE.body.map((x) => `<p class="bodytext" style="margin:8px 0 0">${esc(x)}</p>`).join('')}
+        <button class="chip" style="margin-top:11px" data-go="screen" data-id="induction">
+          ${esc(IND_TITLE)}
+        </button>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PREF_TITLE)}</h4>
+        ${PREF_INTRO.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+
+      ${seed ? `
+        ${PREF_ROWS.map((r) => birthPrefRow(r, prefs[r.id])).join('')}
+        <div class="card" style="border-left:3px solid var(--sage)">
+          <p class="eyebrow">What you have said matters to you</p>
+          <div style="margin-top:9px">${birthPrefSummary(prefs)}</div>
+          <p class="tiny" style="margin-top:10px">${esc(PREF_CAESAREAN_NOTE)}</p>
+          <p class="tiny" style="margin-top:9px">${esc(PREF_SAVE_NOTE)}</p>
+          ${Object.keys(prefs).length ? `
+            <button class="chip" style="margin-top:10px" data-birth="prefclear">Clear these</button>` : ''}
+        </div>
+      ` : `
+        <div class="card flat">
+          <p class="bodytext">Open this from the profile of the baby you are expecting and your
+            answers are kept there.</p>
+        </div>
+        ${PREF_ROWS.map((r) => `
+          <div class="quote"><p class="why" style="margin:0">${esc(r.q)}</p></div>`).join('')}
+      `}
+
+      <div class="dsec">
+        <h4>${esc(RIGHTS.title)}</h4>
+        ${RIGHTS.quotes.map((q) => `
+          <div class="quote">
+            <p class="sit">${esc(q.text)}</p>
+            <p class="why" style="margin-top:5px">${esc(q.from)}</p>
+          </div>`).join('')}
+        <p class="tiny" style="margin-top:9px">${esc(RIGHTS.note)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(MISTREAT.title)}</h4>
+        ${MISTREAT.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <p class="tiny" style="margin:0 0 10px">${esc(MISTREAT.caveat)}</p>
+        <div class="callout"><p style="margin:0">${esc(MISTREAT.use)}</p></div>
+      </div>
+    ` : ''}
+
+    ${tab === 'who' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="margin:0">${esc(WHO_INTRO)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(WHO_SUPPORT.title)}</h4>
+        ${WHO_SUPPORT.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout"><p style="margin:0">${esc(WHO_SUPPORT.whoBest)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>Who that can be</h4>
+        ${WHO_ROLES.map(birthRoleBlock).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(WHO_PRETERM.title)}</h4>
+        ${WHO_PRETERM.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(WHO_US_UK.title)}</h4>
+        ${WHO_US_UK.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PLACE_TITLE)}</h4>
+        <p class="bodytext">${esc(PLACE_INTRO)}</p>
+      </div>
+
+      <div class="card">
+        <p class="eyebrow">${esc(PLACE_BABY.title)}</p>
+        ${birthPlaceTable(PLACE_BABY)}
+      </div>
+
+      <div class="card" style="margin-top:11px">
+        <p class="eyebrow">${esc(PLACE_TRANSFER.title)}</p>
+        ${birthPlaceTable(PLACE_TRANSFER)}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PLACE_INTERVENTION.title)}</h4>
+        <table style="border-collapse:collapse;width:100%;margin-top:6px">
+          <tr>
+            <td></td>
+            ${PLACE_SETTINGS.map((s) => `<td style="padding:0 3px 6px;font-size:9.5px;line-height:1.2;color:var(--muted);text-align:center;width:58px">${esc(s.short)}</td>`).join('')}
+          </tr>
+          ${PLACE_INTERVENTION.rows.map((r, i) => `
+            <tr${i ? ' style="border-top:1px solid rgba(0,0,0,.06)"' : ''}>
+              <td style="padding:8px 4px 8px 0;font-size:12px;line-height:1.3;color:var(--ink)">${esc(r.label)}</td>
+              ${PLACE_SETTINGS.map((s) => `<td style="padding:8px 3px;font-size:13.5px;font-weight:600;color:var(--ink);text-align:center;font-variant-numeric:tabular-nums">${r[s.id]}</td>`).join('')}
+            </tr>`).join('')}
+        </table>
+        <p class="tiny" style="margin-top:9px">${esc(PLACE_INTERVENTION.says)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PLACE_US.title)}</h4>
+        ${PLACE_US.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PLACE_GUIDE.title)}</h4>
+        <div class="quote"><p class="why" style="margin:0">${esc(PLACE_GUIDE.uk)}</p></div>
+        <div class="quote"><p class="why" style="margin:0">${esc(PLACE_GUIDE.us)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PLACE_CENTRE.title)}</h4>
+        <p class="bodytext">${esc(PLACE_CENTRE.body)}</p>
+      </div>
+    ` : ''}
+
+    ${tab === 'pain' ? `
+      <div class="card leafy">
+        ${PAIN_INTRO.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>Every option</h4>
+        ${PAIN_OPTIONS.map(birthPainBlock).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PAIN_POSITION.title)}</h4>
+        <div class="card" style="margin-bottom:10px">
+          <p class="eyebrow">${esc(PAIN_POSITION.noEpi.title)}</p>
+          <p class="bodytext" style="margin-top:8px">${esc(PAIN_POSITION.noEpi.body)}</p>
+          <p class="tiny" style="margin-top:9px">${esc(PAIN_POSITION.noEpi.note)}</p>
+        </div>
+        <div class="card">
+          <p class="eyebrow">${esc(PAIN_POSITION.epi.title)}</p>
+          <p class="bodytext" style="margin-top:8px">${esc(PAIN_POSITION.epi.body)}</p>
+          <p class="tiny" style="margin-top:9px">${esc(PAIN_POSITION.epi.note)}</p>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PAIN_PUSH.title)}</h4>
+        <p class="bodytext">${esc(PAIN_PUSH.body)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PAIN_ROOM.title)}</h4>
+        ${PAIN_ROOM.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <p class="tiny">${esc(PAIN_ROOM.honest)}</p>
+      </div>
+    ` : ''}
+
+    ${tab === 'body' ? `
+      <div class="card leafy">
+        ${TEAR_INTRO.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>The four degrees</h4>
+        ${TEAR_DEGREES.map((d) => `
+          <div class="quote">
+            <p class="sit">${esc(d.label)}</p>
+            <p class="why" style="margin-top:4px">${esc(d.what)}</p>
+            <p class="tiny" style="margin-top:6px">${esc(d.fix)}</p>
+          </div>`).join('')}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(TEAR_OASI)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TEAR_RATES.title)}</h4>
+        ${list(TEAR_RATES.items)}
+        <p class="bodytext" style="margin-top:10px">${esc(TEAR_RATES.rose)}</p>
+        <p class="bodytext" style="margin-top:9px">${esc(TEAR_RATES.ethnic)}</p>
+      </div>
+
+      <div class="card" style="border-left:3px solid var(--sage)">
+        <p class="eyebrow">${esc(TEAR_FORCEPS.title)}</p>
+        ${TEAR_FORCEPS.body.map((x) => `<p class="bodytext" style="margin:8px 0 0">${esc(x)}</p>`).join('')}
+        <p class="tiny" style="margin-top:9px">${esc(TEAR_FORCEPS.says)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(EPIS_TITLE)}</h4>
+        ${EPIS_BODY.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(EPIS_EVIDENCE.title)}</h4>
+        ${EPIS_EVIDENCE.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <p class="tiny">${esc(EPIS_EVIDENCE.careful)}</p>
+        <p class="bodytext" style="margin-top:10px">${esc(EPIS_RATES)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(EPIS_HONEST.title)}</h4>
+        <p class="bodytext" style="font-weight:600;margin:0 0 6px">Mostly yes</p>
+        ${list(EPIS_HONEST.yes)}
+        <p class="bodytext" style="font-weight:600;margin:12px 0 6px">Except when it is not</p>
+        ${list(EPIS_HONEST.no)}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(EPIS_HONEST.ask)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>What actually reduces the damage</h4>
+        ${TEAR_REDUCE.map(birthReduceBlock).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TEAR_BUNDLE.title)}</h4>
+        ${TEAR_BUNDLE.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout"><p style="margin:0">${esc(TEAR_BUNDLE.consent)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TEAR_AFTER.title)}</h4>
+        ${list(TEAR_AFTER.items)}
+        <p class="bodytext" style="margin-top:10px">${esc(TEAR_AFTER.followup)}</p>
+      </div>
+
+      <div class="card" style="border-left:3px solid var(--concern, #A85A44)">
+        <p class="eyebrow" style="color:#A85A44">${esc(TEAR_AFTER.warn.title)}</p>
+        ${list(TEAR_AFTER.warn.items, true)}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TEAR_LONG.title)}</h4>
+        ${TEAR_LONG.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <p class="bodytext" style="margin-top:10px">${esc(TEAR_LONG.next)}</p>
+        <p class="tiny" style="margin-top:9px">${esc(TEAR_LONG.noCut)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TEAR_TOLD.title)}</h4>
+        <p class="bodytext">${esc(TEAR_TOLD.body)}</p>
+        ${TEAR_TOLD.ask.map((q) => `
+          <div class="quote"><p class="why" style="margin:0">${esc(q)}</p></div>`).join('')}
+      </div>
+    ` : ''}
+
+    ${tab === 'wrong' ? `
+      <div class="card" style="border-left:3px solid var(--attention, #B5793F)">
+        <p class="bodytext" style="margin:0">${esc(WRONG_WARN)}</p>
+      </div>
+
+      ${store.birthWrong ? `
+        <div class="dsec">
+          <h4>${esc(WRONG_PROPORTION.title)}</h4>
+          ${WRONG_PROPORTION.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+          <div class="callout"><p style="margin:0">${esc(WRONG_PROPORTION.unequal)}</p></div>
+        </div>
+
+        <div class="dsec">
+          <h4>${esc(WRONG_CAESAREAN.title)}</h4>
+          ${list(WRONG_CAESAREAN.why)}
+          <p class="bodytext" style="margin-top:10px">${esc(WRONG_CAESAREAN.says)}</p>
+          <p class="bodytext" style="margin-top:10px;font-weight:600">What was changed to bring that
+            down</p>
+          ${list(WRONG_CAESAREAN.thresholds)}
+          <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(WRONG_CAESAREAN.variation)}</p></div>
+        </div>
+
+        <div class="dsec">
+          <h4>${esc(WRONG_CATEGORIES.title)}</h4>
+          ${WRONG_CATEGORIES.rows.map((r) => `
+            <div class="quote">
+              <p class="sit">Category ${esc(r.n)}. ${esc(r.what)}</p>
+              <p class="why" style="margin-top:4px">${esc(r.when)}</p>
+              <p class="tiny" style="margin-top:4px">For example, ${esc(r.eg)}</p>
+            </div>`).join('')}
+          <p class="bodytext" style="margin-top:10px">${esc(WRONG_CATEGORIES.note)}</p>
+          <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(WRONG_CATEGORIES.ga)}</p></div>
+        </div>
+
+        <div class="dsec">
+          <h4>${esc(WRONG_THEATRE.title)}</h4>
+          ${WRONG_THEATRE.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+          <div class="callout"><p style="margin:0">${esc(WRONG_THEATRE.gentle)}</p></div>
+          <p class="bodytext" style="margin-top:11px;font-weight:600">The risks, as best they are
+            known</p>
+          ${list(WRONG_THEATRE.risks)}
+          <p class="tiny" style="margin-top:6px">${esc(WRONG_THEATRE.unknown)}</p>
+        </div>
+
+        <div class="dsec">
+          <h4>${esc(WRONG_INSTRUMENT.title)}</h4>
+          ${WRONG_INSTRUMENT.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+          <p class="tiny">${esc(WRONG_INSTRUMENT.theatre)}</p>
+          <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(WRONG_INSTRUMENT.reassure)}</p></div>
+        </div>
+
+        <div class="dsec">
+          <h4>The things people are frightened of</h4>
+          ${WRONG_EVENTS.map(birthEventBlock).join('')}
+        </div>
+
+        <div class="dsec">
+          <h4>${esc(WRONG_VBAC.title)}</h4>
+          ${WRONG_VBAC.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+          <div class="callout"><p style="margin:0">${esc(WRONG_VBAC.calc)}</p></div>
+        </div>
+
+        <div class="dsec">
+          <h4>${esc(WRONG_GOOD.title)}</h4>
+          ${WRONG_GOOD.items.map((g) => `
+            <div class="quote">
+              <p class="sit">${esc(g.name)}</p>
+              <p class="why" style="margin-top:4px">${esc(g.body)}</p>
+            </div>`).join('')}
+        </div>
+
+        <button class="chip" data-birth="wrong">Close this tab again</button>
+      ` : `
+        <button class="btn" style="width:100%;margin-top:11px" data-birth="wrong">
+          I want to read it
+        </button>
+      `}
+    ` : ''}
+
+    ${dsec('Where this comes from', sourceRows(BIRTH_SOURCES))}
+
+    <p class="disclaimer">${esc(BIRTH_DISCLAIMER)}</p>
+  </div>`;
+}
+
+/* A preference is stored on the baby's own record, which is what
+   makes it sync without anything being added to a key list. Tapping
+   the chosen answer again clears that row. */
+function birthPrefSet(rowId, val) {
+  const kid = activeChild();
+  if (!kid || !isExpecting(kid)) return;
+  if (!kid.birthPrefs || typeof kid.birthPrefs !== 'object') kid.birthPrefs = {};
+  if (kid.birthPrefs[rowId] === val) delete kid.birthPrefs[rowId];
+  else kid.birthPrefs[rowId] = val;
+  kid.updatedAt = Date.now();
+  flushStore();
+}
+
+function birthPrefClear() {
+  const kid = activeChild();
+  if (!kid) return;
+  kid.birthPrefs = {};
+  kid.updatedAt = Date.now();
+  flushStore();
+}
+
+/* ==================================================================
+   INDUCTION, AND THE CHART
+
+   Built because of one sentence: there is a chart they are supposed
+   to follow before they break your water, and almost nobody is told
+   it exists. It is the Bishop score, it is five numbers out of
+   thirteen, and it is written in her notes at nearly every induction.
+
+   THE TRACKER IS THE POINT, NOT THE CALCULATOR.
+   A woman can put her own five numbers in and see the total, but the
+   real feature is the list underneath it. One score in a corridor
+   tells you nothing. Four scores across three weeks tell you whether
+   anything is moving, and that is the thing to take into the
+   conversation about what happens next.
+
+   The checks live on the baby's own record, so they sync with
+   everything else about that baby and nothing had to be added to the
+   parent key list in flushStore. See newChildRecord.
+
+   The reasoning, the sourcing, and the rule about this not being anti
+   induction are in src/data/induction.js.
+   ================================================================== */
+
+/* The five chips for one component of the score. */
+function indRowBlock(row, marks) {
+  const chosen = marks[row.id];
+  return `
+  <div class="dsec">
+    <h4>${esc(row.label)}</h4>
+    <p class="tiny" style="margin:0 0 3px;font-weight:600;color:var(--deep)">${esc(row.term)}</p>
+    <p class="bodytext" style="margin:0 0 9px">${esc(row.what)}</p>
+    <div class="chips">
+      ${row.options.map((o) => `
+        <button class="chip" data-ind="set" data-row="${esc(row.id)}" data-val="${o.v}"
+          aria-pressed="${chosen === o.v}">${esc(o.label)} · ${o.v}</button>`).join('')}
+    </div>
+  </div>`;
+}
+
+/* One saved check, newest first in the list that calls this. */
+function indHistRow(e) {
+  const marks = { dil: e.dil, eff: e.eff, sta: e.sta, con: e.con, pos: e.pos };
+  const total = bishopScore(marks);
+  const read = bishopRead(total);
+  return `
+  <div class="quote" style="display:flex;align-items:flex-start;gap:10px">
+    <span class="grow">
+      <span class="sit">${esc(cycleDateLabelWithYear(e.date))}</span>
+      <span class="why" style="display:block;margin-top:4px">
+        ${total} out of ${BISHOP_MAX}${read ? '. ' + esc(read.label) : ''}</span>
+      <span class="tiny" style="display:block;margin-top:3px">
+        ${BISHOP_ROWS.map((r) => esc(r.label) + ' ' + marks[r.id]).join(', ')}</span>
+    </span>
+    <button class="chip" data-ind="del" data-id="${esc(String(e.stamp))}">Remove</button>
+  </div>`;
+}
+
+function indMethodBlock(m) {
+  const open = store.indMethod === m.id;
+  return `
+  <div class="card" style="margin-bottom:10px">
+    <p class="eyebrow">${esc(m.name)}</p>
+    <p class="tiny" style="margin:5px 0 0">Also called ${esc(m.also)}</p>
+    ${open ? `
+      <p class="bodytext" style="margin-top:10px">${esc(m.how)}</p>
+      <p class="bodytext" style="margin-top:9px"><strong>How long.</strong> ${esc(m.time)}</p>
+      <p class="bodytext" style="margin-top:9px"><strong>What the evidence says.</strong> ${esc(m.evidence)}</p>
+      <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(m.worth)}</p></div>
+    ` : ''}
+    <button class="chip" style="margin-top:10px" data-ind="method" data-id="${esc(m.id)}">
+      ${open ? 'Close' : 'What this involves'}
+    </button>
+  </div>`;
+}
+
+function screenInduction(c) {
+  const kid = activeChild();
+  const seed = kid && isExpecting(kid) ? kid : null;
+  const marks = store.bishopDraft && typeof store.bishopDraft === 'object' ? store.bishopDraft : {};
+  const total = bishopScore(marks);
+  const read = bishopRead(total);
+  const done = bishopHowMany(marks);
+  const hist = seed && Array.isArray(seed.bishop) ? seed.bishop.slice() : [];
+  hist.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  const tab = state.indTab || 'chart';
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <p class="eyebrow" style="margin-top:6px">Before anybody breaks your water</p>
+    <h1 class="title sm">${esc(IND_TITLE)}</h1>
+    <p class="sub">${esc(IND_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('indTab', tab, IND_TABS)}
+
+    ${tab === 'chart' ? `
+      <div class="card leafy">
+        <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(IND_HEAD)}</p>
+        ${IND_INTRO.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(IND_TRACK.title)}</h4>
+        <p class="bodytext">${esc(IND_TRACK.body)}</p>
+        <div class="quote" style="margin-top:10px">
+          <p class="why" style="margin:0">${esc(IND_TRACK.ask)}</p>
+        </div>
+      </div>
+
+      ${BISHOP_ROWS.map((r) => indRowBlock(r, marks)).join('')}
+
+      <div class="card" style="border-left:3px solid var(--sage)">
+        ${total === null ? `
+          <p class="eyebrow">${done} of 5 chosen</p>
+          <p class="bodytext" style="margin-top:8px">Pick all five and the total appears. A part of
+            a Bishop score is not a Bishop score, so nothing is added up until it is complete.</p>
+        ` : `
+          <p class="eyebrow">Your total</p>
+          <p class="title sm" style="margin:6px 0 0">${total} out of ${BISHOP_MAX}</p>
+          <p class="bodytext" style="margin-top:8px"><strong>${esc(read.label)}.</strong>
+            ${esc(read.says)}</p>
+          <p class="tiny" style="margin-top:9px">${esc(read.uk)}</p>
+          ${seed ? `
+            <p class="tiny" style="margin-top:12px">Date of this check</p>
+            <input class="inp" id="bishopDateIn" type="date" max="${esc(ciToday())}"
+              value="${esc(ciToday())}" style="width:100%;margin-top:6px">
+            <button class="btn" style="width:100%;margin-top:11px" data-ind="save">
+              Save this check to ${esc((seed.name || 'the baby').split(/\s+/)[0])}</button>
+          ` : `
+            <p class="tiny" style="margin-top:11px">To keep a record of your checks over time, open
+              this from the profile of the baby you are expecting.</p>`}
+          <button class="chip" style="margin-top:9px" data-ind="clear">Start again</button>
+        `}
+      </div>
+
+      ${seed ? `
+        <div class="dsec">
+          <h4>Your checks so far</h4>
+          ${hist.length ? hist.map(indHistRow).join('')
+            : `<p class="bodytext">${esc(IND_TRACK.empty)}</p>`}
+          <p class="tiny" style="margin-top:9px">${esc(IND_TRACK.privacy)}</p>
+        </div>` : ''}
+
+      <div class="dsec">
+        <h4>Two things about the chart itself</h4>
+        <p class="bodytext">${esc(BISHOP_BLANKS)}</p>
+        <p class="bodytext" style="margin-top:10px;font-weight:600">${esc(BISHOP_STATION.title)}</p>
+        ${BISHOP_STATION.body.map((x) => `<p class="bodytext" style="margin:6px 0 0">${esc(x)}</p>`).join('')}
+        <p class="bodytext" style="margin-top:10px">${esc(BISHOP_FEEL)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(BISHOP_HONEST.title)}</h4>
+        ${BISHOP_HONEST.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout"><p style="margin:0">${esc(BISHOP_HONEST.matters)}</p></div>
+      </div>
+
+      <div class="bpbox surrender">
+        <p class="bpbox-t">${esc(BISHOP_LONG.title)}</p>
+        ${BISHOP_LONG.body.map((x) => `<p class="bodytext" style="margin:8px 0 0">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(BISHOP_ORIGIN.title)}</h4>
+        ${BISHOP_ORIGIN.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(BISHOP_SIMPLE.title)}</h4>
+        ${BISHOP_SIMPLE.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(IND_UK.title)}</h4>
+        <p class="bodytext">${esc(IND_UK.intro)}</p>
+        ${IND_UK.quotes.map((q) => `
+          <div class="quote"><p class="why" style="margin:0">${esc(q)}</p></div>`).join('')}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(IND_UK.plain)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(IND_US.title)}</h4>
+        ${IND_US.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+    ` : ''}
+
+    ${tab === 'ripen' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="margin:0">${esc(RIPEN_INTRO)}</p>
+      </div>
+      <div class="dsec">
+        <h4>What can be used</h4>
+        ${RIPEN_METHODS.map(indMethodBlock).join('')}
+      </div>
+      <div class="dsec">
+        <h4>${esc(RIPEN_COMBO.title)}</h4>
+        ${RIPEN_COMBO.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+      <div class="bpbox">
+        <p class="bpbox-t">If examinations are hard for you</p>
+        <p class="bodytext" style="margin-top:8px">${esc(RIPEN_TRAUMA)}</p>
+      </div>
+      <div class="dsec">
+        <h4>Waiting at home</h4>
+        <p class="bodytext">${esc(RIPEN_HOME)}</p>
+      </div>
+    ` : ''}
+
+    ${tab === 'water' ? `
+      <div class="dsec">
+        <h4>${esc(WATER_WHAT.title)}</h4>
+        ${WATER_WHAT.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="card" style="border-left:3px solid var(--sage)">
+        <p class="eyebrow">${esc(WATER_ONEWAY.title)}</p>
+        ${WATER_ONEWAY.body.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(WATER_CLOCK.title)}</h4>
+        ${WATER_CLOCK.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(WATER_TRADE.title)}</h4>
+        ${WATER_TRADE.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout"><p style="margin:0">${esc(WATER_TRADE.ask)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(WATER_HEAD.title)}</h4>
+        ${WATER_HEAD.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>To ask, in the moment</h4>
+        ${WATER_QUESTIONS.map((q) => `
+          <div class="quote"><p class="why" style="margin:0">${esc(q)}</p></div>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>One separate thing</h4>
+        <p class="bodytext">${esc(WATER_ROUTINE)}</p>
+      </div>
+    ` : ''}
+
+    ${tab === 'why' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="margin:0">${esc(WHY_INTRO)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(WHY_STRONG.title)}</h4>
+        ${list(WHY_STRONG.items)}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(WHY_STRONG.note)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(WHY_WEAK.title)}</h4>
+        ${list(WHY_WEAK.items)}
+        <div class="bpbox" style="margin-top:10px">
+          <p class="bpbox-t">Read this bit twice</p>
+          <p class="bodytext" style="margin-top:8px">${esc(WHY_WEAK.warn)}</p>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(WHY_39.title)}</h4>
+        ${WHY_39.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout"><p style="margin:0">${esc(WHY_39.line)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(WHY_41.title)}</h4>
+        ${WHY_41.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(WHY_CSECTION.title)}</h4>
+        ${WHY_CSECTION.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+    ` : ''}
+
+    ${tab === 'ask' ? `
+      <div class="card leafy">
+        <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(ASK_HEAD)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ASK_RIGHT.title)}</h4>
+        <div class="quote"><p class="why" style="margin:0">${esc(ASK_RIGHT.quote)}</p></div>
+        <p class="bodytext" style="margin-top:10px">${esc(ASK_RIGHT.from)}</p>
+        <p class="tiny" style="margin-top:9px">${esc(ASK_RIGHT.note)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>Ten questions</h4>
+        ${ASK_LIST.map((a) => `
+          <div class="quote">
+            <p class="sit">${esc(a.q)}</p>
+            <p class="why" style="margin-top:4px">${esc(a.why)}</p>
+          </div>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(ASK_BRAIN.title)}</h4>
+        <p class="bodytext">${esc(ASK_BRAIN.body)}</p>
+        <p class="tiny" style="margin-top:9px">${esc(ASK_BRAIN.honest)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>Bring somebody</h4>
+        <p class="bodytext">${esc(ASK_ALONE)}</p>
+        <p class="tiny" style="margin-top:9px">${esc(WHO_SUPPORT.whoBest.split('.')[0])}. The
+          evidence on that is on the birth page.</p>
+        <button class="lrow" style="margin-top:8px" data-go="screen" data-id="birth">
+          <span class="licon">${icon('book', 18)}</span>
+          <span class="grow">
+            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Birth, all of it</span>
+            <span class="tiny" style="display:block;margin-top:2px">Pain relief, who is with you, tearing, and what can go wrong</span>
+          </span>
+          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+        </button>
+      </div>
+
+      ${dsec('Where this comes from', sourceRows(IND_SOURCES))}
+    ` : ''}
+
+    <p class="disclaimer">${esc(IND_DISCLAIMER)}</p>
+  </div>`;
+}
+
+/* Saving a check. The five marks come off the draft, the date comes
+   off the input, and the entry goes onto the baby's own record, which
+   is what makes it sync without anything being added to a key list. */
+function indSaveCheck() {
+  const kid = activeChild();
+  if (!kid || !isExpecting(kid)) return;
+  const marks = store.bishopDraft && typeof store.bishopDraft === 'object' ? store.bishopDraft : {};
+  if (bishopScore(marks) === null) return;
+  const el = document.getElementById('bishopDateIn');
+  const date = (el && el.value) || ciToday();
+  if (!Array.isArray(kid.bishop)) kid.bishop = [];
+  kid.bishop.push({
+    stamp: Date.now(),
+    date: date,
+    dil: marks.dil, eff: marks.eff, sta: marks.sta, con: marks.con, pos: marks.pos,
+  });
+  kid.updatedAt = Date.now();
+  store.bishopDraft = {};
+  flushStore();
+}
+
+function indDeleteCheck(stamp) {
+  const kid = activeChild();
+  if (!kid || !Array.isArray(kid.bishop)) return;
+  kid.bishop = kid.bishop.filter((e) => String(e.stamp) !== String(stamp));
+  kid.updatedAt = Date.now();
+  flushStore();
+}
+
+/* ==================================================================
+   TRYING
+
+   A gentle mode on her own profile, built on the cycle tracker that
+   was already there rather than beside it. The reasoning, and the
+   rule about never implying she caused this, are in
+   src/data/conceive.js.
+
+   IT ONLY EXISTS IF SHE TICKED TRYING TO CONCEIVE. Nothing about this
+   appears for anybody else, because a fertility screen turning up
+   uninvited on the profile of somebody who is not trying is the kind
+   of thing that lands very badly indeed.
+   ================================================================== */
+
+function ttcShows() {
+  return sitShows('trying');
+}
+
+/* A supplement group. The tone drives the colour, so the three groups
+   read as three different strengths of claim at a glance rather than
+   as one undifferentiated list. */
+function ttcSuppGroup(g) {
+  const edge = g.tone === 'strong' ? 'var(--sage)'
+    : g.tone === 'maybe' ? 'var(--attention, #B5793F)' : 'var(--muted)';
+  return `
+  <div class="dsec">
+    <div style="display:flex;align-items:baseline;gap:8px">
+      <span style="width:4px;height:15px;border-radius:2px;background:${edge};flex:none"></span>
+      <h4 style="margin:0">${esc(g.title)}</h4>
+    </div>
+    ${g.intro ? `<p class="tiny" style="margin:8px 0 0">${esc(g.intro)}</p>` : ''}
+    ${g.items.map((x) => `
+      <div class="quote" style="border-left-color:${edge}">
+        <p class="sit">${esc(x.what)}</p>
+        <p class="why" style="margin-top:4px">${esc(x.why)}</p>
+      </div>`).join('')}
+  </div>`;
+}
+
+function ttcLine(l) {
+  const digits = String(l.contact || '').replace(/[^\d]/g, '');
+  const dial = (digits.length >= 10 || digits.length === 3) ? 'tel:' + digits : '';
+  return `
+  <div class="bpline">
+    <p class="bpline-n">${esc(l.name)}</p>
+    ${dial
+      ? `<a class="bpline-c" href="${esc(dial)}">${esc(l.contact)}</a>`
+      : `<span class="bpline-c">${esc(l.contact)}</span>`}
+    <p class="tiny" style="margin:2px 0 0">${esc(l.detail)}</p>
+    <a class="tiny" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"
+      style="text-decoration:underline">Their website</a>
+  </div>`;
+}
+
+/* Wipes everything about her cycle and about trying, from this device
+   and from the cloud copy. Real rather than cosmetic: the keys are
+   removed, not blanked, and the store is flushed so the sync carries
+   the removal up rather than leaving it sitting in Firestore. */
+function ttcWipe() {
+  const p = store.parent || {};
+  delete p.periods;
+  delete p.lastPeriod;
+  delete p.cycleLength;
+  const sit = p.situation || {};
+  if (Array.isArray(sit.stages)) sit.stages = sit.stages.filter((s) => s !== 'trying');
+  delete sit.path;
+  store.parentUpdatedAt = Date.now();
+  store.ttcDelete = false;
+  store.cycleHistory = false;
+  store.cycleEdit = false;
+  flushStore();
+}
+
+function screenTrying(c) {
+  const tab = state.ttcTab || 'timing';
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">${esc(TTC_TITLE)}</h1>
+    <p class="sub">${esc(TTC_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="eyebrow">${icon('heart', 11, 'var(--sage)')} ${esc(TTC_HEAD)}</p>
+      ${TTC_INTRO.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+    </div>
+
+    ${subTabs('ttcTab', tab, TTC_TABS)}
+
+    ${tab === 'timing' ? `
+      ${cycleWidget()}
+
+      <div class="bpbox">
+        <p class="bpbox-t">${esc(TTC_WINDOW.title)}</p>
+        ${TTC_WINDOW.body.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+        <p class="bpwarn">${esc(TTC_WINDOW.notContraception)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>What is more accurate than a calendar</h4>
+        ${list(TTC_WINDOW.better)}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TTC_FREQUENCY.title)}</h4>
+        ${list(TTC_FREQUENCY.items)}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(TTC_FREQUENCY.note)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TTC_WHEN_ASK.title)}</h4>
+        ${list(TTC_WHEN_ASK.items)}
+        <p class="sect">${esc(TTC_WHEN_ASK.sooner.title)}</p>
+        ${list(TTC_WHEN_ASK.sooner.items)}
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(TTC_WHEN_ASK.both)}</p></div>
+        <p class="bodytext" style="margin-top:10px">${esc(TTC_WHEN_ASK.definition)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TTC_WORKUP.title)}</h4>
+        <p class="sect" style="margin-top:0">For her</p>
+        ${list(TTC_WORKUP.hers)}
+        <p class="sect">For him</p>
+        ${list(TTC_WORKUP.his)}
+        <p class="sect">${esc(TTC_WORKUP.notRecommended.title)}</p>
+        <p class="tiny" style="margin:0 0 9px">${esc(TTC_WORKUP.notRecommended.intro)}</p>
+        ${list(TTC_WORKUP.notRecommended.items, true)}
+      </div>
+    ` : ''}
+
+    ${tab === 'body' ? `
+      <p class="tiny" style="margin:0 0 4px">${esc(TTC_SUPP_INTRO)}</p>
+      ${ttcSuppGroup(TTC_SUPP_STRONG)}
+      ${ttcSuppGroup(TTC_SUPP_MAYBE)}
+      ${ttcSuppGroup(TTC_SUPP_WEAK)}
+
+      <div class="bpbox">
+        <p class="bpbox-t">${esc(TTC_SUPP_RISK.title)}</p>
+        ${list(TTC_SUPP_RISK.items, true)}
+        <p class="bodytext" style="margin-top:10px">${esc(TTC_SUPP_RISK.regulation)}</p>
+        <p class="bpwarn">${esc(TTC_SUPP_RISK.tell)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TTC_MTHFR.title)}</h4>
+        ${TTC_MTHFR.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TTC_EATING.title)}</h4>
+        ${TTC_EATING.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout"><p style="margin:0">${esc(TTC_EATING.verdict)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>About the book everybody mentions</h4>
+        <p class="bodytext">${esc(TTC_BOOK)}</p>
+      </div>
+    ` : ''}
+
+    ${tab === 'help' ? `
+      <div class="dsec">
+        <h4>${esc(TTC_IUI.title)}</h4>
+        <p class="bodytext" style="margin:0 0 9px">${esc(TTC_IUI.what)}</p>
+        <p class="bodytext" style="margin:0 0 9px">${esc(TTC_IUI.meds)}</p>
+        <p class="sect">${esc(TTC_IUI.rates.title)}</p>
+        <p class="tiny" style="margin:0 0 9px">${esc(TTC_IUI.rates.intro)}</p>
+        ${list(TTC_IUI.rates.items)}
+        <p class="tiny" style="margin-top:8px">${esc(TTC_IUI.rates.note)}</p>
+        <p class="sect">How many</p>
+        <p class="bodytext" style="margin:0 0 9px">${esc(TTC_IUI.howMany)}</p>
+        <div class="callout"><p style="margin:0">${esc(TTC_IUI.warn)}</p></div>
+        <p class="sect">Cost</p>
+        <p class="bodytext">${esc(TTC_IUI.cost)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TTC_IVF.title)}</h4>
+        ${TTC_IVF.steps.map((s) => `
+          <div class="quote">
+            <p class="sit">${esc(s.step)}</p>
+            <p class="why" style="margin-top:4px">${esc(s.body)}</p>
+          </div>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TTC_IVF_RATES.title)}</h4>
+        <p class="tiny" style="margin:0 0 10px">${esc(TTC_IVF_RATES.intro)}</p>
+        ${TTC_IVF_RATES.rows.map((r) => `
+          <div style="display:flex;gap:10px;align-items:baseline;padding:7px 0;border-top:1px solid rgba(0,0,0,.05)">
+            <span class="tiny" style="width:96px;flex:none">${esc(r.age)}</span>
+            <span style="font-size:15px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums">${esc(r.rate)}</span>
+          </div>`).join('')}
+        <div class="callout" style="margin-top:11px"><p style="margin:0">${esc(TTC_IVF_RATES.denominator)}</p></div>
+      </div>
+
+      <div class="bpbox">
+        <p class="bpbox-t">${esc(TTC_ADDONS.title)}</p>
+        <p class="tiny" style="margin:8px 0 0">${esc(TTC_ADDONS.intro)}</p>
+        ${TTC_ADDONS.items.map((x) => `
+          <div class="bpwho">
+            <span class="bpwho-w">${esc(x.what)}</span>
+            <span class="bpwho-s">${esc(x.why)}</span>
+          </div>`).join('')}
+        <p class="bpclose">${esc(TTC_ADDONS.ask)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TTC_COST.title)}</h4>
+        ${TTC_COST.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout"><p style="margin:0">${esc(TTC_COST.compare)}</p></div>
+        <p class="bodytext" style="margin-top:10px">${esc(TTC_COST.coverage)}</p>
+        <p class="tiny" style="margin-top:9px">${esc(TTC_COST.federal)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(TTC_DONOR.title)}</h4>
+        <p class="tiny" style="margin:0 0 10px">${esc(TTC_DONOR.intro)}</p>
+        ${TTC_DONOR.paths.map((p) => `
+          <div class="quote">
+            <p class="sit">${esc(p.what)}</p>
+            <p class="why" style="margin-top:4px">${esc(p.body)}</p>
+          </div>`).join('')}
+        <p class="sect">${esc(TTC_DONOR.anonymity.title)}</p>
+        <p class="bodytext" style="margin:0 0 9px">${esc(TTC_DONOR.anonymity.body)}</p>
+        <div class="callout"><p style="margin:0">${esc(TTC_DONOR.legal)}</p></div>
+      </div>
+    ` : ''}
+
+    ${tab === 'wait' ? `
+      <div class="dsec">
+        <h4>${esc(TTC_WAIT.title)}</h4>
+        ${TTC_WAIT.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout"><p style="margin:0">${esc(TTC_WAIT.test)}</p></div>
+        <p class="sect">${esc(TTC_WAIT.symptoms.title)}</p>
+        <p class="bodytext">${esc(TTC_WAIT.symptoms.body)}</p>
+      </div>
+
+      <div class="bpbox">
+        <p class="bpbox-t">${esc(TTC_FEELINGS.title)}</p>
+        ${TTC_FEELINGS.body.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+        <p class="bpwarn">${esc(TTC_FEELINGS.notYourFault)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>What helps</h4>
+        <p class="bodytext" style="margin:0 0 9px">${esc(TTC_FEELINGS.helps)}</p>
+        <p class="bodytext">${esc(TTC_FEELINGS.resolve)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>Somebody to talk to</h4>
+        ${TTC_LINES.map(ttcLine).join('')}
+      </div>
+    ` : ''}
+
+    <div class="dsec">
+      <h4>${esc(TTC_PRIVACY.title)}</h4>
+      ${list(TTC_PRIVACY.items)}
+      <p class="sect">${esc(TTC_PRIVACY.deleteTitle)}</p>
+      <p class="bodytext" style="margin:0 0 10px">${esc(TTC_PRIVACY.deleteBody)}</p>
+      ${store.ttcDelete ? `
+        <button class="btn" style="width:100%;background:#A8352A" data-ttc="wipe">${esc(TTC_PRIVACY.deleteConfirm)}</button>
+        <button class="chip" style="margin-top:9px" data-ttc="nowipe">${esc(TTC_PRIVACY.deleteCancel)}</button>
+      ` : `
+        <button class="btn ghost" style="width:100%" data-ttc="askwipe">${esc(TTC_PRIVACY.deleteBtn)}</button>`}
+    </div>
+
+    ${dsec('Where this comes from', sourceRows(TTC_SOURCES))}
+    <p class="disclaimer">${esc(TTC_DISCLAIMER)}</p>
   </div>`;
 }
 
@@ -13302,6 +14565,17 @@ function screenHome(c) {
       ${icon('chev', 17, 'rgba(255,255,255,.8)')}
     </button>` : ''}
 
+    ${ttcShows() ? `
+    <button class="lrow" data-go="screen" data-id="trying" style="align-items:flex-start">
+      <span class="licon" style="background:var(--leaf2)">${icon('leaf', 18)}</span>
+      <span class="grow">
+        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(TTC_TITLE)}</span>
+        <span class="tiny" style="display:block;margin-top:2px">The timing, what the evidence actually
+          supports, and what happens if you need help</span>
+      </span>
+      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+    </button>` : ''}
+
     ${/* OUTSIDE THE BODY CARE GATE ON PURPOSE.
           The button above it is only for somebody who said the body half
           is for them. This is for everybody, because a father, a
@@ -16452,6 +17726,8 @@ function normalizeChild(k) {
     photo: k.photo || '',
     routineInclude: Array.isArray(k.routineInclude) ? k.routineInclude : [],
     logs: Array.isArray(k.logs) ? k.logs : [],
+    bishop: Array.isArray(k.bishop) ? k.bishop : [],
+    birthPrefs: k.birthPrefs && typeof k.birthPrefs === 'object' ? k.birthPrefs : {},
     updatedAt: Number(k.updatedAt) || 0,
   });
 }
