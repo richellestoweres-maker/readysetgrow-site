@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-20 00:30">
+<meta name="rsg-build" content="2026-09-20 01:39">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1573,7 +1573,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-20 00:30';
+const BUILD_STAMP = '2026-09-20 01:39';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -29950,6 +29950,735 @@ const CON_DISCLAIMER = 'Information, not medical or legal advice. The medical wi
   + 'and the hotline above will get you a better answer for where you live than any page can.';
 
 
+/* ===== src/data/expecting.js ===== */
+/**
+ * Ready Set Grow: The seed stage
+ * ==================================================================
+ * A baby added before they are born, with a due date instead of a
+ * birthday, on the same profile they will keep for eighteen years.
+ *
+ * WHY THE SAME PROFILE AND NOT A SEPARATE PREGNANCY SECTION
+ * Because the story is continuous and nearly every app breaks it. A
+ * mother spends nine months in a pregnancy app, has the baby, and
+ * starts again from nothing somewhere else. Here the record she built
+ * before birth, the name they were calling the bump, the scan photos,
+ * the memories, all of it is already on the profile the day the child
+ * arrives. One id, one row of logs, one story.
+ *
+ * THE GROWTH METAPHOR, EXTENDED
+ * The app already draws a child as a sprout that grows through
+ * childhood. Pregnancy is the seed stage, so birth is the moment it
+ * breaks the surface rather than the moment the story begins.
+ *
+ * HOW THE DATE IS HELD
+ *   expecting: true, dueDate set, birthday empty.
+ * That is deliberate. Every existing screen in the app reads
+ * `birthday`, and leaving it empty means none of them try to compute
+ * an age from a date in the future. An unborn child gets its own
+ * profile and nothing else has to know.
+ *
+ * On the day they arrive, birthday is filled in and expecting goes
+ * false. dueDate is KEPT, because the gap between the two is the
+ * child's gestational age at birth, and that is worth knowing for
+ * years afterward.
+ *
+ * ON SYNC, WHICH IS THE THING THAT HAS BITTEN BEFORE
+ * Nothing extra is needed here. normalizeChild builds every child on
+ * top of newChildRecord, so a field added to that record syncs by
+ * itself. The parent record is the one with a hand written key list in
+ * flushStore, and nothing in this file lives there.
+ *
+ * DATING
+ * Forty weeks from the last period, which is how a due date is set and
+ * why a pregnancy is counted as forty weeks when it is really about
+ * thirty eight. The app says that out loud once, because it confuses
+ * everybody and nobody explains it.
+ */
+
+const GESTATION_DAYS = 280;
+
+const EXP_STAGES = [
+  {
+    id: 'planted', label: 'Planted', from: 4, to: 13,
+    blurb: 'The first trimester. Almost nothing is visible and almost everything is happening.',
+  },
+  {
+    id: 'root', label: 'Taking root', from: 14, to: 27,
+    blurb: 'The second trimester. Usually the kindest stretch, and the one where it starts to feel real.',
+  },
+  {
+    id: 'sprout', label: 'Ready to sprout', from: 28, to: 42,
+    blurb: 'The third trimester. Getting ready, on both sides.',
+  },
+];
+
+function expStageForWeek(week) {
+  if (typeof week !== 'number') return null;
+  for (let i = 0; i < EXP_STAGES.length; i++) {
+    const s = EXP_STAGES[i];
+    if (week >= s.from && week <= s.to) return s;
+  }
+  return week < EXP_STAGES[0].from ? EXP_STAGES[0] : EXP_STAGES[EXP_STAGES.length - 1];
+}
+
+/* Where this pregnancy is, from the due date and today.
+
+   Returns null rather than guessing when there is no date, because a
+   screen that quietly invents a week number is worse than one that
+   asks for the date again. */
+function expWhere(dueDate, today) {
+  if (!dueDate || !today) return null;
+  const due = Date.parse(dueDate + 'T00:00:00');
+  const now = Date.parse(today + 'T00:00:00');
+  if (!isFinite(due) || !isFinite(now)) return null;
+
+  const daysToDue = Math.round((due - now) / 86400000);
+  const daysIn = GESTATION_DAYS - daysToDue;
+  const week = Math.floor(daysIn / 7);
+  const days = ((daysIn % 7) + 7) % 7;
+
+  return {
+    week: week,
+    days: days,
+    daysIn: daysIn,
+    daysToDue: daysToDue,
+    overdue: daysToDue < 0,
+    /* Before the fourth week there is nothing written and usually
+       nothing known, and past forty two the app stops counting rather
+       than inventing weeks nobody is in. */
+    tooEarly: week < 4,
+    tooLate: week > 42,
+    stage: expStageForWeek(week),
+  };
+}
+
+/* The short line that goes under a baby's face on Home, where a born
+   child would show their age. */
+function expShortLabel(where) {
+  if (!where) return 'Due date not set yet';
+  if (where.tooEarly) return 'Very early days';
+  if (where.overdue) {
+    const d = Math.abs(where.daysToDue);
+    return d === 0 ? 'Due today' : d + ' day' + (d === 1 ? '' : 's') + ' past the due date';
+  }
+  return where.week + ' week' + (where.week === 1 ? '' : 's') + (where.days ? ' and ' + where.days + ' day' + (where.days === 1 ? '' : 's') : '');
+}
+
+function expDueLabel(where) {
+  if (!where) return '';
+  if (where.overdue) return 'The due date has passed. Most babies come within a couple of weeks either side of it.';
+  if (where.daysToDue === 0) return 'Due today.';
+  if (where.daysToDue < 14) return where.daysToDue + ' days to the due date.';
+  const w = Math.floor(where.daysToDue / 7);
+  return 'About ' + w + ' week' + (w === 1 ? '' : 's') + ' to the due date.';
+}
+
+/* ==================================================================
+   ADDING THEM
+   ================================================================== */
+
+const EXP_ADD_TITLE = 'Are they here yet';
+
+const EXP_ADD_OPTIONS = [
+  { id: 'born', label: 'They are already here', sub: 'You will put in their birthday' },
+  { id: 'expecting', label: 'Still expecting', sub: 'You will put in the due date, and it becomes a birthday later' },
+];
+
+const EXP_ADD_NOTE = 'Either way this is the same profile they keep for the next eighteen '
+  + 'years. Nothing started before they arrive gets left behind when they do.';
+
+const EXP_NAME_NOTE = 'A name, or whatever you have been calling them. Peanut is a perfectly '
+  + 'good name for now and you can change it at any point.';
+
+const EXP_DUE_NOTE = 'The date from your provider, or from your last period if that is all '
+  + 'you have. It can be changed whenever a scan moves it, which happens often and is normal.';
+
+/* ==================================================================
+   THE PROFILE
+   ================================================================== */
+
+const EXP_PROFILE_SUB = 'The seed stage. Same profile, same story, just earlier.';
+
+const EXP_DATING_NOTE = {
+  title: 'Why it says forty weeks when it is really thirty eight',
+  body: 'A pregnancy is counted from the first day of your last period, which is roughly two weeks '
+    + 'before there was anything to count. So the weeks are dated from about a fortnight before '
+    + 'conception, everybody uses the same system, and it is why week four is the week a test tends '
+    + 'to go positive rather than the week anything started.',
+};
+
+const EXP_SCAN_NOTE = 'If a scan moved your date, use the new one. A dating scan beats a '
+  + 'calculation and always wins.';
+
+const EXP_NOTHING_YET = {
+  title: 'Nothing written for this week yet',
+  body: 'The weekly writing runs from week four through week forty two. Before that there is usually '
+    + 'very little to say and a great deal of waiting.',
+};
+
+const EXP_OVERDUE = {
+  title: 'Past the date',
+  body: 'The due date was always an estimate, and only about one baby in twenty five arrives on it. '
+    + 'Most come somewhere in the two weeks either side. Your provider will usually start talking '
+    + 'about monitoring or induction somewhere past forty one weeks, and that conversation is a '
+    + 'normal part of this rather than a sign something is wrong.',
+};
+
+/* ==================================================================
+   THE DAY THEY ARRIVE
+   ==================================================================
+   The one button that turns the seed into the sprout. Deliberately
+   not automatic on the due date, because babies do not read calendars
+   and an app that announced a birth that had not happened would be
+   unforgivable.
+   ================================================================== */
+
+const EXP_BORN_BTN = 'Baby is here';
+
+const EXP_BORN = {
+  title: 'They are here',
+  body: [
+    'Congratulations. Put in the day they were born and this profile becomes their profile.',
+    'Everything already on it stays. The name, the photos, the memories, anything you logged. Nothing '
+    + 'starts again.',
+  ],
+  ask: 'The day they were born',
+  confirm: 'Yes, they are here',
+  cancel: 'Not yet',
+  after: 'Their profile now works the way every child profile does, and the app has reshaped itself '
+    + 'around a newborn. The due date is kept, because the gap between the two is how early or late '
+    + 'they were, and that is worth having on the record.',
+};
+
+/* How early or late they turned out to be, kept for years because it
+   changes what corrected age means and a parent is asked it a lot. */
+function expBornGap(dueDate, birthday) {
+  if (!dueDate || !birthday) return null;
+  const due = Date.parse(dueDate + 'T00:00:00');
+  const born = Date.parse(birthday + 'T00:00:00');
+  if (!isFinite(due) || !isFinite(born)) return null;
+  const days = Math.round((born - due) / 86400000);
+  const weeks = Math.floor((GESTATION_DAYS + days) / 7);
+  const rem = ((GESTATION_DAYS + days) % 7 + 7) % 7;
+  return { days: days, gestWeeks: weeks, gestDays: rem, early: days < 0, late: days > 0 };
+}
+
+function expBornGapLabel(gap) {
+  if (!gap) return '';
+  const at = 'Born at ' + gap.gestWeeks + ' weeks' + (gap.gestDays ? ' and ' + gap.gestDays + ' days' : '');
+  if (gap.days === 0) return at + ', on the due date.';
+  const d = Math.abs(gap.days);
+  const which = gap.early ? 'before' : 'after';
+  if (d < 14) return at + ', ' + d + ' day' + (d === 1 ? '' : 's') + ' ' + which + ' the due date.';
+  const w = Math.round(d / 7);
+  return at + ', about ' + w + ' week' + (w === 1 ? '' : 's') + ' ' + which + ' the due date.';
+}
+
+const EXP_PRETERM_NOTE = 'Born before thirty seven weeks. The app can follow corrected age '
+  + 'as well as actual age wherever that matters, and the prematurity lens on their profile turns '
+  + 'that on.';
+
+/* ==================================================================
+   WHAT ELSE IS ON THE PROFILE
+   ================================================================== */
+
+const EXP_SECTIONS = {
+  week: 'This week',
+  prep: 'Getting ready',
+  ask: 'Worth asking at the next appointment',
+  care: 'Looking after yourself',
+};
+
+/* Appointment questions, by stage rather than by week, because
+   appointments are not weekly and a list that changed every seven days
+   would never be the list she has in her hand in the room. */
+const EXP_ASK = [
+  {
+    stage: 'planted',
+    title: 'First trimester appointments',
+    items: [
+      'What is my due date by your dating, and did the scan move it.',
+      'Which screening tests are offered, when, and what does each one actually tell me. All of them '
+      + 'are yours to accept or decline.',
+      'Is there anything in my history, or my family history, that changes how you want to watch this.',
+      'What should I keep taking, what should I stop, and is my prenatal vitamin the right one.',
+      'What counts as an emergency, and who do I call out of hours.',
+    ],
+  },
+  {
+    stage: 'root',
+    title: 'Second trimester appointments',
+    items: [
+      'What did the anatomy scan show, and is anything being followed up.',
+      'Where is my blood pressure sitting, and what would make you worried about it.',
+      'When is the glucose test and what happens if it is high.',
+      'Am I anemic, and should I be taking iron.',
+      'When should I start feeling regular movement, and what do I do if it changes.',
+    ],
+  },
+  {
+    stage: 'sprout',
+    title: 'Third trimester appointments',
+    items: [
+      'Which way is the baby lying, and when does that start to matter.',
+      'What is your view on how I want to give birth, and what would change it.',
+      'When do you want me to come in, and when should I not wait.',
+      'What happens if I go past my date, and at what point do we talk about induction.',
+      'What is the plan for the group B strep test.',
+      'Who will actually be there when I give birth.',
+    ],
+  },
+];
+
+function expAskFor(stageId) {
+  return EXP_ASK.filter((a) => a.stage === stageId)[0] || null;
+}
+
+const EXP_ASK_NOTE = 'Appointments go fast and everybody forgets the question they came in '
+  + 'with. Screenshot this, or read it off the phone in the room. Nobody minds.';
+
+const EXP_CHOICE_NOTE = 'Every test and every screening on this list is offered to you, not '
+  + 'done to you. Accepting all of them, some of them or none of them is your decision, and a good '
+  + 'provider will explain any of them without making you feel awkward for asking.';
+
+const EXP_DISCLAIMER = 'Educational information, not medical advice, and not a substitute '
+  + 'for the person looking after you. Every pregnancy is different and yours is the one that counts.';
+
+const EXP_SOURCES = [
+  { org: 'ACOG', label: 'How pregnancy is dated, and what each trimester involves',
+    url: 'https://www.acog.org/womens-health/faqs/how-your-fetus-grows-during-pregnancy' },
+  { org: 'CDC', label: 'Urgent maternal warning signs',
+    url: 'https://www.cdc.gov/hearher/maternal-warning-signs/index.html' },
+  { org: 'NHS', label: 'Week by week, and what is happening when',
+    url: 'https://www.nhs.uk/pregnancy/week-by-week/' },
+  { org: 'MotherToBaby', label: 'Whether a particular medicine or exposure is a problem',
+    url: 'https://mothertobaby.org/' },
+];
+
+
+/* ===== src/data/pregnancyWeeks.js ===== */
+/**
+ * Ready Set Grow: Week by week
+ * ==================================================================
+ * Weeks four through forty two. Each week carries four things and no
+ * more, because a parent reads this on a phone in about twenty
+ * seconds and a wall of text gets skipped.
+ *
+ *   size     a garden comparison, with the real measurement beside it
+ *   baby     what is actually happening in there
+ *   you      what she may feel, offered rather than predicted
+ *   prepare  one thing, not a list
+ *
+ * ON THE SIZES
+ * Every comparison has the real number next to it, because the fruit
+ * on its own is charming and useless. Lengths are crown to rump until
+ * about week twenty, which is how they are measured before the legs
+ * uncurl, and crown to heel after that. The jump at week twenty is
+ * real and is not the baby doubling overnight.
+ *
+ * ON THE "YOU" LINE
+ * Written as may and some rather than will. A woman who has none of
+ * the symptoms for her week should not close the app worried, and a
+ * woman who has all of them should not feel unusual.
+ *
+ * ON THE PREPARE LINE
+ * One thing. Never a checklist, never anything that costs money
+ * unless it genuinely has to, and never anything that implies she is
+ * behind.
+ *
+ * WHAT IS NOT IN HERE
+ * Anything that reads as a warning. The warning signs are a separate
+ * list that shows on every single week rather than appearing on the
+ * week a complication is statistically likeliest, because a bleed at
+ * twelve weeks matters just as much as one at thirty.
+ *
+ * Sizes and milestones checked September 2026 against ACOG, the NHS
+ * week by week, and standard fetal biometry references.
+ */
+
+const PREG_WEEKS = [
+  {
+    week: 4,
+    size: 'A poppy seed',
+    measure: 'about 2 mm',
+    baby: 'A ball of cells has just burrowed into the lining of your womb and split into two parts. One becomes the baby, the other becomes the placenta.',
+    you: 'Most likely nothing at all, or the sort of ache that feels like a period about to start. A test may only just be turning positive.',
+    prepare: 'Start a prenatal vitamin with folic acid if you have not already. Four hundred micrograms a day, and it matters most right now.',
+  },
+  {
+    week: 5,
+    size: 'A sesame seed',
+    measure: 'about 3 mm',
+    baby: 'The neural tube is closing. It becomes the brain and the spinal cord, and it is the reason folic acid matters this early.',
+    you: 'Sore breasts, a metallic taste, needing to wee more, and a tiredness that is difficult to explain to anybody.',
+    prepare: 'Ring for a first appointment. Some providers want to see you at eight weeks, some sooner, and the waiting list is the reason to call now rather than later.',
+  },
+  {
+    week: 6,
+    size: 'A sweet pea seed',
+    measure: 'about 5 mm',
+    baby: 'A heartbeat starts, at first as a flicker on a scan rather than something anybody can hear. Arm and leg buds appear.',
+    you: 'Nausea often arrives around now, and it is not only in the morning. Smells you used to like may become unbearable.',
+    prepare: 'Eat something small before you get out of bed. It will not fix the sickness but it takes the edge off the worst hour.',
+  },
+  {
+    week: 7,
+    size: 'A blueberry',
+    measure: 'about 1 cm',
+    baby: 'The brain is growing faster than any other part. The face is forming, and the beginnings of hands appear, still webbed.',
+    you: 'Exhaustion, sore breasts, and sickness. Also possibly nothing, which is equally normal and not a bad sign.',
+    prepare: 'Tell one person. Carrying early pregnancy alone is much harder than people admit, and one person who knows makes a real difference.',
+  },
+  {
+    week: 8,
+    size: 'A raspberry',
+    measure: 'about 1.6 cm',
+    baby: 'Fingers and toes are separating. The tail is gone. Everything that will be there at birth is now present in some form.',
+    you: 'Food aversions, a heightened sense of smell, and possibly some spotting, which is common and usually nothing but always worth a call.',
+    prepare: 'Write down the date of your last period and keep it somewhere. You will be asked for it more times than you can imagine.',
+  },
+  {
+    week: 9,
+    size: 'An olive',
+    measure: 'about 2.3 cm',
+    baby: 'Officially a fetus from this week rather than an embryo. Tiny movements start, far too small to feel.',
+    you: 'Emotions that arrive out of nowhere and feel disproportionate. They are hormonal and they are not you being unreasonable.',
+    prepare: 'Check what you are taking. Prescriptions, over the counter, herbal, all of it. MotherToBaby answers this for free and is where to look rather than a forum.',
+  },
+  {
+    week: 10,
+    size: 'A strawberry',
+    measure: 'about 3.1 cm',
+    baby: 'The most vulnerable stretch of development is behind you. Vital organs are formed and now mostly grow.',
+    you: 'Bloating that looks like a bump long before there is one. Gums may bleed when you brush.',
+    prepare: 'Book a dentist. Pregnancy is hard on gums, dental care is safe, and it gets forgotten every single time.',
+  },
+  {
+    week: 11,
+    size: 'A fig',
+    measure: 'about 4.1 cm',
+    baby: 'Fingernails start. The baby can open and close their fists and is hiccupping, though you cannot feel it.',
+    you: 'Nausea may start to lift for some. For others it will not, and that is not a failure of anything.',
+    prepare: 'Ask about screening options at your next appointment. What is offered, what each one tells you, and what you would do with the answer. Accepting or declining any of it is entirely yours.',
+  },
+  {
+    week: 12,
+    size: 'A lime',
+    measure: 'about 5.4 cm, 14 g',
+    baby: 'Reflexes are working. If you prod your belly the baby will move away, although you will not feel it happen.',
+    you: 'Sickness often eases around now. Energy may start to come back, and your waistband may stop doing up.',
+    prepare: 'If you are going to tell people, a lot of families do it around now. There is no rule and no right week, and telling nobody until twenty is fine too.',
+  },
+  {
+    week: 13,
+    size: 'A pea pod',
+    measure: 'about 7.4 cm, 23 g',
+    baby: 'Vocal cords form. Fingerprints are developing, and the intestines move into the abdomen from the cord.',
+    you: 'The last week of the first trimester. Some of the tiredness lifts. Some of it does not, yet.',
+    prepare: 'Buy one bra that fits. Not a whole wardrobe, one bra. It is the single thing that makes the next few months more comfortable.',
+  },
+  {
+    week: 14,
+    size: 'A lemon',
+    measure: 'about 8.7 cm, 43 g',
+    baby: 'The baby can squint, frown and grimace, and may have found their thumb. Fine hair called lanugo starts to cover the body.',
+    you: 'Appetite often comes back with some force. Your skin may darken in patches, which is hormonal and usually fades.',
+    prepare: 'Start moisturising your bump and your hips. It will not prevent stretch marks, nothing does, but it helps the itching that comes later.',
+  },
+  {
+    week: 15,
+    size: 'A small pinecone',
+    measure: 'about 10.1 cm, 70 g',
+    baby: 'The baby is moving a lot, though most women do not feel it yet. Bones are hardening. They may be able to sense light through your skin.',
+    you: 'A blocked nose that never clears, and possibly nosebleeds. It has a name, pregnancy rhinitis, and it is not a cold.',
+    prepare: 'Ask at your next appointment when the anatomy scan will be. It is usually somewhere between eighteen and twenty two weeks and it is the long one.',
+  },
+  {
+    week: 16,
+    size: 'An avocado',
+    measure: 'about 11.6 cm, 100 g',
+    baby: 'The heart is pumping around twenty five litres of blood a day. Facial muscles work. The eyes can move.',
+    you: 'Some women feel the first movements now, usually described as bubbles or a fish turning. A second baby is often felt earlier than a first.',
+    prepare: 'Start sleeping on your side if you can. It gets recommended firmly later, and the habit is much easier to build now than at thirty weeks.',
+  },
+  {
+    week: 17,
+    size: 'A pear',
+    measure: 'about 13 cm, 140 g',
+    baby: 'Fat starts to form under the skin. The umbilical cord is getting thicker and stronger.',
+    you: 'Round ligament pain, a sharp catch low down when you stand up too fast. Uncomfortable, and normal.',
+    prepare: 'Look up your leave. What you are entitled to, how much notice your employer needs, and whether anything has to be applied for. It takes longer than anybody expects.',
+  },
+  {
+    week: 18,
+    size: 'A bell pepper',
+    measure: 'about 14.2 cm, 190 g',
+    baby: 'The baby can hear now. Your heartbeat, your stomach, your voice, and the world outside as a muffled version of itself.',
+    you: 'You may be starting to look pregnant to strangers, which changes how people behave toward you, sometimes helpfully and sometimes not.',
+    prepare: 'Talk to them. It sounds daft and it is the beginning of the language they will learn, and they already know your voice by the time they are born.',
+  },
+  {
+    week: 19,
+    size: 'An heirloom tomato',
+    measure: 'about 15.3 cm, 240 g',
+    baby: 'Vernix appears, a white waxy coating that protects the skin. The senses are developing fast.',
+    you: 'Leg cramps at night, dizziness when you stand, and possibly a dark line down your belly.',
+    prepare: 'Write down your questions for the anatomy scan before you go. It is a long appointment and it is easy to come out realising you forgot to ask.',
+  },
+  {
+    week: 20,
+    size: 'A sweet potato',
+    measure: 'about 25.6 cm head to heel, 300 g',
+    baby: 'Halfway. The measurement jumps this week because babies are now measured head to heel rather than head to bottom, not because anything doubled overnight.',
+    you: 'Movement is usually clear by now. If it is not, that alone is not a problem, and your provider will check.',
+    prepare: 'The anatomy scan is around now. Take somebody with you if you can, and decide beforehand whether you want to know the sex.',
+  },
+  {
+    week: 21,
+    size: 'A carrot',
+    measure: 'about 26.7 cm, 360 g',
+    baby: 'The baby swallows a little amniotic fluid each day, which is practice for feeding. Taste buds are forming.',
+    you: 'You may notice a pattern to when they move. Often it is the moment you lie down, which is less about them waking and more about you finally being still.',
+    prepare: 'Eat what you fancy from whatever you are eating. Flavours carry into the fluid and there is decent evidence it shapes what they will accept later.',
+  },
+  {
+    week: 22,
+    size: 'A zucchini',
+    measure: 'about 27.8 cm, 430 g',
+    baby: 'Eyebrows and lashes are there. The lips are distinct. They look recognisably like a newborn now, just smaller and thinner.',
+    you: 'Stretch marks may appear on the belly, breasts or hips. Backache is common as your centre of gravity shifts.',
+    prepare: 'Get one really good cushion or a pregnancy pillow. Sleep is about to become the main event and it is worth spending on.',
+  },
+  {
+    week: 23,
+    size: 'A large mango',
+    measure: 'about 28.9 cm, 501 g',
+    baby: 'The lungs are starting to make surfactant, the substance that lets them inflate. Blood vessels in the lungs are developing.',
+    you: 'Swollen ankles at the end of the day. Braxton Hicks tightenings may start, which are practice rather than labour.',
+    prepare: 'Learn the difference between practice tightenings and real contractions now, while it is academic rather than urgent.',
+  },
+  {
+    week: 24,
+    size: 'Corn on the cob',
+    measure: 'about 30 cm, 600 g',
+    baby: 'A milestone week. Babies born from around here can survive with a great deal of hospital help, and every week from now improves the odds substantially.',
+    you: 'The glucose test is usually offered between twenty four and twenty eight weeks. It is a drink and a wait and it is not as bad as its reputation.',
+    prepare: 'Ask about the glucose test if nobody has mentioned it. Gestational diabetes has no symptoms worth noticing and is very manageable when it is found.',
+  },
+  {
+    week: 25,
+    size: 'A swede',
+    measure: 'about 34.6 cm, 660 g',
+    baby: 'The baby is putting on fat and the skin is becoming less translucent. They respond to your voice with movement.',
+    you: 'Heartburn, often for the first time and often at night. Piles are common and nobody mentions them.',
+    prepare: 'Prop the head of your bed up, or add a pillow. Gravity does more for heartburn than most of what you can buy.',
+  },
+  {
+    week: 26,
+    size: 'An acorn squash',
+    measure: 'about 35.6 cm, 760 g',
+    baby: 'The eyes open for the first time around now. The lungs keep practising, breathing in and out amniotic fluid.',
+    you: 'Tiredness often comes back. Ribs may ache as everything gets pushed upward.',
+    prepare: 'Start paying attention to their pattern of movement, not the number of kicks. What matters later is a change from their normal, so you need to know their normal.',
+  },
+  {
+    week: 27,
+    size: 'A cauliflower',
+    measure: 'about 36.6 cm, 875 g',
+    baby: 'Brain activity picks up sharply. They have sleeping and waking cycles now, which will not match yours.',
+    you: 'The last week of the second trimester. Shortness of breath going up stairs. Possibly some anxiety about what is coming.',
+    prepare: 'Book your antenatal classes if you want them. They fill up, and the useful ones fill up first.',
+  },
+  {
+    week: 28,
+    size: 'An aubergine',
+    measure: 'about 37.6 cm, 1 kg',
+    baby: 'Eyes can blink and lashes are complete. They can distinguish light from dark through your skin.',
+    you: 'Appointments usually get more frequent from here. You may be offered an anti D injection if your blood type is rhesus negative.',
+    prepare: 'Start counting movement in a way that suits you, every day, at a time they are usually active. You are learning their pattern, not hitting a number.',
+  },
+  {
+    week: 29,
+    size: 'A butternut squash',
+    measure: 'about 38.6 cm, 1.15 kg',
+    baby: 'Muscles and lungs are maturing. The head is growing to make room for the brain, which is growing fast.',
+    you: 'Heartburn, breathlessness and the need to wee constantly, all at once, because everything is being squashed.',
+    prepare: 'Ask at work about anything you need adjusted. Standing, lifting, breaks. It is easier to ask now than when you are struggling.',
+  },
+  {
+    week: 30,
+    size: 'A cabbage',
+    measure: 'about 39.9 cm, 1.3 kg',
+    baby: 'A pint and a half of amniotic fluid surrounds them, and it will start to decrease from here as they take up the room.',
+    you: 'Trouble sleeping, vivid dreams, and mood swings that feel like the first trimester again.',
+    prepare: 'Think about who you want with you when you give birth, and tell them. It is a bigger ask than people realise and they need warning.',
+  },
+  {
+    week: 31,
+    size: 'A coconut',
+    measure: 'about 41.1 cm, 1.5 kg',
+    baby: 'All five senses are working. They can turn their head, and they process information from all of them.',
+    you: 'Leaking colostrum is common and normal. So is not leaking, which says nothing at all about your supply later.',
+    prepare: 'Read about what the first hour after birth usually looks like, so that whatever happens, less of it is a surprise.',
+  },
+  {
+    week: 32,
+    size: 'A marrow',
+    measure: 'about 42.4 cm, 1.7 kg',
+    baby: 'Toenails are complete. Most babies have turned head down by now, and plenty of the rest still will.',
+    you: 'Braxton Hicks get stronger and more frequent. Your bump may drop slightly.',
+    prepare: 'Start the hospital bag. Not finish it, start it. There is a packing list in the app and it remembers what you have done.',
+  },
+  {
+    week: 33,
+    size: 'A pineapple',
+    measure: 'about 43.7 cm, 1.9 kg',
+    baby: 'The skull bones are still separate and will stay that way, which is what lets the head move through the birth canal.',
+    you: 'Aches everywhere, swollen hands, and possibly carpal tunnel from fluid pressing on the nerve.',
+    prepare: 'Decide what you want to happen in the first hour after birth and write it down. Skin to skin, who cuts the cord, feeding. Preferences, not a script.',
+  },
+  {
+    week: 34,
+    size: 'A cantaloupe',
+    measure: 'about 45 cm, 2.1 kg',
+    baby: 'The central nervous system and the lungs are maturing. Babies born now usually do well.',
+    you: 'You may be offered a group B strep test between thirty five and thirty seven weeks. It is a swab and the result changes what happens in labour.',
+    prepare: 'Fit the car seat now, and get it checked. Most are fitted wrong, and the hospital car park is the worst place to work it out.',
+  },
+  {
+    week: 35,
+    size: 'A honeydew melon',
+    measure: 'about 46.2 cm, 2.4 kg',
+    baby: 'Weight gain speeds up, around two hundred grams a week from here. The kidneys are fully developed.',
+    you: 'There may be less room to move, so kicks become rolls and shoves. The pattern should still be there.',
+    prepare: 'Put the important numbers in your phone under names you can find at three in the morning. Labour ward, not just the switchboard.',
+  },
+  {
+    week: 36,
+    size: 'A romaine lettuce',
+    measure: 'about 47.4 cm, 2.6 kg',
+    baby: 'Mostly gaining weight now. The lanugo hair and much of the vernix are being shed.',
+    you: 'The head may engage, which makes breathing easier and everything else harder.',
+    prepare: 'Wash and put away whatever they will wear and sleep in. It is the one bit of nesting that is actually useful.',
+  },
+  {
+    week: 37,
+    size: 'A winter melon',
+    measure: 'about 48.6 cm, 2.9 kg',
+    baby: 'Early term from this week. The lungs are usually ready, though a few more days still helps.',
+    you: 'Everything aches, sleep is broken, and you may feel a strong urge to clean things. That is real and it has a name.',
+    prepare: 'Know the signs that mean go in, and know them as a list rather than a feeling. Waters breaking, regular contractions, bleeding, reduced movement.',
+  },
+  {
+    week: 38,
+    size: 'A leek',
+    measure: 'about 49.8 cm, 3.1 kg',
+    baby: 'The brain and nervous system are still developing and will keep going long after birth. They have a firm grasp.',
+    you: 'Pelvic pressure, and possibly the mucus plug coming away, which can happen days or weeks before anything starts.',
+    prepare: 'Cook something and freeze it. Future you, at two in the morning, will be extremely grateful.',
+  },
+  {
+    week: 39,
+    size: 'A small watermelon',
+    measure: 'about 50.7 cm, 3.3 kg',
+    baby: 'Full term. The chest is more prominent and the baby is ready. The cord is still supplying antibodies.',
+    you: 'Waiting. It is its own particular kind of hard and everybody will text you asking if anything is happening.',
+    prepare: 'Turn off your phone notifications if the messages are getting to you. You do not owe anybody a running commentary.',
+  },
+  {
+    week: 40,
+    size: 'A pumpkin',
+    measure: 'about 51.2 cm, 3.5 kg',
+    baby: 'The due date week. Only about one baby in twenty five actually arrives on it.',
+    you: 'Impatient, uncomfortable, and possibly frightened. All three at once is normal.',
+    prepare: 'Ask what happens if you go past your date, so that the conversation about it is not the first time you have heard any of it.',
+  },
+  {
+    week: 41,
+    size: 'A large watermelon',
+    measure: 'about 51.7 cm, 3.6 kg',
+    baby: 'Still growing, still fine. Monitoring is usually offered from around here to keep an eye on things.',
+    you: 'Very ready. Possibly being offered a membrane sweep or a date for induction.',
+    prepare: 'Ask what an induction would actually involve at your hospital, and what your options are at each stage of it. You can ask questions and change your mind throughout.',
+  },
+  {
+    week: 42,
+    size: 'A large pumpkin',
+    measure: 'about 51.5 cm, 3.7 kg',
+    baby: 'Almost no pregnancy is allowed to continue much past here, because the placenta works less well over time.',
+    you: 'Whatever you are feeling about this is allowed, including anger about it.',
+    prepare: 'Nothing to prepare. You are there. Go and be looked after.',
+  },
+];
+
+function pregWeek(n) {
+  return PREG_WEEKS.filter((w) => w.week === n)[0] || null;
+}
+
+const PREG_FIRST_WEEK = PREG_WEEKS[0].week;
+const PREG_LAST_WEEK = PREG_WEEKS[PREG_WEEKS.length - 1].week;
+
+/* ==================================================================
+   THE LIST THAT SHOWS ON EVERY SINGLE WEEK
+   ==================================================================
+   Not folded into the week content and not shown only on the weeks a
+   complication is likeliest, because a bleed at twelve weeks matters
+   exactly as much as a bleed at thirty and a woman at twelve should
+   not have to go looking.
+
+   Written as call, not as worry. Every one of these is far more often
+   nothing than something, and the reason to call is that nobody can
+   tell which from a page.
+   ================================================================== */
+
+const PREG_CALL_NOW = {
+  title: 'Call your provider now if any of these happen',
+  intro: 'At any week, day or night. These are more often nothing than something, and the only way '
+    + 'to know is for somebody to look. Nobody will mind you calling and nobody will think you are '
+    + 'overreacting.',
+  items: [
+    'Bleeding from the vagina, at any stage.',
+    'Fluid leaking or a gush of water before thirty seven weeks.',
+    'Severe or constant headache that does not shift with paracetamol.',
+    'Changes in your vision. Spots, flashing, blurring or losing part of your sight.',
+    'Swelling that comes on suddenly, especially in your face or hands.',
+    'Pain in your upper belly, particularly under your right ribs.',
+    'A fever over 38 degrees, or 100.4 Fahrenheit.',
+    'Being sick so much that you cannot keep fluids down.',
+    'Pain, swelling, redness or heat in one leg, especially the calf.',
+    'Chest pain, a racing heart, or being unable to catch your breath.',
+    'After about twenty eight weeks, a change in how much the baby moves. Not a number, a change '
+    + 'from their normal.',
+    'Regular tightenings before thirty seven weeks.',
+    'A fall, a car accident, or a blow to your belly, even if you feel fine afterwards.',
+    'Thoughts of harming yourself or anybody else.',
+  ],
+  ambulance: 'Call 911 rather than your provider for chest pain, trouble breathing, a seizure, heavy '
+    + 'bleeding, or if you cannot be woken easily.',
+  never: 'Nobody has ever regretted calling. Plenty of people have regretted waiting until morning.',
+};
+
+const PREG_MOVEMENT = {
+  title: 'About movement, because the advice has changed',
+  body: 'The old advice was to count to ten kicks. The current advice is to know your own baby’s '
+    + 'pattern and to call if it changes. There is no number of movements that is safe and no number '
+    + 'that is not. What matters is a change from what is usual for them, and that includes movement '
+    + 'that suddenly increases as well as movement that drops off. Never wait until the morning, and '
+    + 'never use cold drinks or sugar to try to make them move first.',
+};
+
+const PREG_WEEK_SOURCES = [
+  { org: 'ACOG', label: 'How the baby grows, week by week',
+    url: 'https://www.acog.org/womens-health/faqs/how-your-fetus-grows-during-pregnancy' },
+  { org: 'CDC HEAR HER', label: 'The urgent maternal warning signs, and why they matter',
+    url: 'https://www.cdc.gov/hearher/maternal-warning-signs/index.html' },
+  { org: 'NHS', label: 'Week by week, and what is normal when',
+    url: 'https://www.nhs.uk/pregnancy/week-by-week/' },
+  { org: 'Tommy’s', label: 'Baby movements, and why counting kicks is no longer advised',
+    url: 'https://www.tommys.org/pregnancy-information/im-pregnant/baby-movements-pregnancy' },
+];
+
+
 /* ===== src/data/eatingTogether.js ===== */
 /**
  * Ready Set Grow: Eating, Once The Milk Question Is Over
@@ -32280,6 +33009,23 @@ function newChildRecord(name, birthday) {
        and asked only on the growth screen, which is the one place it
        is needed. See screenGrowth. */
     sex: '',
+    /* THE SEED STAGE. A child added before they are born holds a due
+       date and an empty birthday, so that every screen reading
+       `birthday` treats them as not yet dated rather than computing an
+       age from a day in the future. On the day they arrive, birthday
+       is filled in and expecting goes false, on the same record with
+       the same id, so nothing started before birth is left behind.
+
+       The due date is KEPT afterwards on purpose. The gap between the
+       two is their gestational age at birth and it matters for years.
+
+       Nothing has to be added to any sync list for these. Children are
+       merged through normalizeChild, which builds every record on top
+       of this one, so a field added here syncs by itself. It is the
+       PARENT record that has a hand written key list in flushStore.
+       See src/data/expecting.js. */
+    expecting: false,
+    dueDate: null,
     /* Weights, lengths and head measurements, one entry per occasion,
        always stored in kilograms and centimetres whatever the parent
        reads. See src/data/growth.js. */
@@ -32522,6 +33268,7 @@ const store = {
      a re render. */
   draftChildName: '',
   draftChildBday: '',
+  draftExpecting: false,
 };
 
 const auth = {
@@ -32582,8 +33329,8 @@ const state = {};
     and nothing throws. That is exactly what happened to the Learning
     tabs, and to Jobs, Growth and the vaccine record with them. The
     build now refuses to finish if a data-sub key is not here. */
- 'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab',
- 'logDraft', 'draftChildName', 'draftChildBday'].forEach((key) => {
+ 'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab',
+ 'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
     get() { return store[key]; },
@@ -33772,6 +34519,15 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'growingup') html = screenGrowingUp(c);
   else if (v && v.type === 'screen' && v.id === 'childcycle') html = screenChildCycle(c);
   else if (v && v.type === 'screen' && v.id === 'consent') html = screenConsent(c);
+  else if (v && v.type === 'screen' && v.id === 'expecting') html = screenExpecting(c);
+  /* Any route that lands on a normal child profile for a baby who is
+     not born yet is sent to the seed profile instead, rather than
+     drawing a page of milestones for somebody with no age. */
+  else if (!v && state.tab === 'profile' && store.profileWho && store.profileWho !== 'me'
+    && isExpecting(store.children.filter((x) => x.id === store.profileWho)[0])) {
+    state.view = { type: 'screen', id: 'expecting' };
+    html = screenExpecting(c);
+  }
   else if (v && v.type === 'screen' && v.id === 'plan') html = screenPlan(c);
   else if (v && v.type === 'screen' && v.id === 'sleep') html = screenSleep(c);
   else if (v && v.type === 'screen' && v.id === 'development') html = screenDevelopment(c);
@@ -34242,7 +34998,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -34300,6 +35056,11 @@ function initControls() {
       store.profileWho = t.dataset.child;
       store.profileEdit = null;
       state.tab = 'profile';
+      /* A baby who is not here yet has a profile of their own. The
+         ordinary one would be a page of sleep windows and milestones
+         for somebody with no age. */
+      const soon = store.children.filter((x) => x.id === t.dataset.child)[0];
+      if (isExpecting(soon)) { state.view = { type: 'screen', id: 'expecting' }; }
     } else if (t.dataset.edit) {
       const how = t.dataset.edit;
       if (how === 'save') editSave();
@@ -34567,10 +35328,16 @@ function initControls() {
          answered. */
       const bd = store.draftChildBday || '';
       if (nm || bd) {
-        const kid = newChildRecord(nm, bd || null);
+        /* An expecting baby holds the date as a due date with an empty
+           birthday, which is what keeps every other screen in the app
+           from computing an age out of a day in the future. */
+        const soon = !!store.draftExpecting;
+        const kid = newChildRecord(nm, soon ? null : (bd || null));
+        if (soon) { kid.expecting = true; kid.dueDate = bd || null; }
         store.children.push(kid);
         store.draftChildName = '';
         store.draftChildBday = '';
+        store.draftExpecting = false;
         selectChild(kid.id);
         store.profileWho = kid.id;
         store.profileEdit = null;
@@ -34976,6 +35743,13 @@ function initControls() {
     } else if (t.dataset.pub) {
       pubAction(t.dataset.pub, t.dataset.id);
       if (t.dataset.pub === 'caledit' || t.dataset.pub === 'caldone') { /* falls through to render */ }
+    } else if (t.dataset.exp) {
+      const how = t.dataset.exp;
+      if (how === 'signs') store.expSigns = !store.expSigns;
+      else if (how === 'born') { store.expBorn = true; store.expError = ''; }
+      else if (how === 'bornno') { store.expBorn = false; store.expError = ''; }
+      else if (how === 'bornsave') expBornSave();
+      else if (how === 'kind') { store.draftExpecting = t.dataset.id === 'expecting'; }
     } else if (t.dataset.safety) {
       store.safetyAll = store.safetyAll === t.dataset.safety ? '' : t.dataset.safety;
     } else if (t.dataset.constage) {
@@ -38777,6 +39551,247 @@ function safetyMoreBtn(all, key) {
     always yours. Every age is still here.</p>`}`;
 }
 
+/* ==================================================================
+   THE SEED STAGE
+
+   A baby added before they are born. Why it is the same profile, how
+   the date is held, and why birthday stays empty until they arrive is
+   all in src/data/expecting.js.
+
+   The short version for anybody reading this file: an expecting child
+   has `expecting: true` and a `dueDate`, and an empty `birthday`. That
+   means every other screen in the app already treats them correctly,
+   as a child with no date yet, without any of them needing to know
+   this feature exists.
+   ================================================================== */
+
+function isExpecting(k) {
+  return !!(k && k.expecting && k.dueDate);
+}
+
+function expWhereFor(k) {
+  return isExpecting(k) ? expWhere(k.dueDate, ciToday()) : null;
+}
+
+/* The line under their face on Home, where a born child shows an age. */
+function expChipLabel(k) {
+  const w = expWhereFor(k);
+  return w ? expShortLabel(w) : 'Due date not set yet';
+}
+
+/* One tap, then a date, then they are here. Deliberately never
+   automatic on the due date: babies do not read calendars, and an app
+   that announced a birth which had not happened would be unforgivable. */
+function expBornSave() {
+  const kid = activeChild();
+  if (!kid) return;
+  const el = document.getElementById('bornDateIn');
+  const v = el && el.value ? el.value : '';
+  if (!v || v > ciToday()) { store.expError = 'Pick the day they were born.'; return; }
+  if (kid.dueDate && v < ciDayBefore(kid.dueDate, 200)) {
+    store.expError = 'That is a long way before the due date. Check the date.';
+    return;
+  }
+  kid.birthday = v;
+  kid.expecting = false;
+  /* dueDate deliberately kept. See the record comment in newChildRecord. */
+  kid.updatedAt = Date.now();
+  store.expBorn = false;
+  store.expError = '';
+  store.birthdaySeen = store.birthdaySeen || {};
+  flushStore();
+}
+
+function expWeekBlock(k, where) {
+  const wk = pregWeek(where.week);
+  if (!wk) {
+    return `
+    <div class="card leafy">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(EXP_NOTHING_YET.title)}</p>
+      <p class="bodytext" style="margin-top:6px">${esc(EXP_NOTHING_YET.body)}</p>
+    </div>`;
+  }
+  return `
+  <div class="card leafy">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Week ${where.week} &middot; ${esc(where.stage.label)}</p>
+    <p class="liftline" style="font-size:19px;margin-top:8px">${esc(wk.size)}</p>
+    <p class="tiny" style="margin-top:2px">${esc(wk.measure)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>What is happening</h4>
+    <p class="bodytext">${esc(wk.baby)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>What you may feel</h4>
+    <p class="bodytext">${esc(wk.you)}</p>
+    <p class="tiny" style="margin-top:8px">May, rather than will. Having none of this is just as
+      normal as having all of it.</p>
+  </div>
+
+  <div class="bpbox surrender">
+    <p class="bpbox-t">One thing to do this week</p>
+    <p class="bodytext" style="margin-top:8px">${esc(wk.prepare)}</p>
+  </div>`;
+}
+
+function expCallNowBlock() {
+  const c = PREG_CALL_NOW;
+  return `
+  <div class="card" style="border-left:3px solid var(--concern, #A85A44);margin-top:12px">
+    <p class="eyebrow" style="color:#A85A44">${esc(c.title)}</p>
+    <p class="tiny" style="margin:7px 0 0">${esc(c.intro)}</p>
+    ${store.expSigns ? `
+      ${list(c.items, true)}
+      <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(c.ambulance)}</p></div>
+      <p class="bodytext" style="margin-top:9px;font-style:italic">${esc(c.never)}</p>
+    ` : ''}
+    <button class="chip" style="margin-top:10px" data-exp="signs">
+      ${store.expSigns ? 'Hide the list' : 'Show the list'}
+    </button>
+  </div>`;
+}
+
+function screenExpecting(c) {
+  const kid = activeChild();
+  if (!kid || !isExpecting(kid)) {
+    state.view = null; state.tab = 'home';
+    return screenHome(c);
+  }
+  const first = (kid.name || 'Baby').split(/\s+/)[0];
+  const where = expWhereFor(kid);
+  const tab = state.expTab || 'week';
+  const tabs = [
+    { id: 'week', label: 'This week' },
+    { id: 'ask', label: 'At your appointment' },
+    { id: 'about', label: 'How this works' },
+  ];
+  const ask = where && where.stage ? expAskFor(where.stage.id) : null;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="offchild">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(first)}</h1>
+    <p class="sub">${esc(where ? expShortLabel(where) + '. ' + expDueLabel(where) : EXP_PROFILE_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('expTab', tab, tabs)}
+
+    ${tab === 'week' ? `
+      ${!where ? `
+        <div class="card flat"><p class="bodytext">Put a due date on this profile and the weeks
+          start.</p></div>` : ''}
+      ${where && where.tooEarly ? `
+        <div class="card leafy">
+          <p class="bodytext">Very early days. The weekly writing starts at week four, which is
+            usually about when a test turns positive.</p>
+        </div>` : ''}
+      ${where && where.overdue ? `
+        <div class="bpbox">
+          <p class="bpbox-t">${esc(EXP_OVERDUE.title)}</p>
+          <p class="bodytext" style="margin-top:8px">${esc(EXP_OVERDUE.body)}</p>
+        </div>` : ''}
+      ${where && !where.tooEarly && !where.tooLate ? expWeekBlock(kid, where) : ''}
+
+      ${expCallNowBlock()}
+
+      <div class="dsec">
+        <h4>${esc(PREG_MOVEMENT.title)}</h4>
+        <p class="bodytext">${esc(PREG_MOVEMENT.body)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>Getting ready</h4>
+        <button class="lrow" data-go="screen" data-id="bag">
+          <span class="licon">${icon('bag', 18)}</span>
+          <span class="grow">
+            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">The hospital bag</span>
+            <span class="tiny" style="display:block;margin-top:2px">It remembers what you have packed</span>
+          </span>
+          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+        </button>
+        <button class="lrow" data-go="screen" data-id="pregHealth">
+          <span class="licon">${icon('heart', 18)}</span>
+          <span class="grow">
+            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Your health while pregnant</span>
+            <span class="tiny" style="display:block;margin-top:2px">What to watch, and the infections nobody mentions</span>
+          </span>
+          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+        </button>
+      </div>
+    ` : ''}
+
+    ${tab === 'ask' ? `
+      ${ask ? `
+        <div class="card leafy">
+          <p class="eyebrow">${icon('note', 11, 'var(--sage)')} ${esc(ask.title)}</p>
+          <p class="tiny" style="margin-top:6px">${esc(EXP_ASK_NOTE)}</p>
+        </div>
+        <div class="dsec">
+          <h4>Worth asking</h4>
+          ${ask.items.map((x) => `
+            <div class="quote"><p class="why" style="margin:0">${esc(x)}</p></div>`).join('')}
+        </div>` : `
+        <div class="card flat"><p class="bodytext">Put a due date on this profile and the questions
+          follow the stage you are at.</p></div>`}
+
+      <div class="dsec">
+        <h4>Your call, every time</h4>
+        <p class="bodytext">${esc(EXP_CHOICE_NOTE)}</p>
+      </div>
+    ` : ''}
+
+    ${tab === 'about' ? `
+      <div class="dsec">
+        <h4>${esc(EXP_DATING_NOTE.title)}</h4>
+        <p class="bodytext">${esc(EXP_DATING_NOTE.body)}</p>
+        <p class="tiny" style="margin-top:9px">${esc(EXP_SCAN_NOTE)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>The stages</h4>
+        ${EXP_STAGES.map((s) => `
+          <div class="quote${where && where.stage && where.stage.id === s.id ? '' : ''}">
+            <p class="sit">${esc(s.label)}${where && where.stage && where.stage.id === s.id ? ' (you are here)' : ''}</p>
+            <p class="why" style="margin-top:4px">Weeks ${s.from} to ${s.to}. ${esc(s.blurb)}</p>
+          </div>`).join('')}
+        <p class="tiny" style="margin-top:9px">Birth is the sprout. The same profile carries straight
+          on into their childhood from there.</p>
+      </div>
+
+      <div class="dsec">
+        <h4>The due date</h4>
+        <p class="bodytext" style="margin:0 0 10px">${esc(kid.dueDate ? 'Currently ' + cycleDateLabelWithYear(kid.dueDate) + '. ' + EXP_DUE_NOTE : EXP_DUE_NOTE)}</p>
+        ${dateSelects('due:' + kid.id, kid.dueDate || '', 1, 2)}
+      </div>
+
+      ${dsec('Where this comes from', sourceRows(EXP_SOURCES.concat(PREG_WEEK_SOURCES)))}
+    ` : ''}
+
+    <div class="dsec">
+      <h4>${esc(EXP_BORN.title)}</h4>
+      ${EXP_BORN.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      ${store.expBorn ? `
+        <div class="card" style="margin-top:4px">
+          <p class="eyebrow">${esc(EXP_BORN.ask)}</p>
+          <input class="inp" id="bornDateIn" type="date" max="${esc(ciToday())}"
+            value="${esc(ciToday())}" style="width:100%;margin-top:8px">
+          ${store.expError ? `<p class="tiny" style="color:var(--concern);margin:8px 0 0">${esc(store.expError)}</p>` : ''}
+          <button class="btn" style="width:100%;margin-top:11px" data-exp="bornsave">${esc(EXP_BORN.confirm)}</button>
+          <button class="chip" style="margin-top:9px" data-exp="bornno">${esc(EXP_BORN.cancel)}</button>
+        </div>
+      ` : `
+        <button class="btn" style="width:100%" data-exp="born">
+          ${icon('star', 14, '#fff')} ${esc(EXP_BORN_BTN)}
+        </button>`}
+    </div>
+
+    <p class="disclaimer">${esc(EXP_DISCLAIMER)}</p>
+  </div>`;
+}
+
 function screenSafety(c) {
   const months = c.months;
   const tab = state.safetyTab || 'cpr';
@@ -41382,6 +42397,10 @@ function screenUnderstand(c) {
    ================================================================= */
 
 function childAgeLabel(k) {
+  /* A baby who is not born yet shows how far along rather than an age,
+     which is the one place the seed stage has to reach outside its own
+     screen. Everywhere else reads `birthday`, which is empty for them. */
+  if (isExpecting(k)) return expChipLabel(k);
   const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
   return sum && sum.label ? sum.label : 'No birthday yet';
 }
@@ -41534,6 +42553,11 @@ function applyDateField(target, iso) {
     if (!k) return;
     k.birthday = iso || null;
     k.napOverride = null;
+    k.updatedAt = Date.now();
+  } else if (parts[0] === 'due') {
+    const k = store.children.find((x) => x.id === parts[1]);
+    if (!k) return;
+    k.dueDate = iso || null;
     k.updatedAt = Date.now();
   } else if (parts[0] === 'draft') {
     store.draftChildBday = iso;
@@ -41911,19 +42935,28 @@ function screenAddChild() {
   <div class="sc-head">
     <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
     <h1 class="title" style="margin-top:6px">Add a child</h1>
-    <p class="sub">A name and a birthday is all it takes to start.</p>
+    <p class="sub">A name and a date is all it takes to start, whether they are here yet or not.</p>
   </div>
   <div class="sc">
     <div class="card">
       <p class="eyebrow">Their name</p>
       <input class="inp" type="text" id="newChildName" value="${esc(store.draftChildName)}"
-        placeholder="Their name" autocomplete="off" style="margin-top:8px;width:100%" />
-      <p class="eyebrow" style="margin-top:14px">Their birthday</p>
-      <div style="margin-top:7px">${dateSelects('draft', store.draftChildBday || '', 25, 1)}</div>
-      <p class="tiny" style="margin-top:9px">
-        Expecting? Put the due date in and the app follows the pregnancy instead.
-      </p>
-      <button class="btn" data-addchild="1" style="margin-top:14px;width:100%">Add this child</button>
+        placeholder="${esc(store.draftExpecting ? 'Or what you call them for now' : 'Their name')}"
+        autocomplete="off" style="margin-top:8px;width:100%" />
+      ${store.draftExpecting ? `<p class="tiny" style="margin-top:7px">${esc(EXP_NAME_NOTE)}</p>` : ''}
+
+      <p class="eyebrow" style="margin-top:14px">${esc(EXP_ADD_TITLE)}</p>
+      <div class="chips" style="margin-top:8px">
+        ${EXP_ADD_OPTIONS.map((o) => `
+          <button class="chip" data-exp="kind" data-id="${esc(o.id)}"
+            aria-pressed="${(o.id === 'expecting') === !!store.draftExpecting}">${esc(o.label)}</button>`).join('')}
+      </div>
+
+      <p class="eyebrow" style="margin-top:14px">${esc(store.draftExpecting ? 'The due date' : 'Their birthday')}</p>
+      <div style="margin-top:7px">${dateSelects('draft', store.draftChildBday || '',
+        store.draftExpecting ? 1 : 25, store.draftExpecting ? 2 : 1)}</div>
+      <p class="tiny" style="margin-top:9px">${esc(store.draftExpecting ? EXP_DUE_NOTE : EXP_ADD_NOTE)}</p>
+      <button class="btn" data-addchild="1" style="margin-top:14px;width:100%">${esc(store.draftExpecting ? 'Add this baby' : 'Add this child')}</button>
     </div>
 
     <div class="card flat">
