@@ -3744,10 +3744,6 @@ function initControls() {
       else if (how === 'role') store.birthRole = store.birthRole === t.dataset.id ? '' : t.dataset.id;
       else if (how === 'pain') store.birthPain = store.birthPain === t.dataset.id ? '' : t.dataset.id;
       else if (how === 'event') store.birthEvent = store.birthEvent === t.dataset.id ? '' : t.dataset.id;
-      /* The complications tab stays shut until she opens it, and the
-         fact that she opened it is not remembered, so it is shut again
-         next time rather than ambushing her. */
-      else if (how === 'wrong') store.birthWrong = !store.birthWrong;
     } else if (t.dataset.ind) {
       const how = t.dataset.ind;
       if (how === 'set') {
@@ -8290,12 +8286,11 @@ function screenBirth(c) {
     ` : ''}
 
     ${tab === 'wrong' ? `
-      <div class="card" style="border-left:3px solid var(--attention, #B5793F)">
+      <div class="card leafy">
         <p class="bodytext" style="margin:0">${esc(WRONG_WARN)}</p>
       </div>
 
-      ${store.birthWrong ? `
-        <div class="dsec">
+      <div class="dsec">
           <h4>${esc(WRONG_PROPORTION.title)}</h4>
           ${WRONG_PROPORTION.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
           <div class="callout"><p style="margin:0">${esc(WRONG_PROPORTION.unequal)}</p></div>
@@ -8360,12 +8355,6 @@ function screenBirth(c) {
             </div>`).join('')}
         </div>
 
-        <button class="chip" data-birth="wrong">Close this tab again</button>
-      ` : `
-        <button class="btn" style="width:100%;margin-top:11px" data-birth="wrong">
-          I want to read it
-        </button>
-      `}
     ` : ''}
 
     ${dsec('Where this comes from', sourceRows(BIRTH_SOURCES))}
