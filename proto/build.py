@@ -93,6 +93,8 @@ order = [
     ('growingUp',           SRC/'data/growingUp.js'),
     ('puberty',             SRC/'data/puberty.js'),
     ('consent',             SRC/'data/consent.js'),
+    ('expecting',           SRC/'data/expecting.js'),
+    ('pregnancyWeeks',      SRC/'data/pregnancyWeeks.js'),
     ('eatingTogether',      SRC/'data/eatingTogether.js'),
     ('childSections',       SRC/'data/childSections.js'),
     ('signLanguage',        SRC/'data/signLanguage.js'),

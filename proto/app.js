@@ -975,6 +975,23 @@ function newChildRecord(name, birthday) {
        and asked only on the growth screen, which is the one place it
        is needed. See screenGrowth. */
     sex: '',
+    /* THE SEED STAGE. A child added before they are born holds a due
+       date and an empty birthday, so that every screen reading
+       `birthday` treats them as not yet dated rather than computing an
+       age from a day in the future. On the day they arrive, birthday
+       is filled in and expecting goes false, on the same record with
+       the same id, so nothing started before birth is left behind.
+
+       The due date is KEPT afterwards on purpose. The gap between the
+       two is their gestational age at birth and it matters for years.
+
+       Nothing has to be added to any sync list for these. Children are
+       merged through normalizeChild, which builds every record on top
+       of this one, so a field added here syncs by itself. It is the
+       PARENT record that has a hand written key list in flushStore.
+       See src/data/expecting.js. */
+    expecting: false,
+    dueDate: null,
     /* Weights, lengths and head measurements, one entry per occasion,
        always stored in kilograms and centimetres whatever the parent
        reads. See src/data/growth.js. */
@@ -1217,6 +1234,7 @@ const store = {
      a re render. */
   draftChildName: '',
   draftChildBday: '',
+  draftExpecting: false,
 };
 
 const auth = {
@@ -1277,8 +1295,8 @@ const state = {};
     and nothing throws. That is exactly what happened to the Learning
     tabs, and to Jobs, Growth and the vaccine record with them. The
     build now refuses to finish if a data-sub key is not here. */
- 'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab',
- 'logDraft', 'draftChildName', 'draftChildBday'].forEach((key) => {
+ 'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab',
+ 'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
     get() { return store[key]; },
@@ -2467,6 +2485,15 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'growingup') html = screenGrowingUp(c);
   else if (v && v.type === 'screen' && v.id === 'childcycle') html = screenChildCycle(c);
   else if (v && v.type === 'screen' && v.id === 'consent') html = screenConsent(c);
+  else if (v && v.type === 'screen' && v.id === 'expecting') html = screenExpecting(c);
+  /* Any route that lands on a normal child profile for a baby who is
+     not born yet is sent to the seed profile instead, rather than
+     drawing a page of milestones for somebody with no age. */
+  else if (!v && state.tab === 'profile' && store.profileWho && store.profileWho !== 'me'
+    && isExpecting(store.children.filter((x) => x.id === store.profileWho)[0])) {
+    state.view = { type: 'screen', id: 'expecting' };
+    html = screenExpecting(c);
+  }
   else if (v && v.type === 'screen' && v.id === 'plan') html = screenPlan(c);
   else if (v && v.type === 'screen' && v.id === 'sleep') html = screenSleep(c);
   else if (v && v.type === 'screen' && v.id === 'development') html = screenDevelopment(c);
@@ -2937,7 +2964,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -2995,6 +3022,11 @@ function initControls() {
       store.profileWho = t.dataset.child;
       store.profileEdit = null;
       state.tab = 'profile';
+      /* A baby who is not here yet has a profile of their own. The
+         ordinary one would be a page of sleep windows and milestones
+         for somebody with no age. */
+      const soon = store.children.filter((x) => x.id === t.dataset.child)[0];
+      if (isExpecting(soon)) { state.view = { type: 'screen', id: 'expecting' }; }
     } else if (t.dataset.edit) {
       const how = t.dataset.edit;
       if (how === 'save') editSave();
@@ -3262,10 +3294,16 @@ function initControls() {
          answered. */
       const bd = store.draftChildBday || '';
       if (nm || bd) {
-        const kid = newChildRecord(nm, bd || null);
+        /* An expecting baby holds the date as a due date with an empty
+           birthday, which is what keeps every other screen in the app
+           from computing an age out of a day in the future. */
+        const soon = !!store.draftExpecting;
+        const kid = newChildRecord(nm, soon ? null : (bd || null));
+        if (soon) { kid.expecting = true; kid.dueDate = bd || null; }
         store.children.push(kid);
         store.draftChildName = '';
         store.draftChildBday = '';
+        store.draftExpecting = false;
         selectChild(kid.id);
         store.profileWho = kid.id;
         store.profileEdit = null;
@@ -3671,6 +3709,13 @@ function initControls() {
     } else if (t.dataset.pub) {
       pubAction(t.dataset.pub, t.dataset.id);
       if (t.dataset.pub === 'caledit' || t.dataset.pub === 'caldone') { /* falls through to render */ }
+    } else if (t.dataset.exp) {
+      const how = t.dataset.exp;
+      if (how === 'signs') store.expSigns = !store.expSigns;
+      else if (how === 'born') { store.expBorn = true; store.expError = ''; }
+      else if (how === 'bornno') { store.expBorn = false; store.expError = ''; }
+      else if (how === 'bornsave') expBornSave();
+      else if (how === 'kind') { store.draftExpecting = t.dataset.id === 'expecting'; }
     } else if (t.dataset.safety) {
       store.safetyAll = store.safetyAll === t.dataset.safety ? '' : t.dataset.safety;
     } else if (t.dataset.constage) {
@@ -7472,6 +7517,247 @@ function safetyMoreBtn(all, key) {
     always yours. Every age is still here.</p>`}`;
 }
 
+/* ==================================================================
+   THE SEED STAGE
+
+   A baby added before they are born. Why it is the same profile, how
+   the date is held, and why birthday stays empty until they arrive is
+   all in src/data/expecting.js.
+
+   The short version for anybody reading this file: an expecting child
+   has `expecting: true` and a `dueDate`, and an empty `birthday`. That
+   means every other screen in the app already treats them correctly,
+   as a child with no date yet, without any of them needing to know
+   this feature exists.
+   ================================================================== */
+
+function isExpecting(k) {
+  return !!(k && k.expecting && k.dueDate);
+}
+
+function expWhereFor(k) {
+  return isExpecting(k) ? expWhere(k.dueDate, ciToday()) : null;
+}
+
+/* The line under their face on Home, where a born child shows an age. */
+function expChipLabel(k) {
+  const w = expWhereFor(k);
+  return w ? expShortLabel(w) : 'Due date not set yet';
+}
+
+/* One tap, then a date, then they are here. Deliberately never
+   automatic on the due date: babies do not read calendars, and an app
+   that announced a birth which had not happened would be unforgivable. */
+function expBornSave() {
+  const kid = activeChild();
+  if (!kid) return;
+  const el = document.getElementById('bornDateIn');
+  const v = el && el.value ? el.value : '';
+  if (!v || v > ciToday()) { store.expError = 'Pick the day they were born.'; return; }
+  if (kid.dueDate && v < ciDayBefore(kid.dueDate, 200)) {
+    store.expError = 'That is a long way before the due date. Check the date.';
+    return;
+  }
+  kid.birthday = v;
+  kid.expecting = false;
+  /* dueDate deliberately kept. See the record comment in newChildRecord. */
+  kid.updatedAt = Date.now();
+  store.expBorn = false;
+  store.expError = '';
+  store.birthdaySeen = store.birthdaySeen || {};
+  flushStore();
+}
+
+function expWeekBlock(k, where) {
+  const wk = pregWeek(where.week);
+  if (!wk) {
+    return `
+    <div class="card leafy">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(EXP_NOTHING_YET.title)}</p>
+      <p class="bodytext" style="margin-top:6px">${esc(EXP_NOTHING_YET.body)}</p>
+    </div>`;
+  }
+  return `
+  <div class="card leafy">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Week ${where.week} &middot; ${esc(where.stage.label)}</p>
+    <p class="liftline" style="font-size:19px;margin-top:8px">${esc(wk.size)}</p>
+    <p class="tiny" style="margin-top:2px">${esc(wk.measure)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>What is happening</h4>
+    <p class="bodytext">${esc(wk.baby)}</p>
+  </div>
+
+  <div class="dsec">
+    <h4>What you may feel</h4>
+    <p class="bodytext">${esc(wk.you)}</p>
+    <p class="tiny" style="margin-top:8px">May, rather than will. Having none of this is just as
+      normal as having all of it.</p>
+  </div>
+
+  <div class="bpbox surrender">
+    <p class="bpbox-t">One thing to do this week</p>
+    <p class="bodytext" style="margin-top:8px">${esc(wk.prepare)}</p>
+  </div>`;
+}
+
+function expCallNowBlock() {
+  const c = PREG_CALL_NOW;
+  return `
+  <div class="card" style="border-left:3px solid var(--concern, #A85A44);margin-top:12px">
+    <p class="eyebrow" style="color:#A85A44">${esc(c.title)}</p>
+    <p class="tiny" style="margin:7px 0 0">${esc(c.intro)}</p>
+    ${store.expSigns ? `
+      ${list(c.items, true)}
+      <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(c.ambulance)}</p></div>
+      <p class="bodytext" style="margin-top:9px;font-style:italic">${esc(c.never)}</p>
+    ` : ''}
+    <button class="chip" style="margin-top:10px" data-exp="signs">
+      ${store.expSigns ? 'Hide the list' : 'Show the list'}
+    </button>
+  </div>`;
+}
+
+function screenExpecting(c) {
+  const kid = activeChild();
+  if (!kid || !isExpecting(kid)) {
+    state.view = null; state.tab = 'home';
+    return screenHome(c);
+  }
+  const first = (kid.name || 'Baby').split(/\s+/)[0];
+  const where = expWhereFor(kid);
+  const tab = state.expTab || 'week';
+  const tabs = [
+    { id: 'week', label: 'This week' },
+    { id: 'ask', label: 'At your appointment' },
+    { id: 'about', label: 'How this works' },
+  ];
+  const ask = where && where.stage ? expAskFor(where.stage.id) : null;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="offchild">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(first)}</h1>
+    <p class="sub">${esc(where ? expShortLabel(where) + '. ' + expDueLabel(where) : EXP_PROFILE_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('expTab', tab, tabs)}
+
+    ${tab === 'week' ? `
+      ${!where ? `
+        <div class="card flat"><p class="bodytext">Put a due date on this profile and the weeks
+          start.</p></div>` : ''}
+      ${where && where.tooEarly ? `
+        <div class="card leafy">
+          <p class="bodytext">Very early days. The weekly writing starts at week four, which is
+            usually about when a test turns positive.</p>
+        </div>` : ''}
+      ${where && where.overdue ? `
+        <div class="bpbox">
+          <p class="bpbox-t">${esc(EXP_OVERDUE.title)}</p>
+          <p class="bodytext" style="margin-top:8px">${esc(EXP_OVERDUE.body)}</p>
+        </div>` : ''}
+      ${where && !where.tooEarly && !where.tooLate ? expWeekBlock(kid, where) : ''}
+
+      ${expCallNowBlock()}
+
+      <div class="dsec">
+        <h4>${esc(PREG_MOVEMENT.title)}</h4>
+        <p class="bodytext">${esc(PREG_MOVEMENT.body)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>Getting ready</h4>
+        <button class="lrow" data-go="screen" data-id="bag">
+          <span class="licon">${icon('bag', 18)}</span>
+          <span class="grow">
+            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">The hospital bag</span>
+            <span class="tiny" style="display:block;margin-top:2px">It remembers what you have packed</span>
+          </span>
+          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+        </button>
+        <button class="lrow" data-go="screen" data-id="pregHealth">
+          <span class="licon">${icon('heart', 18)}</span>
+          <span class="grow">
+            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Your health while pregnant</span>
+            <span class="tiny" style="display:block;margin-top:2px">What to watch, and the infections nobody mentions</span>
+          </span>
+          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+        </button>
+      </div>
+    ` : ''}
+
+    ${tab === 'ask' ? `
+      ${ask ? `
+        <div class="card leafy">
+          <p class="eyebrow">${icon('note', 11, 'var(--sage)')} ${esc(ask.title)}</p>
+          <p class="tiny" style="margin-top:6px">${esc(EXP_ASK_NOTE)}</p>
+        </div>
+        <div class="dsec">
+          <h4>Worth asking</h4>
+          ${ask.items.map((x) => `
+            <div class="quote"><p class="why" style="margin:0">${esc(x)}</p></div>`).join('')}
+        </div>` : `
+        <div class="card flat"><p class="bodytext">Put a due date on this profile and the questions
+          follow the stage you are at.</p></div>`}
+
+      <div class="dsec">
+        <h4>Your call, every time</h4>
+        <p class="bodytext">${esc(EXP_CHOICE_NOTE)}</p>
+      </div>
+    ` : ''}
+
+    ${tab === 'about' ? `
+      <div class="dsec">
+        <h4>${esc(EXP_DATING_NOTE.title)}</h4>
+        <p class="bodytext">${esc(EXP_DATING_NOTE.body)}</p>
+        <p class="tiny" style="margin-top:9px">${esc(EXP_SCAN_NOTE)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>The stages</h4>
+        ${EXP_STAGES.map((s) => `
+          <div class="quote${where && where.stage && where.stage.id === s.id ? '' : ''}">
+            <p class="sit">${esc(s.label)}${where && where.stage && where.stage.id === s.id ? ' (you are here)' : ''}</p>
+            <p class="why" style="margin-top:4px">Weeks ${s.from} to ${s.to}. ${esc(s.blurb)}</p>
+          </div>`).join('')}
+        <p class="tiny" style="margin-top:9px">Birth is the sprout. The same profile carries straight
+          on into their childhood from there.</p>
+      </div>
+
+      <div class="dsec">
+        <h4>The due date</h4>
+        <p class="bodytext" style="margin:0 0 10px">${esc(kid.dueDate ? 'Currently ' + cycleDateLabelWithYear(kid.dueDate) + '. ' + EXP_DUE_NOTE : EXP_DUE_NOTE)}</p>
+        ${dateSelects('due:' + kid.id, kid.dueDate || '', 1, 2)}
+      </div>
+
+      ${dsec('Where this comes from', sourceRows(EXP_SOURCES.concat(PREG_WEEK_SOURCES)))}
+    ` : ''}
+
+    <div class="dsec">
+      <h4>${esc(EXP_BORN.title)}</h4>
+      ${EXP_BORN.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      ${store.expBorn ? `
+        <div class="card" style="margin-top:4px">
+          <p class="eyebrow">${esc(EXP_BORN.ask)}</p>
+          <input class="inp" id="bornDateIn" type="date" max="${esc(ciToday())}"
+            value="${esc(ciToday())}" style="width:100%;margin-top:8px">
+          ${store.expError ? `<p class="tiny" style="color:var(--concern);margin:8px 0 0">${esc(store.expError)}</p>` : ''}
+          <button class="btn" style="width:100%;margin-top:11px" data-exp="bornsave">${esc(EXP_BORN.confirm)}</button>
+          <button class="chip" style="margin-top:9px" data-exp="bornno">${esc(EXP_BORN.cancel)}</button>
+        </div>
+      ` : `
+        <button class="btn" style="width:100%" data-exp="born">
+          ${icon('star', 14, '#fff')} ${esc(EXP_BORN_BTN)}
+        </button>`}
+    </div>
+
+    <p class="disclaimer">${esc(EXP_DISCLAIMER)}</p>
+  </div>`;
+}
+
 function screenSafety(c) {
   const months = c.months;
   const tab = state.safetyTab || 'cpr';
@@ -10077,6 +10363,10 @@ function screenUnderstand(c) {
    ================================================================= */
 
 function childAgeLabel(k) {
+  /* A baby who is not born yet shows how far along rather than an age,
+     which is the one place the seed stage has to reach outside its own
+     screen. Everywhere else reads `birthday`, which is empty for them. */
+  if (isExpecting(k)) return expChipLabel(k);
   const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
   return sum && sum.label ? sum.label : 'No birthday yet';
 }
@@ -10229,6 +10519,11 @@ function applyDateField(target, iso) {
     if (!k) return;
     k.birthday = iso || null;
     k.napOverride = null;
+    k.updatedAt = Date.now();
+  } else if (parts[0] === 'due') {
+    const k = store.children.find((x) => x.id === parts[1]);
+    if (!k) return;
+    k.dueDate = iso || null;
     k.updatedAt = Date.now();
   } else if (parts[0] === 'draft') {
     store.draftChildBday = iso;
@@ -10606,19 +10901,28 @@ function screenAddChild() {
   <div class="sc-head">
     <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
     <h1 class="title" style="margin-top:6px">Add a child</h1>
-    <p class="sub">A name and a birthday is all it takes to start.</p>
+    <p class="sub">A name and a date is all it takes to start, whether they are here yet or not.</p>
   </div>
   <div class="sc">
     <div class="card">
       <p class="eyebrow">Their name</p>
       <input class="inp" type="text" id="newChildName" value="${esc(store.draftChildName)}"
-        placeholder="Their name" autocomplete="off" style="margin-top:8px;width:100%" />
-      <p class="eyebrow" style="margin-top:14px">Their birthday</p>
-      <div style="margin-top:7px">${dateSelects('draft', store.draftChildBday || '', 25, 1)}</div>
-      <p class="tiny" style="margin-top:9px">
-        Expecting? Put the due date in and the app follows the pregnancy instead.
-      </p>
-      <button class="btn" data-addchild="1" style="margin-top:14px;width:100%">Add this child</button>
+        placeholder="${esc(store.draftExpecting ? 'Or what you call them for now' : 'Their name')}"
+        autocomplete="off" style="margin-top:8px;width:100%" />
+      ${store.draftExpecting ? `<p class="tiny" style="margin-top:7px">${esc(EXP_NAME_NOTE)}</p>` : ''}
+
+      <p class="eyebrow" style="margin-top:14px">${esc(EXP_ADD_TITLE)}</p>
+      <div class="chips" style="margin-top:8px">
+        ${EXP_ADD_OPTIONS.map((o) => `
+          <button class="chip" data-exp="kind" data-id="${esc(o.id)}"
+            aria-pressed="${(o.id === 'expecting') === !!store.draftExpecting}">${esc(o.label)}</button>`).join('')}
+      </div>
+
+      <p class="eyebrow" style="margin-top:14px">${esc(store.draftExpecting ? 'The due date' : 'Their birthday')}</p>
+      <div style="margin-top:7px">${dateSelects('draft', store.draftChildBday || '',
+        store.draftExpecting ? 1 : 25, store.draftExpecting ? 2 : 1)}</div>
+      <p class="tiny" style="margin-top:9px">${esc(store.draftExpecting ? EXP_DUE_NOTE : EXP_ADD_NOTE)}</p>
+      <button class="btn" data-addchild="1" style="margin-top:14px;width:100%">${esc(store.draftExpecting ? 'Add this baby' : 'Add this child')}</button>
     </div>
 
     <div class="card flat">
