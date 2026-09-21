@@ -622,6 +622,9 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
   background:#fff;border:1px solid rgba(74,103,65,.18);border-radius:14px;cursor:pointer;text-align:left;
   font:400 14.5px/1.3 inherit;color:var(--muted);
 }
+.findbar-face{
+  width:24px;height:24px;border-radius:50%;flex:none;background:var(--deep);display:grid;place-items:center;
+}
 .findfield{
   display:flex;align-items:center;gap:10px;padding:0 14px;background:#fff;
   border:1.5px solid rgba(74,103,65,.3);border-radius:14px;
@@ -1547,7 +1550,7 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-21 21:19';
+const BUILD_STAMP = '2026-09-21 21:39';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -36370,10 +36373,11 @@ function willowShortFor(key, months) {
  * "cesarean" all land in the same place.
  */
 
-const FIND_TITLE = 'Find anything';
-const FIND_SUB = 'Type what you are looking for, in your own words.';
-const FIND_PLACEHOLDER = 'Such as fever, Bishop score, first period';
-const FIND_NONE = "I couldn't find a page for that. Willow can help with it instead.";
+const FIND_TITLE = 'Ask Willow';
+const FIND_SUB = "Ask anything, the way you'd say it to a friend. I'll answer, and show you any pages in the app about it.";
+const FIND_PLACEHOLDER = 'Ask Willow anything, or find a page';
+const FIND_FIELD_HINT = 'Such as why is my son flapping his arms';
+const FIND_NONE = "I don't have a page on that yet, but I can help. Tap Ask Willow and I'll answer it.";
 
 const FIND_INDEX = [
   { title: 'I need help right now', where: 'Home, I need help', go: { screen: 'now' },
@@ -39206,7 +39210,7 @@ function render() {
        that almost never matches the string we generated. So this guard
        was always true and the panel was rebuilt on every repaint of
        the whole app, which is most of what was wrong with the chat. */
-    const willowHTML = bday || (pendingSave ? '' : nudgeBubble() + willowBubble() + willowPanel());
+    const willowHTML = bday || (pendingSave ? '' : (offerBubble() || nudgeBubble()) + willowBubble() + willowPanel());
     const replaced = lastWillowHTML !== willowHTML;
     if (replaced) {
       willowSlot.innerHTML = willowHTML;
@@ -39542,6 +39546,15 @@ function initControls() {
       if (auth.mode === 'signup') doSignUp(); else doSignIn();
       return;
     }
+    if (e.target.id === 'findQ' && e.key === 'Enter') {
+      e.preventDefault();
+      if ((state.findQ || '').trim()) {
+        willow.open = true;
+        willow.stick = true;
+        willowAsk(state.findQ.trim());
+      }
+      return;
+    }
     if (e.target.id === 'askIn' && e.key === 'Enter') {
       e.preventDefault();
       state.askAsked = state.askQuery.trim();
@@ -39572,7 +39585,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -40361,12 +40374,23 @@ function initControls() {
         if (scr) scr.scrollTop = 0;
         window.scrollTo(0, 0);
       }
+    } else if (t.dataset.woffer) {
+      const q = t.dataset.q || state.willowOffer || '';
+      state.willowOffer = '';
+      if (t.dataset.woffer === 'yes' && q) {
+        willow.open = true;
+        willow.stick = true;
+        willowAsk(q);
+        return;
+      }
     } else if (t.dataset.find) {
       if (t.dataset.find === 'go') findGo(t.dataset.i);
       else if (t.dataset.find === 'ask') {
+        const q = (state.findQ || '').trim();
+        if (!q) { const i = document.getElementById('findQ'); if (i) i.focus(); return; }
         willow.open = true;
         willow.stick = true;
-        willowAsk(state.findQ || '');
+        willowAsk(q);
         return;
       }
     } else if (t.dataset.readfull) {
@@ -47066,7 +47090,25 @@ function askTokens(q) {
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, ' ')
     .split(/\s+/)
-    .filter(function (w) { return w.length > 2 && !ASK_STOP.has(w); });
+    .filter(function (w) { return w.length > 2 && !ASK_STOP.has(w); })
+    .map(askStem);
+}
+
+/* Flapping, flaps and flapped all look for flap. Light on purpose: it
+   only trims endings, it never guesses at meaning. */
+function askStem(w) {
+  if (w.length > 5 && /ing$/.test(w)) { w = w.slice(0, -3); if (/(.)\1$/.test(w)) w = w.slice(0, -1); return w; }
+  if (w.length > 4 && /ed$/.test(w)) { w = w.slice(0, -2); if (/(.)\1$/.test(w)) w = w.slice(0, -1); return w; }
+  if (w.length > 4 && /ies$/.test(w)) return w.slice(0, -3) + 'y';
+  if (w.length > 3 && /s$/.test(w) && !/ss$/.test(w)) return w.slice(0, -1);
+  return w;
+}
+
+/* A word, or the start of one. "son" must never match inside
+   "person", which is exactly how a question about arm flapping once
+   came back with snacks for the hospital bag. */
+function askWordRe(t) {
+  return new RegExp('\\b' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
 }
 
 /* Everything the app can answer from, flattened into one searchable
@@ -47201,25 +47243,30 @@ function askSearch(query, c) {
   if (!toks.length) return [];
   var phrase = String(query).toLowerCase().trim();
 
+  var res = toks.map(askWordRe);
   return askCorpus(c)
     .map(function (item) {
       var title = item.title.toLowerCase();
       var body = item.text.toLowerCase();
       var score = 0;
-      toks.forEach(function (t) {
-        if (title.indexOf(t) !== -1) score += 9;
-        var m = body.split(t).length - 1;
+      var covered = 0;
+      res.forEach(function (re) {
+        re.lastIndex = 0;
+        var inTitle = re.test(title);
+        re.lastIndex = 0;
+        var m = (body.match(re) || []).length;
+        if (inTitle) score += 9;
         if (m) score += Math.min(m, 4) * 1.6;
+        if (inTitle || m) covered++;
       });
       if (phrase.length > 6 && title.indexOf(phrase) !== -1) score += 24;
-      // Reward covering more of what was asked, not just repeating one word.
-      var covered = toks.filter(function (t) {
-        return title.indexOf(t) !== -1 || body.indexOf(t) !== -1;
-      }).length;
+      /* A question of several words has to be about most of them. One
+         shared word is how the wrong page used to win. */
+      if (toks.length >= 2 && covered / toks.length < 0.6) return null;
       score *= 0.55 + 0.45 * (covered / toks.length);
       return { item: item, score: score * (item.weight || 1) };
     })
-    .filter(function (r) { return r.score > 6; })
+    .filter(function (r) { return r && r.score > 6; })
     .sort(function (a, b) { return b.score - a.score; })
     .slice(0, 7);
 }
@@ -47244,6 +47291,10 @@ function askBlock(c) {
   var q = state.askQuery || '';
   var asked = state.askAsked || '';
   var results = asked ? askSearch(asked, c) : [];
+  if (asked && !results.length && state.willowOfferFor !== asked) {
+    state.willowOfferFor = asked;
+    state.willowOffer = asked;
+  }
   var emergency = asked && askHit(asked, ASK_EMERGENCY);
   var crisis = asked && askHit(asked, ASK_CRISIS);
 
@@ -47311,18 +47362,10 @@ function askBlock(c) {
     </div>` : ''}
 
     ${asked ? (results.length ? `
-      <p class="sect">${results.length} ${results.length === 1 ? 'answer' : 'answers'} for "${esc(asked)}"</p>
+      <p class="sect">${results.length} ${results.length === 1 ? 'page' : 'pages'} in the app for "${esc(asked)}"</p>
       ${results.map(card).join('')}
-      <div class="card flat">
-        <p class="tiny">These are entries from this app, not generated text. Each one opens the full version with what to try, when to call, and where it came from.</p>
-      </div>
-    ` : `
-      <div class="empty">
-        ${growthSVG(2, 70)}
-        <p><strong style="color:var(--ink)">Nothing in the app matches that yet.</strong></p>
-        <p>Try fewer words, or the way you would say it to a friend. Everything else about ${esc(state.name || 'your child')} is one tap away on their own tab.</p>
-      </div>
-    `) : ''}
+      ${willowOfferCard(asked, false)}
+    ` : willowOfferCard(asked, true)) : ''}
   `;
 }
 
@@ -49867,7 +49910,7 @@ function topBar(markOnly) {
   <div class="topbar">
     <div class="topbar-left">
       ${deep ? `<button class="backchip" data-back="offchild">${icon('back', 15, 'var(--deep)')} Back</button>`
-        : `<button class="findchip" data-go="screen" data-id="find" aria-label="Find anything">${icon('search', 16, 'var(--deep)')}<span>Find</span></button>`}
+        : `<button class="findchip" data-go="screen" data-id="find" aria-label="Ask Willow or find a page">${icon('search', 16, 'var(--deep)')}<span>Ask</span></button>`}
     </div>
     ${mark}
     <div class="me-slot">
@@ -52030,7 +52073,7 @@ function calmTodayCard(kid) {
 function findBar() {
   return `
   <button class="findbar" data-go="screen" data-id="find">
-    ${icon('search', 17, 'var(--muted)')}
+    <span class="findbar-face">${icon('leaf', 13, '#fff')}</span>
     <span>${esc(FIND_PLACEHOLDER)}</span>
   </button>`;
 }
@@ -52039,21 +52082,18 @@ function findResultsHtml(q) {
   const query = String(q || '').trim();
   if (!query) {
     return `
-    <p class="sect" style="margin-top:4px">Popular</p>
+    <p class="sect" style="margin-top:4px">Or jump straight to</p>
     ${FIND_INDEX.filter((e) => ['I need help right now', 'Your cycle and period log', 'Feeding', 'Sleep and naps',
       'Induction and the Bishop score', 'Growing up and puberty', 'Settings'].indexOf(e.title) !== -1).map(findRow).join('')}`;
   }
   const hits = findSearch(query);
-  return `
-  ${hits.length ? hits.map(findRow).join('') : `<div class="card flat"><p class="bodytext">${esc(FIND_NONE)}</p></div>`}
-  <button class="lrow" data-find="ask" style="margin-top:10px">
-    <span class="licon">${icon('leaf', 18)}</span>
-    <span class="grow">
-      <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Ask Willow about "${esc(query)}"</span>
-      <span class="tiny" style="display:block;margin-top:2px">In your own words, any hour</span>
-    </span>
-    <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-  </button>`;
+  return hits.length ? `
+    <p class="sect" style="margin-top:4px">Pages in the app</p>
+    ${hits.map(findRow).join('')}` : `
+    <div class="obsay" style="margin-top:4px">
+      <span class="obsay-face">${icon('leaf', 15, '#fff')}</span>
+      <div class="obsay-body"><p>${esc(FIND_NONE)}</p></div>
+    </div>`;
 }
 
 function findRow(e) {
@@ -52079,10 +52119,13 @@ function screenFind() {
   </div>
   <div class="sc">
     <label class="findfield">
-      ${icon('search', 18, 'var(--muted)')}
-      <input id="findQ" type="search" enterkeyhint="search" autocomplete="off"
-        placeholder="${esc(FIND_PLACEHOLDER)}" value="${esc(state.findQ || '')}" aria-label="${esc(FIND_TITLE)}" />
+      ${icon('chat', 18, 'var(--muted)')}
+      <input id="findQ" type="search" enterkeyhint="send" autocomplete="off"
+        placeholder="${esc(FIND_FIELD_HINT)}" value="${esc(state.findQ || '')}" aria-label="${esc(FIND_TITLE)}" />
     </label>
+    <button class="btn" data-find="ask" style="width:100%;margin-top:10px">
+      ${icon('leaf', 15, '#fff')} Ask Willow
+    </button>
     <div id="findResults" style="margin-top:12px">${findResultsHtml(state.findQ)}</div>
   </div>`;
 }
@@ -53887,6 +53930,39 @@ function nudgeTake() {
 /* Her bubble, peeking out above her pill in the corner. Drawn beside
    the pill rather than instead of it, so the thing she is attached to
    is still visibly her. */
+/* WILLOW ANSWERS QUESTIONS. She said the search box should not be the
+   thing answering people, Willow should. So a search still shows the
+   app's own pages when there are good ones, and when there are none,
+   Willow pops up and offers to answer it herself. */
+function willowOfferCard(q, none) {
+  return `
+  <div class="obsay" style="margin-top:14px">
+    <span class="obsay-face">${icon('leaf', 15, '#fff')}</span>
+    <div class="obsay-body">
+      <p>${none
+        ? "I don't have a page on that yet, but I can help. Want me to answer it?"
+        : 'Not quite what you meant? I can answer it for you.'}</p>
+      <button class="btn" style="margin-top:10px;width:100%" data-woffer="yes" data-q="${esc(q)}">
+        ${icon('chat', 15, '#fff')} Ask Willow
+      </button>
+    </div>
+  </div>`;
+}
+
+function offerBubble() {
+  const q = state.willowOffer;
+  if (!q || willow.open) return '';
+  return `
+  <div class="wnudge">
+    <button class="wnudge-x" data-woffer="no" aria-label="Not now">&times;</button>
+    <button class="wnudge-body" data-woffer="yes" data-q="${esc(q)}">
+      <span class="wnudge-t">${esc(WILLOW.name)}</span>
+      <span class="wnudge-l">I couldn't find a page for that. Want me to answer it?</span>
+      <span class="wnudge-go">Yes, please ${icon('chev', 11, 'var(--deep)')}</span>
+    </button>
+  </div>`;
+}
+
 function nudgeBubble() {
   const n = nudgeLive();
   if (!n || willow.open) return '';
