@@ -1011,6 +1011,10 @@ function newChildRecord(name, birthday) {
     /* How a day felt, keyed YYYY-MM-DD. See src/data/cycleLog.js. On
        her own record, so it syncs with everything else about her. */
     cycleDays: {},
+    /* Willow's look back on a month of check ins, keyed YYYY-MM, and
+       the last month whose summary was put away. See monthReview.js. */
+    monthNotes: {},
+    monthSeen: '',
     /* Weights, lengths and head measurements, one entry per occasion,
        always stored in kilograms and centimeters whatever the parent
        reads. See src/data/growth.js. */
@@ -2637,7 +2641,7 @@ function render() {
        that almost never matches the string we generated. So this guard
        was always true and the panel was rebuilt on every repaint of
        the whole app, which is most of what was wrong with the chat. */
-    const willowHTML = bday || (pendingSave ? '' : (offerBubble() || nudgeBubble()) + willowBubble() + willowPanel());
+    const willowHTML = bday || ciPopupHtml() || (pendingSave ? '' : (offerBubble() || nudgeBubble()) + willowBubble() + willowPanel());
     const replaced = lastWillowHTML !== willowHTML;
     if (replaced) {
       willowSlot.innerHTML = willowHTML;
@@ -3012,7 +3016,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3708,7 +3712,29 @@ function initControls() {
       // back on later does not silently restore an old support level.
       if (i !== -1) { delete state.lensOptions[id]; delete state.lensNumbers[id]; }
       t.setAttribute('aria-pressed', i === -1);
+    } else if (t.dataset.cipop) {
+      const id = t.dataset.id;
+      if (t.dataset.cipop === 'go') {
+        selectChild(id);
+        ciEnsureDraft();
+        store.ciOpen = true;
+        store.ciPopFor = id;
+        flushStore();
+      } else {
+        ciPopSkip(id);
+      }
+    } else if (t.dataset.month === 'seen') {
+      const k = activeChild();
+      if (k) { k.monthSeen = t.dataset.ym || ''; k.updatedAt = Date.now(); flushStore(); }
+    } else if (t.dataset.kidsec !== undefined) {
+      const k = activeChild();
+      store.kidSection = t.dataset.kidsec && k ? { kid: k.id, sec: t.dataset.kidsec } : null;
+      window.scrollTo(0, 0);
+      const scr = document.getElementById('screen');
+      if (scr) scr.scrollTop = 0;
     } else if (t.dataset.tab) {
+      /* The bottom tabs always start a profile from its top. */
+      store.kidSection = null;
       state.tab = t.dataset.tab; state.view = null; navClear();
     } else if (t.dataset.go === 'tab') {
       state.tab = t.dataset.id; state.view = null; navClear();
@@ -3878,8 +3904,13 @@ function initControls() {
     } else if (t.dataset.ci) {
       const how = t.dataset.ci;
       if (how === 'set') ciSet(t.dataset.row, t.dataset.val);
-      else if (how === 'save') ciSave();
-      else if (how === 'cancel') ciDiscard();
+      else if (how === 'save') { ciSave(); store.ciPopFor = null; }
+      else if (how === 'cancel') {
+        /* Not now from inside the evening pop up means not tonight. */
+        const popKid = store.ciPopFor;
+        ciDiscard();
+        if (popKid) ciPopSkip(popKid);
+      }
       else if (how === 'open') { ciEnsureDraft(); store.ciOpen = true; flushStore(); }
     } else if (t.dataset.filter === 'setting') {
       actFilter.setting = actFilter.setting === t.dataset.val ? null : t.dataset.val;
@@ -10718,9 +10749,16 @@ function askBlock(c) {
   var q = state.askQuery || '';
   var asked = state.askAsked || '';
   var results = asked ? askSearch(asked, c) : [];
+  /* Nothing in the app for it, so Willow's chat opens and she answers,
+     rather than a dead end or a second question. Once per question, so
+     closing her does not bring her straight back. */
   if (asked && !results.length && state.willowOfferFor !== asked) {
     state.willowOfferFor = asked;
-    state.willowOffer = asked;
+    setTimeout(() => {
+      willow.open = true;
+      willow.stick = true;
+      willowAsk(asked);
+    }, 0);
   }
   var emergency = asked && askHit(asked, ASK_EMERGENCY);
   var crisis = asked && askHit(asked, ASK_CRISIS);
@@ -15053,9 +15091,25 @@ function checkinCard() {
 
   const saved = ciSaved();
   const pending = ciChangeCount();
-  const open = store.ciOpen || !saved;
+
   const name = (k.name || 'them').split(/\s+/)[0];
   const streak = ciStreak();
+
+  /* Closed until she asks for it. She wanted the question sitting
+     there with one button, rather than the whole form open on the page,
+     and for it to fold back up once it is answered. */
+  const open = !!store.ciOpen;
+
+  if (!open && !saved) {
+    return `
+    <div class="card cicard cishut">
+      <p class="eyebrow">${icon('sun', 11, 'var(--sage)')} How is today going, ${esc(name)}?</p>
+      <button class="btn" style="width:100%;margin-top:11px" data-ci="open">
+        Fill in today for ${esc(name)}
+      </button>
+      ${streak > 1 ? `<p class="tiny" style="margin-top:9px">${esc(CHECKIN_STREAK_LINES.going.replace('{n}', streak))}</p>` : ''}
+    </div>`;
+  }
 
   if (!open) {
     return `
@@ -15095,7 +15149,6 @@ function checkinCard() {
   return `
   <div class="card cicard">
     <p class="eyebrow">${icon('sun', 11, 'var(--sage)')} How is today going, ${esc(name)}?</p>
-    <p class="tiny" style="margin-top:4px">${esc(CHECKIN_INTRO)}</p>
 
     ${rows.map((r) => {
       const cur = ciCurrent(r.id);
@@ -15121,11 +15174,15 @@ function checkinCard() {
       style="margin-top:10px;width:100%" />
 
     <div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap;justify-content:flex-end">
-      ${saved || pending ? `<button class="chip" data-ci="cancel">${saved ? 'Leave it as it was' : 'Not now'}</button>` : ''}
+      <button class="chip" data-ci="cancel">${saved ? 'Leave it as it was' : 'Not now'}</button>
       <button class="btn" data-ci="save" ${pending ? '' : 'disabled'}
         style="width:auto;flex:none;padding:10px 20px">${icon('check', 15, '#fff')} Save today</button>
     </div>
-    <p class="tiny" style="margin-top:9px">${esc(CHECKIN_PATTERN_NOTE)}</p>
+    <details class="cihow">
+      <summary>How this works</summary>
+      <p class="tiny" style="margin-top:6px">${esc(CHECKIN_INTRO)}</p>
+      <p class="tiny" style="margin-top:6px">${esc(CHECKIN_PATTERN_NOTE)}</p>
+    </details>
   </div>`;
 }
 
@@ -15174,6 +15231,10 @@ function screenCheckins(c) {
     ${!days.length ? `
     <p class="tiny" style="text-align:center;padding:6px 0">Check in from Home once and this fills in.</p>
     ` : `
+
+    <p class="sect">Looking back on the month</p>
+    ${monthCard(k, ymOf(ciToday()))}
+    ${monthCard(k, ymBefore(ymOf(ciToday())), { quietIfEmpty: true })}
 
     <p class="sect">The last two weeks</p>
     <div class="card">
@@ -16648,15 +16709,23 @@ function screenChild(c) {
        not look like the ninth item on a list. It used to appear twice,
        here and again inside Things to do together, which is the same
        duplication she has caught me on before. */
+    /* She asked for Today's rhythm and Today's plan to be the first
+       thing on a child's page, because they are what a parent opens
+       these apps for. So they sit side by side at the very top, and
+       the rhythm row is no longer repeated inside Everyday care. */
     plan: () => (months == null ? '' : `
-      <button class="card todaycard" data-go="screen" data-id="plan">
-        <span class="todaycard-ic">${icon('sun', 20, '#fff')}</span>
-        <span class="grow">
+      <div class="toppair">
+        <button class="card todaycard toptile" data-go="screen" data-id="sleep">
+          <span class="todaycard-ic">${icon('moon', 19, '#fff')}</span>
+          <span class="todaycard-t">Today's rhythm</span>
+          <span class="todaycard-s">Wake times, naps and bedtime</span>
+        </button>
+        <button class="card todaycard toptile" data-go="screen" data-id="plan">
+          <span class="todaycard-ic">${icon('sun', 19, '#fff')}</span>
           <span class="todaycard-t">Today's plan</span>
           <span class="todaycard-s">${esc(planCardLine(c))}</span>
-        </span>
-        ${icon('chev', 17, 'var(--deep)')}
-      </button>`),
+        </button>
+      </div>`),
 
     logs: () => {
       const quickLogs = months == null ? [] : getLogTypesForAge(months).slice(0, 4);
@@ -16677,8 +16746,8 @@ function screenChild(c) {
 
     care: () => `
       ${sectHead('care', months, 'Everyday care')}
-      ${childRow('moon', "Today's rhythm", 'Wake times, naps and bedtime, built from one answer',
-        'data-go="screen" data-id="sleep"')}
+      ${months == null ? childRow('moon', "Today's rhythm", 'Wake times, naps and bedtime, built from one answer',
+        'data-go="screen" data-id="sleep"') : ''}
       ${childRow('utensils', 'Feeding',
         esc(getFeedingHeadline(months) || 'Milk, starting solids, and the family table'),
         'data-go="screen" data-id="feeding"')}
@@ -16698,9 +16767,6 @@ function screenChild(c) {
       ${childRow('puzzle', 'Activities',
         esc(c.activities.length + ' that fit this age'),
         'data-go="screen" data-id="activities"')}
-      ${showsLearning(months) ? childRow('book', 'Learning',
-        esc('What a structured day looks like at ' + (learnBandFor(months) || {}).label.toLowerCase()),
-        'data-go="screen" data-id="learning"') : ''}
       ${canDo ? childRow('check', 'Jobs',
         esc(jobs
           ? jobs + (jobs === 1 ? ' job on the family chart' : ' jobs on the family chart')
@@ -16725,12 +16791,15 @@ function screenChild(c) {
     },
 
     mind: () => `
-      ${sectHead('mind', months, 'How their mind works')}
+      ${sectHead('mind', months, 'How they think and learn')}
       ${childRow('bulb', 'Understanding ' + esc(first),
         state.lenses.length
           ? esc(getLenses(state.lenses).map((l) => l.label).join(', '))
           : 'Turn on what fits them, and read what it actually means',
         'data-go="screen" data-id="understand"')}
+      ${showsLearning(months) ? childRow('book', 'Learning',
+        esc('What a structured day looks like at ' + (learnBandFor(months) || {}).label.toLowerCase()),
+        'data-go="screen" data-id="learning"') : ''}
       ${childRow('hand', signRowTitle(), signRowSub(months),
         'data-go="screen" data-id="signs"')}
       ${state.lenses.length ? `
@@ -16775,38 +16844,65 @@ function screenChild(c) {
   };
 
   const order = childSectionOrder(months);
-  /* The page breaks in half wherever the daily things stop for THIS
-     age, rather than at a fixed position, and the quiet half is
-     announced once so the change of weight reads as deliberate. */
-  let restOpened = false;
-  const sections = order.map((id) => {
-    const html = body[id] ? body[id]() : '';
-    if (!html) return '';
-    if (!restOpened && !isDailySection(id, months)) {
-      restOpened = true;
-      return `<div class="restwrap"><p class="sect rest-label">${esc(REST_LABEL)}</p>` + html;
+  /* TIDIED. She said the profile was cluttered and overwhelming, with
+     twenty rows down one long page. So the page now keeps only what a
+     parent DOES every day (today's check in, today's plan and quick
+     logs) and everything else is a small grid of tiles, one per area.
+     A tile opens that area with every row it always had. Nothing was
+     taken out, it is one tap further in and much easier to scan. */
+  const sec = kidSectionOpen(kid);
+  if (sec && body[sec]) return kidSectionScreen(kid, first, sec, body[sec](), c);
+
+  /* Her order, the same for every age: together, everyday care, where
+     they are now, how they think and learn, health, and if something
+     happens. */
+  const TILE_IDS = ['together', 'care', 'where', 'mind', 'health', 'safety'];
+  const tiles = [];
+  /* Rhythm and plan first, then the check in, then quick logs. */
+  const dailyFirst = ['plan', 'logs'];
+  const ordered = dailyFirst.filter((id) => order.indexOf(id) !== -1)
+    .concat(order.filter((id) => dailyFirst.indexOf(id) === -1));
+  const daily = ordered.map((id) => {
+    if (TILE_IDS.indexOf(id) !== -1) {
+      const html = body[id] ? body[id]() : '';
+      if (html) tiles.push({ id: id, html: html });
+      return '';
     }
-    return html;
+    if (id === 'memories' || id === 'checkin') return '';
+    return body[id] ? body[id]() : '';
   }).join('');
+  /* The day's check in lives at the bottom now, as the record of how
+     days have gone. In the evening it comes to her as a pop up instead
+     (ciPopupHtml), so it does not need to sit at the top all day. */
+  const ciHtml = body.checkin ? body.checkin() : '';
+  tiles.sort((x, y) => TILE_IDS.indexOf(x.id) - TILE_IDS.indexOf(y.id));
+  const sections = monthTopCard(kid) + daily + (tiles.length ? `
+    <p class="sect" style="margin-top:18px">Everything about ${esc(first)}</p>
+    <div class="kidtiles">${tiles.map((t) => kidTile(t.id, t.html)).join('')}</div>` : '')
+    + (ciHtml ? `<p class="sect" style="margin-top:18px">How today went</p>` + ciHtml : '')
+    + (body.memories ? body.memories() : '');
+  const restOpened = false;
 
   return `
   ${cornerLeaves()}
   <div class="sc-head">
-    <div class="bigface">${faceHTML(v.photo, 84, c.growth ? c.growth.order : 2)}</div>
+    ${kid && !editing ? `
+    <button class="bigface facebtn" data-edit="${esc(kid.id)}" aria-label="Edit ${esc(first)}'s details">
+      ${faceHTML(v.photo, 84, c.growth ? c.growth.order : 2)}
+    </button>
+    <p class="tapedit">Tap to edit details</p>` : `
+    <div class="bigface">${faceHTML(v.photo, 84, c.growth ? c.growth.order : 2)}</div>`}
     <h1 class="title" style="margin-top:8px">${esc(name)}</h1>
     <p class="sub">${esc(c.summary.label || 'Add a birthday')}${c.stage ? ' &middot; ' + esc(c.stage.label) : ''}</p>
   </div>
   <div class="sc">
 
     ${kid ? `
+    ${editing ? `
     <div class="editbar">
-      ${editing ? `
-        <button class="btn" data-edit="save">${icon('check', 15, '#fff')} Save</button>
-        <button class="btn ghost" data-edit="cancel">Cancel</button>
-      ` : `
-        <button class="btn ghost" data-edit="${esc(kid.id)}">${icon('star', 14, 'var(--deep)')} Edit their details</button>
-      `}
-    </div>
+      <button class="btn" data-edit="save">${icon('check', 15, '#fff')} Save</button>
+      <button class="btn ghost" data-edit="cancel">Cancel</button>
+    </div>` : ''}
 
     ${editing ? `
       ${facePicker(kid.id, v.photo)}
@@ -16835,6 +16931,199 @@ function screenChild(c) {
 
     <p class="disclaimer">${esc(CONTENT_DISCLAIMER)}</p>
     ${editing ? editSaveBar() : ''}
+  </div>`;
+}
+
+/* =================================================================
+   A MONTH LOOKED BACK ON, AND THE EVENING CHECK IN
+
+   See src/data/monthReview.js for the reasoning and the written lines.
+   ================================================================= */
+
+function ymOf(dayKey) { return String(dayKey).slice(0, 7); }
+
+function ymBefore(ym) {
+  const y = Number(ym.slice(0, 4));
+  const m = Number(ym.slice(5, 7));
+  return m === 1 ? (y - 1) + '-12' : y + '-' + String(m - 1).padStart(2, '0');
+}
+
+function ymLabel(ym) { return MONTH_NAMES[Number(ym.slice(5, 7)) - 1] || ym; }
+
+function monthCard(kid, ym, opts) {
+  if (!kid) return '';
+  const o = opts || {};
+  const first = (kid.name || 'them').split(/\s+/)[0];
+  const counts = monthCounts(kid.checkins, ym);
+  const logs = monthLogs(kid.logs, ym, (id) => (getLogType(id) || {}).label);
+  const labels = {};
+  ciRows().forEach((r) => { labels[r.id] = r.label; });
+  const lines = monthGuidance(first, counts, logs, labels);
+  if (!lines.length) {
+    return o.quietIfEmpty ? '' : `
+    <div class="card flat"><p class="tiny">${esc(ymLabel(ym))} has ${counts.days} day${counts.days === 1 ? '' : 's'}
+      recorded so far. Once there are ${MONTH_MIN_DAYS} or more, Willow looks back on the month here.</p></div>`;
+  }
+
+  /* Willow writes her version once a month is over, never mid month,
+     so it is about a whole month and not a guess at one. */
+  if (!kid.monthNotes) kid.monthNotes = {};
+  const done = ym < ymOf(ciToday());
+  if (done && !kid.monthNotes[ym]) {
+    const g = counts.rows.general || { hard: 0, mixed: 0, good: 0 };
+    const sum = getAgeSummary({ name: kid.name, birthday: kid.birthday }) || {};
+    liftWrite('month:' + kid.id + ym, {
+      name: first,
+      age: sum.shortLabel || '',
+      summary: counts.days + ' days recorded: ' + g.good + ' good, ' + g.mixed + ' mixed, ' + g.hard + ' hard.'
+        + Object.keys(counts.rows).filter((id) => id !== 'general').map((id) => {
+          const r = counts.rows[id];
+          return ' ' + (labels[id] || id) + ': ' + r.good + ' good, ' + r.mixed + ' mixed, ' + r.hard + ' hard.';
+        }).join(''),
+      logs: logs.slice(0, 4).map((l) => l.n + ' ' + l.label.toLowerCase()).join(', '),
+    }, (text) => {
+      if (text.length > 600) return;
+      kid.monthNotes[ym] = text;
+      kid.updatedAt = Date.now();
+    });
+  }
+  const said = kid.monthNotes[ym] || '';
+  const goFor = (g) => g === 'willow' ? 'data-willow="open"'
+    : g === 'sleep' ? 'data-go="screen" data-id="sleep"'
+      : g === 'understand' ? 'data-go="screen" data-id="understand"'
+        : g === 'logs' ? 'data-go="screen" data-id="childlogs"' : '';
+  const goLabel = { willow: 'Talk to Willow', sleep: "Today's rhythm", understand: 'Open it', logs: 'See the logs' };
+  return `
+  <div class="card monthcard">
+    <div style="display:flex;align-items:center;gap:9px">
+      <span class="obsay-face" style="width:26px;height:26px;margin:0">${icon('leaf', 13, '#fff')}</span>
+      <p class="eyebrow grow" style="margin:0">${esc(first)}'s ${esc(ymLabel(ym))}${done ? '' : ' so far'}</p>
+      ${o.dismiss ? `<button class="chip" data-month="seen" data-ym="${esc(ym)}">Got it</button>` : ''}
+    </div>
+    <p class="tiny" style="margin-top:7px">${counts.days} days checked in${(counts.rows.general)
+      ? ': ' + counts.rows.general.good + ' good, ' + counts.rows.general.mixed + ' mixed, ' + counts.rows.general.hard + ' hard' : ''}.</p>
+    ${said ? `<p class="bodytext" style="margin-top:9px">${esc(said)}</p>` : ''}
+    ${(said ? lines.slice(1) : lines).map((l) => `
+      <div class="monthline">
+        <p class="bodytext" style="margin:0">${esc(l.text)}</p>
+        ${goFor(l.go) ? `<button class="chip" style="margin-top:8px" ${goFor(l.go)}>${esc(goLabel[l.go])}</button>` : ''}
+      </div>`).join('')}
+    <p class="tiny" style="margin-top:10px">This notices patterns. It never diagnoses anything, and it is not a measure of how anybody is doing as a parent.</p>
+  </div>`;
+}
+
+/* The first week of a new month, last month's look back sits at the
+   top of the child's page until she puts it away. */
+function monthTopCard(kid) {
+  if (!kid) return '';
+  const today = ciToday();
+  if (Number(today.slice(8, 10)) > 7) return '';
+  const last = ymBefore(ymOf(today));
+  if (kid.monthSeen === last) return '';
+  return monthCard(kid, last, { dismiss: true, quietIfEmpty: true });
+}
+
+/* THE EVENING POP UP. From 5pm, the first child with nothing recorded
+   today gets asked about, one child at a time. Not tonight puts that
+   child away until tomorrow, on every device. */
+function ciPopKid() {
+  if (new Date().getHours() < CI_POP_HOUR) return null;
+  if (willow.open) return null;
+  const today = ciToday();
+  const p = store.parent || {};
+  const skip = p.ciPopSkip && p.ciPopSkip.day === today ? (p.ciPopSkip.ids || []) : [];
+  return store.children.filter((k) => !isExampleChild(k) && !isExpecting(k) && k.birthday
+    && !(k.checkins && k.checkins[today]) && skip.indexOf(k.id) === -1)[0] || null;
+}
+
+function ciPopSkip(id) {
+  const p = store.parent;
+  if (!p) return;
+  const today = ciToday();
+  if (!p.ciPopSkip || p.ciPopSkip.day !== today) p.ciPopSkip = { day: today, ids: [] };
+  if (p.ciPopSkip.ids.indexOf(id) === -1) p.ciPopSkip.ids.push(id);
+  store.parentUpdatedAt = Date.now();
+  store.ciPopFor = null;
+  flushStore();
+}
+
+function ciPopupHtml() {
+  const k = ciPopKid();
+  if (!k) return '';
+  const name = (k.name || 'them').split(/\s+/)[0];
+  const filling = store.ciPopFor === k.id && store.ciOpen && activeChild() && activeChild().id === k.id;
+  return `
+  <div class="wwel-scrim cipop" role="dialog" aria-modal="true" aria-label="${esc(CI_POP.ask(name))}">
+    <div class="wwel" style="padding-top:20px">
+      ${filling ? checkinCard() : `
+      <div class="wwel-face" style="width:54px;height:54px" aria-hidden="true">
+        <span class="wwel-leaf">${icon('sun', 24, '#fff', 1.6)}</span>
+      </div>
+      <p class="eyebrow" style="text-align:center;margin-top:12px">${esc(CI_POP.eyebrow)}</p>
+      <h2 class="wwel-hi" style="font-size:24px;margin-top:4px">${esc(CI_POP.ask(name))}</h2>
+      <p class="tiny" style="text-align:center;margin-top:6px">${esc(CI_POP.sub)}</p>
+      <button class="btn" style="width:100%;margin-top:16px" data-cipop="go" data-id="${esc(k.id)}">${esc(CI_POP.go)}</button>
+      <button class="wwel-skip" data-cipop="skip" data-id="${esc(k.id)}">${esc(CI_POP.skip)}</button>`}
+    </div>
+  </div>`;
+}
+
+const KID_TILE = {
+  care: { icon: 'moon', label: 'Everyday care' },
+  together: { icon: 'puzzle', label: 'Things to do together' },
+  where: { icon: 'chart', label: 'Where they are now' },
+  mind: { icon: 'bulb', label: 'How they think and learn' },
+  health: { icon: 'heart', label: 'Health' },
+  safety: { icon: 'shield', label: 'If something happens' },
+};
+
+/* Which area of a child's profile is open, if any. Tied to the child,
+   so switching to a sibling never lands inside the wrong one. */
+function kidSectionOpen(kid) {
+  const o = store.kidSection;
+  if (!kid || !o || o.kid !== kid.id) return '';
+  return KID_TILE[o.sec] ? o.sec : '';
+}
+
+/* The row titles inside an area, read off the rows themselves so the
+   tile can never promise something the area does not hold. */
+function kidRowTitles(html) {
+  const out = [];
+  const re = /line-height:1\.3">([^<]+)<\/span>/g;
+  let m;
+  while ((m = re.exec(html))) out.push(m[1].replace(/&amp;/g, '&').replace(/&#39;/g, "'").trim());
+  return out;
+}
+
+function kidTile(id, html) {
+  const t = KID_TILE[id];
+  const titles = kidRowTitles(html);
+  return `
+  <button class="kidtile" data-kidsec="${esc(id)}">
+    <span class="kidtile-ic">${icon(t.icon, 19, 'var(--deep)')}</span>
+    <span class="kidtile-t">${esc(t.label)}</span>
+    <span class="kidtile-s">${esc(titles.slice(0, 2).join(', '))}${titles.length > 2 ? ' and more' : ''}</span>
+  </button>`;
+}
+
+function kidSectionScreen(kid, first, sec, html, c) {
+  /* The area's own small heading is dropped, because the page title
+     already says it. */
+  const rows = html.replace(/^\s*<p class="sect[^"]*">[^<]*<\/p>/, '');
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-kidsec="">${icon('back', 15, 'var(--deep)')} ${esc(first)}</button>
+    <p class="eyebrow" style="margin-top:6px">${esc(first)}${c.summary.label ? ', ' + esc(c.summary.label) : ''}</p>
+    <h1 class="title sm">${esc(KID_TILE[sec].label)}</h1>
+  </div>
+  <div class="sc">
+    ${rows}
+    <p class="sect" style="margin-top:18px">More about ${esc(first)}</p>
+    <div class="chips" style="gap:7px">
+      ${Object.keys(KID_TILE).filter((id) => id !== sec).map((id) =>
+        `<button class="chip" data-kidsec="${esc(id)}">${esc(KID_TILE[id].label)}</button>`).join('')}
+    </div>
   </div>`;
 }
 
@@ -17367,10 +17656,10 @@ function willowOfferCard(q, none) {
     <span class="obsay-face">${icon('leaf', 15, '#fff')}</span>
     <div class="obsay-body">
       <p>${none
-        ? "I don't have a page on that yet, but I can help. Want me to answer it?"
+        ? "There isn't a page on that yet, so I've opened the chat to answer it myself."
         : 'Not quite what you meant? I can answer it for you.'}</p>
       <button class="btn" style="margin-top:10px;width:100%" data-woffer="yes" data-q="${esc(q)}">
-        ${icon('chat', 15, '#fff')} Ask Willow
+        ${icon('chat', 15, '#fff')} ${none ? 'Open my answer' : 'Ask Willow'}
       </button>
     </div>
   </div>`;
@@ -18947,6 +19236,8 @@ function normalizeChild(k) {
     bishop: Array.isArray(k.bishop) ? k.bishop : [],
     birthPrefs: k.birthPrefs && typeof k.birthPrefs === 'object' ? k.birthPrefs : {},
     cycleDays: k.cycleDays && typeof k.cycleDays === 'object' ? k.cycleDays : {},
+    monthNotes: k.monthNotes && typeof k.monthNotes === 'object' ? k.monthNotes : {},
+    monthSeen: typeof k.monthSeen === 'string' ? k.monthSeen : '',
     updatedAt: Number(k.updatedAt) || 0,
   });
 }

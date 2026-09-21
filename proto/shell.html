@@ -622,6 +622,38 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
   background:#fff;border:1px solid rgba(74,103,65,.18);border-radius:14px;cursor:pointer;text-align:left;
   font:400 14.5px/1.3 inherit;color:var(--muted);
 }
+/* A CHILD'S PROFILE, TIDIED. One tile per area, two across. */
+.facebtn{background:none;border:0;padding:0;cursor:pointer;border-radius:50%;display:block;margin:0 auto}
+.facebtn:focus-visible{outline:2px solid var(--deep);outline-offset:4px}
+.tapedit{margin:6px 0 0;text-align:center;font-size:11.5px;color:var(--muted)}
+.monthcard{background:#F1F4EB;border:1px solid rgba(74,103,65,.16);margin-bottom:12px}
+.monthline{padding:10px 0 2px;border-top:1px solid rgba(74,103,65,.12);margin-top:10px}
+.cipop .wwel{animation:none}
+.cipop .cicard{box-shadow:none;border:0;padding:0;margin:0;background:transparent}
+
+.toppair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.todaycard.toptile{
+  display:flex;flex-direction:column;align-items:flex-start;gap:7px;text-align:left;margin:0;
+  padding:14px 13px;min-height:132px;
+}
+.todaycard.toptile .todaycard-s{display:block}
+
+.kidtiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kidtile{
+  display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;cursor:pointer;
+  background:#fff;border:1px solid rgba(74,103,65,.14);border-radius:18px;padding:14px 13px 13px;
+  min-height:128px;font:inherit;
+}
+.kidtile:focus-visible{outline:2px solid var(--deep);outline-offset:2px}
+.kidtile-ic{width:36px;height:36px;border-radius:12px;background:#EDF1E6;display:grid;place-items:center}
+.kidtile-t{font-size:14.5px;font-weight:600;color:var(--ink);line-height:1.25;margin-top:2px}
+.kidtile-s{font-size:12px;color:var(--muted);line-height:1.4}
+.cihow{margin-top:10px}
+.cihow summary{font-size:12.5px;color:var(--deep);font-weight:600;cursor:pointer;list-style:none}
+.cihow summary::-webkit-details-marker{display:none}
+.cihow summary::after{content:" \203A"}
+.cihow[open] summary::after{content:" \2039"}
+
 .findbar-face{
   width:24px;height:24px;border-radius:50%;flex:none;background:var(--deep);display:grid;place-items:center;
 }
