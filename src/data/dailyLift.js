@@ -285,6 +285,12 @@ export function liftPrompt(kind, context) {
 
   /* Willow speaking up after a log. The written line in nudges.js is
      already on screen, so an answer that never arrives costs nothing. */
+  /* A month of check ins looked back on. The written version from
+     monthReview.js is already on screen. */
+  if (String(kind).indexOf('month:') === 0) {
+    return monthPrompt(c);
+  }
+
   if (String(kind).indexOf('nudge:') === 0) {
     return nudgePrompt(c.reason, c);
   }
