@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-21 18:33">
+<meta name="rsg-build" content="2026-09-21 19:06">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1573,7 +1573,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-21 18:33';
+const BUILD_STAMP = '2026-09-21 19:06';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -35923,7 +35923,10 @@ function affirmation(lines, o) {
         fill="${o.fill || '#E9EBDF'}"/></svg>`}
     <span class="affirm-in" style="${o.inset || 'inset:0'};${o.text || ''}">
       <span class="affirm-lines">${lines}</span>
-      ${o.heart === false ? '' : `<span class="heart">&#9829;</span>`}
+      ${/* The little heart under each phrase came out at the founder's
+            request. The phrases are the point and they read better alone.
+            Pass heart: true to bring one back for a particular shape. */
+        o.heart === true ? `<span class="heart">&#9829;</span>` : ''}
     </span>
   </div>`;
 }
