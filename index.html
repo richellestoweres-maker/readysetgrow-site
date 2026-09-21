@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-21 19:06">
+<meta name="rsg-build" content="2026-09-21 19:11">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1573,7 +1573,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-21 19:06';
+const BUILD_STAMP = '2026-09-21 19:11';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -38259,6 +38259,7 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'induction') html = screenInduction(c);
   else if (v && v.type === 'screen' && v.id === 'birth') html = screenBirth(c);
   else if (v && v.type === 'screen' && v.id === 'sexed') html = screenSexEd(c);
+  else if (v && v.type === 'screen' && v.id === 'mycycle') html = screenMyCycle(c);
   /* Any route that lands on a normal child profile for a baby who is
      not born yet is sent to the seed profile instead, rather than
      drawing a page of milestones for somebody with no age. */
@@ -38741,7 +38742,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -39498,6 +39499,24 @@ function initControls() {
       else if (how === 'bornno') { store.expBorn = false; store.expError = ''; }
       else if (how === 'bornsave') expBornSave();
       else if (how === 'kind') { store.draftExpecting = t.dataset.id === 'expecting'; }
+    } else if (t.dataset.mycycle) {
+      const how = t.dataset.mycycle;
+      if (how === 'hide') {
+        store.parent.cycleNudgeHidden = ciToday();
+        store.parentUpdatedAt = Date.now();
+        flushStore();
+      } else if (how === 'started') {
+        /* Only ever adds. If today is already logged, tapping this must
+           not quietly remove it. */
+        if (periods().indexOf(ciToday()) === -1) periodToggle(ciToday());
+        store.parent.cycleNudgeHidden = ciToday();
+        flushStore();
+      } else if (how === 'ask') {
+        willow.open = true;
+        willow.stick = true;
+        willowAsk(t.dataset.q || '');
+        return;
+      }
     } else if (t.dataset.homeview) {
       homeViewSet(t.dataset.homeview);
       window.scrollTo(0, 0);
@@ -45105,6 +45124,14 @@ function screenTrying(c) {
 
     ${tab === 'timing' ? `
       ${cycleWidget()}
+      <button class="lrow" style="margin-top:8px" data-go="screen" data-id="mycycle">
+        <span class="licon">${icon('calendar', 18)}</span>
+        <span class="grow">
+          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">How today felt</span>
+          <span class="tiny" style="display:block;margin-top:2px">Log flow, mood and symptoms on your cycle page</span>
+        </span>
+        <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+      </button>
 
       <div class="bpbox">
         <p class="bpbox-t">${esc(TTC_WINDOW.title)}</p>
@@ -49295,6 +49322,154 @@ function cycleCalendar(info, monthOffset, editing, loggedList, periodAttr) {
 
 /* The Home version. A glance, a calendar, and the standing reminder
    that all of it is estimated. */
+
+/* ==================================================================
+   YOUR CYCLE, ON ITS OWN PAGE
+
+   It used to sit on Home in full: the calendar, the history, and the
+   day log with its twenty seven buttons. For anybody who switched the
+   body section on, that was the single biggest thing on Home, and the
+   founder asked for it to become a link to its own page, the way a
+   cycle app works.
+
+   So Home now carries one small card that says where she is and
+   offers to log, and a reminder from Willow that appears only when
+   there is something worth being reminded of. Everything else lives
+   on the cycle page.
+
+   THE REMINDERS, AND WHY THEY ARE IN THE APP RATHER THAN ON THE PHONE
+   Two moments only. A period that is due or late, which is the thing a
+   cycle app is for. And somebody who has been logging how she feels
+   and has stopped for a couple of days. Each can be put away for the
+   day and none repeats more than once a day. They show when she opens
+   the app. Notifications on the phone itself need the web push key,
+   which is not set up yet, so they are not promised here.
+   ================================================================== */
+
+function cycleLead(info) {
+  if (!info) return '';
+  return info.isLate
+    ? info.daysLate + ' day' + (info.daysLate === 1 ? '' : 's') + ' past the estimate'
+    : info.daysToNext === 0 ? 'Your period is due around today'
+    : info.inFertileWindow ? 'Inside the estimated fertile window'
+    : 'About ' + info.daysToNext + ' day' + (info.daysToNext === 1 ? '' : 's') + ' to your next period';
+}
+
+function myCycleHomeCard() {
+  const info = cycleInfoNow();
+  const today = (cyclogDays('me') || {})[ciToday()];
+  if (!info) {
+    return `
+    <div class="card">
+      <p class="eyebrow">${icon('calendar', 11, 'var(--sage)')} Your cycle</p>
+      <p class="bodytext" style="margin-top:6px">Tap the day your last period started and the app works
+        out the rest.</p>
+      <button class="btn" style="width:100%;margin-top:12px" data-go="screen" data-id="mycycle">Log your first period</button>
+    </div>`;
+  }
+  return `
+  <div class="card">
+    <p class="eyebrow">${icon('calendar', 11, 'var(--sage)')} Your cycle</p>
+    <p style="margin:6px 0 0;font-size:17px;font-weight:600;color:var(--ink)">${esc(cycleLead(info))}</p>
+    <p class="tiny" style="margin-top:5px">${today && !cyclogEmpty(today)
+      ? 'Today: ' + esc(cyclogSummary(today))
+      : 'Nothing logged today.'}</p>
+    <button class="btn" style="width:100%;margin-top:12px" data-go="screen" data-id="mycycle">Log your cycle</button>
+  </div>`;
+}
+
+/* Which reminder, if any. Due or late wins over a gap in the log. */
+function cycleNudgeKind() {
+  const p = store.parent || {};
+  if (!showsBodyHalf(p)) return '';
+  if (cycleMode(situation()) === 'pregnant') return '';
+  if (p.cycleNudgeHidden === ciToday()) return '';
+  const info = cycleInfoNow();
+  const list = periods();
+  if (info && (info.isLate || info.daysToNext === 0)) {
+    /* Already logged in the last few days means it has started. */
+    const recent = list.some((d) => {
+      const gap = (Date.parse(ciToday() + 'T00:00:00') - Date.parse(d + 'T00:00:00')) / 86400000;
+      return gap >= 0 && gap <= 3;
+    });
+    if (!recent) return 'due';
+  }
+  const days = Object.keys(cyclogDays('me') || {}).filter((d) => !cyclogEmpty(cyclogDays('me')[d])).sort();
+  if (days.length >= 2) {
+    const last = days[days.length - 1];
+    const gap = (Date.parse(ciToday() + 'T00:00:00') - Date.parse(last + 'T00:00:00')) / 86400000;
+    if (gap >= 2) return 'gap';
+  }
+  return '';
+}
+
+function cycleNudge() {
+  const kind = cycleNudgeKind();
+  if (!kind) return '';
+  const info = cycleInfoNow();
+  if (kind === 'due') {
+    const late = info && info.isLate;
+    const q = late
+      ? 'My period is ' + info.daysLate + ' day' + (info.daysLate === 1 ? '' : 's') + ' late. What could be going on, and when is it worth seeing someone?'
+      : 'My period is due around today. What should I look out for?';
+    return `
+    <div class="card" style="border-left:3px solid var(--sage)">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} From Willow</p>
+      <p class="bodytext" style="margin-top:7px;font-weight:600">${late
+        ? 'Your period was due about ' + esc(String(info.daysLate)) + ' day' + (info.daysLate === 1 ? '' : 's') + ' ago. Has it started?'
+        : 'Your period is due around today. Has it started?'}</p>
+      ${late ? `<p class="tiny" style="margin-top:6px">Cycles move around, especially after a baby or while
+        breastfeeding. If there is any chance you could be pregnant, most tests work from the first day of a
+        missed period.</p>` : ''}
+      <div class="chips" style="margin-top:11px">
+        <button class="chip" data-mycycle="started">It started today</button>
+        <button class="chip" data-go="screen" data-id="mycycle">A different day</button>
+        <button class="chip" data-mycycle="hide">Not yet</button>
+      </div>
+      <button class="chip" style="margin-top:9px" data-mycycle="ask" data-q="${esc(q)}">
+        ${icon('leaf', 12, 'var(--deep)')} Ask Willow what is going on</button>
+    </div>`;
+  }
+  return `
+  <div class="card" style="border-left:3px solid var(--sage)">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} From Willow</p>
+    <p class="bodytext" style="margin-top:7px">You have not logged how you have been feeling for a couple of
+      days. Want to add today? It takes about ten seconds.</p>
+    <div class="chips" style="margin-top:11px">
+      <button class="chip" data-go="screen" data-id="mycycle">Log today</button>
+      <button class="chip" data-mycycle="hide">Not today</button>
+    </div>
+  </div>`;
+}
+
+function screenMyCycle(c) {
+  const info = cycleInfoNow();
+  const q = info
+    ? 'Looking at my cycle so far, is there anything worth noticing or mentioning to a doctor?'
+    : 'How does tracking my cycle work, and what is worth logging?';
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <p class="eyebrow" style="margin-top:6px">Just for you</p>
+    <h1 class="title sm">Your cycle</h1>
+    <p class="sub">Your calendar, your history, and how each day felt.</p>
+  </div>
+  <div class="sc">
+    ${cycleWidget()}
+
+    ${cyclogBlock('me', false)}
+
+    <div class="card leafy" style="margin-top:14px">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Ask Willow</p>
+      <p class="bodytext" style="margin-top:7px">Willow can see your dates and your averages, so she can
+        answer with your own cycle rather than the textbook one.</p>
+      <button class="btn" style="width:100%;margin-top:12px" data-mycycle="ask" data-q="${esc(q)}">
+        What is my cycle doing?</button>
+    </div>
+  </div>`;
+}
+
 function cycleWidget() {
   const p = store.parent;
   const mode = cycleMode(situation());
@@ -49399,9 +49574,7 @@ function cycleWidget() {
 
     <p class="tiny" style="margin-top:9px">Estimates from the dates you logged, not a test and not
     birth control.</p>
-  </div>
-
-  ${cyclogBlock('me', false)}`;
+  </div>`;
 }
 
 /* -----------------------------------------------------------------
@@ -50777,7 +50950,7 @@ function bodyCareBlock() {
   if (bodyCare(p) === 'yes') {
     return `
     <p class="sect">Your cycle</p>
-    ${cycleWidget()}`;
+    ${cycleMode(situation()) === 'pregnant' ? cycleWidget() : myCycleHomeCard()}`;
   }
   /* Not asked of grandparents, aunts, uncles or fathers. The switch is
      still in their settings. See homeRole. */
@@ -50928,6 +51101,8 @@ function screenHomeCalm(c) {
       </button>
     </div>
 
+    ${cycleNudge()}
+
     ${kids.length && kid ? calmTodayCard(kid) : `
     <div class="card flat" style="margin-top:2px">
       <p class="bodytext">Add a child and the app shapes itself around their age. That is the only thing
@@ -50989,6 +51164,8 @@ function screenHome(c) {
         <span class="kidcirc-age">a child</span>
       </button>
     </div>
+    ${cycleNudge()}
+
     ${kids.length ? '' : `
     <div class="card flat" style="margin-top:2px">
       <p class="bodytext">
