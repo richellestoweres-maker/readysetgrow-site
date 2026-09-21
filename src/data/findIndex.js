@@ -13,10 +13,11 @@
  * "cesarean" all land in the same place.
  */
 
-export const FIND_TITLE = 'Find anything';
-export const FIND_SUB = 'Type what you are looking for, in your own words.';
-export const FIND_PLACEHOLDER = 'Such as fever, Bishop score, first period';
-export const FIND_NONE = "I couldn't find a page for that. Willow can help with it instead.";
+export const FIND_TITLE = 'Ask Willow';
+export const FIND_SUB = "Ask anything, the way you'd say it to a friend. I'll answer, and show you any pages in the app about it.";
+export const FIND_PLACEHOLDER = 'Ask Willow anything, or find a page';
+export const FIND_FIELD_HINT = 'Such as why is my son flapping his arms';
+export const FIND_NONE = "I don't have a page on that yet, but I can help. Tap Ask Willow and I'll answer it.";
 
 export const FIND_INDEX = [
   { title: 'I need help right now', where: 'Home, I need help', go: { screen: 'now' },
