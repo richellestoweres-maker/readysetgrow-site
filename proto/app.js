@@ -2988,7 +2988,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3745,6 +3745,9 @@ function initControls() {
       else if (how === 'bornno') { store.expBorn = false; store.expError = ''; }
       else if (how === 'bornsave') expBornSave();
       else if (how === 'kind') { store.draftExpecting = t.dataset.id === 'expecting'; }
+    } else if (t.dataset.homeview) {
+      homeViewSet(t.dataset.homeview);
+      window.scrollTo(0, 0);
     } else if (t.dataset.sexed) {
       if (t.dataset.sexed === 'sti') {
         store.sexedSti = store.sexedSti === t.dataset.id ? '' : t.dataset.id;
@@ -14317,6 +14320,12 @@ function caretakerBlock() {
     ${tickRow(bodyCare(p) === 'yes', 'Show it', BODY_CARE_SETTING.on, 'data-bodycare="yes"')}
     ${tickRow(bodyCare(p) === 'no', 'Leave it out', BODY_CARE_SETTING.off, 'data-bodycare="no"')}
     <p class="tiny" style="margin-top:9px">${esc(BODY_CARE_SETTING.note)}</p>
+  </div>
+
+  <p class="sect">How Home looks</p>
+  <div class="card" style="margin-bottom:10px">
+    ${tickRow(homeCalm(), 'Calm', 'Your people, one card for today, and a help button. Everything else one tap away.', 'data-homeview="calm"')}
+    ${tickRow(!homeCalm(), 'Everything', 'Every card on one page, the way it has always been.', 'data-homeview="full"')}
   </div>`;
 }
 
@@ -15017,6 +15026,9 @@ function bodyCareBlock() {
     <p class="sect">Your cycle</p>
     ${cycleWidget()}`;
   }
+  /* Not asked of grandparents, aunts, uncles or fathers. The switch is
+     still in their settings. See homeRole. */
+  if (homeSkipsBodyAsk()) return '';
   const a = BODY_CARE_ASK;
   return `
   <div class="card flat" style="margin-top:14px">
@@ -15030,7 +15042,168 @@ function bodyCareBlock() {
   </div>`;
 }
 
+
+/* ==================================================================
+   THE CALM VIEW, AND WHO SOMEONE IS
+
+   Built after the first person outside the family to try the app, the
+   founder's own mother, said she was overwhelmed the moment she logged
+   in. She was right. Home had grown to seventeen blocks, nine headings
+   and nineteen buttons, because every feature ever built had been
+   given a card on it and nothing had ever been taken off.
+
+   Two fixes, deliberately separate.
+
+   1. THE CALM VIEW IS A CHOICE, NOT A DEFAULT.
+      The full Home stays as it was for anyone who likes it. The calm
+      view shows four things: the greeting, the people, one card for
+      today, and a button for when something is wrong. Everything else
+      is one tap away and nothing is removed. The switch is offered at
+      the very top of the full Home, because the person who needs it is
+      the one who is already overwhelmed and will never go looking in a
+      settings page. It lives on the parent record, which is saved and
+      synced whole, so choosing it on a phone also applies on a laptop.
+
+   2. WHO SOMEONE IS DECIDES WHAT THEY ARE ASKED.
+      A grandmother was being asked whether the body half of the app was
+      for her, meaning her own cycle. The app already knows what the
+      children call her, so it no longer asks grandparents, aunts,
+      uncles or fathers that question. It does not LOCK anything: the
+      same switch is in their settings, because a guess from a name is
+      still a guess, and the app has always refused to decide what
+      someone is shown from how they are described.
+   ================================================================== */
+
+function homeRole() {
+  const c = String((store.parent || {}).calledBy || '');
+  if (['grandma', 'grandpa', 'nana', 'pawpaw'].indexOf(c) !== -1) return 'grand';
+  if (['auntie', 'uncle'].indexOf(c) !== -1) return 'family';
+  if (['dad', 'papa'].indexOf(c) !== -1) return 'dad';
+  if (['mom', 'mama'].indexOf(c) !== -1) return 'mom';
+  return '';
+}
+
+/* Only the unanswered question is skipped. Somebody who has already
+   said yes keeps what they said yes to. */
+function homeSkipsBodyAsk() {
+  return ['grand', 'family', 'dad'].indexOf(homeRole()) !== -1;
+}
+
+function homeCalm() {
+  return (store.parent || {}).homeView === 'calm';
+}
+
+function homeViewSet(v) {
+  if (!store.parent) return;
+  store.parent.homeView = v === 'calm' ? 'calm' : '';
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+}
+
+/* The one door for when something is wrong. Crisis support, the fever
+   guide and the 911 list all live behind it, which is why the crisis
+   row no longer sits on everybody's Home: it is one tap away, inside
+   the place somebody would look when they need it. */
+function needHelpRow() {
+  return `
+  <button class="lrow" data-go="screen" data-id="now" style="align-items:flex-start">
+    <span class="licon" style="background:#F7E9E4">${icon('heart', 18)}</span>
+    <span class="grow">
+      <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">I need help with something</span>
+      <span class="tiny" style="display:block;margin-top:2px">A worried moment with a child, or something
+        happening at home</span>
+    </span>
+    <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+  </button>`;
+}
+
+/* One card, about the child who is selected in the row above it. For a
+   baby not born yet it points at the week they are in instead. */
+function calmTodayCard(kid) {
+  if (!kid) return '';
+  const first = (kid.name || 'Your child').split(/\s+/)[0];
+  if (isExpecting(kid)) {
+    const where = expWhereFor(kid);
+    return `
+    <div class="card leafy">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Today with ${esc(first)}</p>
+      <p class="bodytext" style="margin-top:7px">${esc(where ? expShortLabel(where) + '.' : 'Not born yet.')}
+        What is happening this week, and what to ask at the next appointment.</p>
+      <button class="btn" style="width:100%;margin-top:12px" data-go="screen" data-id="expecting">This week</button>
+    </div>`;
+  }
+  const sum = getAgeSummary({ name: kid.name, birthday: kid.birthday });
+  const age = sum && sum.shortLabel ? sum.shortLabel : '';
+  return `
+  <div class="card leafy">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Today with ${esc(first)}</p>
+    <p class="bodytext" style="margin-top:7px">${age ? esc(age) + '. ' : ''}Three small things picked for
+      today, and new again tomorrow.</p>
+    <button class="btn" style="width:100%;margin-top:12px" data-go="screen" data-id="plan">See today's three</button>
+  </div>`;
+}
+
+function calmSwitchChip() {
+  return `
+  <div style="display:flex;justify-content:center;margin:0 0 10px">
+    <button class="chip" data-homeview="calm">${icon('leaf', 12, 'var(--deep)')} Too much at once? Try the calm view</button>
+  </div>`;
+}
+
+function screenHomeCalm(c) {
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const first = (store.parent.name || '').trim().split(/\s+/)[0];
+  const kids = store.children;
+  const kid = activeChild();
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <h1 class="title">${esc(greet)}${first ? ',' : ''}</h1>
+    ${first ? `<p class="hello">${esc(first)}</p>` : ''}
+  </div>
+  <div class="sc">
+    <div class="kidrow home">
+      ${parentCircle()}
+      ${kids.map(kidCircle).join('')}
+      <button class="kidcirc add" data-go="screen" data-id="addchild">
+        <span class="face plain addface" style="width:62px;height:62px">
+          ${icon('plus', 23, 'var(--sage)')}
+        </span>
+        <span class="kidcirc-name">Add</span>
+        <span class="kidcirc-age">a child</span>
+      </button>
+    </div>
+
+    ${kids.length && kid ? calmTodayCard(kid) : `
+    <div class="card flat" style="margin-top:2px">
+      <p class="bodytext">Add a child and the app shapes itself around their age. That is the only thing
+        to do first.</p>
+      <button class="btn" style="width:100%;margin-top:12px" data-go="screen" data-id="addchild">Add a child</button>
+    </div>`}
+
+    ${needHelpRow()}
+
+    ${/* Kept even here. It is the mother's own urgent symptoms after a
+          birth, and a calm screen that hid a safety button would be the
+          wrong kind of calm. */ showsBodyHalf(store.parent) ? `
+    <button class="lrow" data-go="screen" data-id="momnow" style="align-items:flex-start">
+      <span class="licon" style="background:#F7E9E4">${icon('heart', 18)}</span>
+      <span class="grow">
+        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Something is happening to me</span>
+        <span class="tiny" style="display:block;margin-top:2px">${esc(momNowBlurb())}</span>
+      </span>
+      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+    </button>` : ''}
+
+    <button class="btn ghost" style="width:100%;margin-top:16px" data-homeview="full">Show me everything</button>
+    <p class="tiny" style="text-align:center;margin-top:9px">Nothing is hidden. It is all one tap away, and
+      you can switch back whenever you like.</p>
+  </div>`;
+}
+
 function screenHome(c) {
+  if (homeCalm()) return screenHomeCalm(c);
   const hour = new Date().getHours();
   const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   const first = (store.parent.name || '').trim().split(/\s+/)[0];
@@ -15048,6 +15221,7 @@ function screenHome(c) {
     ${first ? `<p class="hello">${esc(first)}</p>` : ''}
   </div>
   <div class="sc">
+    ${calmSwitchChip()}
     ${installBanner()}
     ${choreCard()}
 
@@ -15108,7 +15282,7 @@ function screenHome(c) {
           is for them. This is for everybody, because a father, a
           grandmother and an adoptive parent can all be the one in the
           house this is written for. */ ''}
-    ${supportRow()}
+    ${needHelpRow()}
 
     <p class="sect">Logs for you</p>
     ${momCheckinCard()}
