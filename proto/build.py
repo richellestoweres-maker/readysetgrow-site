@@ -103,6 +103,7 @@ order = [
     ('signLanguage',        SRC/'data/signLanguage.js'),
     ('cycle',               SRC/'data/cycle.js'),
     ('cycleLog',            SRC/'data/cycleLog.js'),
+    ('sexEd',               SRC/'data/sexEd.js'),
     ('firebaseConfig',      SRC/'data/firebaseConfig.js'),
 ]
 

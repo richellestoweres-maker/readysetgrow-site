@@ -1311,7 +1311,7 @@ const state = {};
     and nothing throws. That is exactly what happened to the Learning
     tabs, and to Jobs, Growth and the vaccine record with them. The
     build now refuses to finish if a data-sub key is not here. */
- 'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab',
+ 'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'sexedTab',
  'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -2505,6 +2505,7 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'trying') html = screenTrying(c);
   else if (v && v.type === 'screen' && v.id === 'induction') html = screenInduction(c);
   else if (v && v.type === 'screen' && v.id === 'birth') html = screenBirth(c);
+  else if (v && v.type === 'screen' && v.id === 'sexed') html = screenSexEd(c);
   /* Any route that lands on a normal child profile for a baby who is
      not born yet is sent to the seed profile instead, rather than
      drawing a page of milestones for somebody with no age. */
@@ -2987,7 +2988,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3744,6 +3745,10 @@ function initControls() {
       else if (how === 'bornno') { store.expBorn = false; store.expError = ''; }
       else if (how === 'bornsave') expBornSave();
       else if (how === 'kind') { store.draftExpecting = t.dataset.id === 'expecting'; }
+    } else if (t.dataset.sexed) {
+      if (t.dataset.sexed === 'sti') {
+        store.sexedSti = store.sexedSti === t.dataset.id ? '' : t.dataset.id;
+      }
     } else if (t.dataset.cyclog) {
       const how = t.dataset.cyclog;
       const who = t.dataset.who || 'me';
@@ -7858,6 +7863,260 @@ function screenExpecting(c) {
 
 
 
+
+
+/* ==================================================================
+   SEX, HONESTLY
+
+   For parents, about the conversation most schools reduce to "do not
+   get pregnant". The organising idea, the rules, and why consent,
+   online safety and puberty are linked rather than repeated, are all
+   in src/data/sexEd.js.
+
+   It appears from nine, on the child's own profile, for sons as well
+   as daughters. The pregnancy tab changes its closing card for a son,
+   because for him the pregnancy is somebody else's.
+   ================================================================== */
+
+function sexedStiCard(i) {
+  const open = store.sexedSti === i.id;
+  const edge = i.cure === 'curable' ? 'var(--sage)'
+    : i.cure === 'clears' ? 'var(--attention, #B5793F)' : 'var(--muted)';
+  return `
+  <div class="card" style="border-left:3px solid ${edge};margin-bottom:10px">
+    <p class="eyebrow">${esc(i.name)}</p>
+    <p class="bodytext" style="margin-top:6px;font-weight:600">${esc(i.silent)}</p>
+    <p class="tiny" style="margin-top:4px;color:${edge}">${esc(STI_CURE[i.cure])}</p>
+    ${open ? `
+      <p class="bodytext" style="margin-top:11px"><strong>How it spreads.</strong> ${esc(i.spread)}</p>
+      <p class="bodytext" style="margin-top:8px"><strong>Testing.</strong> ${esc(i.test)}</p>
+      <p class="bodytext" style="margin-top:8px"><strong>Treatment.</strong> ${esc(i.treat)}</p>
+      <p class="bodytext" style="margin-top:8px"><strong>If it is missed.</strong> ${esc(i.risk)}</p>
+      ${i.boys ? `<div class="callout" style="margin-top:10px"><p style="margin:0">${esc(i.boys)}</p></div>` : ''}
+      ${i.humane ? `<div class="callout" style="margin-top:10px"><p style="margin:0">${esc(i.humane)}</p></div>` : ''}
+      ${i.prevent ? `<p class="tiny" style="margin-top:9px">${esc(i.prevent)}</p>` : ''}
+    ` : ''}
+    <button class="chip" style="margin-top:10px" data-sexed="sti" data-id="${esc(i.id)}">
+      ${open ? 'Close' : 'How it spreads, testing and treatment'}
+    </button>
+  </div>`;
+}
+
+function sexedTwoCol(rows, a, b) {
+  return `
+  <table style="border-collapse:collapse;width:100%;margin-top:8px">
+    ${rows.map((r, i) => `
+      <tr${i ? ' style="border-top:1px solid rgba(0,0,0,.06)"' : ''}>
+        <td style="padding:9px 8px 9px 0;font-size:13px;font-weight:600;color:var(--ink);
+          vertical-align:top;width:38%">${esc(r[a])}</td>
+        <td style="padding:9px 0;font-size:13px;line-height:1.4;color:var(--muted)">${esc(r[b])}</td>
+      </tr>`).join('')}
+  </table>`;
+}
+
+function sexedLinkRow(target, info, iconName) {
+  return `
+  <button class="lrow" data-go="screen" data-id="${esc(target)}">
+    <span class="licon">${icon(iconName, 18)}</span>
+    <span class="grow">
+      <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(info.title)}</span>
+      <span class="tiny" style="display:block;margin-top:2px">${esc(info.sub)}</span>
+    </span>
+    <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+  </button>`;
+}
+
+function screenSexEd(c) {
+  const kid = activeChild();
+  const isSon = !!(kid && kid.sex === 'm');
+  const tab = state.sexedTab || 'why';
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <p class="eyebrow" style="margin-top:6px">For you, to talk with them</p>
+    <h1 class="title sm">${esc(SEXED_TITLE)}</h1>
+    <p class="sub">${esc(SEXED_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('sexedTab', tab, SEXED_TABS)}
+
+    ${tab === 'why' ? `
+      <div class="card leafy">
+        <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} A line worth borrowing</p>
+        <p style="margin:10px 0 0;font-size:17px;line-height:1.45;font-style:italic;color:var(--ink)">
+          \u201C${esc(SEXED_LINE.quote)}\u201D</p>
+        <p class="tiny" style="margin-top:7px">${esc(SEXED_LINE.from)}</p>
+        ${SEXED_INTRO.map((x) => `<p class="bodytext" style="margin:10px 0 0">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(WHY_SILENT.title)}</h4>
+        ${WHY_SILENT.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(WHY_TUBES.title)}</h4>
+        ${WHY_TUBES.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <p class="tiny">${esc(WHY_TUBES.hydro)}</p>
+      </div>
+
+      <div class="card" style="border-left:3px solid var(--sage)">
+        <p class="eyebrow">${esc(WHY_PROPORTION.title)}</p>
+        <p class="bodytext" style="margin-top:8px">${esc(WHY_PROPORTION.body)}</p>
+        <p class="bodytext" style="margin-top:9px">${esc(WHY_PROPORTION.again)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(WHY_DUAL.title)}</h4>
+        ${WHY_DUAL.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout"><p style="margin:0">${esc(WHY_DUAL.line)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(WHY_TALK.title)}</h4>
+        ${WHY_TALK.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <p class="bodytext" style="margin-top:6px;font-weight:600">What seems to help</p>
+        ${list(WHY_TALK.how)}
+        <p class="tiny" style="margin-top:9px">${esc(WHY_WHEN)}</p>
+      </div>
+    ` : ''}
+
+    ${tab === 'stis' ? `
+      <div class="card leafy">
+        <p class="bodytext" style="margin:0">The first line on each card is the one that matters most:
+          how often it causes no symptoms at all. Open any of them for how it spreads, how it is
+          tested and what happens if it is missed.</p>
+      </div>
+      <div class="dsec">
+        ${STI_LIST.map(sexedStiCard).join('')}
+      </div>
+      <div class="callout"><p style="margin:0">${esc(STI_ORAL)}</p></div>
+      <p class="tiny" style="margin-top:10px">${esc(STI_MGEN)}</p>
+    ` : ''}
+
+    ${tab === 'protect' ? `
+      <div class="dsec">
+        <h4>${esc(PROT_CONDOM.title)}</h4>
+        ${sexedTwoCol(PROT_CONDOM.rows, 'what', 'how')}
+        <p class="tiny" style="margin-top:9px">${esc(PROT_CONDOM.note)}</p>
+      </div>
+
+      <div class="card" style="border-left:3px solid var(--sage)">
+        <p class="eyebrow">${esc(PROT_COMPARE.title)}</p>
+        ${sexedTwoCol(PROT_COMPARE.rows, 'what', 'typ')}
+        <p class="bodytext" style="margin-top:10px">${esc(PROT_COMPARE.says)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PROT_TEST.title)}</h4>
+        ${PROT_TEST.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <p class="tiny">${esc(PROT_TEST.us)}</p>
+        <p class="tiny" style="margin-top:7px">${esc(PROT_TEST.uk)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PROT_CONFIDENTIAL.title)}</h4>
+        ${PROT_CONFIDENTIAL.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout"><p style="margin:0">${esc(PROT_CONFIDENTIAL.why)}</p></div>
+        <p class="tiny" style="margin-top:10px">${esc(PROT_CONFIDENTIAL.eob)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PROT_HPV.title)}</h4>
+        ${PROT_HPV.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <p class="bodytext" style="margin-top:4px">${esc(PROT_HPV.us)}</p>
+        <p class="bodytext" style="margin-top:9px">${esc(PROT_HPV.uk)}</p>
+        <p class="tiny" style="margin-top:9px">${esc(PROT_HPV.checked)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>Hepatitis B</h4>
+        <p class="bodytext">${esc(PROT_HEPB)}</p>
+      </div>
+    ` : ''}
+
+    ${tab === 'pregnant' ? `
+      <div class="card leafy">
+        <p class="eyebrow">${icon('heart', 11, 'var(--sage)')} ${esc(PREG_HEAD)}</p>
+        ${PREG_INTRO.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PREG_WHY_HIDE.title)}</h4>
+        <p class="bodytext">${esc(PREG_WHY_HIDE.body)}</p>
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(PREG_WHY_HIDE.so)}</p></div>
+      </div>
+
+      ${isSon ? `
+        <div class="card" style="border-left:3px solid var(--sage)">
+          <p class="eyebrow">${esc(PREG_SON.title)}</p>
+          ${PREG_SON.body.map((x) => `<p class="bodytext" style="margin:9px 0 0">${esc(x)}</p>`).join('')}
+        </div>
+      ` : `
+        <div class="dsec">
+          <h4>If she tells you</h4>
+          ${PREG_SAY.map((x) => `<div class="quote"><p class="why" style="margin:0">${esc(x)}</p></div>`).join('')}
+        </div>
+      `}
+
+      <div class="dsec">
+        <h4>${esc(PREG_CARE.title)}</h4>
+        ${PREG_CARE.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(PREG_OPTIONS.title)}</h4>
+        <p class="bodytext">${esc(PREG_OPTIONS.body)}</p>
+        <p class="tiny" style="margin-top:9px">${esc(PREG_OPTIONS.us)}</p>
+        <p class="tiny" style="margin-top:7px">${esc(PREG_OPTIONS.uk)}</p>
+        <p class="bodytext" style="margin-top:10px">${esc(PREG_OPTIONS.adult)}</p>
+      </div>
+
+      <div class="card" style="border:1.5px solid #E4C9BF;background:#FCF4F1">
+        <p class="eyebrow" style="color:#A85A44">${esc(PREG_HAVEN.title)}</p>
+        <p class="bodytext" style="margin-top:8px">${esc(PREG_HAVEN.us)}</p>
+        <p class="bodytext" style="margin-top:9px">${esc(PREG_HAVEN.line)}</p>
+        <a class="btn" style="display:block;text-align:center;margin-top:10px;text-decoration:none"
+          href="tel:${esc(PREG_HAVEN.phone)}">${esc(PREG_HAVEN.phoneLabel)}</a>
+        <p class="tiny" style="margin-top:8px;text-align:center">${esc(PREG_HAVEN.site)}</p>
+        <p class="tiny" style="margin-top:11px">${esc(PREG_HAVEN.uk)}</p>
+        <p class="bodytext" style="margin-top:10px">${esc(PREG_HAVEN.why)}</p>
+      </div>
+    ` : ''}
+
+    ${tab === 'more' ? `
+      <div class="dsec">
+        <h4>${esc(MORE_READY.title)}</h4>
+        ${MORE_READY.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <div class="callout"><p style="margin:0">${esc(MORE_READY.so)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(MORE_PORN.title)}</h4>
+        ${MORE_PORN.body.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        <p class="bodytext" style="margin-top:4px">${esc(MORE_PORN.hope)}</p>
+        <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(MORE_PORN.say)}</p></div>
+      </div>
+
+      <div class="dsec">
+        <h4>Images and phones</h4>
+        <p class="bodytext">${esc(MORE_IMAGE)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>The rest of it, elsewhere in the app</h4>
+        ${sexedLinkRow('consent', MORE_LINKS.consent, 'heart')}
+        ${sexedLinkRow('online', MORE_LINKS.online, 'shield')}
+        ${sexedLinkRow('growingup', MORE_LINKS.body, 'leaf')}
+      </div>
+    ` : ''}
+
+    ${dsec('Where this comes from', sourceRows(SEXED_SOURCES))}
+    <p class="disclaimer">${esc(SEXED_DISCLAIMER)}</p>
+  </div>`;
+}
 
 /* ==================================================================
    THE DAY LOG
@@ -15880,7 +16139,10 @@ function screenChild(c) {
         'Fever, rashes, crying that will not stop, and when to call',
         'data-go="screen" data-id="now"')}
       ${months != null && months >= 18 ? childRow('leaf', GROW_TITLE, growRowSub(months),
-        'data-go="screen" data-id="growingup"') : ''}`,
+        'data-go="screen" data-id="growingup"') : ''}
+      ${sexedShows(months) ? childRow('shield', SEXED_TITLE,
+        'Infections, protection and testing, and what to say if there is ever a pregnancy',
+        'data-go="screen" data-id="sexed"') : ''}`,
 
     safety: () => `
       ${sectHead('safety', months, 'If something happens')}
