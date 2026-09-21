@@ -173,7 +173,10 @@ function affirmation(lines, o) {
         fill="${o.fill || '#E9EBDF'}"/></svg>`}
     <span class="affirm-in" style="${o.inset || 'inset:0'};${o.text || ''}">
       <span class="affirm-lines">${lines}</span>
-      ${o.heart === false ? '' : `<span class="heart">&#9829;</span>`}
+      ${/* The little heart under each phrase came out at the founder's
+            request. The phrases are the point and they read better alone.
+            Pass heart: true to bring one back for a particular shape. */
+        o.heart === true ? `<span class="heart">&#9829;</span>` : ''}
     </span>
   </div>`;
 }
