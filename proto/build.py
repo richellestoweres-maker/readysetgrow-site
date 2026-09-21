@@ -104,6 +104,8 @@ order = [
     ('cycle',               SRC/'data/cycle.js'),
     ('cycleLog',            SRC/'data/cycleLog.js'),
     ('sexEd',               SRC/'data/sexEd.js'),
+    ('willowShort',         SRC/'data/willowShort.js'),
+    ('findIndex',           SRC/'data/findIndex.js'),
     ('firebaseConfig',      SRC/'data/firebaseConfig.js'),
 ]
 
@@ -427,6 +429,27 @@ desktop_shell = (
 )
 
 desktop_html = assemble(desktop_shell)
+
+# SMALLER ON THE WIRE. The source is heavily commented on purpose, and
+# none of those comments need to travel to a phone. TypeScript's own
+# parser removes them, which is safer than any hand written stripping
+# because it understands strings and template literals. The code itself
+# is left exactly as written. If TypeScript is missing, the unstripped
+# file ships, which is bigger but identical in behavior.
+def strip_comments(html):
+    import subprocess
+    here = pathlib.Path(__file__).resolve().parent / 'strip.js'
+    def one(m):
+        r = subprocess.run(['node', str(here)], input=m.group(2), capture_output=True, text=True)
+        if r.returncode != 0 or not r.stdout.strip():
+            print('strip    : skipped, ' + (r.stderr.strip()[:120] or 'no output'))
+            return m.group(0)
+        return m.group(1) + r.stdout + m.group(3)
+    return re.sub(r'(<script>\n)([\s\S]*?)(\n</script>)', one, html)
+
+before = len(desktop_html)
+desktop_html = strip_comments(desktop_html)
+print('strip    : %d -> %d bytes' % (before, len(desktop_html)))
 # The repo root IS the website. GitHub Pages serves index.html from here,
 # which is why the built file lands beside the source rather than in a
 # folder of its own. Nothing in the Pages settings has to change, ever.

@@ -610,6 +610,111 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 .obwhat-t{display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.35}
 .obwhat-b{display:block;font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45}
 
+/* FIND ANYTHING */
+.findchip{
+  display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px 0 10px;border-radius:17px;
+  background:#fff;border:1px solid rgba(74,103,65,.2);cursor:pointer;
+  font:600 13px/1 inherit;color:var(--deep);
+}
+.findchip:focus-visible,.findbar:focus-visible{outline:2px solid var(--deep);outline-offset:2px}
+.findbar{
+  display:flex;align-items:center;gap:10px;width:100%;margin:0 0 12px;padding:13px 14px;
+  background:#fff;border:1px solid rgba(74,103,65,.18);border-radius:14px;cursor:pointer;text-align:left;
+  font:400 14.5px/1.3 inherit;color:var(--muted);
+}
+.findfield{
+  display:flex;align-items:center;gap:10px;padding:0 14px;background:#fff;
+  border:1.5px solid rgba(74,103,65,.3);border-radius:14px;
+}
+.findfield:focus-within{border-color:var(--deep)}
+.findfield input{
+  flex:1;min-width:0;border:0;outline:0;background:transparent;padding:14px 0;
+  font:400 16px/1.3 inherit;color:var(--ink);
+}
+
+/* WILLOW'S WELCOME. A card over the app, not a page. */
+.wwel-scrim{
+  position:fixed;inset:0;z-index:60;overflow-y:auto;
+  background:rgba(44,49,38,.34);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:max(28px,env(safe-area-inset-top)) 16px 28px;
+}
+.wwel{
+  width:100%;max-width:420px;margin:auto 0;background:#FBFAF6;border-radius:26px;
+  padding:26px 20px 18px;box-shadow:0 24px 60px rgba(30,36,24,.28);
+  animation:wwelUp .45s cubic-bezier(.2,.8,.2,1) both;
+}
+.wwel-face{position:relative;width:68px;height:68px;margin:0 auto}
+.wwel-leaf{
+  position:absolute;inset:0;border-radius:50%;background:var(--deep);
+  display:grid;place-items:center;
+}
+.wwel-ring{
+  position:absolute;inset:-7px;border-radius:50%;border:2px solid rgba(124,144,104,.45);
+  animation:wwelBreathe 3.2s ease-in-out infinite;
+}
+.wwel-hi{
+  font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:28px;line-height:1.15;
+  text-align:center;color:var(--ink);margin:14px 0 4px;text-wrap:balance;
+}
+.wwel-chat{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.wwel-bub{
+  margin:0;background:#EDF1E6;border-radius:4px 16px 16px 16px;padding:11px 14px;
+  font-size:14.5px;line-height:1.5;color:var(--body);
+  animation:wwelIn .4s ease both;
+}
+.wwel-sect{
+  margin:18px 0 6px;font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--sage);animation:wwelIn .4s ease both;
+}
+.wwel-helps{display:flex;flex-direction:column}
+.wwel-help{
+  display:flex;gap:11px;align-items:flex-start;padding:9px 0;
+  border-top:1px solid rgba(0,0,0,.055);animation:wwelIn .4s ease both;
+}
+.wwel-help:first-child{border-top:0}
+.wwel-ic{
+  width:30px;height:30px;border-radius:10px;flex:none;background:#EDF1E6;
+  display:grid;place-items:center;
+}
+.wwel-skip{
+  display:block;width:100%;margin-top:8px;padding:11px;background:none;border:0;cursor:pointer;
+  font:600 14px/1.2 inherit;color:var(--deep);
+}
+.wwel-skip:focus-visible{outline:2px solid var(--deep);outline-offset:2px;border-radius:10px}
+@keyframes wwelUp{from{opacity:0;transform:translateY(22px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes wwelIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes wwelBreathe{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.08);opacity:.35}}
+@media (prefers-reduced-motion:reduce){
+  .wwel,.wwel-bub,.wwel-sect,.wwel-help,.wwel-ring{animation:none}
+}
+
+/* WILLOW'S SHORT VERSION. Opaque for the same reason as .obsay-body:
+   the phrases in the background must never read through her words. */
+.short{
+  background:#F1F4EB;border:1px solid rgba(74,103,65,.14);
+  border-radius:18px;padding:14px 15px 12px;margin:0 0 14px;
+}
+.short-head{display:flex;align-items:center;gap:9px}
+.short-head .obsay-face{width:26px;height:26px;margin:0}
+.short-say{margin:10px 0 0;font-size:15.5px;line-height:1.5;color:var(--ink);font-weight:500}
+.short-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.short-list li{
+  position:relative;padding-left:16px;font-size:14px;line-height:1.5;color:var(--body);
+}
+.short-list li::before{
+  content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;border-radius:50%;
+  background:var(--sage);
+}
+.short-more{
+  display:flex;align-items:center;justify-content:center;gap:6px;width:100%;
+  margin-top:13px;padding:11px 12px;border-radius:12px;cursor:pointer;
+  background:#fff;border:1px solid rgba(74,103,65,.22);
+  font:600 14px/1.2 inherit;color:var(--deep);
+}
+.short-more:focus-visible{outline:2px solid var(--deep);outline-offset:2px}
+.short-more.less{background:transparent;border-style:dashed}
+
 /* WILLOW ON TODAY, above the plan.
    Her leaf beside it so it plainly reads as her voice rather than as
    another block of app copy. */

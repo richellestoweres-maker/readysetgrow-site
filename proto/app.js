@@ -164,7 +164,7 @@ function pickAffirmations(seed) {
 function affirmation(lines, o) {
   o = o || {};
   /* The words sit in the middle of their shape with the heart under
-     them, rather than being placed by hand per shape. One box, centred,
+     them, rather than being placed by hand per shape. One box, centered,
      so every bubble reads the same however many lines it holds. */
   return `
   <div class="affirm${o.cls ? ' ' + o.cls : ''}" style="${o.box || ''}">
@@ -494,7 +494,7 @@ const STORE_KEY = 'readysetgrow:v2';
    A row of names is a list. A row of faces is your family. Every
    profile, hers included, can carry a real photo or one of the drawn
    avatars, and a child with neither falls back to the growth sprout at
-   their stage, which is still better than a grey silhouette.
+   their stage, which is still better than a gray silhouette.
 
    Photos never leave her account. They are resized down to 256 square
    in the browser before anything is stored, which keeps a 4MB phone
@@ -559,7 +559,7 @@ function parentFace(size) {
   return faceHTML(store.parent && store.parent.photo, size, 'me');
 }
 
-/* Down to 256 square, centre cropped, before anything is saved. A phone
+/* Down to 256 square, center cropped, before anything is saved. A phone
    photo is four thousand pixels wide and nobody needs that to fill a
    circle forty pixels across.
 
@@ -628,7 +628,7 @@ function readPhotoFile(file, done) {
    CROPPING
 
    A square circle is a brutal thing to do to a photo somebody chose.
-   Centre cropping puts the middle of the picture in the circle, and
+   Center cropping puts the middle of the picture in the circle, and
    the middle of a photo of a child is very often their chest.
 
    So: pick, then move and zoom it until the face is where you want it,
@@ -701,8 +701,8 @@ function cropOpen(file, target) {
     crop.h = img.naturalHeight || img.height;
     crop.scale = 1;
     const f = cropBase();
-    /* Start centred, which is the same place the old automatic crop
-       used, so doing nothing gives the old behaviour. */
+    /* Start centered, which is the same place the old automatic crop
+       used, so doing nothing gives the old behavior. */
     crop.x = (CROP_VIEW - crop.w * f) / 2;
     crop.y = (CROP_VIEW - crop.h * f) / 2;
     crop.wired = false;
@@ -1012,7 +1012,7 @@ function newChildRecord(name, birthday) {
        her own record, so it syncs with everything else about her. */
     cycleDays: {},
     /* Weights, lengths and head measurements, one entry per occasion,
-       always stored in kilograms and centimetres whatever the parent
+       always stored in kilograms and centimeters whatever the parent
        reads. See src/data/growth.js. */
     growth: [],
     /* Logs belong to the child rather than to the app, which is what
@@ -1110,7 +1110,7 @@ const store = {
   learnBand: '',
   learnTab: 'day',
 
-  /* Pounds and inches or kilograms and centimetres. A preference of the
+  /* Pounds and inches or kilograms and centimeters. A preference of the
      parent's, not of the child's, because a household reads one or the
      other and the numbers are stored metric either way. */
   /* Notification settings. Kept locally as well as on the account so
@@ -1146,7 +1146,7 @@ const store = {
 
   /* The day the add to home screen banner was waved away. It comes back
      a week later rather than never, because somebody who says not now
-     in a hospital car park genuinely might say yes on the sofa, and
+     in a hospital parking lot genuinely might say yes on the sofa, and
      somebody who never wants it will wave it away twice and then it
      stops for good. */
   installHidden: '',
@@ -2144,10 +2144,10 @@ function screenMilestones(c) {
     </div>
     <div class="sc"><div class="empty">
       ${growthSVG(c.growth ? c.growth.order : 6, 78)}
-      <p><strong style="color:var(--ink)">${past ? 'Milestone tracking runs to five years.' : 'The first checkpoint is at two months.'}</strong></p>
+      <p><strong style="color:var(--ink)">${past ? 'Milestone tracking runs to 5 years.' : 'The first checkpoint is at 2 months.'}</strong></p>
       <p>${past
         ? 'The CDC checklists stop at five. School age progress tracking, skills and subjects rather than milestones, is a separate build.'
-        : 'Checkpoints line up with well child visits, starting at two months.'}</p>
+        : 'Checkpoints line up with well child visits, starting at 2 months.'}</p>
     </div></div>`;
   }
 
@@ -2510,6 +2510,7 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'birth') html = screenBirth(c);
   else if (v && v.type === 'screen' && v.id === 'sexed') html = screenSexEd(c);
   else if (v && v.type === 'screen' && v.id === 'mycycle') html = screenMyCycle(c);
+  else if (v && v.type === 'screen' && v.id === 'find') html = screenFind();
   /* Any route that lands on a normal child profile for a baby who is
      not born yet is sent to the seed profile instead, rather than
      drawing a page of milestones for somebody with no age. */
@@ -2565,6 +2566,10 @@ function render() {
   /* Home is hers and never asks which child you mean, which is the whole
      point of it being the middle tab. */
   else html = screenHome(c);
+
+  /* Willow's short version on top of the long reading pages, with the
+     full text folded under Read the full details. See willowShort.js. */
+  if (v && v.type === 'screen') html = shortWrap(v.id, html, c);
 
   // Inputs inside the screen are destroyed by this swap, so remember where
   // the caret was and put it back, or typing loses focus every keystroke.
@@ -2779,6 +2784,12 @@ function initControls() {
     if (e.target.matches('[data-wake]')) { state.wakeTime = e.target.value || '06:30'; render(); }
     else if (e.target.id === 'askIn') { state.askQuery = e.target.value; }
     else if (e.target.id === 'willowIn') { willow.input = e.target.value; }
+    else if (e.target.id === 'findQ') {
+      /* Only the results are redrawn, so the box keeps its caret. */
+      state.findQ = e.target.value;
+      const box = document.getElementById('findResults');
+      if (box) box.innerHTML = findResultsHtml(state.findQ);
+    }
     else if (e.target.matches('[data-sharefield]')) {
       /* No repaint while she types, or the caret jumps. The value is
          read back off the element when she presses the button. */
@@ -2812,7 +2823,7 @@ function initControls() {
       /* No repaint here, or the caret jumps on every keystroke. That
          means the Post button would keep whatever state it was painted
          with, so it is switched by hand. Without this, typing a post
-         with no photo leaves Post greyed out and nothing happens. */
+         with no photo leaves Post grayed out and nothing happens. */
       const saveBtn = document.querySelector('[data-post="save"]');
       if (saveBtn) saveBtn.disabled = !postHasContent();
       saveStore();
@@ -2992,7 +3003,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3400,7 +3411,7 @@ function initControls() {
       if (kid) {
         const bits = t.dataset.id.split(':');
         /* A tick records today, which is right the overwhelming
-           majority of the time because it is tapped in the car park.
+           majority of the time because it is tapped in the parking lot.
            Change is there for the rest. */
         const has = !!vaxRecord(kid)[t.dataset.id];
         vaxSetDose(kid, bits[0], Number(bits[1]), has ? '' : ciToday());
@@ -3770,6 +3781,27 @@ function initControls() {
     } else if (t.dataset.homeview) {
       homeViewSet(t.dataset.homeview);
       window.scrollTo(0, 0);
+    } else if (t.dataset.short) {
+      const key = t.dataset.key || '';
+      if (t.dataset.short === 'open') shortOpen[key] = true;
+      else shortOpen[key] = false;
+      /* Closing it again puts her back at the top of the summary rather
+         than somewhere in the middle of a page that just got shorter. */
+      if (t.dataset.short === 'close') {
+        const scr = document.getElementById('screen');
+        if (scr) scr.scrollTop = 0;
+        window.scrollTo(0, 0);
+      }
+    } else if (t.dataset.find) {
+      if (t.dataset.find === 'go') findGo(t.dataset.i);
+      else if (t.dataset.find === 'ask') {
+        willow.open = true;
+        willow.stick = true;
+        willowAsk(state.findQ || '');
+        return;
+      }
+    } else if (t.dataset.readfull) {
+      readFullSet(t.dataset.readfull === 'yes');
     } else if (t.dataset.sexed) {
       if (t.dataset.sexed === 'sti') {
         store.sexedSti = store.sexedSti === t.dataset.id ? '' : t.dataset.id;
@@ -4390,7 +4422,7 @@ function subTabs(group, current, tabs) {
       aria-pressed="${current === t.id}">${esc(t.label)}</button>`).join('')}</div>`;
 }
 
-/* A labelled block, matching the dsec pattern used by the detail views. */
+/* A labeled block, matching the dsec pattern used by the detail views. */
 function dsec(label, inner) {
   if (!inner) return '';
   return `<div class="dsec"><h4>${esc(label)}</h4>${inner}</div>`;
@@ -4408,7 +4440,7 @@ function steps(items) {
 
 /* THE SOURCE BADGE.
 
-   The little green tile is 38px square and the organisation names are
+   The little green tile is 38px square and the organization names are
    not. "AAP, HealthyChildren" and "Office on Women's Health" were
    spilling out of it and running over the text beside them.
 
@@ -4459,7 +4491,7 @@ function sourceCode(org) {
 function sourceRow(sc) {
   const domain = String(sc.url || '').replace(/^https?:\/\//, '').split('/')[0];
   const org = String(sc.org || '').trim();
-  /* Only worth printing the organisation when the badge had to shorten
+  /* Only worth printing the organization when the badge had to shorten
      it. "CDC" under a badge that says CDC is noise. */
   const showOrg = org && org !== sourceCode(org);
   return `
@@ -5323,7 +5355,7 @@ function screenSigns(c) {
 
    Its own tab, because going places with a child is a whole category
    this app had nothing to say about, and because it was the thing she
-   had not thought of and immediately recognised as missing.
+   had not thought of and immediately recognized as missing.
 
    The order of the tabs is deliberate. What not to carry comes before
    what to carry, because renting at the other end changes the shape of
@@ -5672,7 +5704,7 @@ function screenRules(c) {
 
     <div class="dsec">
       <h4>What gets a post held</h4>
-      <p class="bodytext" style="margin:0 0 9px">Posts go up straight away. Three things are held
+      <p class="bodytext" style="margin:0 0 9px">Posts go up straight away. 3 things are held
       back for a person to read first, and they are held rather than deleted.</p>
       ${list([
         'A medication dose. A wrong number passed between strangers is the one mistake here that can actually hurt a child.',
@@ -5736,6 +5768,9 @@ function screenAbout(c) {
       the American Academy of Pediatrics, the CDC and equivalent bodies, and the pages that lean on a
       specific document link to it at the bottom. Where the evidence is weaker than the packaging
       suggests, the app says so rather than repeating the claim.</p>
+      ${CONTENT_REVIEW.name ? `
+      <p class="bodytext" style="margin-top:9px"><strong style="color:var(--ink)">Medical review.</strong>
+        ${esc(CONTENT_REVIEW.scope || 'The health content')} reviewed by ${esc(CONTENT_REVIEW.name)}${CONTENT_REVIEW.credential ? ', ' + esc(CONTENT_REVIEW.credential) : ''}${CONTENT_REVIEW.date ? ', ' + esc(CONTENT_REVIEW.date) : ''}.</p>` : ''}
     </div>
 
     ${privacyLine()}
@@ -6080,7 +6115,7 @@ function privacyLine() {
 
    Everything about why this screen exists and why the wording is what
    it is lives in src/data/support.js. What lives here is the two
-   pieces of behaviour that the content cannot do on its own.
+   pieces of behavior that the content cannot do on its own.
 
    THE FIRST is the way out. It is fixed to the corner so it is in the
    same place no matter how far down somebody has scrolled, it takes
@@ -6476,7 +6511,7 @@ function onlineAgeBlock(months) {
 function onlineRowSub(months) {
   const st = onlineStageFor(months);
   if (!st) return 'Screens, games, and the people on the other side of them';
-  if (months < 60) return 'Screen rules that are easy now and a fight at eleven';
+  if (months < 60) return 'Screen rules that are easy now and a fight at 11';
   if (months < 108) return 'Games with strangers in them, and what to set up first';
   if (months < 144) return 'The years it changes, and the conversations to have before it does';
   if (months < 192) return 'Phones, accounts, and the promise that makes them tell you';
@@ -6923,7 +6958,7 @@ function pubAskSex(kid, first) {
       ${esc(first)} has, so this needs to know which one to show.</p>
     <p class="tiny" style="margin-top:8px">It is the same answer the growth curves use, so you only
       answer it once, and you can change it whenever you like. If it is more complicated than the
-      two options, pick the one whose changes you are expecting and read the other half on the other
+      2 options, pick the one whose changes you are expecting and read the other half on the other
       tabs, which are there for everybody at every age.</p>
   </div>
   <button class="lrow" data-growth="sex" data-id="f">
@@ -7163,7 +7198,7 @@ function pubTrackBlock(c) {
   </div>
 
   ${/* The direct question, asked from nine, which is the early end of
-       ordinary. Before that it would be alarming, and after fifteen it
+       ordinary. Before that it would be alarming, and after 15 it
        would be late. Asked rather than assumed from an age, because the
        spread is the whole point. */
     kid.sex === 'f' && !started && typeof c.months === 'number' && c.months >= 108
@@ -7763,8 +7798,8 @@ function screenExpecting(c) {
         <div class="card" style="border-left:3px solid var(--sage)">
           <p class="eyebrow">${icon('note', 11, 'var(--sage)')} If induction comes up</p>
           <p class="bodytext" style="margin-top:8px">There is a chart that decides what happens
-            first, and whether your waters get broken now or later. It is five numbers out of
-            thirteen and it is in your notes. You are allowed to ask for it.</p>
+            first, and whether your waters get broken now or later. It is 5 numbers out of
+            13 and it is in your notes. You are allowed to ask for it.</p>
           <button class="btn" style="width:100%;margin-top:11px" data-go="screen" data-id="birth">
             ${esc(BIRTH_TITLE)}, all of it
           </button>
@@ -7894,7 +7929,7 @@ function screenExpecting(c) {
    SEX, HONESTLY
 
    For parents, about the conversation most schools reduce to "do not
-   get pregnant". The organising idea, the rules, and why consent,
+   get pregnant". The organizing idea, the rules, and why consent,
    online safety and puberty are linked rather than repeated, are all
    in src/data/sexEd.js.
 
@@ -8386,7 +8421,7 @@ function cyclogFirstAnswer(val) {
    the parent key list in flushStore. See newChildRecord.
    ================================================================== */
 
-/* One link in the cascade. The verdict drives the colour, so that
+/* One link in the cascade. The verdict drives the color, so that
    which claims hold and which do not is legible before reading. */
 function birthCascadeRow(l) {
   const edge = l.verdict === 'holds' ? 'var(--sage)'
@@ -8576,7 +8611,7 @@ function screenBirth(c) {
         <div class="card" style="border-left:3px solid var(--sage)">
           <p class="eyebrow">What you have said matters to you</p>
           <div style="margin-top:9px">${birthPrefSummary(prefs)}</div>
-          <p class="tiny" style="margin-top:10px">${esc(PREF_CAESAREAN_NOTE)}</p>
+          <p class="tiny" style="margin-top:10px">${esc(PREF_CESAREAN_NOTE)}</p>
           <p class="tiny" style="margin-top:9px">${esc(PREF_SAVE_NOTE)}</p>
           ${Object.keys(prefs).length ? `
             <button class="chip" style="margin-top:10px" data-birth="prefclear">Clear these</button>` : ''}
@@ -8677,8 +8712,8 @@ function screenBirth(c) {
       </div>
 
       <div class="dsec">
-        <h4>${esc(PLACE_CENTRE.title)}</h4>
-        <p class="bodytext">${esc(PLACE_CENTRE.body)}</p>
+        <h4>${esc(PLACE_CENTER.title)}</h4>
+        <p class="bodytext">${esc(PLACE_CENTER.body)}</p>
       </div>
     ` : ''}
 
@@ -8830,13 +8865,13 @@ function screenBirth(c) {
         </div>
 
         <div class="dsec">
-          <h4>${esc(WRONG_CAESAREAN.title)}</h4>
-          ${list(WRONG_CAESAREAN.why)}
-          <p class="bodytext" style="margin-top:10px">${esc(WRONG_CAESAREAN.says)}</p>
+          <h4>${esc(WRONG_CESAREAN.title)}</h4>
+          ${list(WRONG_CESAREAN.why)}
+          <p class="bodytext" style="margin-top:10px">${esc(WRONG_CESAREAN.says)}</p>
           <p class="bodytext" style="margin-top:10px;font-weight:600">What was changed to bring that
             down</p>
-          ${list(WRONG_CAESAREAN.thresholds)}
-          <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(WRONG_CAESAREAN.variation)}</p></div>
+          ${list(WRONG_CESAREAN.thresholds)}
+          <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(WRONG_CESAREAN.variation)}</p></div>
         </div>
 
         <div class="dsec">
@@ -9033,7 +9068,7 @@ function screenInduction(c) {
       <div class="card" style="border-left:3px solid var(--sage)">
         ${total === null ? `
           <p class="eyebrow">${done} of 5 chosen</p>
-          <p class="bodytext" style="margin-top:8px">Pick all five and the total appears. A part of
+          <p class="bodytext" style="margin-top:8px">Pick all 5 and the total appears. A part of
             a Bishop score is not a Bishop score, so nothing is added up until it is complete.</p>
         ` : `
           <p class="eyebrow">Your total</p>
@@ -9299,7 +9334,7 @@ function ttcShows() {
   return sitShows('trying');
 }
 
-/* A supplement group. The tone drives the colour, so the three groups
+/* A supplement group. The tone drives the color, so the three groups
    read as three different strengths of claim at a glance rather than
    as one undifferentiated list. */
 function ttcSuppGroup(g) {
@@ -9677,7 +9712,7 @@ function screenSafety(c) {
           ${list(d.soShouldYouBuyOne)}
 
           <div class="card flat" style="margin-top:10px">
-            <p class="eyebrow">${icon('info', 11, 'var(--taupe)')} Why this is labelled the way it is</p>
+            <p class="eyebrow">${icon('info', 11, 'var(--taupe)')} Why this is labeled the way it is</p>
             <p class="bodytext" style="margin-top:5px">${esc(d.whyWeLabelItThisWay)}</p>
           </div>
         </div>`;
@@ -9854,7 +9889,7 @@ const PUMP_TABS = [
 /* Community tips carry a visible tag so they never read as clinical. */
 /* One evidence tag for the whole app. An earlier duplicate of this
    function lived here and was silently shadowed by the later one, which
-   meant the pumping screen was labelling standard practice as an
+   meant the pumping screen was labeling standard practice as an
    unstudied parent tip. Removed, and the odd evidence id it depended on
    was normalized in the data. */
 
@@ -10274,7 +10309,7 @@ function screenPostpartum(c) {
   <div class="sc-head">
     <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
     <h1 class="title sm" style="margin-top:6px">You, after</h1>
-    <p class="sub">Pregnancy gets forty weeks of attention. This gets one appointment. Here is the rest.</p>
+    <p class="sub">Pregnancy gets 40 weeks of attention. This gets one appointment. Here is the rest.</p>
   </div>
   <div class="sc">
     ${now ? `
@@ -10730,7 +10765,7 @@ function askBlock(c) {
    makes it the one place where safety design matters most.
 
    NOTHING HERE IS LIVE YET. The posts below are written examples,
-   labelled as examples on the screen, because a prototype that shows
+   labeled as examples on the screen, because a prototype that shows
    invented people as though they were real users is a lie that gets
    harder to walk back the longer it sits there.
 
@@ -10744,7 +10779,7 @@ function askBlock(c) {
 const COMMUNITY_ROOMS = [
   { id: 'nights', label: 'The Night Shift', blurb: 'For whoever is awake right now', icon: 'moon' },
   { id: 'pumping', label: 'Pumping', blurb: 'Flanges, output, freezer stashes', icon: 'drop' },
-  { id: 'fourth', label: 'Fourth Trimester', blurb: 'The first twelve weeks', icon: 'heart' },
+  { id: 'fourth', label: 'Fourth Trimester', blurb: 'The first 12 weeks', icon: 'heart' },
   { id: 'feeding', label: 'Feeding', blurb: 'However you are doing it', icon: 'utensils' },
   { id: 'toddlers', label: 'Big Feelings', blurb: 'Toddlers and preschoolers', icon: 'people' },
   { id: 'teens', label: 'Teen Years', blurb: 'The ones who stopped talking', icon: 'chat' },
@@ -10836,7 +10871,7 @@ const COMMUNITY_SAMPLE = [
   },
   {
     room: 'Pumping', who: 'A parent, 4 months in', when: '11:02 PM',
-    body: 'Measured my nipple like the app said and I have been using a flange 7mm too big this whole time. Four months. No wonder it hurt.',
+    body: 'Measured my nipple like the app said and I have been using a flange 7mm too big this whole time. 4 months. No wonder it hurt.',
     replies: 23, hearts: 88,
   },
   {
@@ -11720,7 +11755,7 @@ function screenCommunity(c) {
       <span class="licon">${icon('bulb', 18, 'var(--sage)')}</span>
       <span class="grow">
         <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">What worked for us</span>
-        <span class="tiny" style="display:block;margin-top:2px">Output, clogs, and the kit. Every tip labelled for how well it holds up.</span>
+        <span class="tiny" style="display:block;margin-top:2px">Output, clogs, and the kit. Every tip labeled for how well it holds up.</span>
       </span>
       <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
     </button>
@@ -12056,7 +12091,7 @@ function screenUnderstand(c) {
         <p class="bodytext" style="margin-top:5px">
           ${esc(state.name || 'Your baby')} is ${esc(String(c.months))} months old by the calendar and
           about ${esc(String(c.corrected))} months corrected. Milestone windows in this app will use the
-          corrected number until two years, which is what the American Academy of Pediatrics recommends.
+          corrected number until 2 years, which is what the American Academy of Pediatrics recommends.
         </p>
       </div>` : ''}
 
@@ -12406,7 +12441,7 @@ function cycleCard(passed) {
           ? info.daysLate + ' day' + (info.daysLate === 1 ? '' : 's') + ' past the estimate'
           : 'estimated, about ' + info.daysToNext + ' day' + (info.daysToNext === 1 ? '' : 's') + ' away')}
       ${row('Fertile window', cycleDateLabel(info.fertileStart) + ' to ' + cycleDateLabel(info.fertileEnd),
-        info.inFertileWindow ? 'today falls inside it' : 'estimated, the six days ending at ovulation')}
+        info.inFertileWindow ? 'today falls inside it' : 'estimated, the 6 days ending at ovulation')}
       ${row('If you are pregnant', info.pregnancyLabel,
         'due ' + cycleDateLabelWithYear(info.dueDate) + ', by last period')}
     </div>
@@ -12651,7 +12686,7 @@ function passwordBlock() {
         placeholder="Your current password" autocomplete="current-password"
         style="margin-top:8px;width:100%" />
       <input class="inp" type="password" id="pwNew" data-pw="next" value="${esc(pw.next)}"
-        placeholder="New password, at least six characters" autocomplete="new-password"
+        placeholder="New password, at least 6 characters" autocomplete="new-password"
         style="margin-top:8px;width:100%" />
       <div style="display:flex;gap:8px;margin-top:11px;justify-content:flex-end;flex-wrap:wrap">
         <button class="chip" data-pwdo="close">Cancel</button>
@@ -12674,7 +12709,7 @@ function passwordBlock() {
 async function pwChange() {
   if (pw.busy) return;
   if (!pw.current || !pw.next) { pw.note = 'Both boxes need filling in.'; pw.tone = 'bad'; render(); return; }
-  if (String(pw.next).length < 6) { pw.note = 'A new password needs at least six characters.'; pw.tone = 'bad'; render(); return; }
+  if (String(pw.next).length < 6) { pw.note = 'A new password needs at least 6 characters.'; pw.tone = 'bad'; render(); return; }
   pw.busy = true; pw.note = ''; render();
   try {
     const { fbAuth, authMod } = await loadFirebase();
@@ -12961,7 +12996,7 @@ function authMessage(code) {
   const map = {
     'auth/invalid-email': 'That email address does not look right.',
     'auth/missing-password': 'Please enter a password.',
-    'auth/weak-password': 'Passwords need to be at least six characters.',
+    'auth/weak-password': 'Passwords need to be at least 6 characters.',
     'auth/email-already-in-use': 'There is already an account with that email. Try signing in instead.',
     'auth/invalid-credential': 'That email and password do not match an account.',
     'auth/user-not-found': 'No account with that email yet. Create one below.',
@@ -13083,7 +13118,7 @@ function screenAuth() {
   <div class="sc-head">
     <h1 class="title">${signup ? 'Welcome' : 'Welcome back'}</h1>
     <p class="sub">${signup
-      ? 'One profile for you, one for each of them, and eighteen years of knowing what is going on.'
+      ? 'Your family\'s guide from pregnancy to 18. Track it, learn it, and ask Willow anything, any hour.'
       : 'Everything is where you left it.'}</p>
   </div>
   <div class="sc" style="max-width:430px">
@@ -13111,7 +13146,7 @@ function screenAuth() {
     <div class="card flat" style="margin-bottom:8px">
       <p class="eyebrow">Password</p>
       <input class="inp" id="authPass" type="password" value="${esc(f.password)}"
-        placeholder="${signup ? 'At least six characters' : 'Your password'}"
+        placeholder="${signup ? 'At least 6 characters' : 'Your password'}"
         autocomplete="${signup ? 'new-password' : 'current-password'}"
         style="margin-top:7px;width:100%" />
     </div>
@@ -13262,7 +13297,8 @@ function topBar(markOnly) {
   return updateBar() + `
   <div class="topbar">
     <div class="topbar-left">
-      ${deep ? `<button class="backchip" data-back="offchild">${icon('back', 15, 'var(--deep)')} Back</button>` : ''}
+      ${deep ? `<button class="backchip" data-back="offchild">${icon('back', 15, 'var(--deep)')} Back</button>`
+        : `<button class="findchip" data-go="screen" data-id="find" aria-label="Find anything">${icon('search', 16, 'var(--deep)')}<span>Find</span></button>`}
     </div>
     ${mark}
     <div class="me-slot">
@@ -13389,7 +13425,7 @@ function pendingNotices() {
       out.push({
         icon: 'sun',
         title: 'How ' + ((k.name || 'they').split(/\s+/)[0]) + ' is doing today',
-        sub: 'Thirty seconds, on their profile',
+        sub: '30 seconds, on their profile',
         attrs: 'data-child="' + esc(k.id) + '"',
       });
     }
@@ -13449,7 +13485,7 @@ const CYCLE_BLEED_DAYS = 5;
 
    Every date lives on the parent record, so it syncs with everything
    else. lastPeriod is kept as the newest entry so every existing screen
-   and the pregnancy maths carry on working untouched. */
+   and the pregnancy math carry on working untouched. */
 
 function periods() {
   const p = store.parent || {};
@@ -13684,7 +13720,7 @@ function cycleNudge() {
   <div class="card" style="border-left:3px solid var(--sage)">
     <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} From Willow</p>
     <p class="bodytext" style="margin-top:7px">You have not logged how you have been feeling for a couple of
-      days. Want to add today? It takes about ten seconds.</p>
+      days. Want to add today? It takes about 10 seconds.</p>
     <div class="chips" style="margin-top:11px">
       <button class="chip" data-go="screen" data-id="mycycle">Log today</button>
       <button class="chip" data-mycycle="hide">Not today</button>
@@ -13754,7 +13790,7 @@ function cycleWidget() {
       <p class="eyebrow">${icon('calendar', 11, 'var(--sage)')} Your cycle</p>
       <p class="bodytext" style="margin-top:5px">
         Tap the day your last period started and this fills itself in. Log each one as it comes and
-        the app works out your own average rather than assuming twenty eight days.
+        the app works out your own average rather than assuming 28 days.
       </p>
       ${editing ? cycleCalendar(
         { lastPeriod: ciToday(), cycleLength: CYCLE_AVERAGE_LENGTH }, store.calMonth || 0, true) : ''}
@@ -14502,6 +14538,12 @@ function caretakerBlock() {
   <div class="card" style="margin-bottom:10px">
     ${tickRow(homeCalm(), 'Calm', 'Your people, one card for today, and a help button. Everything else one tap away.', 'data-homeview="calm"')}
     ${tickRow(!homeCalm(), 'Everything', 'Every card on one page, the way it has always been.', 'data-homeview="full"')}
+  </div>
+
+  <p class="sect">Long pages</p>
+  <div class="card" style="margin-bottom:10px">
+    ${tickRow(!readFull(), 'Short version first', 'Willow sums it up at the top, and the full details are one tap away.', 'data-readfull="no"')}
+    ${tickRow(readFull(), SHORT_SETTING, SHORT_SETTING_HELP, 'data-readfull="yes"')}
   </div>`;
 }
 
@@ -14691,14 +14733,19 @@ function liftContext() {
   return {
     parentName: (store.parent.name || '').trim().split(/\s+/)[0] || '',
     children: kids.join('; '),
+    role: homeRole(),
   };
 }
 
 /* TODAY'S AFFIRMATION. Written version first, Willow's when it lands. */
 function liftAffirmation() {
   const l = liftStore();
+  /* Written for a different role than they have now, such as a line
+     for a mom shown to a grandmother, is rewritten rather than kept. */
+  if (l.affirmation && (l.affirmationRole || '') !== homeRole()) l.affirmation = '';
   if (!l.affirmation) {
-    l.affirmation = writtenLift(l.day);
+    l.affirmationRole = homeRole();
+    l.affirmation = writtenLift(l.day, homeRole());
     l.affirmationFrom = 'written';
     liftWrite('affirmation', Object.assign(liftContext(), { avoid: l.prev || '' }), (text) => {
       const cur = liftStore();
@@ -14795,7 +14842,7 @@ function makeCheckinReply(k, day) {
    It follows the same rule as the milestones: taps go into a draft,
    Save is what writes, and the draft survives putting the phone down.
    Once today is saved the card folds down to what she answered, with
-   a strip of the last fortnight underneath, because the whole value of
+   a strip of the last 2 weeks underneath, because the whole value of
    doing this daily is being able to see the run.
    ----------------------------------------------------------------- */
 
@@ -14937,7 +14984,7 @@ function ciStreak() {
   return n;
 }
 
-/* The fortnight strip. Oldest on the left, today on the right, one
+/* The 2 weeks strip. Oldest on the left, today on the right, one
    square per day, empty where nothing was recorded. */
 function ciStrip(rowId, days) {
   const k = activeChild();
@@ -15269,6 +15316,95 @@ function homeCalm() {
   return (store.parent || {}).homeView === 'calm';
 }
 
+/* =================================================================
+   WILLOW'S SHORT VERSION
+
+   She said the long pages read like a textbook, and she is right: a
+   parent at 3am with a baby in one arm skims. So the long reading tabs
+   open on Willow saying the few things that matter, and the textbook
+   part is folded underneath for whoever wants it. Nothing is removed.
+
+   Done here, once, rather than inside forty screens. The tab that is
+   showing is read off the pressed chip, the fold starts under the tab
+   row (or at the top of the page when there are no tabs), and ends
+   where the page's own .sc container closes. Which pages get one, and
+   what Willow says, lives in willowShort.js.
+   ================================================================= */
+
+/* Which summaries somebody has opened this visit. Deliberately not
+   saved: the next visit opens on the short version again, and anybody
+   who always wants everything has a setting for that. */
+const shortOpen = {};
+
+function readFull() { return !!(store.parent && store.parent.readFull); }
+
+function readFullSet(on) {
+  if (!store.parent) return;
+  store.parent.readFull = !!on;
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+}
+
+/* The position of the </div> that closes the container open at `from`. */
+function shortCloseOf(html, from) {
+  const re = /<div\b|<\/div>/g;
+  re.lastIndex = from;
+  let depth = 0;
+  let m;
+  while ((m = re.exec(html))) {
+    if (m[0] === '</div>') { if (depth === 0) return m.index; depth--; }
+    else depth++;
+  }
+  return -1;
+}
+
+function shortCard(s, key, folded) {
+  return `
+  <div class="short">
+    <div class="short-head">
+      <span class="obsay-face">${icon('leaf', 14, '#fff')}</span>
+      <p class="eyebrow" style="margin:0">${esc(SHORT_EYEBROW)}</p>
+    </div>
+    <p class="short-say">${esc(s.say)}</p>
+    <ul class="short-list">${s.points.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+    ${s.tool ? '' : folded ? `
+    <button class="short-more" data-short="open" data-key="${esc(key)}">
+      ${esc(SHORT_READ_MORE)} ${icon('chev', 13, 'var(--deep)')}
+    </button>` : readFull() ? '' : `
+    <button class="short-more less" data-short="close" data-key="${esc(key)}">
+      ${esc(SHORT_READ_LESS)}
+    </button>`}
+  </div>`;
+}
+
+function shortWrap(id, html, c) {
+  const pressed = html.match(/<button[^>]*data-sub="[^"]+"[^>]*aria-pressed="true"[^>]*>/);
+  const tab = pressed ? (pressed[0].match(/data-val="([^"]+)"/) || [])[1] : '';
+  const key = tab ? id + ':' + tab : id;
+  const s = willowShortFor(key, c ? c.months : null);
+  if (!s) return html;
+
+  let cut = -1;
+  let scOpen = html.indexOf('<div class="sc"');
+  if (pressed) {
+    const at = html.indexOf(pressed[0]);
+    const chips = html.lastIndexOf('<div class="chips"', at);
+    if (chips !== -1) {
+      const close = shortCloseOf(html, html.indexOf('>', chips) + 1);
+      if (close !== -1) cut = close + 6;
+    }
+  } else if (scOpen !== -1) {
+    cut = html.indexOf('>', scOpen) + 1;
+  }
+  if (cut <= 0 || scOpen === -1 || scOpen > cut) return html;
+  const end = shortCloseOf(html, html.indexOf('>', scOpen) + 1);
+  if (end === -1 || end < cut) return html;
+
+  const folded = !s.tool && !readFull() && !shortOpen[key];
+  const body = folded ? '' : html.slice(cut, end);
+  return html.slice(0, cut) + shortCard(s, key, folded) + body + html.slice(end);
+}
+
 function homeViewSet(v) {
   if (!store.parent) return;
   store.parent.homeView = v === 'calm' ? 'calm' : '';
@@ -15313,10 +15449,93 @@ function calmTodayCard(kid) {
   return `
   <div class="card leafy">
     <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Today with ${esc(first)}</p>
-    <p class="bodytext" style="margin-top:7px">${age ? esc(age) + '. ' : ''}Three small things picked for
+    <p class="bodytext" style="margin-top:7px">${age ? esc(age) + '. ' : ''}3 small things picked for
       today, and new again tomorrow.</p>
     <button class="btn" style="width:100%;margin-top:12px" data-go="screen" data-id="plan">See today's three</button>
   </div>`;
+}
+
+/* FIND ANYTHING. Her mom got lost, and "where is it?" has come up
+   more than once. Typing what you want and being taken there is the
+   fix that keeps everything in the app. See findIndex.js. */
+function findBar() {
+  return `
+  <button class="findbar" data-go="screen" data-id="find">
+    ${icon('search', 17, 'var(--muted)')}
+    <span>${esc(FIND_PLACEHOLDER)}</span>
+  </button>`;
+}
+
+function findResultsHtml(q) {
+  const query = String(q || '').trim();
+  if (!query) {
+    return `
+    <p class="sect" style="margin-top:4px">Popular</p>
+    ${FIND_INDEX.filter((e) => ['I need help right now', 'Your cycle and period log', 'Feeding', 'Sleep and naps',
+      'Induction and the Bishop score', 'Growing up and puberty', 'Settings'].indexOf(e.title) !== -1).map(findRow).join('')}`;
+  }
+  const hits = findSearch(query);
+  return `
+  ${hits.length ? hits.map(findRow).join('') : `<div class="card flat"><p class="bodytext">${esc(FIND_NONE)}</p></div>`}
+  <button class="lrow" data-find="ask" style="margin-top:10px">
+    <span class="licon">${icon('leaf', 18)}</span>
+    <span class="grow">
+      <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Ask Willow about "${esc(query)}"</span>
+      <span class="tiny" style="display:block;margin-top:2px">In your own words, any hour</span>
+    </span>
+    <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+  </button>`;
+}
+
+function findRow(e) {
+  const i = FIND_INDEX.indexOf(e);
+  return `
+  <button class="lrow" data-find="go" data-i="${i}" style="align-items:flex-start">
+    <span class="licon">${icon('search', 17)}</span>
+    <span class="grow">
+      <span style="display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3">${esc(e.title)}</span>
+      <span class="tiny" style="display:block;margin-top:2px">${esc(e.where)}</span>
+    </span>
+    <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+  </button>`;
+}
+
+function screenFind() {
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title" style="margin-top:6px">${esc(FIND_TITLE)}</h1>
+    <p class="sub">${esc(FIND_SUB)}</p>
+  </div>
+  <div class="sc">
+    <label class="findfield">
+      ${icon('search', 18, 'var(--muted)')}
+      <input id="findQ" type="search" enterkeyhint="search" autocomplete="off"
+        placeholder="${esc(FIND_PLACEHOLDER)}" value="${esc(state.findQ || '')}" aria-label="${esc(FIND_TITLE)}" />
+    </label>
+    <div id="findResults" style="margin-top:12px">${findResultsHtml(state.findQ)}</div>
+  </div>`;
+}
+
+/* Where a result goes. Child screens need a child open, so the first
+   real one is picked if nobody is, the same thing the profile row does. */
+function findGo(i) {
+  const e = FIND_INDEX[Number(i)];
+  if (!e) return;
+  const g = e.go || {};
+  if (g.tab) { state.view = null; state.tab = g.tab; }
+  if (g.screen) {
+    if (!activeChild()) {
+      const real = store.children.filter((k) => !isExampleChild(k));
+      if (real.length) selectChild(real[0].id);
+    }
+    if (Array.isArray(e.go.tab)) state[e.go.tab[0]] = e.go.tab[1];
+    state.view = { type: 'screen', id: g.screen };
+  }
+  window.scrollTo(0, 0);
+  const scr = document.getElementById('screen');
+  if (scr) scr.scrollTop = 0;
 }
 
 function calmSwitchChip() {
@@ -15360,6 +15579,7 @@ function screenHomeCalm(c) {
       <button class="btn" style="width:100%;margin-top:12px" data-go="screen" data-id="addchild">Add a child</button>
     </div>`}
 
+    ${findBar()}
     ${needHelpRow()}
 
     ${/* Kept even here. It is the mother's own urgent symptoms after a
@@ -15400,6 +15620,7 @@ function screenHome(c) {
   </div>
   <div class="sc">
     ${calmSwitchChip()}
+    ${findBar()}
     ${installBanner()}
     ${choreCard()}
 
@@ -15763,7 +15984,7 @@ function youngestChild() {
  * as having arrived another way, or the person has told Settings they
  * are an adoptive, foster, step, kinship or guardian carer and not a
  * birth parent. With nothing said either way the app keeps the old
- * behaviour, because withholding hemorrhage warnings from somebody who
+ * behavior, because withholding hemorrhage warnings from somebody who
  * simply has not filled in Settings is the worse mistake of the two.
  */
 function gaveBirthRecently() {
@@ -16329,7 +16550,7 @@ function screenMyProfile() {
     ${/* The box she writes in lives on Home and only on Home. This page
           is where the posts LAND, which is the whole reason they are two
           different screens. A second composer here was the same thing in
-          two places, and she has already had to say once that two
+          2 places, and she has already had to say once that two
           screens doing one job is how somebody ends up somewhere that is
           not where they started. */ ''}
     ${posts.length ? '' : `
@@ -16590,9 +16811,9 @@ function sectHead(id, months, label) {
 function planCardLine(c) {
   const kid = activeChild();
   const plan = kid && kid.plan && kid.plan.day === ciToday() ? kid.plan : null;
-  if (!plan) return 'Three things chosen for today, new again tomorrow';
+  if (!plan) return '3 things chosen for today, new again tomorrow';
   const done = Object.keys(plan.done || {}).length;
-  if (!done) return 'Three things chosen for today. Nothing ticked off yet.';
+  if (!done) return '3 things chosen for today. Nothing ticked off yet.';
   return done + ' ticked off today. Tomorrow brings a different one.';
 }
 
@@ -17598,9 +17819,50 @@ function onboardSays(text) {
   </div>`;
 }
 
+/* Willow arriving. A card over the app rather than a page, talking in
+   short bubbles, so the very first thing a new parent meets is a
+   person saying hi and not a wall of text. */
+function screenWillowWelcome() {
+  const w = WILLOW_WELCOME;
+  const first = String((store.parent || {}).name || '').trim().split(/\s+/)[0];
+  const hi = first ? 'Hi ' + first + ", I'm Willow." : w.hi;
+  return `
+  ${cornerLeaves()}
+  <div class="wwel-scrim" role="dialog" aria-modal="true" aria-labelledby="wwelHi">
+    <div class="wwel">
+      <div class="wwel-face" aria-hidden="true">
+        <span class="wwel-ring"></span>
+        <span class="wwel-leaf">${icon('leaf', 30, '#fff', 1.6)}</span>
+      </div>
+      <h1 class="wwel-hi" id="wwelHi">${esc(hi)}</h1>
+      <div class="wwel-chat">
+        ${w.bubbles.map((b, i) => `
+        <p class="wwel-bub" style="animation-delay:${0.25 + i * 0.55}s">${esc(b)}</p>`).join('')}
+      </div>
+      <p class="wwel-sect" style="animation-delay:1.35s">${esc(w.helpsTitle)}</p>
+      <div class="wwel-helps">
+        ${w.helps.map((h, i) => `
+        <div class="wwel-help" style="animation-delay:${1.5 + i * 0.12}s">
+          <span class="wwel-ic">${icon(h.icon, 16, 'var(--deep)')}</span>
+          <span class="grow">
+            <span class="obwhat-t">${esc(h.title)}</span>
+            <span class="obwhat-b">${esc(h.body)}</span>
+          </span>
+        </div>`).join('')}
+      </div>
+      <button class="btn" data-ob="next" style="margin-top:18px;width:100%">
+        ${esc(w.go)} ${icon('chev', 15, '#fff')}
+      </button>
+      <button class="wwel-skip" data-ob="skip">${esc(w.skip)}</button>
+      <p class="tiny" style="text-align:center;margin-top:6px">${esc(w.note)}</p>
+    </div>
+  </div>`;
+}
+
 function screenOnboard() {
   const ob = onboard();
   const step = ob.step;
+  if (step === 'hello') return screenWillowWelcome();
   const next = onboardNext(step);
   const back = onboardBack(step);
 
@@ -17689,7 +17951,7 @@ function screenOnboard() {
   if (step === 'ready') {
     body = `
     ${onboardSays(onboardLine())}
-    <p class="sect" style="margin-top:14px">Three things worth doing first</p>
+    <p class="sect" style="margin-top:14px">3 things worth doing first</p>
     <div class="card">
       ${ONBOARD_FIRST_THINGS.map((f, i) => `
       <div class="obwhat${i ? ' sep' : ''}">
@@ -18557,7 +18819,7 @@ const cloud = {
 
    So it is a deny list now. Everything on a child syncs unless it is
    named here as belonging to this browser rather than to the child. Add
-   a field to a child and it syncs, which is the behaviour anybody would
+   a field to a child and it syncs, which is the behavior anybody would
    assume. */
 /* sharedFrom stays local on purpose. It says whose record this is from
    the reader's point of view, so writing it into the document itself
@@ -19346,7 +19608,7 @@ function cloudStatusLine() {
 
    THE CODE IS TAKEN OUT OF THE ADDRESS BAR IMMEDIATELY
    It is a single use credential sitting in a URL, which is fine while
-   it is travelling through one text message and not fine sitting in
+   it is traveling through one text message and not fine sitting in
    somebody's history, in a screenshot, or in whatever a shared browser
    syncs. It is read once into memory, the address is rewritten without
    it, and it never goes to disk.
@@ -20215,7 +20477,7 @@ function vaxStandTab() {
     ${w.body.slice(1).map((b) => `<p class="bodytext" style="margin:0 0 9px">${esc(b)}</p>`).join('')}
   </div>
   <p class="tiny" style="margin:0 0 12px">This is a moving situation and the paragraph above is dated for
-  that reason. If you are reading it long after ${esc(w.asOf)}, check the two schedules directly.</p>
+  that reason. If you are reading it long after ${esc(w.asOf)}, check the 2 schedules directly.</p>
   ${dsec('Both schedules, and where they differ', sourceRows(VAX_SCHEDULE_SOURCES))}
   <button class="lrow" data-go="screen" data-id="vaccines">
     <span class="licon">${icon('shield', 18)}</span>
@@ -20318,7 +20580,7 @@ function growthNewId() {
 
 /* The percentile they were born on, which is what decides how far the
    line has to drift before it means anything. Taken from the earliest
-   reading in the first fortnight, and null when there is not one,
+   reading in the first 2 weeks, and null when there is not one,
    because guessing it would change the threshold silently. */
 function growthBirthCentile(kid) {
   const sex = (kid || {}).sex;
@@ -20546,7 +20808,7 @@ function growthChartTab(kid, first, measure) {
 
   ${!scored && months !== null ? `
     <p class="tiny" style="margin:0 0 12px">${esc(active.id === 'weight'
-    ? 'Past eleven, the app records a weight but stops putting a percentile on it. Above that age the number tells you very little you can act on, and it starts something that is hard to stop.'
+    ? 'Past 11, the app records a weight but stops putting a percentile on it. Above that age the number tells you very little you can act on, and it starts something that is hard to stop.'
     : 'Past the age this measurement is routinely taken, so it is recorded without a curve.')}</p>` : ''}
 
   ${growthAddForm(kid, active)}
@@ -20610,7 +20872,7 @@ function growthAddForm(kid, measure) {
     </div>
     <button class="tiny" data-growth="units"
       style="display:block;width:100%;text-align:center;background:none;border:0;color:var(--muted);text-decoration:underline;padding:8px">
-      ${esc(us ? 'Switch to kilograms and centimetres' : 'Switch to pounds and inches')}
+      ${esc(us ? 'Switch to kilograms and centimeters' : 'Switch to pounds and inches')}
     </button>
     <p class="tiny" style="margin:0">${esc(measure.note)}</p>
   </div>`;
@@ -20770,7 +21032,7 @@ function copyText(text) {
 function growthRowSub(kid, months) {
   const n = growthEntries(kid).length;
   if (!n) return 'Weight and height over time, on the real curves';
-  if (n === 1) return 'One reading so far. Two more and it is a line.';
+  if (n === 1) return 'One reading so far. 2 more and it is a line.';
   const pts = growthPoints(kid, 'weight').length ? growthPoints(kid, 'weight') : growthPoints(kid, 'height');
   if (!pts.length) return esc(n + ' readings');
   return esc(n + ' readings, last one ' + pts[pts.length - 1].date);
@@ -21126,7 +21388,7 @@ function choreEmpty() {
   return `
   <div class="card leafy">
     <p class="bodytext">Nothing on the chart yet. Add one job for one person and see how the week goes
-    before you add any more. A chart with six new jobs on it on day one is a chart nobody looks at on day three.</p>
+    before you add any more. A chart with 6 new jobs on it on day one is a chart nobody looks at on day three.</p>
   </div>
   ${chorePeople().map((p) => `
     <button class="lrow" data-chore="pick" data-id="${esc(p.id)}">
@@ -21332,7 +21594,7 @@ function choreHowTab() {
 
    What a structured day actually looks like, block by block, for a
    parent teaching at home and for a parent who wants to know what
-   their child does all day at nursery.
+   their child does all day at daycare.
 
    IT SHOWS ONE BAND AT A TIME, STARTING AT THEIR AGE
    The bands are pickable, because a mother with a two year old and a
@@ -21340,7 +21602,7 @@ function choreHowTab() {
    half of why anybody opens a page like this.
 
    IT DOES NOT PRETEND TO BE SIX HOURS
-   The taught part of a nursery day is an hour or two. The rest is
+   The taught part of a daycare day is an hour or two. The rest is
    care, food, sleep and the logistics of twenty children. Saying that
    plainly is the single most useful thing on the screen, because the
    alternative is somebody at home concluding by nine in the morning
@@ -21760,7 +22022,7 @@ async function checkForUpdate(force) {
        reading the stamp out of the first couple of kilobytes of that
        still works. It costs a download that was not wanted, so it is
        not the happy path, but silently never checking again is worse.
-       GitHub Pages does honour ranges today. It has not always. */
+       GitHub Pages does honor ranges today. It has not always. */
     if (res.status !== 206 && res.status !== 200) return;
     const head = (await res.text()).slice(0, 4096);
     const m = head.match(/name="rsg-build"\s+content="([^"]+)"/);
@@ -21866,7 +22128,7 @@ function duplicateCard() {
     <div class="card" style="border-left:3px solid var(--attention)">
       <p class="eyebrow" style="color:var(--attention)">${icon('info', 11, 'var(--attention)')} ${group.length} profiles for ${esc(best.name)}</p>
       <p class="bodytext" style="margin-top:5px">
-        This happens the first time two devices start sharing an account, because each of them had
+        This happens the first time 2 devices start sharing an account, because each of them had
         its own copy of ${esc(best.name)}. Combining them keeps everything from both and leaves one
         profile, on every device.
       </p>
@@ -21891,7 +22153,7 @@ function duplicateCard() {
         Combine them into one
       </button>
       <button class="chip" style="margin-top:9px" data-notdupe="${esc(best.id)}">
-        These are two different children
+        These are 2 different children
       </button>
     </div>`;
   }).join('');
@@ -22629,7 +22891,7 @@ function bdayStartArt() {
       b.phase += b.speed * dt;
       const bx = b.x + Math.sin(b.phase) * b.sway;
       /* Once the string has cleared the top, send it back below with a
-         new colour and a new lane, so the stream never looks like the
+         new color and a new lane, so the stream never looks like the
          same eight balloons on a loop. */
       if (b.y + b.r * 3 < 0) {
         b.y = H + b.r + rand(0, H * 0.7);
