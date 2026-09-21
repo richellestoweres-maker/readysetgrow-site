@@ -37,7 +37,7 @@
 export const GROW_TITLE = 'Growing up';
 
 export const GROW_SUB = 'Their body, their privacy, and the conversations that work better early. '
-  + 'Two tracks, both starting long before you think they need to.';
+  + '2 tracks, both starting long before you think they need to.';
 
 export const GROW_TABS = [
   { id: 'now', label: 'Where they are now' },
@@ -46,7 +46,7 @@ export const GROW_TABS = [
   { id: 'safe', label: 'Bodies and safety' },
 ];
 
-export const GROW_HEAD = 'The talk does not work. Forty small ones do.';
+export const GROW_HEAD = 'The talk does not work. 40 small ones do.';
 
 export const GROW_INTRO = [
   'There is good evidence that how parents talk about this matters, and that what matters is not how '
@@ -66,70 +66,70 @@ export const GROW_INTRO = [
 export const GROW_GIRLS = {
   title: 'Girls, in order',
   order: [
-    'Breasts start first, on average around ten, anywhere from eight to twelve. A firm lump under one '
+    'Breasts start first, on average around 10, anywhere from 8 to 12. A firm lump under one '
     + 'nipple is the usual first sign, often on one side only for a while, and often tender. It is not '
     + 'a lump to worry about.',
     'Pubic hair, usually soon after, sometimes before.',
     'The growth spurt, which in girls comes earlier in the process than it does in boys.',
-    'Then the first period, on average about two to two and a half years after the breasts started.',
+    'Then the first period, on average about 2 to 2 and a half years after the breasts started.',
   ],
-  menarche: 'The average age of a first period is around twelve. Recent data from a large study of '
-    + 'over seventy thousand women suggests it has drifted earlier, to about eleven point nine, with '
+  menarche: 'The average age of a first period is around 12. Recent data from a large study of '
+    + 'over 70,000 women suggests it has drifted earlier, to about 11.9, with '
     + 'the shift most pronounced among Black, Hispanic and Asian participants and those on lower '
-    + 'incomes. Clinical references still say twelve to twelve and a half, so treat around twelve as '
+    + 'incomes. Clinical references still say 12 to 12 and a half, so treat around 12 as '
     + 'the number and earlier than that as unremarkable.',
   early: 'Breast development before eight is what doctors call precocious and is worth an '
     + 'appointment. That threshold has not changed. What changed in June 2026 is the response to it: '
-    + 'the current guideline recommends watching and waiting with checks every four to six months for '
-    + 'girls between seven and eight, rather than going straight to testing, and no routine brain scan '
-    + 'in girls aged six to eight without other symptoms. If you have read older advice that early '
+    + 'the current guideline recommends watching and waiting with checks every 4 to 6 months for '
+    + 'girls between 7 and 8, rather than going straight to testing, and no routine brain scan '
+    + 'in girls aged 6 to 8 without other symptoms. If you have read older advice that early '
     + 'breast development means urgent testing, that is out of date.',
-  late: 'No breast development by thirteen, or more than three years between breasts starting and a '
-    + 'first period, or no period by fifteen, are all worth an appointment.',
+  late: 'No breast development by 13, or more than 3 years between breasts starting and a '
+    + 'first period, or no period by 15, are all worth an appointment.',
 };
 
 export const GROW_PERIODS = {
   title: 'Periods, the practical part',
   normal: [
     'Cycles for a teenager run anywhere from 21 to 45 days apart. That is the adolescent range and it '
-    + 'is wider than the adult one, so do not measure a thirteen year old against a chart written for '
-    + 'a thirty year old.',
-    'A period lasts fewer than seven days.',
-    'Three to six pads or tampons a day is the normal range.',
+    + 'is wider than the adult one, so do not measure a 13 year old against a chart written for '
+    + 'a 30 year old.',
+    'A period lasts fewer than 7 days.',
+    '3 to 6 pads or tampons a day is the normal range.',
     'The first few years are irregular, and that is expected rather than a problem.',
   ],
   slower: 'Worth knowing, because it reassures: cycles are taking longer to settle than they used to. '
-    + 'In the same large study, the share of girls whose cycles became regular within two years of '
+    + 'In the same large study, the share of girls whose cycles became regular within 2 years of '
     + 'their first period fell from 76 percent in those born in the 1950s and 60s to 56 percent in '
     + 'those born in the early 2000s.',
   red: {
     title: 'Worth a doctor',
     items: [
-      'No period by fifteen, or by fourteen if there is also a lot of body hair, an eating disorder, '
+      'No period by 15, or by 14 if there is also a lot of body hair, an eating disorder, '
       + 'or very heavy exercise.',
       'Cycles closer together than every 21 days, or further apart than every 45.',
-      'Ninety days between periods, even once.',
-      'Bleeding for more than seven days.',
-      'Soaking through more than one pad or tampon every one to two hours.',
+      '90 days between periods, even once.',
+      'Bleeding for more than 7 days.',
+      'Soaking through more than one pad or tampon every 1 to 2 hours.',
       'A lot of bruising or bleeding generally, or a bleeding disorder in the family.',
       'Pain that keeps her off school. Being told period pain is just part of it has left a generation '
       + 'of women undiagnosed, and severe pain is worth investigating rather than enduring.',
     ],
   },
   before: 'Tell her before it happens, and tell her more than once. Most children can understand the '
-    + 'basics by six or seven. The research on girls who were not told describes information that came '
+    + 'basics by 6 or 7. The research on girls who were not told describes information that came '
     + 'too late, or was wrong, or was not enough, and mothers who felt they did not know enough '
     + 'themselves to explain it. Put something in her bag before she needs it. A girl who starts at '
-    + 'school with nothing and no idea what is happening remembers that day for forty years.',
+    + 'school with nothing and no idea what is happening remembers that day for 40 years.',
 };
 
 export const GROW_BOYS = {
   title: 'Boys, in order',
   order: [
-    'Testicles get larger first, on average around eleven and a half, anywhere from nine and a half '
-    + 'to fourteen. This is the actual first sign and almost nobody notices it.',
+    'Testicles get larger first, on average around 11 and a half, anywhere from 9 and a half '
+    + 'to 14. This is the actual first sign and almost nobody notices it.',
     'Pubic hair.',
-    'The growth spurt, peaking around the middle of it, often nearly four inches in a year.',
+    'The growth spurt, peaking around the middle of it, often nearly 4 inches in a year.',
     'First ejaculation, about a year after the testicles started changing.',
     'Voice change and facial hair, late, just after the growth spurt peaks. The voice is the sign '
     + 'everybody watches for and it is one of the last things to happen.',
@@ -142,7 +142,7 @@ export const GROW_BOYS = {
     + 'that assume something about themselves that is not true. Say clearly that he cannot prevent it '
     + 'and it is not something he did.',
   early: 'Signs before nine is precocious and worth an appointment. No testicular enlargement by '
-    + 'fourteen, or more than four years from start to finish, is worth one too.',
+    + '14, or more than 4 years from start to finish, is worth one too.',
   note: 'Boys get told far less than girls do, by everybody, and a boy who has had none of this '
     + 'explained assumes whatever the internet tells him. That gap is not neutral.',
 };
@@ -187,9 +187,9 @@ export const GROW_EVIDENCE = {
     + 'predicted more permissive attitudes rather than delay. Talking well is the finding, not talking '
     + 'more.',
   ],
-  dads: 'The finding worth putting in front of fathers: across 52 studies and over twenty five '
-    + 'thousand adolescents, communication with mothers had a small but real protective effect on '
-    + 'safer sex behaviour, and communication with fathers had essentially none. That is almost '
+  dads: 'The finding worth putting in front of fathers: across 52 studies and over 25,000'
+    + ' adolescents, communication with mothers had a small but real protective effect on '
+    + 'safer sex behavior, and communication with fathers had essentially none. That is almost '
     + 'certainly not because fathers cannot do this. It is because they mostly are not doing it. A '
     + 'father who takes this on is doing something the research has barely had a chance to measure.',
 };
@@ -199,11 +199,11 @@ export const GROW_SEXED = {
   strong: {
     title: 'Where the evidence is strong',
     items: [
-      'Abstinence only until marriage programmes do not work. A federal evaluation of four of them '
-      + 'found no effect on when young people first had sex. A review of thirteen found no effect on '
+      'Abstinence only until marriage programs do not work. A federal evaluation of four of them '
+      + 'found no effect on when young people first had sex. A review of 13 found no effect on '
       + 'starting sex, frequency, number of partners or condom use.',
-      'Programmes teaching abstinence along with contraception do better. A review of 66 of them found '
-      + 'favourable effects on sexual activity, number of partners, use of protection, and rates of '
+      'Programs teaching abstinence along with contraception do better. A review of 66 of them found '
+      + 'favorable effects on sexual activity, number of partners, use of protection, and rates of '
       + 'sexually transmitted infection and pregnancy.',
       'Virginity pledges largely do not hold, and young people who took one and then had sex were less '
       + 'likely to use contraception when they did.',
@@ -211,11 +211,11 @@ export const GROW_SEXED = {
   },
   weak: {
     title: 'Where it is weaker than people admit',
-    body: 'A review of 21 studies of school based teen pregnancy prevention programmes in the United '
-      + 'States found that of thirty comparisons, 24 showed no significant difference in pregnancy '
-      + 'rates, four showed a reduction and two showed an increase. The authors rated the quality of '
+    body: 'A review of 21 studies of school based teen pregnancy prevention programs in the United '
+      + 'States found that of 30 comparisons, 24 showed no significant difference in pregnancy '
+      + 'rates, 4 showed a reduction and 2 showed an increase. The authors rated the quality of '
       + 'the evidence low or very low. So: comprehensive sex education performs well on knowledge, '
-      + 'attitudes and protective behaviour, and the effect on actual pregnancy rates in American '
+      + 'attitudes and protective behavior, and the effect on actual pregnancy rates in American '
       + 'schools is much more mixed than the summaries suggest. Anybody quoting a single dramatic '
       + 'percentage at you is quoting a headline rather than a body of evidence.',
   },
@@ -226,10 +226,10 @@ export const GROW_SEXED = {
 
 export const GROW_BY_AGE = [
   {
-    id: 'toddler', label: 'Two to four', from: 18, to: 59,
+    id: 'toddler', label: '2 to 4', from: 18, to: 59,
     body: 'Correct names and body ownership. Nothing about sex.',
     items: [
-      'Use the real words. Penis, vulva, vagina, breasts, bottom. Not because a three year old needs '
+      'Use the real words. Penis, vulva, vagina, breasts, bottom. Not because a 3 year old needs '
       + 'anatomy, but because a made up word tells a child this part is unspeakable, and the child who '
       + 'cannot name it cannot report it.',
       'Nobody has to hug or kiss anybody. Offer a high five, a wave, a handshake instead. Grandparents '
@@ -238,31 +238,31 @@ export const GROW_BY_AGE = [
       'Start the difference between a surprise and a secret. A surprise is something everybody finds '
       + 'out and is happy about. A secret is something you are told to keep forever, and we do not '
       + 'have those in this house.',
-      'Stop asking them to keep small secrets yourself. Do not tell Mum I gave you ice cream teaches '
+      'Stop asking them to keep small secrets yourself. Do not tell Mom I gave you ice cream teaches '
       + 'exactly the thing you do not want taught.',
     ],
   },
   {
-    id: 'early', label: 'Five to eight', from: 60, to: 107,
+    id: 'early', label: '5 to 8', from: 60, to: 107,
     body: 'Privacy, the rules about touch, and where babies come from if they ask.',
     items: [
       'The parts a swimsuit covers are private. Nobody looks at them or touches them except to keep '
       + 'them clean or healthy, and a doctor only with you there.',
       'Say it includes everybody, out loud. Not a teacher, not a cousin, not a coach, not somebody in '
-      + 'the family. Nine in ten children who are abused are abused by somebody they know, and a rule '
+      + 'the family. 9 in 10 children who are abused are abused by somebody they know, and a rule '
       + 'that only covers strangers covers almost nothing.',
       'If somebody does, it is not your fault and you are not in trouble, and if they said I would be '
       + 'angry, they said that to trick you.',
       'Ask them who else they could tell if they did not want to tell you, and make sure there is '
       + 'somebody.',
       'Answer the baby question honestly and briefly. Most children ask around five. A short true '
-      + 'answer now is what makes the longer conversation possible at eleven.',
+      + 'answer now is what makes the longer conversation possible at 11.',
       'By this age it is a national education standard that a child can name the body parts correctly '
       + 'and can say what consent means.',
     ],
   },
   {
-    id: 'middle', label: 'Nine to eleven', from: 108, to: 143,
+    id: 'middle', label: '9 to 11', from: 108, to: 143,
     body: 'Puberty, before it starts. Both children, both sets of changes.',
     items: [
       'Explain periods to girls by nine at the latest, and explain them to boys too. A boy who knows '
@@ -277,7 +277,7 @@ export const GROW_BY_AGE = [
     ],
   },
   {
-    id: 'teen', label: 'Twelve to fifteen', from: 144, to: 191,
+    id: 'teen', label: '12 to 15', from: 144, to: 191,
     body: 'Consent as a real thing rather than a word, and the specifics.',
     items: [
       'Consent at this age is not just no means no. It is that somebody who is asleep, drunk, '
@@ -288,13 +288,13 @@ export const GROW_BY_AGE = [
       'Be specific. What actually protects against pregnancy and infection, what does not, and where '
       + 'they can get it. General talk about sex does very little and this does more.',
       'Talk about pressure and about what a good relationship feels like, not just about mechanics.',
-      'An image of somebody under eighteen is a criminal matter even when the two people involved are '
-      + 'both under eighteen. Say it once, plainly, without making it the whole conversation.',
-      'Their first gynecology visit is usually recommended between thirteen and fifteen.',
+      'An image of somebody under 18 is a criminal matter even when the 2 people involved are '
+      + 'both under 18. Say it once, plainly, without making it the whole conversation.',
+      'Their first gynecology visit is usually recommended between 13 and 15.',
     ],
   },
   {
-    id: 'older', label: 'Sixteen and up', from: 192, to: 400,
+    id: 'older', label: '16 and up', from: 192, to: 400,
     body: 'You are a person they can ask now rather than a person who tells them.',
     items: [
       'Make sure they know the practical things. Where to get contraception, what testing involves, '
@@ -332,10 +332,10 @@ export const GROW_NAMES = {
     'The reasoning given is twofold. A made up word signals that a part of the body is shameful or '
     + 'unspeakable, and a child without accurate words is much harder to understand if they try to '
     + 'tell somebody something.',
-    'What is honestly known: prevention programmes that include this teaching do measurably increase '
+    'What is honestly known: prevention programs that include this teaching do measurably increase '
     + 'what children know and how likely they are to disclose. What has never been shown is that '
     + 'teaching the words on its own reduces abuse, because no study has isolated that one part, and '
-    + 'reviewers note that no programme has yet been shown to reduce actual abuse rates. The claim '
+    + 'reviewers note that no program has yet been shown to reduce actual abuse rates. The claim '
     + 'that offenders avoid children who know the words comes from offenders being interviewed about '
     + 'how they chose victims, which is suggestive rather than proof.',
   ],
@@ -348,7 +348,7 @@ export const GROW_BODY_RULES = {
   title: 'The rules that go with it',
   items: [
     'Your body belongs to you and you can always say no, including to family.',
-    'It is not okay for anybody to touch you in a way that makes you uncomfortable. Not Mum, not Dad, '
+    'It is not okay for anybody to touch you in a way that makes you uncomfortable. Not Mom, not Dad, '
     + 'not an aunt or an uncle or a teacher or a friend.',
     'If somebody does, it is never your fault.',
     'If somebody tells you not to tell, that is exactly when you tell.',
@@ -388,7 +388,7 @@ export const GROW_DISCLOSE = {
   items: [
     'Stay calm on the outside whatever is happening on the inside. Your face is the thing they will '
     + 'remember and it decides whether they tell you the rest.',
-    'Believe them. False reports are rare, somewhere between four and eight percent.',
+    'Believe them. False reports are rare, somewhere between 4 and 8 percent.',
     'Say it out loud: I believe you, I am glad you told me, this is not your fault.',
     'Do not interrogate. Do not ask leading questions. What you ask can affect what happens later in a '
     + 'case, so get the outline and stop.',
@@ -418,7 +418,7 @@ export const GROW_SOURCES = [
   { org: 'AAP, HealthyChildren', label: 'Correct names for body parts, and why',
     url: 'https://www.healthychildren.org/English/ages-stages/preschool/Pages/Sexual-Behaviors-Young-Children.aspx' },
   { org: 'Cochrane', label: 'School based abuse prevention, what it does and does not achieve',
-    url: 'https://www.cochrane.org/evidence/CD004380_school-based-programmes-prevention-child-sexual-abuse' },
+    url: 'https://www.cochrane.org/evidence/CD004380_school-based-programs-prevention-child-sexual-abuse' },
   { org: 'Stop It Now', label: 'The actual words to use with a child about their body',
     url: 'https://www.stopitnow.org/ohc-content/talking-to-children-and-teens' },
   { org: 'NCMEC KidSmartz', label: 'Surprises versus secrets, and the four rules for younger children',

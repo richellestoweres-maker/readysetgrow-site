@@ -42,9 +42,9 @@ export const PREG_WEEKS = [
     week: 4,
     size: 'A poppy seed',
     measure: 'about 2 mm',
-    baby: 'A ball of cells has just burrowed into the lining of your womb and split into two parts. One becomes the baby, the other becomes the placenta.',
+    baby: 'A ball of cells has just burrowed into the lining of your womb and split into 2 parts. One becomes the baby, the other becomes the placenta.',
     you: 'Most likely nothing at all, or the sort of ache that feels like a period about to start. A test may only just be turning positive.',
-    prepare: 'Start a prenatal vitamin with folic acid if you have not already. Four hundred micrograms a day, and it matters most right now.',
+    prepare: 'Start a prenatal vitamin with folic acid if you have not already. 400 micrograms a day, and it matters most right now.',
   },
   {
     week: 5,
@@ -52,7 +52,7 @@ export const PREG_WEEKS = [
     measure: 'about 3 mm',
     baby: 'The neural tube is closing. It becomes the brain and the spinal cord, and it is the reason folic acid matters this early.',
     you: 'Sore breasts, a metallic taste, needing to wee more, and a tiredness that is difficult to explain to anybody.',
-    prepare: 'Ring for a first appointment. Some providers want to see you at eight weeks, some sooner, and the waiting list is the reason to call now rather than later.',
+    prepare: 'Ring for a first appointment. Some providers want to see you at 8 weeks, some sooner, and the waiting list is the reason to call now rather than later.',
   },
   {
     week: 6,
@@ -108,7 +108,7 @@ export const PREG_WEEKS = [
     measure: 'about 5.4 cm, 14 g',
     baby: 'Reflexes are working. If you prod your belly the baby will move away, although you will not feel it happen.',
     you: 'Sickness often eases around now. Energy may start to come back, and your waistband may stop doing up.',
-    prepare: 'If you are going to tell people, a lot of families do it around now. There is no rule and no right week, and telling nobody until twenty is fine too.',
+    prepare: 'If you are going to tell people, a lot of families do it around now. There is no rule and no right week, and telling nobody until 20 is fine too.',
   },
   {
     week: 13,
@@ -132,15 +132,15 @@ export const PREG_WEEKS = [
     measure: 'about 10.1 cm, 70 g',
     baby: 'The baby is moving a lot, though most women do not feel it yet. Bones are hardening. They may be able to sense light through your skin.',
     you: 'A blocked nose that never clears, and possibly nosebleeds. It has a name, pregnancy rhinitis, and it is not a cold.',
-    prepare: 'Ask at your next appointment when the anatomy scan will be. It is usually somewhere between eighteen and twenty two weeks and it is the long one.',
+    prepare: 'Ask at your next appointment when the anatomy scan will be. It is usually somewhere between 18 and 22 weeks and it is the long one.',
   },
   {
     week: 16,
     size: 'An avocado',
     measure: 'about 11.6 cm, 100 g',
-    baby: 'The heart is pumping around twenty five litres of blood a day. Facial muscles work. The eyes can move.',
+    baby: 'The heart is pumping around 25 liters of blood a day. Facial muscles work. The eyes can move.',
     you: 'Some women feel the first movements now, usually described as bubbles or a fish turning. A second baby is often felt earlier than a first.',
-    prepare: 'Start sleeping on your side if you can. It gets recommended firmly later, and the habit is much easier to build now than at thirty weeks.',
+    prepare: 'Start sleeping on your side if you can. It gets recommended firmly later, and the habit is much easier to build now than at 30 weeks.',
   },
   {
     week: 17,
@@ -164,7 +164,7 @@ export const PREG_WEEKS = [
     measure: 'about 15.3 cm, 240 g',
     baby: 'Vernix appears, a white waxy coating that protects the skin. The senses are developing fast.',
     you: 'Leg cramps at night, dizziness when you stand, and possibly a dark line down your belly.',
-    prepare: 'Write down your questions for the anatomy scan before you go. It is a long appointment and it is easy to come out realising you forgot to ask.',
+    prepare: 'Write down your questions for the anatomy scan before you go. It is a long appointment and it is easy to come out realizing you forgot to ask.',
   },
   {
     week: 20,
@@ -186,8 +186,8 @@ export const PREG_WEEKS = [
     week: 22,
     size: 'A zucchini',
     measure: 'about 27.8 cm, 430 g',
-    baby: 'Eyebrows and lashes are there. The lips are distinct. They look recognisably like a newborn now, just smaller and thinner.',
-    you: 'Stretch marks may appear on the belly, breasts or hips. Backache is common as your centre of gravity shifts.',
+    baby: 'Eyebrows and lashes are there. The lips are distinct. They look recognizably like a newborn now, just smaller and thinner.',
+    you: 'Stretch marks may appear on the belly, breasts or hips. Backache is common as your center of gravity shifts.',
     prepare: 'Get one really good cushion or a pregnancy pillow. Sleep is about to become the main event and it is worth spending on.',
   },
   {
@@ -195,7 +195,7 @@ export const PREG_WEEKS = [
     size: 'A large mango',
     measure: 'about 28.9 cm, 501 g',
     baby: 'The lungs are starting to make surfactant, the substance that lets them inflate. Blood vessels in the lungs are developing.',
-    you: 'Swollen ankles at the end of the day. Braxton Hicks tightenings may start, which are practice rather than labour.',
+    you: 'Swollen ankles at the end of the day. Braxton Hicks tightenings may start, which are practice rather than labor.',
     prepare: 'Learn the difference between practice tightenings and real contractions now, while it is academic rather than urgent.',
   },
   {
@@ -203,7 +203,7 @@ export const PREG_WEEKS = [
     size: 'Corn on the cob',
     measure: 'about 30 cm, 600 g',
     baby: 'A milestone week. Babies born from around here can survive with a great deal of hospital help, and every week from now improves the odds substantially.',
-    you: 'The glucose test is usually offered between twenty four and twenty eight weeks. It is a drink and a wait and it is not as bad as its reputation.',
+    you: 'The glucose test is usually offered between 24 and 28 weeks. It is a drink and a wait and it is not as bad as its reputation.',
     prepare: 'Ask about the glucose test if nobody has mentioned it. Gestational diabetes has no symptoms worth noticing and is very manageable when it is found.',
   },
   {
@@ -218,7 +218,7 @@ export const PREG_WEEKS = [
     week: 26,
     size: 'An acorn squash',
     measure: 'about 35.6 cm, 760 g',
-    baby: 'The eyes open for the first time around now. The lungs keep practising, breathing in and out amniotic fluid.',
+    baby: 'The eyes open for the first time around now. The lungs keep practicing, breathing in and out amniotic fluid.',
     you: 'Tiredness often comes back. Ribs may ache as everything gets pushed upward.',
     prepare: 'Start paying attention to their pattern of movement, not the number of kicks. What matters later is a change from their normal, so you need to know their normal.',
   },
@@ -228,11 +228,11 @@ export const PREG_WEEKS = [
     measure: 'about 36.6 cm, 875 g',
     baby: 'Brain activity picks up sharply. They have sleeping and waking cycles now, which will not match yours.',
     you: 'The last week of the second trimester. Shortness of breath going up stairs. Possibly some anxiety about what is coming.',
-    prepare: 'Book your antenatal classes if you want them. They fill up, and the useful ones fill up first.',
+    prepare: 'Book your prenatal classes if you want them. They fill up, and the useful ones fill up first.',
   },
   {
     week: 28,
-    size: 'An aubergine',
+    size: 'An eggplant',
     measure: 'about 37.6 cm, 1 kg',
     baby: 'Eyes can blink and lashes are complete. They can distinguish light from dark through your skin.',
     you: 'Appointments usually get more frequent from here. You may be offered an anti D injection if your blood type is rhesus negative.',
@@ -252,13 +252,13 @@ export const PREG_WEEKS = [
     measure: 'about 39.9 cm, 1.3 kg',
     baby: 'A pint and a half of amniotic fluid surrounds them, and it will start to decrease from here as they take up the room.',
     you: 'Trouble sleeping, vivid dreams, and mood swings that feel like the first trimester again.',
-    prepare: 'Think about who you want with you when you give birth, and tell them. It is a bigger ask than people realise and they need warning.',
+    prepare: 'Think about who you want with you when you give birth, and tell them. It is a bigger ask than people realize and they need warning.',
   },
   {
     week: 31,
     size: 'A coconut',
     measure: 'about 41.1 cm, 1.5 kg',
-    baby: 'All five senses are working. They can turn their head, and they process information from all of them.',
+    baby: 'All 5 senses are working. They can turn their head, and they process information from all of them.',
     you: 'Leaking colostrum is common and normal. So is not leaking, which says nothing at all about your supply later.',
     prepare: 'Read about what the first hour after birth usually looks like, so that whatever happens, less of it is a surprise.',
   },
@@ -283,16 +283,16 @@ export const PREG_WEEKS = [
     size: 'A cantaloupe',
     measure: 'about 45 cm, 2.1 kg',
     baby: 'The central nervous system and the lungs are maturing. Babies born now usually do well.',
-    you: 'You may be offered a group B strep test between thirty five and thirty seven weeks. It is a swab and the result changes what happens in labour.',
-    prepare: 'Fit the car seat now, and get it checked. Most are fitted wrong, and the hospital car park is the worst place to work it out.',
+    you: 'You may be offered a group B strep test between 35 and 37 weeks. It is a swab and the result changes what happens in labor.',
+    prepare: 'Fit the car seat now, and get it checked. Most are fitted wrong, and the hospital parking lot is the worst place to work it out.',
   },
   {
     week: 35,
     size: 'A honeydew melon',
     measure: 'about 46.2 cm, 2.4 kg',
-    baby: 'Weight gain speeds up, around two hundred grams a week from here. The kidneys are fully developed.',
+    baby: 'Weight gain speeds up, around 200 grams a week from here. The kidneys are fully developed.',
     you: 'There may be less room to move, so kicks become rolls and shoves. The pattern should still be there.',
-    prepare: 'Put the important numbers in your phone under names you can find at three in the morning. Labour ward, not just the switchboard.',
+    prepare: 'Put the important numbers in your phone under names you can find at three in the morning. Labor ward, not just the switchboard.',
   },
   {
     week: 36,
@@ -330,7 +330,7 @@ export const PREG_WEEKS = [
     week: 40,
     size: 'A pumpkin',
     measure: 'about 51.2 cm, 3.5 kg',
-    baby: 'The due date week. Only about one baby in twenty five actually arrives on it.',
+    baby: 'The due date week. Only about 1 baby in 25 actually arrives on it.',
     you: 'Impatient, uncomfortable, and possibly frightened. All three at once is normal.',
     prepare: 'Ask what happens if you go past your date, so that the conversation about it is not the first time you have heard any of it.',
   },
@@ -379,8 +379,8 @@ export const PREG_CALL_NOW = {
     + 'overreacting.',
   items: [
     'Bleeding from the vagina, at any stage.',
-    'Fluid leaking or a gush of water before thirty seven weeks.',
-    'Severe or constant headache that does not shift with paracetamol.',
+    'Fluid leaking or a gush of water before 37 weeks.',
+    'Severe or constant headache that does not shift with acetaminophen.',
     'Changes in your vision. Spots, flashing, blurring or losing part of your sight.',
     'Swelling that comes on suddenly, especially in your face or hands.',
     'Pain in your upper belly, particularly under your right ribs.',
@@ -388,9 +388,9 @@ export const PREG_CALL_NOW = {
     'Being sick so much that you cannot keep fluids down.',
     'Pain, swelling, redness or heat in one leg, especially the calf.',
     'Chest pain, a racing heart, or being unable to catch your breath.',
-    'After about twenty eight weeks, a change in how much the baby moves. Not a number, a change '
+    'After about 28 weeks, a change in how much the baby moves. Not a number, a change '
     + 'from their normal.',
-    'Regular tightenings before thirty seven weeks.',
+    'Regular tightenings before 37 weeks.',
     'A fall, a car accident, or a blow to your belly, even if you feel fine afterwards.',
     'Thoughts of harming yourself or anybody else.',
   ],
@@ -401,7 +401,7 @@ export const PREG_CALL_NOW = {
 
 export const PREG_MOVEMENT = {
   title: 'About movement, because the advice has changed',
-  body: 'The old advice was to count to ten kicks. The current advice is to know your own baby’s '
+  body: 'The old advice was to count to 10 kicks. The current advice is to know your own baby’s '
     + 'pattern and to call if it changes. There is no number of movements that is safe and no number '
     + 'that is not. What matters is a change from what is usual for them, and that includes movement '
     + 'that suddenly increases as well as movement that drops off. Never wait until the morning, and '

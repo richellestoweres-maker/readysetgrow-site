@@ -92,7 +92,7 @@ export const OUTPUT_WISDOM = [
     title: 'Power pumping',
     evidence: 'mixed',
     what:
-      'An hour broken into pump twenty, rest ten, pump ten, rest ten, pump ten. It imitates cluster ' +
+      'An hour broken into pump 20, rest 10, pump 10, rest 10, pump 10. It imitates cluster ' +
       'feeding and signals for more.',
     note:
       'Widely recommended by lactation consultants and thinly studied. Give it a week before deciding, ' +
@@ -105,7 +105,7 @@ export const OUTPUT_WISDOM = [
     what:
       'Compressing and massaging while the pump runs, then hand expressing after. It empties more ' +
       'thoroughly, and thorough removal is what drives production.',
-    note: 'Free, takes five extra minutes, and is the most underused thing on this list.',
+    note: 'Free, takes 5 extra minutes, and is the most underused thing on this list.',
   },
   {
     id: 'oatmeal',

@@ -59,6 +59,39 @@ export const WILLOW = {
     'Something went wrong reaching me just then. Nothing is lost, try again in a moment. If it is ' +
     'urgent, do not wait on me: the Right Now tab works with no connection at all.',
 
+  /* Out of quota is not a broken app, and calling it one sends somebody
+     looking for a bug that does not exist. */
+  outOfQuota:
+    'I have hit the limit on how much I can answer just now. This is a rate limit rather than ' +
+    'anything wrong, and it lifts on its own. Everything written in the app is still here to ' +
+    'read in the meantime.',
+
+  /* A DIFFERENT THING ENTIRELY, AND THE REASON IT GETS ITS OWN WORDS.
+
+     Running out of prepaid credit is not a rate limit and it does NOT
+     lift on its own. Telling somebody to wait when the real answer is
+     that a card needs topping up costs them a day of waiting for
+     something that was never going to happen. Found the hard way: the
+     app said "it lifts on its own" for a week while the credits sat
+     at zero. */
+  outOfCredit:
+    'I am out of credit rather than out of capacity, so waiting will not bring me back. The ' +
+    'account this runs on needs topping up, and everything else in the app works exactly as ' +
+    'normal in the meantime.',
+
+  /* The model refusing is not the model failing, and in a parenting app
+     it happens most on the questions most worth asking. Saying so
+     plainly beats a shrug, and it points somewhere real. */
+  wouldNotAnswer:
+    'I could not answer that one. It came back refused rather than failed, which usually happens ' +
+    'on anything that reads as medical, and in here that is most of the questions worth asking. ' +
+    'Try asking me in your own words about what you are seeing rather than what it might be, and ' +
+    'if it is about their health, your pediatrician is the right call anyway.',
+
+  noNetwork:
+    'I cannot reach anything at the moment, which usually means the connection dropped. ' +
+    'Everything already written in the app works with no signal at all, including Right Now.',
+
   /* Kept as data but no longer shown. A wall of suggested questions
      made the panel look like a help desk rather than somebody to talk
      to, and it pushed the thing she came to type down the screen. */
@@ -91,7 +124,7 @@ export const WILLOW_RULES = [
   'You are the friend who happens to know this material. Warm, steady, never breezy, never clinical. You take people seriously. You do not perform sympathy and you do not lecture.',
   'Read what is actually being asked for before you answer:',
   '- When somebody is upset, worn out, or ashamed, respond to the person first. One or two lines that land, not a paragraph of validation. Then something to actually do, because being handed only feelings when you asked for help is its own kind of dismissal.',
-  '- When somebody wants a method, such as sleep, feeding, potty training or behaviour, be specific and practical. Steps, numbers, what to expect, how long it usually takes. Vague encouragement is useless here.',
+  '- When somebody wants a method, such as sleep, feeding, potty training or behavior, be specific and practical. Steps, numbers, what to expect, how long it usually takes. Vague encouragement is useless here.',
   '- When somebody asks something medical, be careful and concrete about what is normal, what is worth watching, and what means call today. Never leave the last part out.',
   '- When somebody is just chatting or thinking out loud, talk with them like a person. Not everything needs advice.',
   '',
@@ -135,12 +168,20 @@ export function willowSystemPrompt() {
  * question about a friendship problem at school should not be answered
  * out of a reflux entry just because reflux was the closest match.
  */
-export function willowPrompt(question, entries, childLine) {
+export function willowPrompt(question, entries, childLine, motherLine) {
   const parts = [];
   parts.push(String(question).trim());
   if (childLine) {
     parts.push('');
     parts.push('(Who we are talking about: ' + childLine + ')');
+  }
+  /* Her own body, when the app knows anything about it. Offered the
+     same way the child line is: there so she does not have to repeat
+     herself, ignored when the question is about something else. */
+  if (motherLine) {
+    parts.push('');
+    parts.push('(About the parent herself, from what she logged. Use it only if the question is '
+      + 'about her: ' + motherLine + ')');
   }
   if (entries && entries.length) {
     parts.push('');

@@ -119,13 +119,13 @@ export const COMMON_QUESTIONS = [
   },
   {
     id: 'aluminum',
-    q: 'What about the aluminium?',
+    q: 'What about the aluminum?',
     evidence: 'established',
     a:
-      'Aluminium salts are used in tiny amounts in some vaccines as an adjuvant, meaning they help the ' +
-      'immune system respond so a smaller dose works. They have been used for over seventy years.',
+      'Aluminum salts are used in tiny amounts in some vaccines as an adjuvant, meaning they help the ' +
+      'immune system respond so a smaller dose works. They have been used for over 70 years.',
     more:
-      'Over the first six months, a baby takes in more aluminium from breast milk or formula than from ' +
+      'Over the first 6 months, a baby takes in more aluminum from breast milk or formula than from ' +
       'the entire vaccine schedule. Formula fed babies take in considerably more. That comparison is not ' +
       'a dismissal of the question, it is the context that makes the number mean something.',
   },
@@ -193,7 +193,7 @@ export const COMMON_QUESTIONS = [
     more:
       'Measles in particular is one of the most contagious diseases known. It spreads before anyone looks ' +
       'sick and it can linger in the air of a room after the person has left. Any community can be one ' +
-      'travelling case away from an outbreak.',
+      'traveling case away from an outbreak.',
   },
 ];
 
@@ -218,7 +218,7 @@ export const IF_YOU_DECLINE = {
   ],
   knowTheSigns: [
     'Measles. Fever, cough, runny nose and red watery eyes first, then a rash starting at the hairline and spreading down. Call ahead rather than walking into a waiting room, because it spreads through the air.',
-    'Whooping cough. A cold that turns into violent coughing fits, sometimes with a whoop or with vomiting after. In young babies it can show up as pauses in breathing rather than coughing at all. This one is most dangerous under six months.',
+    'Whooping cough. A cold that turns into violent coughing fits, sometimes with a whoop or with vomiting after. In young babies it can show up as pauses in breathing rather than coughing at all. This one is most dangerous under 6 months.',
     'Meningitis. Fever with a stiff neck, a severe headache, light hurting their eyes, confusion, or a rash that does not fade when you press a glass to it. This is an emergency, same hour.',
     'Hib and other invasive bacterial illness. A young child who is unusually floppy, very hard to rouse, breathing fast, or not taking fluids. Trust that instinct and go.',
     'Tetanus. Any deep or dirty wound, especially puncture wounds, is worth a call, because tetanus is in soil and is not caught from other people.',
@@ -238,7 +238,7 @@ export const IF_YOU_DECLINE = {
   vitaminA:
     'One specific thing, because it has caused real harm recently. Vitamin A does not prevent measles ' +
     'and does not treat it at home. It is used in hospital in specific doses for specific patients. ' +
-    'Children have been hospitalised with vitamin A toxicity, including liver damage, after parents gave ' +
+    'Children have been hospitalized with vitamin A toxicity, including liver damage, after parents gave ' +
     'high doses hoping to protect them. If you take nothing else from this section, take that one.',
   revisit:
     'This decision is not permanent and revisiting it is not a climbdown. Plenty of families change ' +
@@ -256,7 +256,7 @@ export const ASK_YOUR_PEDIATRICIAN = {
   headline: 'Questions worth bringing, whichever way you are leaning',
   questions: [
     'Which of these protects against something my child is realistically likely to meet, and which is for something rarer?',
-    'What happens if we wait six months on this one specifically? What is the window we are leaving open?',
+    'What happens if we wait 6 months on this one specifically? What is the window we are leaving open?',
     'What side effects should I expect in the next 48 hours, and what would make you want to see us?',
     'Can I have the Vaccine Information Statement, and the package insert, to read at home before I decide?',
     'If I want to split these across more visits, will you plan that with me?',
@@ -265,7 +265,7 @@ export const ASK_YOUR_PEDIATRICIAN = {
   ],
   howToBeHeard: [
     'Write your questions down beforehand. Under time pressure with a baby on your lap, they evaporate.',
-    'Say what the actual worry is rather than a general one. "I read about aluminium" gets a far more useful answer than "I am not sure about vaccines".',
+    'Say what the actual worry is rather than a general one. "I read about aluminum" gets a far more useful answer than "I am not sure about vaccines".',
     'Ask for a separate appointment to talk it through. A well visit is not enough time and most practices will book one.',
     'If you are dismissed rather than answered, that is a reason to find a different clinician rather than a reason to stop asking.',
   ],

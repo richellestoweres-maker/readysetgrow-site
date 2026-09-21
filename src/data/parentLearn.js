@@ -30,7 +30,7 @@ export const PARENT_LEARN = [
     blurb: 'Losing your patience is not the damaging part. What happens next is.',
     body: [
       'Every parent snaps. The research that gets quoted about this is not about parents who never '
-      + 'lose it, because those parents do not exist. It is about what happens in the twenty minutes '
+      + 'lose it, because those parents do not exist. It is about what happens in the 20 minutes '
       + 'afterwards.',
       'Going back and saying "I shouted, that was me, not you, I am sorry" does something specific. '
       + 'It teaches a child that a relationship can bend without breaking, and that the person who '
@@ -53,7 +53,7 @@ export const PARENT_LEARN = [
       + 'because nothing else happened is a failure, and it is the same cereal.',
       'Pick the two that matter and say out loud that the rest are off.',
     ],
-    tryThis: 'Name two things that must happen today. Everything else is officially optional.',
+    tryThis: 'Name 2 things that must happen today. Everything else is officially optional.',
   },
   {
     id: 'anger',
@@ -66,7 +66,7 @@ export const PARENT_LEARN = [
       + 'because it convinces each person they are the only one.',
       'It is extremely common. It usually sits on top of something else, most often exhaustion, '
       + 'hunger, noise, or having had nothing that was yours for a long time. Anger is the smoke.',
-      'What helps is boring and works: eat something, get the noise down, and get ten minutes '
+      'What helps is boring and works: eat something, get the noise down, and get 10 minutes '
       + 'where nobody needs you, before you need them rather than after.',
       'If the anger is frightening you, or you are worried about what you might do, that is worth '
       + 'saying out loud to your doctor or a therapist. Not because something is wrong with you, '
@@ -83,12 +83,12 @@ export const PARENT_LEARN = [
       'The parent whose life looks effortless online had a morning you did not see. This is not a '
       + 'comforting platitude, it is a description of what a feed is: the small number of moments '
       + 'somebody chose to show.',
-      'It matters because comparison changes behaviour. Parents who feel behind push harder at the '
+      'It matters because comparison changes behavior. Parents who feel behind push harder at the '
       + 'wrong things, usually the visible ones, and have less left for the invisible ones that '
       + 'actually build a child.',
       'Nobody photographs the repair after the shouting, and that is the part that counts.',
     ],
-    tryThis: 'Mute two accounts that make you feel behind. You can follow them again in a month.',
+    tryThis: 'Mute 2 accounts that make you feel behind. You can follow them again in a month.',
   },
   {
     id: 'connection',
@@ -104,18 +104,18 @@ export const PARENT_LEARN = [
       'This is not letting them get away with it. It is doing the discipline at the only moment it '
       + 'can work.',
     ],
-    tryThis: 'Next meltdown, say nothing for the first sixty seconds. Just be near.',
+    tryThis: 'Next meltdown, say nothing for the first 60 seconds. Just be near.',
   },
   {
     id: 'ownstuff',
     kind: 'Looking after yourself',
     title: 'The things that set you off are worth knowing',
-    blurb: 'Most parents have two or three specific triggers, and they are usually old.',
+    blurb: 'Most parents have 2 or 3 specific triggers, and they are usually old.',
     body: [
       'Almost every parent has a handful of things that produce a reaction out of proportion to what '
       + 'happened. Whining. Being ignored. Mess. Somebody laughing at them.',
       'These are worth knowing by name, because a trigger you have named is a trigger you get about '
-      + 'two seconds of warning on, and two seconds is the whole difference.',
+      + '2 seconds of warning on, and 2 seconds is the whole difference.',
       'Quite often they come from how you were parented, which is uncomfortable and also useful. '
       + 'You are allowed to decide that a thing which was done to you stops here.',
     ],
@@ -149,7 +149,7 @@ export const PARENT_LEARN = [
       'What children actually need is a parent with something left. Not a perfect one, not an '
       + 'endlessly available one. One who is still in there.',
       'Asking for help before you are desperate is not weakness, it is planning, and it is much '
-      + 'easier to ask at a six than at a ten.',
+      + 'easier to ask at a six than at a 10.',
     ],
     tryThis: 'Ask for one specific piece of help this week, before you need it.',
   },
@@ -163,10 +163,10 @@ export const PARENT_LEARN = [
       + 'take the same breath and land completely differently.',
       'The same works for bigger refusals. "No, we are not staying" is a wall. "We are going now, '
       + 'and you can choose the song in the car" is a door.',
-      'Two acceptable options beats one demand almost every time, and the choice does not have to '
+      '2 acceptable options beats one demand almost every time, and the choice does not have to '
       + 'be a real concession.',
     ],
-    tryThis: 'Turn your next no into two yeses that both suit you.',
+    tryThis: 'Turn your next no into 2 yeses that both suit you.',
   },
   {
     id: 'whoyouwere',
@@ -192,15 +192,15 @@ export const PARENT_LEARN = [
       'Hard days, short temper and crying in the car are all within the range of ordinary parenting '
       + 'and do not mean anything is wrong.',
       'Some things are worth taking to a person rather than reading about. Feeling flat or hopeless '
-      + 'most days for more than two weeks. Not being able to enjoy anything. Frightening thoughts '
+      + 'most days for more than 2 weeks. Not being able to enjoy anything. Frightening thoughts '
       + 'that will not leave. Feeling disconnected from your child. Not sleeping even when you have '
       + 'the chance.',
-      'None of those mean you are failing and none of them are rare. They are the ones where a GP, '
+      'None of those mean you are failing and none of them are rare. They are the ones where a doctor, '
       + 'a midwife, a health visitor or a therapist changes things faster than any app can.',
       'If you are ever thinking about hurting yourself, that is the moment to talk to somebody '
       + 'today rather than sit with it.',
     ],
-    tryThis: 'If more than one of those has been true for a fortnight, book the appointment this week.',
+    tryThis: 'If more than one of those has been true for 2 weeks, book the appointment this week.',
     weight: 'careful',
   },
   {
@@ -209,7 +209,7 @@ export const PARENT_LEARN = [
     title: 'Good enough is the actual target',
     blurb: 'Children do not need a perfect parent. The research is quite specific about this.',
     body: [
-      'The phrase comes from a paediatrician who noticed that children of extremely attentive '
+      'The phrase comes from a pediatrician who noticed that children of extremely attentive '
       + 'parents did not do better than children of ordinary ones. What mattered was being reliable '
       + 'enough, often enough.',
       'Getting it right about a third of the time, and repairing when you do not, is the shape of a '
@@ -236,4 +236,4 @@ export function parentLearnForDay(dayKey) {
 
 export const PARENT_LEARN_DISCLAIMER =
   'General information written for parents, not therapy and not a diagnosis. If something here '
-  + 'describes you and it has been going on, a GP or a therapist is the right next step.';
+  + 'describes you and it has been going on, a doctor or a therapist is the right next step.';

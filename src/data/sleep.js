@@ -99,7 +99,7 @@ export const WAKE_WINDOWS = [
     bedtimeRange: ['19:00', '20:30'],
     guidance:
       'A pattern usually starts to show up here, and bedtime often moves earlier. This is also when ' +
-      'sleep reorganizes into cycles, which is why nights can fall apart around four months.',
+      'sleep reorganizes into cycles, which is why nights can fall apart around 4 months.',
     flexible: false,
   },
   {
@@ -110,7 +110,7 @@ export const WAKE_WINDOWS = [
     napMinutes: { typical: 55, min: 30, max: 120 },
     bedtimeRange: ['18:30', '20:00'],
     guidance:
-      'Four naps is still common at four months, often with a short catnap late in the day. Short ' +
+      '4 naps is still common at 4 months, often with a short catnap late in the day. Short ' +
       'naps are very normal here, because a baby who wakes after one sleep cycle has not yet learned ' +
       'to link into the next one.',
     flexible: false,
@@ -123,7 +123,7 @@ export const WAKE_WINDOWS = [
     napMinutes: { typical: 70, min: 30, max: 120 },
     bedtimeRange: ['18:30', '20:00'],
     guidance:
-      'Three naps is common by the end of this window. Short naps are very normal here, because a ' +
+      '3 naps is common by the end of this window. Short naps are very normal here, because a ' +
       'baby who wakes after one sleep cycle has not yet learned to link into the next one.',
     flexible: false,
   },
@@ -135,7 +135,7 @@ export const WAKE_WINDOWS = [
     napMinutes: { typical: 70, min: 40, max: 120 },
     bedtimeRange: ['18:30', '20:00'],
     guidance:
-      'The third nap usually drops somewhere in this window, often between seven and nine months. ' +
+      'The third nap usually drops somewhere in this window, often between 7 and 9 months. ' +
       'When it goes, bedtime needs to move earlier for a few weeks.',
     flexible: false,
   },
@@ -147,8 +147,8 @@ export const WAKE_WINDOWS = [
     napMinutes: { typical: 80, min: 45, max: 120 },
     bedtimeRange: ['18:30', '20:00'],
     guidance:
-      'Two solid naps is the pattern here. Many babies appear to be dropping to one around ten or ' +
-      'eleven months because of a developmental leap, and then go back to two. Waiting it out is ' +
+      '2 solid naps is the pattern here. Many babies appear to be dropping to one around 10 or ' +
+      '11 months because of a developmental leap, and then go back to two. Waiting it out is ' +
       'usually right.',
     flexible: false,
   },
@@ -160,7 +160,7 @@ export const WAKE_WINDOWS = [
     napMinutes: { typical: 75, min: 45, max: 120 },
     bedtimeRange: ['18:30', '20:00'],
     guidance:
-      'The two to one nap transition usually happens between twelve and eighteen months, and it is ' +
+      'The 2 to 1 nap transition usually happens between 12 and 18 months, and it is ' +
       'rarely clean. Alternating between one nap and two for several weeks is normal.',
     flexible: false,
   },
@@ -196,7 +196,7 @@ export const WAKE_WINDOWS = [
     napMinutes: { typical: 75, min: 45, max: 120 },
     bedtimeRange: ['19:00', '20:30'],
     guidance:
-      'Naps drop somewhere in here for most children, commonly between three and four. Quiet time in ' +
+      'Naps drop somewhere in here for most children, commonly between 3 and 4. Quiet time in ' +
       'place of a nap keeps the rest in the day without the bedtime cost.',
     flexible: false,
   },
@@ -445,15 +445,15 @@ export const SCHEDULE_DISCLAIMER =
 
 export const SLEEP_DISRUPTIONS = [
   {
-    id: 'four-month-change', label: 'Four month sleep change',
-    aliases: ['4 month regression', 'four month regression', 'sleep regression'],
+    id: 'four-month-change', label: '4 month sleep change',
+    aliases: ['4 month regression', '4 month regression', 'sleep regression'],
     minMonths: 3, maxMonths: 6,
-    what: 'A baby who slept in long stretches starts waking every one to two hours, and naps get short.',
+    what: 'A baby who slept in long stretches starts waking every 1 to 2 hours, and naps get short.',
     why: 'Sleep permanently reorganizes into cycles with lighter stages, much closer to adult sleep. This is not a regression and it does not go back.',
-    tryThis: ['Watch wake windows rather than the clock', 'Practice new motor skills in the daytime', 'Keep the last twenty minutes before sleep identical', 'Give a minute before going in'],
+    tryThis: ['Watch wake windows rather than the clock', 'Practice new motor skills in the daytime', 'Keep the last 20 minutes before sleep identical', 'Give a minute before going in'],
   },
   {
-    id: 'eight-ten-month', label: 'Eight to ten month disruption',
+    id: 'eight-ten-month', label: '8 to 10 month disruption',
     aliases: ['8 month regression', '9 month regression', '10 month regression', '6 month regression'],
     minMonths: 6, maxMonths: 12,
     what: 'Night waking returns, often alongside standing up in the crib and crying at separation.',
@@ -461,15 +461,15 @@ export const SLEEP_DISRUPTIONS = [
     tryThis: ['Lots of daytime practice standing and getting back down', 'Keep goodbyes and night responses short and boring', 'Expect a few weeks, not a few days'],
   },
   {
-    id: 'twelve-month', label: 'Twelve month nap confusion',
+    id: 'twelve-month', label: '12 month nap confusion',
     aliases: ['12 month regression', 'dropping to one nap'],
     minMonths: 10, maxMonths: 15,
     what: 'They start refusing the second nap, and it looks like time to drop to one.',
-    why: 'This is usually a leap rather than a real transition. Most babies still need two naps until somewhere between twelve and eighteen months.',
-    tryThis: ['Hold the two nap schedule for a few weeks before switching', 'If nap two is refused, move bedtime earlier that day', 'Switch only when refusal has lasted consistently for two or more weeks'],
+    why: 'This is usually a leap rather than a real transition. Most babies still need 2 naps until somewhere between 12 and 18 months.',
+    tryThis: ['Hold the 2 nap schedule for a few weeks before switching', 'If nap two is refused, move bedtime earlier that day', 'Switch only when refusal has lasted consistently for 2 or more weeks'],
   },
   {
-    id: 'eighteen-month', label: 'Eighteen month bedtime resistance',
+    id: 'eighteen-month', label: '18 month bedtime resistance',
     aliases: ['18 month regression', 'toddler bedtime battle'],
     minMonths: 16, maxMonths: 24,
     what: 'Bedtime becomes a fight, night waking returns, and the nap gets refused.',
@@ -477,7 +477,7 @@ export const SLEEP_DISRUPTIONS = [
     tryThis: ['Give real choices inside the routine', 'Keep the sequence identical', 'Do not drop the nap yet', 'Give warnings before each transition'],
   },
   {
-    id: 'two-year', label: 'Two year sleep disruption',
+    id: 'two-year', label: '2 year sleep disruption',
     aliases: ['2 year regression', 'climbing out of crib', 'night fears'],
     minMonths: 22, maxMonths: 36,
     what: 'Bedtime stalling, climbing out, early waking, and the first real night fears.',
@@ -489,7 +489,7 @@ export const SLEEP_DISRUPTIONS = [
     aliases: ['no more naps', 'nap transition', 'quiet time'],
     minMonths: 30, maxMonths: 60,
     what: 'The nap starts pushing bedtime very late, or gets refused entirely.',
-    why: 'Most children drop the last nap between three and four, and the transition takes months rather than days.',
+    why: 'Most children drop the last nap between 3 and 4, and the transition takes months rather than days.',
     tryThis: ['Cap the nap at an hour before dropping it', 'Replace it with quiet time in their room', 'Move bedtime earlier on no nap days', 'Expect to alternate for a while'],
   },
   {
@@ -534,8 +534,8 @@ export const SETTLING_APPROACHES = [
     minMonths: 0, maxMonths: 240,
     summary: 'Respond to every waking and support them back to sleep however works, expecting the skill to arrive with development.',
     asksOfYou: 'The most night involvement, over the longest period.',
-    goodFitWhen: ['You are comfortable with night waking', 'Your baby is under four to six months', 'The current setup is working for your family'],
-    evidence: 'Always appropriate. There is no evidence that responding to a baby at night causes harm, and under about four months it is the only approach most guidance supports.',
+    goodFitWhen: ['You are comfortable with night waking', 'Your baby is under 4 to 6 months', 'The current setup is working for your family'],
+    evidence: 'Always appropriate. There is no evidence that responding to a baby at night causes harm, and under about 4 months it is the only approach most guidance supports.',
   },
   {
     id: 'gradual',
@@ -552,8 +552,8 @@ export const SETTLING_APPROACHES = [
     minMonths: 4, maxMonths: 60,
     summary: 'Leave the room and return at set intervals to reassure, gradually lengthening the gaps.',
     asksOfYou: 'Tolerating some crying, and being consistent enough that the pattern is learnable.',
-    goodFitWhen: ['You want a faster change', 'Everyone caring for your child can be consistent', 'Your child is over about four to six months'],
-    evidence: 'This is the most studied approach. Trials generally show it improves sleep within one to two weeks, and follow up studies have not found harm to attachment or to emotional development.',
+    goodFitWhen: ['You want a faster change', 'Everyone caring for your child can be consistent', 'Your child is over about 4 to 6 months'],
+    evidence: 'This is the most studied approach. Trials generally show it improves sleep within 1 to 2 weeks, and follow up studies have not found harm to attachment or to emotional development.',
   },
   {
     id: 'routine-only',
@@ -585,8 +585,8 @@ export const SETTLING_FRAMING =
 
 export const TIMER_PRESETS = [
   { id: 'soothe-five', label: 'Stick with one thing', minutes: 5, direction: 'down',
-    why: 'Cycling through six soothing techniques in two minutes is its own kind of overstimulating. Pick one and give it a real five minutes.' },
-  { id: 'parent-break', label: 'Your five minutes', minutes: 5, direction: 'down',
+    why: 'Cycling through 6 soothing techniques in 2 minutes is its own kind of overstimulating. Pick one and give it a real 5 minutes.' },
+  { id: 'parent-break', label: 'Your 5 minutes', minutes: 5, direction: 'down',
     why: 'Baby safe in the crib, you out of the room. This is a legitimate strategy, not a failure.' },
   { id: 'settle-check', label: 'Wait before going in', minutes: 2, direction: 'down',
     why: 'Some wakings resolve on their own. Going in during a light stage can fully wake a baby who was heading back down.' },
@@ -595,7 +595,7 @@ export const TIMER_PRESETS = [
   { id: 'feed-timer', label: 'Feed timer', minutes: null, direction: 'up',
     why: 'Counts up, and records which side you started on.' },
   { id: 'upright-after-feed', label: 'Stay upright', minutes: 30, direction: 'down',
-    why: 'Thirty minutes upright after a feed helps with spitting up. Never prop the mattress instead.' },
+    why: '30 minutes upright after a feed helps with spitting up. Never prop the mattress instead.' },
   { id: 'wind-down', label: 'Wind down', minutes: 25, direction: 'down',
     why: 'The same short sequence in the same order does more than any single technique.' },
   { id: 'mealtime', label: 'Mealtime', minutes: 20, direction: 'down',

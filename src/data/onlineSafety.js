@@ -14,7 +14,7 @@
  *
  * So this file does not tell a frightened mother that her fear is
  * silly. It tells her the fear is pointed at the wrong door. The van
- * has become a friend request. That honours the instinct and puts her
+ * has become a friend request. That honors the instinct and puts her
  * vigilance somewhere it will actually do something.
  *
  * WHAT IS LED WITH, AND WHY THAT ORDER
@@ -62,8 +62,8 @@ export const ONLINE_HEAD = 'The van became a friend request.';
 export const ONLINE_INTRO = [
   'Almost every parent carries the same picture: a stranger, a vehicle, a parking lot. That does '
   + 'happen. It is also rare enough to count. The last national estimate put stereotypical '
-  + 'kidnappings, the kind in the picture, at around a hundred a year in the whole United States, '
-  + 'and even within those, nearly four in ten were taken by somebody the child slightly knew '
+  + 'kidnappings, the kind in the picture, at around 100 a year in the whole United States, '
+  + 'and even within those, nearly 4 in 10 were taken by somebody the child slightly knew '
   + 'rather than a complete stranger.',
   'In the same country, in 2025, the national tip line for child exploitation took 21.3 million '
   + 'reports. Your instinct is not wrong. An adult who wants to hurt your child gets to them by '
@@ -77,12 +77,12 @@ export const ONLINE_NUMBERS = {
   items: [
     'Around 100 stereotypical kidnappings a year nationally, the last time it was measured properly. '
     + 'Eight of the children in that count were killed. It is rare, and it is not nothing.',
-    'Of the missing child cases the national centre worked in 2025, 92 percent were children who had '
+    'Of the missing child cases the national center worked in 2025, 92 percent were children who had '
     + 'run away. Running is far and away the commonest way a child goes missing.',
     '21.3 million reports of suspected child sexual exploitation in 2025, through the tip line alone.',
     'Over 50,000 reports of financially motivated sextortion in 2025, about 137 a day, up from around '
     + '36,000 in 2024.',
-    'Nearly six in ten teenage girls say they have been contacted by a stranger on social media in a '
+    'Nearly 6 in 10 teenage girls say they have been contacted by a stranger on social media in a '
     + 'way that made them uncomfortable.',
   ],
   note: 'Those numbers are not there to frighten you. They are there because knowing which door to '
@@ -93,7 +93,7 @@ export const ONLINE_NUMBERS = {
    spots step two instead of finding out at step six. */
 export const ONLINE_PATTERN = {
   title: 'What the pattern actually looks like',
-  intro: 'This is the sequence the national centre and the FBI describe. It is not a theory, it is '
+  intro: 'This is the sequence the national center and the FBI describe. It is not a theory, it is '
     + 'what these people do, and they do it for a living.',
   steps: [
     'They find your child somewhere ordinary. A game, a comment section, a server, a follower list.',
@@ -106,9 +106,9 @@ export const ONLINE_PATTERN = {
     'They ask, usually framed as a swap. You send me one and I will send you one.',
     'Then it turns, and often it turns in a single message. Pay, or this goes to everybody you know.',
   ],
-  speed: 'It is much faster than parents expect. The national centre documented a fifteen year old '
-    + 'groomed to the point of an in person meeting in nine days, and in the sextortion cases around '
-    + 'three in ten children faced demands within twenty four hours of first contact.',
+  speed: 'It is much faster than parents expect. The national center documented a 15 year old '
+    + 'groomed to the point of an in person meeting in 9 days, and in the sextortion cases around '
+    + '3 in 10 children faced demands within 24 hours of first contact.',
   offPlatform: 'Watch for the move. Getting your child off the platform they met on, into a private '
     + 'message or an encrypted app, is a step, and it is the step that takes them out of anywhere you '
     + 'or a moderator can see.',
@@ -132,9 +132,9 @@ export const ONLINE_SEXTORTION = {
   title: 'Boys, and the thing that gets them',
   body: [
     'The version aimed at teenage boys is financial. It is not somebody local who wants your son. It '
-    + 'is an organised operation, usually run from overseas, that wants money and is working hundreds '
+    + 'is an organized operation, usually run from overseas, that wants money and is working hundreds '
     + 'of children at once.',
-    'The FBI puts typical victims at boys aged fourteen to seventeen and has recorded a frightening '
+    'The FBI puts typical victims at boys aged 14 to 17 and has recorded a frightening '
     + 'number of suicides among them. Children have killed themselves within hours of it starting, '
     + 'believing there was no way out of it.',
   ],
@@ -157,17 +157,17 @@ export const ONLINE_STAGES = [
       + 'thing and are fine.',
     doNow: [
       'Decide now, while it is easy, that there are no screens at the table and none in the bedroom. '
-      + 'Starting that at eleven is a fight. Starting it at one is just how your house is.',
+      + 'Starting that at 11 is a fight. Starting it at one is just how your house is.',
       'Watch your own phone in front of them more than you watch theirs. They are learning what a '
       + 'phone is for by watching you hold one.',
     ],
   },
   {
-    id: 'toddler', label: 'Two to five', from: 24, to: 59,
+    id: 'toddler', label: '2 to 5', from: 24, to: 59,
     head: 'Everything they watch, you are in the room for.',
     body: 'This is the age where co watching does more than any control does. Not because they are in '
       + 'danger yet, but because watching together is what teaches them that you are part of what '
-      + 'happens on a screen, and that is the habit you need in eight years.',
+      + 'happens on a screen, and that is the habit you need in 8 years.',
     doNow: [
       'Screens live in the family room. No devices in the bedroom, ever, and starting now means never '
       + 'having to take one away later.',
@@ -178,14 +178,14 @@ export const ONLINE_STAGES = [
     ],
   },
   {
-    id: 'early', label: 'Five to eight', from: 60, to: 107,
+    id: 'early', label: '5 to 8', from: 60, to: 107,
     head: 'Games with other people in them. This is where it starts.',
     body: 'Roblox and Minecraft arrive around now, and a game with strangers in it is a different '
       + 'thing from a game. The point of this age is not restriction, it is that you know the names '
       + 'of the things they play and roughly who is in them.',
     doNow: [
       'Link your account to theirs on anything that allows it, and set chat off or friends only.',
-      'Play it with them. Twenty minutes once a week tells you more than any dashboard.',
+      'Play it with them. 20 minutes once a week tells you more than any dashboard.',
       'Teach the one rule they can actually hold at this age: anybody who says keep this between us '
       + 'is the person you tell me about.',
       'Teach that nobody they have only met in a game is a friend, however nice they are, and that '
@@ -193,10 +193,10 @@ export const ONLINE_STAGES = [
     ],
   },
   {
-    id: 'middle', label: 'Eight to eleven', from: 108, to: 143,
+    id: 'middle', label: '8 to 11', from: 108, to: 143,
     head: 'The years everything changes, and the years most parents wait too long.',
-    body: 'Almost four in ten children aged eight to twelve are already on social media, even though '
-      + 'the minimum age on all of it is thirteen. This is the stretch where a child goes from playing '
+    body: 'Almost 4 in 10 children aged 8 to 12 are already on social media, even though '
+      + 'the minimum age on all of it is 13. This is the stretch where a child goes from playing '
       + 'to having an online life with people in it you have never heard of.',
     doNow: [
       'Have the conversation about pictures now, before there is a reason to. If anybody ever asks '
@@ -209,11 +209,11 @@ export const ONLINE_STAGES = [
     ],
   },
   {
-    id: 'tween', label: 'Eleven to thirteen', from: 144, to: 155,
+    id: 'tween', label: '11 to 13', from: 144, to: 155,
     head: 'The pressure year. Everybody else has one, and mostly they do.',
-    body: 'Thirteen is the minimum age on Instagram, TikTok, Snapchat, YouTube, Discord and WhatsApp, '
-      + 'not because thirteen is safe but because a privacy law makes under thirteen expensive for '
-      + 'them. Plenty of children are on all of it at eleven with a made up birthday.',
+    body: '13 is the minimum age on Instagram, TikTok, Snapchat, YouTube, Discord and WhatsApp, '
+      + 'not because 13 is safe but because a privacy law makes under 13 expensive for '
+      + 'them. Plenty of children are on all of it at 11 with a made up birthday.',
     doNow: [
       'If you are going to say no to social media until later, say it now and say it with other '
       + 'parents, because on their own it is a punishment and together it is just how things are.',
@@ -226,9 +226,9 @@ export const ONLINE_STAGES = [
     ],
   },
   {
-    id: 'teen', label: 'Thirteen to sixteen', from: 156, to: 191,
+    id: 'teen', label: '13 to 16', from: 156, to: 191,
     head: 'The window the sextortion crews aim at.',
-    body: 'Boys aged fourteen to seventeen are the typical target for financially motivated '
+    body: 'Boys aged 14 to 17 are the typical target for financially motivated '
       + 'sextortion, and it moves in hours. Girls are far more likely to report unwanted contact from '
       + 'strangers. Both of them need the same promise from you.',
     doNow: [
@@ -244,7 +244,7 @@ export const ONLINE_STAGES = [
     ],
   },
   {
-    id: 'older', label: 'Sixteen to eighteen', from: 192, to: 400,
+    id: 'older', label: '16 to 18', from: 192, to: 400,
     head: 'You are advising now rather than controlling.',
     body: 'They will have devices and accounts you do not know about, and that is developmentally '
       + 'correct rather than a failure. What you keep is the relationship, and the relationship is the '
@@ -253,11 +253,11 @@ export const ONLINE_STAGES = [
       'Talk about the ones who are not children. Sending money, meeting somebody from an app, a '
       + 'person who wants everything private very fast.',
       'Talk about what they send as much as what they receive, including that an image of somebody '
-      + 'under eighteen is a criminal matter even when both of them are under eighteen.',
-      'Tell them that if a picture of them is out there and they were under eighteen when it was '
+      + 'under 18 is a criminal matter even when both of them are under 18.',
+      'Tell them that if a picture of them is out there and they were under 18 when it was '
       + 'taken, it can be taken down, for free, without sending it to anybody. It is at '
       + 'takeitdown.ncmec.org.',
-      'Keep saying the sentence. It does not stop working at sixteen.',
+      'Keep saying the sentence. It does not stop working at 16.',
     ],
   },
 ];
@@ -289,10 +289,10 @@ export const ONLINE_APPS = [
       + 'check to use chat at all, done by the camera estimating their age. People are sorted into '
       + 'brackets, under 9, 9 to 12, 13 to 15, 16 to 17, 18 to 20 and 21 plus, and can only chat with '
       + 'their own bracket and the ones either side. An adult cannot start a conversation with a '
-      + 'twelve year old. Since June 2026 there are separate Roblox Kids accounts for 5 to 8 and '
+      + '12 year old. Since June 2026 there are separate Roblox Kids accounts for 5 to 8 and '
       + 'Roblox Select for 9 to 15, with smaller reviewed lists of games.',
     canDo: [
-      'Turn chat off entirely for an under nine, and turn direct or whisper messages off for an under thirteen.',
+      'Turn chat off entirely for an under nine, and turn direct or whisper messages off for an under 13.',
       'Set a content maturity level, and block or allow individual games one at a time.',
       'Turn off the sensitive issues setting.',
       'Set Party and Group Party to nobody, and block private server access.',
@@ -339,10 +339,10 @@ export const ONLINE_APPS = [
       'Private account, message requests off from anybody they do not follow, comments limited to '
       + 'people they follow.',
       'Go through the follower list together. Anybody they cannot account for comes off.',
-      'TikTok has a separate under thirteen experience in the US with no posting, no comments and no '
+      'TikTok has a separate under 13 experience in the US with no posting, no comments and no '
       + 'messaging at all.',
     ],
-    honest: 'Nearly six in ten teenage girls report being contacted by a stranger on social media in '
+    honest: 'Nearly 6 in 10 teenage girls report being contacted by a stranger on social media in '
       + 'a way that made them uncomfortable. A private account cuts this down a great deal and does '
       + 'not end it.',
   },
@@ -351,7 +351,7 @@ export const ONLINE_APPS = [
     what: 'The default babysitter, and the place the recommendation engine matters more than the '
       + 'video they searched for.',
     canDo: [
-      'Under thirteen, use YouTube Kids or a supervised account rather than yours.',
+      'Under 13, use YouTube Kids or a supervised account rather than yours.',
       'Turn autoplay off. It is the single setting that changes what a young child ends up watching.',
       'Watch the history occasionally rather than the live video. It shows you where the algorithm has '
       + 'been taking them.',
@@ -388,9 +388,9 @@ export const ONLINE_GAP = {
     'Asked what they would do if an adult sent them explicit images online, 40 percent of children '
     + 'said they would go to a parent or caregiver. Among the children it had actually happened to, '
     + '10 percent did.',
-    'The gap between forty and ten is fear of what you will do. One in five said they worried about '
-    + 'getting in trouble with their family, one in four felt embarrassed or worried about being '
-    + 'judged, and one in six thought it was their fault.',
+    'The gap between 40 and 10 is fear of what you will do. 1 in 5 said they worried about '
+    + 'getting in trouble with their family, 1 in 4 felt embarrassed or worried about being '
+    + 'judged, and 1 in 6 thought it was their fault.',
   ],
   what: 'Which means the most protective thing in this entire page is a promise you make before '
     + 'anything happens, and then keep on the worst night of your life. You will never be in trouble '
@@ -418,14 +418,14 @@ export const ONLINE_PHONE = {
   body: [
     'There is no research that gives you an age, and anybody who tells you there is has usually read '
     + 'a survey rather than a study. What surveys do show fairly consistently is that most American '
-    + 'children have one somewhere between ten and twelve, and one recent study raised concerns about '
-    + 'ownership before twelve, though it needs reading carefully before anybody builds a rule on it.',
+    + 'children have one somewhere between 10 and 12, and one recent study raised concerns about '
+    + 'ownership before 12, though it needs reading carefully before anybody builds a rule on it.',
     'The more useful question is not the age. It is whether you have already had the conversations '
     + 'on this page, because a phone is a door and the point is who is allowed through it.',
   ],
   together: 'The hardest part of saying no is that they are the only one without one. There is a '
     + 'pledge called Wait Until 8th that exists entirely to solve that, where a family agrees to hold '
-    + 'off on a smartphone until the end of eighth grade, and the pledge only activates once ten '
+    + 'off on a smartphone until the end of eighth grade, and the pledge only activates once 10 '
     + 'families from the same grade at the same school have signed. Basic phones and watches are still '
     + 'allowed. The mechanism is the point. It turns a decision your child can argue with into one '
     + 'that is just how things are.',
@@ -458,10 +458,10 @@ export const ONLINE_SCRIPTS = {
 
 export const ONLINE_WRONG = {
   title: 'If it has already happened',
-  body: 'Whatever has happened, the first thirty seconds are what your child will remember for the '
+  body: 'Whatever has happened, the first 30 seconds are what your child will remember for the '
     + 'rest of it. Do not react to the picture, react to them. Then: stop replying but do not delete '
     + 'anything, screenshot everything, do not pay, report it to the platform and at report.cybertip.org '
-    + 'or 1-800-843-5678, and if an image of somebody under eighteen is out there, takeitdown.ncmec.org '
+    + 'or 1-800-843-5678, and if an image of somebody under 18 is out there, takeitdown.ncmec.org '
     + 'will get it removed for free without you sending it anywhere.',
   link: 'There is a fuller version, including what to do in the first hour and who to call, under If '
     + 'something is happening at home.',

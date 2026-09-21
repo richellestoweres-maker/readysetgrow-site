@@ -214,7 +214,7 @@ export function checkinRows(lenses) {
 }
 
 export const CHECKIN_INTRO =
-  'Thirty seconds, once a day. Enough of them and you can see the shape of a month instead of '
+  '30 seconds, once a day. Enough of them and you can see the shape of a month instead of '
   + 'trying to remember it.';
 
 export const CHECKIN_NOTE_PROMPT = 'Anything worth remembering about today';

@@ -131,7 +131,7 @@ export const EXP_ADD_OPTIONS = [
   { id: 'expecting', label: 'Still expecting', sub: 'You will put in the due date, and it becomes a birthday later' },
 ];
 
-export const EXP_ADD_NOTE = 'Either way this is the same profile they keep for the next eighteen '
+export const EXP_ADD_NOTE = 'Either way this is the same profile they keep for the next 18 '
   + 'years. Nothing started before they arrive gets left behind when they do.';
 
 export const EXP_NAME_NOTE = 'A name, or whatever you have been calling them. Peanut is a perfectly '
@@ -147,9 +147,9 @@ export const EXP_DUE_NOTE = 'The date from your provider, or from your last peri
 export const EXP_PROFILE_SUB = 'The seed stage. Same profile, same story, just earlier.';
 
 export const EXP_DATING_NOTE = {
-  title: 'Why it says forty weeks when it is really thirty eight',
-  body: 'A pregnancy is counted from the first day of your last period, which is roughly two weeks '
-    + 'before there was anything to count. So the weeks are dated from about a fortnight before '
+  title: 'Why it says 40 weeks when it is really 38',
+  body: 'A pregnancy is counted from the first day of your last period, which is roughly 2 weeks '
+    + 'before there was anything to count. So the weeks are dated from about 2 weeks before '
     + 'conception, everybody uses the same system, and it is why week four is the week a test tends '
     + 'to go positive rather than the week anything started.',
 };
@@ -159,15 +159,15 @@ export const EXP_SCAN_NOTE = 'If a scan moved your date, use the new one. A dati
 
 export const EXP_NOTHING_YET = {
   title: 'Nothing written for this week yet',
-  body: 'The weekly writing runs from week four through week forty two. Before that there is usually '
+  body: 'The weekly writing runs from week 4 through week 42. Before that there is usually '
     + 'very little to say and a great deal of waiting.',
 };
 
 export const EXP_OVERDUE = {
   title: 'Past the date',
-  body: 'The due date was always an estimate, and only about one baby in twenty five arrives on it. '
-    + 'Most come somewhere in the two weeks either side. Your provider will usually start talking '
-    + 'about monitoring or induction somewhere past forty one weeks, and that conversation is a '
+  body: 'The due date was always an estimate, and only about 1 baby in 25 arrives on it. '
+    + 'Most come somewhere in the 2 weeks either side. Your provider will usually start talking '
+    + 'about monitoring or induction somewhere past 41 weeks, and that conversation is a '
     + 'normal part of this rather than a sign something is wrong.',
 };
 
@@ -221,7 +221,7 @@ export function expBornGapLabel(gap) {
   return at + ', about ' + w + ' week' + (w === 1 ? '' : 's') + ' ' + which + ' the due date.';
 }
 
-export const EXP_PRETERM_NOTE = 'Born before thirty seven weeks. The app can follow corrected age '
+export const EXP_PRETERM_NOTE = 'Born before 37 weeks. The app can follow corrected age '
   + 'as well as actual age wherever that matters, and the prematurity lens on their profile turns '
   + 'that on.';
 

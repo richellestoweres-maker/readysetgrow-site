@@ -134,7 +134,7 @@ export const BAG_CATEGORIES = [
       {
         id: 'labor-chargers',
         label: 'Extra long phone charger, and a battery pack',
-        note: 'Hospital outlets are never near the bed. A 10 foot cord solves a problem you will otherwise complain about for two days.',
+        note: 'Hospital outlets are never near the bed. A 10 foot cord solves a problem you will otherwise complain about for 2 days.',
         insiderTip: true,
         essential: true,
       },
@@ -169,14 +169,14 @@ export const BAG_CATEGORIES = [
     items: [
       {
         id: 'you-going-home',
-        label: 'Going home clothes that fit you at about six months pregnant',
+        label: 'Going home clothes that fit you at about 6 months pregnant',
         note: 'Your belly does not go down immediately. Soft, loose, and forgiving. Nothing with a waistband that sits on a cesarean incision.',
         essential: true,
         insiderTip: true,
       },
       {
         id: 'you-nursing-bra',
-        label: 'Two soft nursing bras or bralettes with no underwire',
+        label: '2 soft nursing bras or bralettes with no underwire',
         note: 'Your size will change when your milk comes in around day 3 to 5. Buy stretchy, and do not buy your final size in advance.',
         insiderTip: true,
       },
@@ -277,7 +277,7 @@ export const BAG_CATEGORIES = [
       },
       {
         id: 'baby-going-home',
-        label: 'Going home outfit, in two sizes',
+        label: 'Going home outfit, in 2 sizes',
         note: 'Bring newborn and 0 to 3 months. Babies come in sizes nobody predicts, and the outfit you pictured may not fit.',
         insiderTip: true,
       },
@@ -289,7 +289,7 @@ export const BAG_CATEGORIES = [
       },
       {
         id: 'baby-swaddle',
-        label: 'One or two swaddles or receiving blankets',
+        label: 'One or 2 swaddles or receiving blankets',
         note: 'The hospital gives you the striped ones. Ask if you can keep them, most units say yes.',
       },
       {
@@ -309,7 +309,7 @@ export const BAG_CATEGORIES = [
     items: [
       {
         id: 'partner-clothes',
-        label: 'A change of clothes for at least two days',
+        label: 'A change of clothes for at least 2 days',
         note: 'Labor is unpredictable. Pack for longer than you expect.',
       },
       {
@@ -330,7 +330,7 @@ export const BAG_CATEGORIES = [
       {
         id: 'partner-charger',
         label: 'Their own charger',
-        note: 'Two people, two phones, two cables. Sharing one becomes a problem at 3am.',
+        note: '2 people, 2 phones, 2 cables. Sharing one becomes a problem at 3am.',
       },
     ],
   },
@@ -351,7 +351,7 @@ export const BAG_ADDITIONS = [
       'High waisted underwear that sits well above the incision. Anything at the waistband is going to hurt.',
       'Loose dresses or wide leg pants, nothing that has to be pulled up past the incision.',
       'A small pillow to hold against your belly in the car, for bumps and for coughing and sneezing.',
-      'Pack for an extra day or two beyond what you planned.',
+      'Pack for an extra day or 2 beyond what you planned.',
       'A grabber or a plan for how you will pick things up, since bending is limited at first.',
     ],
     note:
@@ -373,7 +373,7 @@ export const BAG_ADDITIONS = [
     ],
     note:
       'Ask for the name of your baby’s primary nurse and write it down. Ask what time rounds happen so ' +
-      'you can be there for them. Those two questions change how much information you get.',
+      'you can be there for them. Those 2 questions change how much information you get.',
   },
   {
     id: 'induction',

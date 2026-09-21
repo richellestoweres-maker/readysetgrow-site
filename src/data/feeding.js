@@ -28,7 +28,7 @@ export const FEEDING_STANCE = {
   headline: 'Fed is best. That is the whole position, and it does not have an asterisk.',
   body: [
     'Human milk has real benefits and this app will tell you what they are, because you deserve accurate information. What it will never do is imply that a parent who used formula gave their baby something second rate.',
-    'There are a hundred reasons a baby ends up on formula, and almost none of them are a choice anybody made lightly. Oral ties that stopped a baby transferring milk. Supply that never came in. A NICU stay. Medication that was not compatible. A return to work at six weeks with no pump breaks. Adoption. Surrogacy. Or a parent who looked at what breastfeeding was costing their mental health and decided their baby needed a well parent more.',
+    'There are 100 reasons a baby ends up on formula, and almost none of them are a choice anybody made lightly. Oral ties that stopped a baby transferring milk. Supply that never came in. A NICU stay. Medication that was not compatible. A return to work at 6 weeks with no pump breaks. Adoption. Surrogacy. Or a parent who looked at what breastfeeding was costing their mental health and decided their baby needed a well parent more.',
     'In every one of those situations, formula was not a compromise. It was the thing that let the baby grow.',
     'A baby who is fed, gaining, and loved is the goal. The route there is yours.',
   ],
@@ -46,7 +46,7 @@ export const BREASTMILK_BENEFITS = {
     'Antibodies that change composition as your baby is exposed to things, which formula cannot do.',
     'Lower rates of ear infections, respiratory infections, and stomach bugs in the first year.',
     'Lower risk of necrotizing enterocolitis in premature babies, which is the single largest benefit in the whole list and the reason donor milk exists for NICU babies.',
-    'Lower rates of SIDS, with the association strongest at six months or more of any breastfeeding.',
+    'Lower rates of SIDS, with the association strongest at 6 months or more of any breastfeeding.',
     'Easier digestion for most babies, so less constipation.',
   ],
   forParent: [
@@ -56,7 +56,7 @@ export const BREASTMILK_BENEFITS = {
   ],
   honestCaveats: [
     'Most of the studies are observational, which means they compare families who breastfed to families who did not, and those families differ in income, education, and support in ways that are hard to fully adjust for. The effects are real and they are smaller than the headlines.',
-    'The benefits scale with how much and how long, so any amount counts. Two weeks counts. Combination feeding counts.',
+    'The benefits scale with how much and how long, so any amount counts. 2 weeks counts. Combination feeding counts.',
     'None of these benefits are worth a parent in crisis. That is not a nice thing we are saying to be kind, it is the actual risk calculation.',
   ],
 };
@@ -81,12 +81,12 @@ export const FORMULA_FACTS = {
  * ------------------------------------------------------------------ */
 
 export const SOLIDS_TIMING = {
-  headline: 'Around six months, and the readiness signs matter more than the date.',
+  headline: 'Around 6 months, and the readiness signs matter more than the date.',
   body: [
-    'The AAP recommends human milk or formula alone for about the first six months, then starting solids while milk continues.',
-    'Some babies are genuinely ready closer to five months and some are not ready until seven, and both are normal. What you are watching for is the body, not the calendar.',
-    'Before four months, no. The gut and the swallowing coordination are not there yet, and starting early is linked to more choking and does not help with sleep, despite what you will be told.',
-    'Waiting much past six months has its own cost, because iron stores from birth start running out around then and the window for accepting new textures is easier earlier than later.',
+    'The AAP recommends human milk or formula alone for about the first 6 months, then starting solids while milk continues.',
+    'Some babies are genuinely ready closer to 5 months and some are not ready until seven, and both are normal. What you are watching for is the body, not the calendar.',
+    'Before 4 months, no. The gut and the swallowing coordination are not there yet, and starting early is linked to more choking and does not help with sleep, despite what you will be told.',
+    'Waiting much past 6 months has its own cost, because iron stores from birth start running out around then and the window for accepting new textures is easier earlier than later.',
   ],
   theSleepMyth:
     'Rice cereal in a bottle does not make babies sleep through the night. It has been studied and it does not, ' +
@@ -119,17 +119,17 @@ export const SOLIDS_READINESS = {
     {
       sign: 'Roughly doubled birth weight, and usually over about 13 pounds',
       why: 'A rough size marker rather than a rule. It tracks with the other signs more often than not.',
-      notYet: 'Small babies and early babies get judged on the other four signs, and on corrected age if they were premature.',
+      notYet: 'Small babies and early babies get judged on the other 4 signs, and on corrected age if they were premature.',
     },
   ],
   correctedAgeNote:
     'If your baby was born early, use corrected age for this. A baby born at 32 weeks is usually ready for solids ' +
-    'around six months corrected, not six months from their birthday.',
+    'around 6 months corrected, not 6 months from their birthday.',
 };
 
 export const FEEDING_APPROACHES = {
   intro:
-    'There are two well known ways to start, and a third that is what most families actually do. ' +
+    'There are 2 well known ways to start, and a third that is what most families actually do. ' +
     'None of them is safer than the others when they are done properly, and none of them determines ' +
     'how your child eats at five. Pick the one that fits your kitchen and your nerve.',
   options: [
@@ -138,8 +138,8 @@ export const FEEDING_APPROACHES = {
       label: 'Spoon feeding and purees',
       how: [
         'Start with smooth single ingredient purees on a soft tipped spoon.',
-        'One new food every three to five days at first, so a reaction is traceable.',
-        'Thicken the texture over a few weeks, then move to lumps, then to soft finger foods by around eight or nine months.',
+        'One new food every 3 to 5 days at first, so a reaction is traceable.',
+        'Thicken the texture over a few weeks, then move to lumps, then to soft finger foods by around 8 or 9 months.',
       ],
       goodFor: [
         'Parents who want to see exactly how much went in.',
@@ -221,8 +221,8 @@ export const FIRST_FOODS = {
     headline: 'Introduce the common allergens early and keep them in the diet.',
     body: [
       'The old advice to delay peanut, egg, and dairy was wrong and has been reversed. Delaying increases allergy risk rather than lowering it.',
-      'Start the common allergens between about four and six months once solids are underway, at home, earlier in the day, one at a time.',
-      'The nine common ones are milk, egg, peanut, tree nuts, soy, wheat, fish, shellfish, and sesame.',
+      'Start the common allergens between about 4 and 6 months once solids are underway, at home, earlier in the day, one at a time.',
+      'The 9 common ones are milk, egg, peanut, tree nuts, soy, wheat, fish, shellfish, and sesame.',
       'Keeping them in the diet regularly is the part people forget. One exposure does not build tolerance, regular exposure does.',
       'Never whole nuts or spoonfuls of thick nut butter, which are choking hazards. Thin the butter into yogurt or spread it thinly.',
     ],
@@ -231,11 +231,11 @@ export const FIRST_FOODS = {
       'That specific group may need testing or a supervised introduction first.',
   },
   avoid: [
-    { food: 'Honey', why: 'Botulism risk under twelve months, including in baked goods. This one is absolute.' },
-    { food: 'Cow milk as a drink', why: 'Not before twelve months. Yogurt and cheese as food are fine from six months.' },
+    { food: 'Honey', why: 'Botulism risk under 12 months, including in baked goods. This one is absolute.' },
+    { food: 'Cow milk as a drink', why: 'Not before 12 months. Yogurt and cheese as food are fine from 6 months.' },
     { food: 'Added salt and sugar', why: 'Their kidneys cannot handle much salt, and sugar sets a preference you will be arguing with for years.' },
     { food: 'Choking shaped foods', why: 'Whole grapes, cherry tomatoes, hot dog coins, whole nuts, popcorn, hard raw vegetables, chunks of meat or cheese, sticky spoonfuls of nut butter, hard candy.' },
-    { food: 'Juice under twelve months', why: 'No nutritional need, and it displaces milk. After one, four ounces a day at most.' },
+    { food: 'Juice under 12 months', why: 'No nutritional need, and it displaces milk. After one, 4 ounces a day at most.' },
     { food: 'Unpasteurized anything', why: 'Milk, cheese, and juice. Their immune systems are not ready.' },
   ],
   howToCutIt: [
@@ -252,23 +252,23 @@ export const FIRST_FOODS = {
  * ------------------------------------------------------------------ */
 
 export const MILK_TRANSITION = {
-  headline: 'Formula stops at twelve months. Breastmilk can carry on as long as you both want.',
+  headline: 'Formula stops at 12 months. Breastmilk can carry on as long as you both want.',
   timeline: [
     {
-      when: 'Birth to six months',
+      when: 'Birth to 6 months',
       what: 'Human milk or formula only. Solids are not needed and water is not needed, even in hot weather.',
     },
     {
-      when: 'Six to twelve months',
-      what: 'Milk is still the main nutrition and solids are practice. Food before one is for learning, not for filling up. Small amounts of water in an open or straw cup with meals are fine from six months.',
+      when: '6 to 12 months',
+      what: 'Milk is still the main nutrition and solids are practice. Food before one is for learning, not for filling up. Small amounts of water in an open or straw cup with meals are fine from 6 months.',
     },
     {
-      when: 'Around twelve months',
+      when: 'Around 12 months',
       what: 'Solids become the main nutrition and milk becomes a drink alongside it. Formula is no longer needed. Whole cow milk can start now.',
     },
     {
-      when: 'Twelve to twenty four months',
-      what: 'Whole milk, about sixteen ounces a day at most, since more than that displaces food and iron. Water the rest of the time.',
+      when: '12 to 24 months',
+      what: 'Whole milk, about 16 ounces a day at most, since more than that displaces food and iron. Water the rest of the time.',
     },
     {
       when: 'After two',
@@ -280,7 +280,7 @@ export const MILK_TRANSITION = {
     'toddlers do not need them. Whole milk and food do the job for far less money. The exception is a child ' +
     'whose doctor has recommended a specific product for a specific reason.',
   aboutContinuedBreastfeeding: [
-    'The AAP supports continued breastfeeding to two years or beyond, alongside food, for as long as both of you want to.',
+    'The AAP supports continued breastfeeding to 2 years or beyond, alongside food, for as long as both of you want to.',
     'The World Health Organization says the same. There is no age at which milk stops being good for them.',
     'It does not cause dependence, it does not stop them eating, and it does not need to be justified to anyone.',
     'And stopping before that is equally fine. Both of you get a vote and yours counts.',
@@ -317,15 +317,15 @@ export const MILK_TRANSITION = {
  * ------------------------------------------------------------------ */
 
 export const NEWBORN_RHYTHM = {
-  headline: 'Every two to three hours, around the clock, and that is the job for a while.',
+  headline: 'Every 2 to 3 hours, around the clock, and that is the job for a while.',
   body: [
-    'A newborn feeds 8 to 12 times in 24 hours. Breastfed babies often nurse every two hours ' +
-    'counted from the start of one feed to the start of the next, which is not the same as two ' +
-    'hours off between them. If a feed takes forty minutes, the next one can be eighty minutes ' +
+    'A newborn feeds 8 to 12 times in 24 hours. Breastfed babies often nurse every 2 hours ' +
+    'counted from the start of one feed to the start of the next, which is not the same as 2 ' +
+    'hours off between them. If a feed takes 40 minutes, the next one can be 80 minutes ' +
     'after you finished. That is normal and it is not a sign anything is wrong.',
 
     'It does not space out on a schedule you set. It spaces out when their stomach grows, which ' +
-    'happens somewhere around six to eight weeks for most babies and later for plenty of others. ' +
+    'happens somewhere around 6 to 8 weeks for most babies and later for plenty of others. ' +
     'Until then, feeding on demand is not spoiling them and it is not a habit you will have to ' +
     'break later. It is how supply gets built.',
 
@@ -335,14 +335,14 @@ export const NEWBORN_RHYTHM = {
   clusterFeeding: {
     title: 'Cluster feeding is not a problem to solve',
     text: 'Some evenings they will feed almost hourly for hours. It usually lands in the late ' +
-      'afternoon and evening, it often shows up in the first few days and again around three ' +
-      'weeks and six weeks, and it is how a baby drives supply up. It feels like your milk has ' +
+      'afternoon and evening, it often shows up in the first few days and again around 3 ' +
+      'weeks and 6 weeks, and it is how a baby drives supply up. It feels like your milk has ' +
       'run out. It is the opposite. Eat something, get comfortable, and let them.',
   },
   wakingThem: {
     title: 'When to wake a sleepy newborn',
     text: 'Until they are back to birth weight and clearly gaining, do not let a newborn go more ' +
-      'than four hours without a feed, day or night. Unwrap them, change the diaper, skin to skin, ' +
+      'than 4 hours without a feed, day or night. Unwrap them, change the diaper, skin to skin, ' +
       'a cool cloth on the feet. After they are gaining well, a longer stretch is theirs to take.',
     sleepyWarning: 'A newborn who is too sleepy to wake for a feed, or who will not stay latched ' +
       'long enough to feed, is worth a phone call rather than another hour of trying.',
@@ -357,23 +357,23 @@ export const DIAPER_EXPECTATIONS = [
   { day: 2, label: 'Day 2', wet: 2, wetLabel: '2 or more', dirty: '1 or 2',
     stool: 'Still meconium, black to very dark green' },
   { day: 3, label: 'Day 3', wet: 3, wetLabel: '3 or more', dirty: '2 or more',
-    stool: 'Turning, greenish brown and looser', note: 'Milk usually comes in somewhere around now, day two to day five.' },
+    stool: 'Turning, greenish brown and looser', note: 'Milk usually comes in somewhere around now, day 2 to day five.' },
   { day: 4, label: 'Day 4', wet: 4, wetLabel: '4 or more', dirty: '2 or more',
     stool: 'Greenish to yellow' },
   { day: 5, label: 'Day 5', wet: 6, wetLabel: '6 or more', dirty: '3 or more',
-    stool: 'Yellow, loose, with small seedy curds', note: 'From here on, six or more wet diapers a day is the number to hold onto.' },
+    stool: 'Yellow, loose, with small seedy curds', note: 'From here on, 6 or more wet diapers a day is the number to hold onto.' },
   { day: 6, label: 'Day 6 onward', wet: 6, wetLabel: '6 or more', dirty: '3 or more',
     stool: 'Yellow and seedy for breastfed babies, tan to brown and firmer on formula' },
 ];
 
 export const DIAPER_NOTES = {
-  wetHowToTell: 'A disposable diaper hides how wet it is. A wet one weighs about like three ' +
+  wetHowToTell: 'A disposable diaper hides how wet it is. A wet one weighs about like 3 ' +
     'tablespoons of water poured onto a dry one, and if you are unsure, that is genuinely the ' +
-    'test people are taught to use. Urine should be pale, close to colourless.',
+    'test people are taught to use. Urine should be pale, close to colorless.',
   bricks: 'Brick red or orange dust in the diaper in the first few days is urate crystals. Common ' +
-    'before the milk is fully in, and expected to stop once it is. After day four or five it is ' +
+    'before the milk is fully in, and expected to stop once it is. After day 4 or 5 it is ' +
     'worth mentioning.',
-  afterSixWeeks: 'Somewhere after three to six weeks a breastfed baby may stop pooing daily and ' +
+  afterSixWeeks: 'Somewhere after 3 to 6 weeks a breastfed baby may stop pooing daily and ' +
     'go several days between them. If they are comfortable, feeding well, and the diaper when it ' +
     'arrives is soft, that is normal and not constipation. A formula fed baby usually keeps to a ' +
     'more regular pattern.',
@@ -398,9 +398,9 @@ export const BOTTLE_AMOUNTS = {
       { when: '1 to 6 months', amount: 'About 2.5 to 4 ounces', per: 'per feed',
         note: 'Around 25 to 30 ounces across the whole day, and it stays about there.' },
     ],
-    theFlatLine: 'A breastfed baby takes roughly the same amount of milk a day at five months as ' +
+    theFlatLine: 'A breastfed baby takes roughly the same amount of milk a day at 5 months as ' +
       'at one month. In the study most of these numbers come from, the average was just under 27 ' +
-      'ounces a day across babies aged one to six months, spread over about 11 feeds, and the ' +
+      'ounces a day across babies aged 1 to 6 months, spread over about 11 feeds, and the ' +
       'volume per feed had no relationship to the baby\u2019s age at all. Breastmilk changes ' +
       'composition as they grow, so the same volume keeps doing the job. This is why a bottle fed ' +
       'baby on expressed milk does not need bigger and bigger bottles, and why being handed a ' +
@@ -429,7 +429,7 @@ export const BOTTLE_AMOUNTS = {
       'babies. Mix it exactly as the label says, every time. If formula is hard to afford or hard ' +
       'to find, WIC and your pediatrician have real options and this is exactly what to ask them ' +
       'about.',
-    noWater: 'A baby under six months needs no water at all, and no juice, unless a doctor has ' +
+    noWater: 'A baby under 6 months needs no water at all, and no juice, unless a doctor has ' +
       'specifically told you otherwise. Milk or formula is the whole diet.',
     noCereal: 'Do not put cereal in a bottle. It does not help them sleep, it is a choking risk, ' +
       'and it replaces nutrition with filler. If someone has told you to do it for reflux, ask ' +
@@ -440,7 +440,7 @@ export const BOTTLE_AMOUNTS = {
     title: 'Pace the bottle, whatever is in it',
     steps: [
       'Sit them upright rather than lying flat, and keep the bottle close to level so they have to work for it.',
-      'Slow flow teat, and leave it there. Moving up a size because a feed takes twenty minutes usually just means they swallow more air.',
+      'Slow flow teat, and leave it there. Moving up a size because a feed takes 20 minutes usually just means they swallow more air.',
       'Let them take breaks. Tip the bottle down, let them breathe, offer it again.',
       'Stop when they stop. Turning away, letting milk pool, hands relaxing open, all of it means done.',
       'Never prop a bottle and walk away, and never put a baby to bed with one. Choking, ear infections and tooth decay all live there.',
@@ -451,9 +451,9 @@ export const BOTTLE_AMOUNTS = {
 export const NEWBORN_WARNING_SIGNS = {
   title: 'Call about feeding if',
   items: [
-    'Fewer than six wet diapers a day after day five, or urine that is dark or has brick colored dust in it past the first few days',
+    'Fewer than 6 wet diapers a day after day five, or urine that is dark or has brick colored dust in it past the first few days',
     'No stool at all in 24 hours in the first week, or stools that are still black past day four',
-    'They are still below birth weight at two weeks old',
+    'They are still below birth weight at 2 weeks old',
     'Too sleepy to wake for feeds, or feeding for a few minutes and falling straight back to sleep every time',
     'Yellowing of the skin or the whites of the eyes that is spreading or getting deeper',
     'A dry mouth, no tears when they cry, or a soft spot on the head that looks sunken',
@@ -463,7 +463,7 @@ export const NEWBORN_WARNING_SIGNS = {
     'once or twice in a day are signs of real dehydration. That is today, not the next available ' +
     'appointment.',
   reassurance: 'Weight loss in the first days is expected. Up to 8 to 10 percent of birth weight ' +
-    'is normal, and most babies are back to birth weight by about two weeks. Asking to be weighed ' +
+    'is normal, and most babies are back to birth weight by about 2 weeks. Asking to be weighed ' +
     'is free, and no good pediatric office has ever minded.',
 };
 
@@ -510,7 +510,7 @@ export function getFeedingHeadline(months) {
   /* A parent of a two week old and a parent of a three month old are
      both in milkOnly and are not asking the same question. */
   if (typeof months === 'number' && months < 2) {
-    return 'Every two to three hours, and six wet diapers a day once the milk is in.';
+    return 'Every 2 to 3 hours, and 6 wet diapers a day once the milk is in.';
   }
   const lines = {
     milkOnly: 'Milk only for now. Solids can wait, and waiting is the safer side to be on.',

@@ -32,7 +32,7 @@
 
 export const URGENT_MATERNAL_SIGNS = {
   headline: 'Get medical care right away if you have any of these',
-  window: 'These apply during pregnancy and for a full year after birth, not just the first six weeks.',
+  window: 'These apply during pregnancy and for a full year after birth, not just the first 6 weeks.',
   signs: [
     'A headache that will not go away, or gets worse over time',
     'Dizziness or fainting',
@@ -103,7 +103,7 @@ export const POSTPARTUM_CONDITIONS = [
   {
     id: 'endometritis',
     label: 'Infection of the uterus',
-    surprise: 'It usually shows up between two and ten days after birth, once you are home.',
+    surprise: 'It usually shows up between 2 and 10 days after birth, once you are home.',
     signs: [
       'Fever and chills',
       'Belly pain or tenderness',
@@ -128,11 +128,11 @@ export const PREP_TOPICS = [
     priority: 100,
     why:
       'The most common reason feeding goes badly is that the first latch is the first time anyone has ' +
-      'explained how it works, and by then you have been awake for thirty hours. Twenty minutes of ' +
+      'explained how it works, and by then you have been awake for 30 hours. 20 minutes of ' +
       'reading now is worth more than any amount of reading at 3 AM on day two.',
     doNow: [
       'Learn what a deep latch looks like: nose level with the nipple, head tilting back, chin leading, wide open mouth.',
-      'Know that newborns feed eight to twelve times in twenty four hours, and that this is normal rather than a sign of low supply.',
+      'Know that newborns feed 8 to 12 times in 24 hours, and that this is normal rather than a sign of low supply.',
       'Know that cluster feeding in the evening is normal and is not evidence your supply failed.',
       'Find out now whether your hospital has lactation support and whether your insurance covers a consultant. Do not wait until you need one.',
       'If you plan to pump, get your flange size checked rather than assuming the box size fits. Wrong sizing is the most common cause of pain and low output.',
@@ -153,7 +153,7 @@ export const PREP_TOPICS = [
       'version of you does not have to make any decisions at 2 AM.',
     doNow: [
       'A firm, flat, non inclined surface. A crib, bassinet or play yard with a fitted sheet and nothing else in it.',
-      'Put the bassinet in your room. The guidance is to share a room, not a bed, ideally for at least the first six months.',
+      'Put the bassinet in your room. The guidance is to share a room, not a bed, ideally for at least the first 6 months.',
       'Remove the bumpers, the pillows, the loose blankets and the stuffed toys now, so they are not there to be tempting later.',
       'Do not buy an inclined sleeper or a positioner. They are not safe and several have been recalled.',
       'Decide where night feeds will happen, and make sure it is not a couch or an armchair. Falling asleep with a baby on a sofa is one of the most dangerous things that happens by accident.',
@@ -170,17 +170,17 @@ export const PREP_TOPICS = [
     trimester: 3,
     priority: 96,
     why:
-      'Most preparation is about labour, which lasts a day. Recovery lasts months and almost nobody ' +
+      'Most preparation is about labor, which lasts a day. Recovery lasts months and almost nobody ' +
       'describes it honestly, so people assume something has gone wrong when it has not.',
     doNow: [
-      'Bleeding lasts weeks, not days. It usually tapers over four to six weeks and it is normal for it to come and go.',
+      'Bleeding lasts weeks, not days. It usually tapers over 4 to 6 weeks and it is normal for it to come and go.',
       'Afterpains are real. Cramping while feeding, often stronger with a second or third baby, because feeding makes the uterus contract.',
       'The first bowel movement is a thing everyone dreads and nobody mentions. Ask for a stool softener before you leave the hospital.',
       'Night sweats for a couple of weeks are normal as fluid leaves your body.',
       'Your belly will still look pregnant when you go home. That is anatomy, not failure.',
       'A cesarean is major abdominal surgery. Recovery takes longer than people act like it does, and lifting limits are real.',
       'Pelvic floor problems such as leaking are common and are treatable. Common does not mean you have to live with it. Ask about pelvic floor physical therapy.',
-      'The six week check is not the finish line. Ask for a real conversation about how you are doing, not just clearance for exercise.',
+      'The 6 week check is not the finish line. Ask for a real conversation about how you are doing, not just clearance for exercise.',
     ],
     parentNote:
       'You are also a patient. Almost all attention shifts to the baby the moment they arrive, and you ' +
@@ -200,7 +200,7 @@ export const PREP_TOPICS = [
       'Ask the most important one first, not last. Visits run out of time at the end.',
       'Ask what number to call after hours, and whether it reaches a person or a machine.',
       'Ask what would make them want to see you sooner than the next scheduled visit.',
-      'Take someone with you to the appointments that matter, because two people hear more than one.',
+      'Take someone with you to the appointments that matter, because 2 people hear more than one.',
       'If something was dismissed, ask for it to be written in your chart. That single sentence changes how seriously it gets taken.',
     ],
     parentNote:
@@ -216,7 +216,7 @@ export const PREP_TOPICS = [
     why:
       'The most common failure is a partner who wants to help and has no idea what help is, so they ' +
       'wait to be asked. Being asked is itself work, and the person recovering is doing it while ' +
-      'bleeding and awake every two hours.',
+      'bleeding and awake every 2 hours.',
     doNow: [
       'Own whole areas rather than tasks. All the laundry, all the food, all the visitor management. Not "tell me what to do".',
       'Be the gatekeeper. Someone has to say no to visitors, and it should not be the person recovering.',
@@ -224,10 +224,10 @@ export const PREP_TOPICS = [
       'Learn the feeding setup too. A partner who knows what a good latch looks like is a second set of eyes.',
       'Know the warning signs on this screen. The person recovering may be too exhausted to judge whether something is wrong.',
       'Watch for how she is doing emotionally, not just physically. Partners often spot postpartum depression before she does.',
-      'Partners get postpartum depression too. Roughly one in ten. Know that in advance.',
+      'Partners get postpartum depression too. Roughly 1 in 10. Know that in advance.',
     ],
     parentNote:
-      'The first six weeks are not a time to divide things fairly. They are a time for one person to ' +
+      'The first 6 weeks are not a time to divide things fairly. They are a time for one person to ' +
       'carry more so the other can heal.',
     linksTo: ['postpartum-parent'],
   },
@@ -240,16 +240,16 @@ export const PREP_TOPICS = [
       'Almost every new parent privately thinks something is wrong with their baby in week three. ' +
       'Usually nothing is. They just had no idea what normal looks like.',
     doNow: [
-      'Crying climbs from birth, peaks somewhere around six to eight weeks, then drops. Some of it has no findable cause.',
-      'Newborns feed constantly. Eight to twelve times in twenty four hours, sometimes more in the evening.',
+      'Crying climbs from birth, peaks somewhere around 6 to 8 weeks, then drops. Some of it has no findable cause.',
+      'Newborns feed constantly. 8 to 12 times in 24 hours, sometimes more in the evening.',
       'They have no day and night rhythm for weeks. This is not something you did wrong.',
       'Sleep comes in short stretches. Long stretches are not a sign of good parenting and short ones are not a sign of bad.',
       'They sneeze, hiccup, grunt and make constant noise while sleeping. Almost all of it is normal.',
-      'Weight loss in the first days is expected, and most babies are back to birth weight by about two weeks.',
+      'Weight loss in the first days is expected, and most babies are back to birth weight by about 2 weeks.',
       'You cannot spoil a newborn. Responding is what builds the security they regulate from later.',
     ],
     parentNote:
-      'The fourth trimester is a real idea. For about three months they are essentially still expecting ' +
+      'The fourth trimester is a real idea. For about 3 months they are essentially still expecting ' +
       'to be held constantly, and that is not a habit you are creating.',
     linksTo: ['newborn-basics', 'jaundice', 'safe-sleep'],
   },
@@ -284,7 +284,7 @@ export const PREP_TOPICS = [
       'A safe sleep space, a car seat that fits your car, feeding supplies, diapers, and somewhere for you to sit comfortably while feeding.',
       'Get the car seat installed and inspected before the birth. A free check with a certified technician catches the installation errors that are extremely common.',
       'Skip the inclined sleepers, the crib bumpers, the positioners, the weighted sleep sacks and any teething jewelry. Several of these carry safety warnings.',
-      'Borrow rather than buy the things they outgrow in eight weeks.',
+      'Borrow rather than buy the things they outgrow in 8 weeks.',
       'Buy far fewer newborn size clothes than you think. Many babies skip that size almost entirely.',
       'The expensive thing worth considering is help, not gear. A cleaner, a meal service, or a postpartum doula beats most of the registry.',
     ],
@@ -325,7 +325,7 @@ export const PREP_TOPICS = [
       'Know the questions to ask in the moment: what are the options, what happens if we wait, what are the risks either way.',
       'Decide who your advocate is and tell them explicitly, so someone is asking questions when you cannot.',
       'Prepare for the version where things change. Most births deviate from the plan and that is not a failure.',
-      'Ask what routine practices your hospital follows, so you learn them now rather than during labour.',
+      'Ask what routine practices your hospital follows, so you learn them now rather than during labor.',
     ],
     parentNote:
       'The goal is not a specific birth. It is that you were informed, heard, and part of the decisions.',

@@ -205,7 +205,7 @@ export const DV_INTRO = [
 
 export const DV_LOOKS_LIKE = {
   title: 'What it looks like when nobody is being hit',
-  intro: 'Physical violence is the part everybody recognises. These are the parts that do as much '
+  intro: 'Physical violence is the part everybody recognizes. These are the parts that do as much '
     + 'damage and rarely get counted.',
   items: [
     'Money. You have to ask for it, or account for it, or you are not allowed to work, or the accounts '
@@ -232,9 +232,9 @@ export const DV_STRANGLE = {
   title: 'If his hands have ever been on your neck',
   body: [
     'This is the one fact worth stopping for. A woman whose partner has strangled her, even once, '
-    + 'even briefly, even with no marks left, is around seven times more likely to be killed by him '
+    + 'even briefly, even with no marks left, is around 7 times more likely to be killed by him '
     + 'than a woman in an abusive relationship where that has never happened.',
-    'That is from a study of nearly a thousand cases across eleven cities, comparing women who were '
+    'That is from a study of nearly a thousand cases across 11 cities, comparing women who were '
     + 'killed by a partner with women who were abused and not killed. Strangulation was one of the '
     + 'strongest single predictors in it.',
     'It does not mean it will happen. It means this is not the same as the rest of it, and anybody '
@@ -313,7 +313,7 @@ export const DV_BAG = {
     + 'ahead of time, do. If you cannot, go anyway. All of it can be replaced.',
   items: [
     'Identification for you and every child. Birth certificates, social security cards, passports, '
-    + 'immigration papers, driving licence.',
+    + 'immigration papers, driving license.',
     'Any medication, and the prescriptions.',
     'Court papers. Custody orders, protective orders, divorce papers.',
     'Some cash, in notes, not a card he can see the statement for.',
@@ -331,7 +331,7 @@ export const DV_STAYING = {
     + 'either way.',
   items: [
     'Work out which room in the house has a way out and no weapons in it, and which one does not. The '
-    + 'kitchen and the bathroom are the two worst.',
+    + 'kitchen and the bathroom are the 2 worst.',
     'Agree a word or a message with one person who will call for help without asking questions.',
     'Teach the children how to call 911, where to go, and that it is never their job to get in the '
     + 'middle of it.',
@@ -344,10 +344,10 @@ export const DV_STAYING = {
 
 export const DV_IF_ITS_YOU = {
   title: 'If you are the one they are frightened of',
-  body: 'If you have read this and recognised yourself rather than your partner, that recognition is '
+  body: 'If you have read this and recognized yourself rather than your partner, that recognition is '
     + 'rarer and more useful than you think, and it is not too late. The same hotline number takes '
-    + 'those calls and will point you at a proper intervention programme in your area. Anger management '
-    + 'on its own is not the right programme for this and a good advocate will tell you why. Doing it '
+    + 'those calls and will point you at a proper intervention program in your area. Anger management '
+    + 'on its own is not the right program for this and a good advocate will tell you why. Doing it '
     + 'before a court orders you to is the difference between keeping a family and losing one.',
 };
 
@@ -411,7 +411,7 @@ export const DV_SOURCES = [
 export const CPS_HEAD = 'Somebody knocking on your door does not mean you did something.';
 
 export const CPS_INTRO = [
-  'An investigation starts with a report, and a report can come from anybody. A neighbour, an ex, a '
+  'An investigation starts with a report, and a report can come from anybody. A neighbor, an ex, a '
   + 'school nurse, a hospital, somebody who is angry with you. It is not a finding and it is not a '
   + 'judgement about you.',
   'Most investigations end without anything being substantiated, and the overwhelming majority end '
@@ -423,12 +423,12 @@ export const CPS_POVERTY = {
   body: [
     'A thin fridge, a messy house, an eviction, a car that does not run, all of it gets reported as '
     + 'neglect, and the numbers show it. Children in low income households are recorded at more than '
-    + 'seven times the rate for neglect and more than three times the rate for abuse, and a large part '
+    + '7 times the rate for neglect and more than 3 times the rate for abuse, and a large part '
     + 'of that gap is poverty being read as a parenting failure.',
     'That does not make the visit go away. What it means is that the thing you are ashamed of is very '
     + 'often the thing the law does not actually count, and that saying plainly what you need, rather '
     + 'than hiding it, works out better than it feels like it will. Agencies have money and vouchers '
-    + 'and programmes that they can hand out, and a parent asking for help is a different file from a '
+    + 'and programs that they can hand out, and a parent asking for help is a different file from a '
     + 'parent avoiding them.',
   ],
 };
@@ -460,7 +460,7 @@ export const CPS_RIGHTS = {
         + 'the moment to have a lawyer on the phone if you possibly can.' },
     { right: 'You can have a lawyer.',
       catch: 'In most states you are only given one once a case is filed in court, which is after the '
-        + 'stage where a lawyer would have helped most. Legal aid, a family defence office, or a public '
+        + 'stage where a lawyer would have helped most. Legal aid, a family defense office, or a public '
         + 'defender’s office may take a call earlier. Ask.' },
     { right: 'You may be able to record the conversation.',
       catch: 'Some states allow it if one person knows, others require everybody to agree. Check yours '
@@ -483,7 +483,7 @@ export const CPS_HELPS = {
     + 'receipts, messages.',
     'Getting the child seen by your own doctor if there is any medical question at all, and getting it '
     + 'in writing.',
-    'Lining up people who will speak for you. A teacher, a pastor, a coach, a neighbour, the doctor.',
+    'Lining up people who will speak for you. A teacher, a pastor, a coach, a neighbor, the doctor.',
   ],
 };
 
@@ -526,12 +526,12 @@ export const CPS_WORRIED = {
 export const CPS_LINES = [
   { name: 'Childhelp National Child Abuse Hotline',
     contact: '1-800-422-4453',
-    detail: 'Counsellors, 24 hours, in 170 languages. For parents under investigation as well as for '
+    detail: 'Counselors, 24 hours, in 170 languages. For parents under investigation as well as for '
       + 'people reporting. Call or text.',
     url: 'https://www.childhelphotline.org/' },
   { name: 'Legal aid near you',
     contact: 'lsc.gov/find-legal-aid',
-    detail: 'Free legal help by income. Ask specifically for family defence or dependency.',
+    detail: 'Free legal help by income. Ask specifically for family defense or dependency.',
     url: 'https://www.lsc.gov/about-lsc/what-legal-aid/get-legal-help' },
   { name: '211',
     contact: '211',
@@ -651,7 +651,7 @@ export const TRAF_PREVENT = {
     'If somebody says they already have a picture, they are almost always lying, and either way there '
     + 'is a way out and you are not the first.',
   ],
-  note: 'Say it at seven and keep saying it at fifteen. The children who tell somebody are almost '
+  note: 'Say it at 7 and keep saying it at 15. The children who tell somebody are almost '
     + 'always the ones who were told in advance that they would not get in trouble for it.',
 };
 

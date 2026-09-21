@@ -30,13 +30,13 @@
 
 export const LENS_VARIATION_NOTE =
   'No child does all of this, and plenty of children do things that are not here at all. ' +
-  'Read it looking for the two or three lines that sound like your child, and let the rest go. ' +
+  'Read it looking for the 2 or 3 lines that sound like your child, and let the rest go. ' +
   'A short list of matches does not mean a mild version of anything, and a long one does not mean a severe version.';
 
 export const LENS_AGE_BANDS = [
   { id: 'baby', label: 'Birth to 2', short: 'Baby and toddler', minMonths: 0, maxMonths: 24 },
   { id: 'early', label: '2 to 5', short: 'Preschool', minMonths: 24, maxMonths: 60 },
-  { id: 'primary', label: '5 to 11', short: 'Primary school', minMonths: 60, maxMonths: 132 },
+  { id: 'primary', label: '5 to 11', short: 'Elementary school', minMonths: 60, maxMonths: 132 },
   { id: 'middle', label: '11 to 15', short: 'Early teen', minMonths: 132, maxMonths: 180 },
   { id: 'teen', label: '15 to 18', short: 'Older teen', minMonths: 180, maxMonths: 229 },
 ];
@@ -68,7 +68,7 @@ export const LENS_BY_AGE = {
       looksLike: [
         'Constant motion, including climbing on things that were not meant to be climbed.',
         'Struggling to wait for a turn in a way that is noticeably harder than other children the same age.',
-        'Hearing an instruction, meaning to do it, and being somewhere else entirely thirty seconds later.',
+        'Hearing an instruction, meaning to do it, and being somewhere else entirely 30 seconds later.',
         'Enormous focus on one thing they love, and none at all on anything they do not.',
         'Preschool feedback that uses words like busy, spirited, or a handful.',
       ],
@@ -77,15 +77,15 @@ export const LENS_BY_AGE = {
         'Get down to their eye level and touch their shoulder before you speak.',
         'Build in a run around every half hour rather than waiting for the wall climbing to start.',
         'First this, then that, said out loud and repeated back.',
-        'Pick two rules that matter and let the rest go for now.',
+        'Pick 2 rules that matter and let the rest go for now.',
       ],
     },
     primary: {
       looksLike: [
-        'Homework that takes three hours because the starting is the hard part, not the work.',
+        'Homework that takes 3 hours because the starting is the hard part, not the work.',
         'Losing coats, water bottles, and whole reading folders, repeatedly, without carelessness being the reason.',
         'Blurting answers and then feeling awful about it.',
-        'Fine one to one and much harder in a noisy classroom.',
+        'Fine 1 to 1 and much harder in a noisy classroom.',
         'A pattern of being told to try harder by people who have not noticed how hard they are already trying.',
         'Girls in particular may show none of the movement and all of the drifting, which is why they get missed.',
       ],
@@ -164,9 +164,9 @@ export const LENS_BY_AGE = {
       ],
       whatHelps: [
         'Visual schedules, because seeing the day is easier than remembering it.',
-        'Warn before transitions twice, at five minutes and at one.',
+        'Warn before transitions twice, at 5 minutes and at one.',
         'Concrete language. Say what to do instead of what to stop.',
-        'A quiet landing space at home with no questions for twenty minutes.',
+        'A quiet landing space at home with no questions for 20 minutes.',
         'Accept the safe foods while slowly offering more beside them, with zero pressure.',
         'If speech is delayed, ask about AAC now. It supports speech, it does not replace it.',
       ],
@@ -265,7 +265,7 @@ export const LENS_BY_AGE = {
       looksLike: [
         'The school dinner hall being the hardest part of the day.',
         'Fidgeting constantly, or looking still and paying attention to none of it.',
-        'Meltdowns after school that trace back to a loud assembly six hours earlier.',
+        'Meltdowns after school that trace back to a loud assembly 6 hours earlier.',
         'Handwriting that hurts, or pressing so hard the pencil goes through.',
         'Being called sensitive, dramatic, or fussy by people who cannot feel what they feel.',
       ],
@@ -321,7 +321,7 @@ export const LENS_BY_AGE = {
     },
     early: {
       looksLike: [
-        'Endless what if questions, and reassurance that works for two minutes.',
+        'Endless what if questions, and reassurance that works for 2 minutes.',
         'Refusing parties, classes, or the toilet at preschool.',
         'Bedtime taking an hour because the dark is when the worrying starts.',
         'Physical complaints, such as tummy aches, on the mornings of hard things.',
@@ -342,7 +342,7 @@ export const LENS_BY_AGE = {
         'Worrying about adult sized things, such as money, illness, or the news.',
       ],
       whatHelps: [
-        'Ladder the hard thing. Six small steps, each one repeated until it is boring.',
+        'Ladder the hard thing. 6 small steps, each one repeated until it is boring.',
         'Praise the attempt and the mess, out loud, more than the result.',
         'Give the day a shape they can see, and be honest about the parts you do not know.',
         'Do not remove the hard thing entirely. Avoidance is what makes anxiety grow.',
@@ -452,7 +452,7 @@ export const LENS_BY_AGE = {
       ],
       whatHelps: [
         'Take the demand out of the sentence. The shoes are by the door beats put your shoes on.',
-        'Offer two real choices rather than one instruction.',
+        'Offer 2 real choices rather than one instruction.',
         'Make it a game or a challenge. Playfulness lowers the threat more than firmness does.',
         'Drop every demand you do not actually need today. Save your requests for the ones that matter.',
       ],
@@ -499,8 +499,8 @@ export const LENS_BY_AGE = {
   speech: {
     baby: {
       looksLike: [
-        'Few or no babbled consonant sounds by around nine months.',
-        'No single words by around fifteen months, or no pointing and showing.',
+        'Few or no babbled consonant sounds by around 9 months.',
+        'No single words by around 15 months, or no pointing and showing.',
         'Understanding far more than they can say, which is common and still worth checking.',
         'Losing words they previously had, which needs a call this week rather than a wait.',
       ],
@@ -521,7 +521,7 @@ export const LENS_BY_AGE = {
       whatHelps: [
         'Say their sentence back correctly, slightly longer, without asking them to repeat it.',
         'Give them the word for the feeling before the meltdown, not during it.',
-        'Wait longer after asking a question. Count to ten in your head.',
+        'Wait longer after asking a question. Count to 10 in your head.',
         'Keep the therapy going if you have it, and ask for the home strategies in writing.',
       ],
     },
@@ -573,7 +573,7 @@ export const LENS_BY_AGE = {
       looksLike: [
         'Homework, bags, and PE kit, all of which need holding several things in mind at once.',
         'Knowing what to do and not being able to start.',
-        'Time going missing, so twenty minutes and an hour feel similar.',
+        'Time going missing, so 20 minutes and an hour feel similar.',
         'Being described as disorganized by adults who think it is a choice.',
       ],
       whatHelps: [
@@ -591,7 +591,7 @@ export const LENS_BY_AGE = {
       ],
       whatHelps: [
         'One system, in one place, that they chose. A perfect system they will not use is worthless.',
-        'Weekly planning together, fifteen minutes, same time every week.',
+        'Weekly planning together, 15 minutes, same time every week.',
         'Teach backward planning from a date, explicitly, because nobody is born knowing it.',
         'Let a small deadline be missed while the stakes are still low.',
       ],
@@ -613,7 +613,7 @@ export const LENS_BY_AGE = {
   learningDifferences: {
     early: {
       looksLike: [
-        'Trouble learning rhymes, or hearing that two words start the same way.',
+        'Trouble learning rhymes, or hearing that 2 words start the same way.',
         'Letters and names of letters not sticking, despite plenty of exposure.',
         'A family history of reading or spelling difficulty, which matters a lot here.',
       ],
@@ -790,10 +790,178 @@ export const LENS_BY_AGE = {
         'Wanting work, relationships, and a place of their own, like anyone else.',
       ],
       whatHelps: [
-        'Start transition planning by fourteen, including work experience and travel training.',
+        'Start transition planning by 14, including work experience and travel training.',
         'Assume competence and adjust down only where you must, never the reverse.',
         'Talk about relationships honestly. Adults with Down syndrome have them.',
         'Get the legal and financial planning advice early, without letting it shrink the plans.',
+      ],
+    },
+  },
+
+  deafHoh: {
+    baby: {
+      looksLike: [
+        'A referred newborn screen, or a screen that passed and a nagging feeling since.',
+        'Not startling at sudden sound, or not turning toward a voice from behind.',
+        'Babbling that started on time and then thinned out or stopped, which is one of the clearest early signs there is.',
+        'Settling well when you are in sight and not settling at all when you are talking from the next room.',
+        'Hearing aids that come out of the ears roughly 400 times a day.',
+      ],
+      whatHelps: [
+        'Do not wait and see. A referred screen gets a full audiology assessment, and the timeline that matters is months, not years.',
+        'Start signing now, as a whole family, before anyone knows how the hearing technology will go. Language in now costs nothing and cannot be taken back.',
+        'Get their eyes before you speak or sign, every single time. Tap, wave, or come into their view.',
+        'Talk and sign about everything you are doing while you do it. The narration is the language.',
+        'Keep the aids in with caps, clips and tape, and accept that the first weeks are a battle everybody has.',
+        'Find Deaf adults and other families now. Families who do this in the first year describe it as the thing that made the rest feel possible.',
+      ],
+    },
+    early: {
+      looksLike: [
+        'Language that is coming along beautifully in the language they have most access to, and thin in the other one.',
+        'Watching your face constantly, and missing anything said while their eyes are elsewhere.',
+        'Doing well at home and lost in a daycare room with 15 other children.',
+        'Frustration and hitting, which at this age is almost always about not being able to say it.',
+        'Being the one who did not hear the instruction and then getting told off for it.',
+      ],
+      whatHelps: [
+        'Keep the family signing ahead of the child. A house where only the child signs is a house where the child is still alone.',
+        'Ask daycare to get attention first, face them, and cut the background noise, and put it in writing rather than saying it at pickup.',
+        'Fill in what they missed out loud. Who came, what the noise was, why everyone laughed.',
+        'Ask them to tell you the plan back instead of asking whether they understood. Nodding is a habit, not an answer.',
+        'Caption everything they watch. It is free and it builds reading.',
+      ],
+    },
+    primary: {
+      looksLike: [
+        'Coping in a quiet room and drowning in a classroom, a hall, or a playground.',
+        'Coming home wiped out, and the meltdown landing on you rather than on school.',
+        'Reading that needs more deliberate teaching, since a lot of reading is built on sounds they access differently.',
+        'Friendship groups that are harder to break into, since group talk moves fast and overlaps.',
+        'Saying they are fine, because being the one who needs things repeated gets old.',
+      ],
+      whatHelps: [
+        'Get the formal school support in writing, including a remote microphone system, a seat with sightlines, and captions on anything shown.',
+        'Ask for a teacher of the deaf. Many families are never told the role exists.',
+        'Protect a quiet stretch after school before you ask anything of them.',
+        'Teach them to advocate in actual words. Not "pardon" but "say that again, I missed the middle".',
+        'Arrange 1 to 1 time with friends, since 2 people in a quiet room is a completely different game from six at a table.',
+        'Keep them around other deaf children. Being the only one is its own weight.',
+      ],
+    },
+    middle: {
+      looksLike: [
+        'Refusing the aids, the implant, or the microphone, because being visibly different is unbearable at this age.',
+        'Real questions about identity, about whether they are Deaf or hard of hearing or neither.',
+        'Exhaustion that looks like laziness.',
+        'Missing the social layer, the asides and the group chat energy that happens in overlapping talk.',
+        'Anger at you specifically, which is common and is usually not actually about you.',
+      ],
+      whatHelps: [
+        'Do not force the technology. Talk about what it is for and let them make some real choices, since a device that gets left in a bag helps nobody.',
+        'Deaf mentors and Deaf teenagers matter more now than at any other age.',
+        'Back their own advocacy at school rather than doing it for them, and stay available for the parts that are too big.',
+        'Take the fatigue seriously in the timetable, not just in sympathy.',
+        'Let identity be theirs to work out. It may not be where you would have put it.',
+      ],
+    },
+    teen: {
+      looksLike: [
+        'A clear view of what they need and no patience for people who will not do it.',
+        'Decisions about college, interpreters, captioning and disclosure coming up fast.',
+        'Real thinking about where they belong, in Deaf spaces, hearing spaces, or both.',
+        'Worry about work, driving, and independence, some of it inherited from you.',
+      ],
+      whatHelps: [
+        'Teach them the legal ground. What accommodations they can require, and how to ask in writing.',
+        'Make sure they can run their own audiology and technology appointments before they leave.',
+        'Talk about disclosure honestly, since when and whether to tell an employer is theirs to decide.',
+        'Deaf adults doing the job they want are worth more than any amount of reassurance from you.',
+      ],
+    },
+  },
+
+  blindLowVision: {
+    baby: {
+      looksLike: [
+        'Eyes that do not follow a face, or that still wander past about 4 months.',
+        'A white or washed out reflection in photographs instead of red eye, which is worth a same week call.',
+        'Smiling to your voice rather than to your face.',
+        'Rolling, sitting and crawling arriving later, since there is nothing visible to move toward.',
+        'Going still and quiet to listen, which is easy to read as not interested.',
+        'Hands that do not come together at the middle, or that avoid touching new textures.',
+      ],
+      whatHelps: [
+        'Any vision concern goes to pediatric ophthalmology rather than to a wait and see, and a white reflection in a photo goes today.',
+        'Narrate constantly. What you are doing, what you are about to do to them, and who just walked in.',
+        'Say their name before you touch them or lift them, so nothing arrives out of nowhere.',
+        'Put things in their hands rather than holding them up, and let them explore before you name it.',
+        'Give them reasons to move. Sound toys just out of reach, and a lot of floor time and tummy time.',
+        'Get early intervention and ask specifically for a teacher of students with visual impairments.',
+      ],
+    },
+    early: {
+      looksLike: [
+        'Language that is strong, sometimes with whole phrases copied before the meaning fills in.',
+        'Self care steps not arriving on their own, since dressing and spoons are normally copied.',
+        'Rocking, eye pressing or hand flapping, especially when there is nothing going on.',
+        'Real confidence in rooms they know and hesitance in rooms they do not.',
+        'Playing alongside other children rather than with them, because they cannot see what the game is.',
+      ],
+      whatHelps: [
+        'Teach self care explicitly, in order, hand under hand, and expect to teach it more times than feels reasonable.',
+        'Keep the house where it lives, and say out loud when something moves.',
+        'Offer real movement and real texture before trying to stop the rocking, and get eye pressing looked at since it can damage the eye.',
+        'Tell them who is in the room and what the game is, and give them a job in it.',
+        'Start orientation and mobility now. A cane at three is a tool for exploring, not a last resort.',
+        'Use high contrast and good light for low vision. A dark plate under light food does more than it sounds like it should.',
+      ],
+    },
+    primary: {
+      looksLike: [
+        'Braille or large print and the gap in speed between them and the class, which is real and closes with practice.',
+        'Being helped far too much by adults who mean well, and losing the chance to learn it.',
+        'Playground and PE being the hardest parts of the day, not the lessons.',
+        'Gaps in things nobody taught anyone, like what a cloud looks like or how a shop is laid out.',
+        'Tiredness, since listening and touching all day is more work than glancing.',
+      ],
+      whatHelps: [
+        'Get materials in their format before the lesson, not during it, and put that in the school plan in writing.',
+        'Ask adults to stop doing it for them. Hands off is how independence gets built.',
+        'Keep orientation and mobility going, including routes around school they walk without an adult.',
+        'Fill in the accidental knowledge on purpose. Go to the farm, the building site, the fish counter, and let them touch things.',
+        'Teach the technology early. Screen readers and magnification are literacy now.',
+        'Find blind children and blind adults, so the only blind person they know is not themselves.',
+      ],
+    },
+    middle: {
+      looksLike: [
+        'Resisting the cane or the equipment, because visible difference is unbearable at this age.',
+        'Social life moving to screens and group chats that may or may not be accessible.',
+        'Wanting to go places alone and both of you being frightened of it.',
+        'Real questions about the future, driving, and what work looks like.',
+      ],
+      whatHelps: [
+        'Do not fight the cane head on. Talk about what it buys them, which is going places without you.',
+        'Hand over real independence in pieces, with a plan and a phone, and let the first ones be short.',
+        'Make sure their devices and their school platforms actually work with a screen reader, and complain loudly when they do not.',
+        'Blind teenagers and blind adults, again. It is the single thing that changes what they think is possible.',
+        'Let them own their own accommodations at school, with you as backup rather than as the voice.',
+      ],
+    },
+    teen: {
+      looksLike: [
+        'Knowing exactly what they need and being tired of explaining it.',
+        'College, work, travel and disclosure decisions arriving at once.',
+        'Grief about driving, which is real and worth saying out loud.',
+        'Wanting to live alone, and the whole family quietly not believing it yet.',
+      ],
+      whatHelps: [
+        'Start transition planning by 14. Travel training, work experience, and the technology they will use at work.',
+        'Teach them the law, what they can require, and how to ask for it in writing.',
+        'Sort the practical independence now, cooking, laundry, money, public transport, while you are still there to catch it.',
+        'Talk about driving honestly rather than around it, including what the alternatives actually cost and how people manage.',
+        'Assume competence and adjust down only where you must, never the reverse.',
       ],
     },
   },
@@ -888,7 +1056,7 @@ export const LENS_BY_AGE = {
     },
     primary: {
       looksLike: [
-        'Speaking to one or two children and to no adults at school.',
+        'Speaking to one or 2 children and to no adults at school.',
         'Not being able to ask for the toilet, for help, or to say they feel ill.',
         'Falling behind in anything assessed by speaking.',
         'Being relaxed and loud at home, which makes teachers doubt it is real.',
@@ -934,7 +1102,7 @@ export const LENS_BY_AGE = {
         'Missing parts of what the teacher said and filling in the gaps wrongly.',
         'Being exhausted by the end of the school day from the effort of listening.',
         'Looking inattentive, which gets read as ADHD or as not listening.',
-        'Doing well one to one and much worse in a group.',
+        'Doing well 1 to 1 and much worse in a group.',
         'Spelling and phonics being harder, because they rest on hearing small sound differences.',
       ],
       whatHelps: [
@@ -1053,7 +1221,7 @@ export const LENS_BY_AGE = {
         'Holding tics in all day at school and releasing them the moment they get home.',
         'A build up feeling before the tic that they can describe if you ask.',
         'Vocal tics appearing alongside motor ones.',
-        'Tics being worse during stressful weeks and better in the holidays.',
+        'Tics being worse during stressful weeks and better over school breaks.',
       ],
       whatHelps: [
         'Explain tics to the class, with their permission, because unexplained is worse than explained.',
@@ -1065,7 +1233,7 @@ export const LENS_BY_AGE = {
     },
     middle: {
       looksLike: [
-        'Peak severity, which for many people is somewhere between ten and fourteen.',
+        'Peak severity, which for many people is somewhere between 10 and 14.',
         'Real social self consciousness, and avoiding quiet places such as libraries and exams.',
         'Exhaustion from suppressing all day.',
         'Occasionally tics that hurt, or that are socially difficult to explain.',
@@ -1166,14 +1334,14 @@ export const LENS_BY_AGE = {
   prematurity: {
     baby: {
       looksLike: [
-        'Two ages, and milestones tracking the corrected one rather than the birthday.',
+        '2 ages, and milestones tracking the corrected one rather than the birthday.',
         'Feeding taking longer, tiring faster, and needing more breaks.',
         'Being easily overstimulated by light, noise, and handling.',
         'Follow up appointments, including eyes, hearing, and development checks.',
         'Catch up growth that happens unevenly rather than steadily.',
       ],
       whatHelps: [
-        'Use corrected age for milestones until two years. That is what the guidance says, and it matters.',
+        'Use corrected age for milestones until 2 years. That is what the guidance says, and it matters.',
         'Skin to skin, dim light, and quiet handling, for much longer than with a term baby.',
         'Keep every follow up appointment, because early support is the whole advantage.',
         'Tell people the corrected age when they comment, or do not, whichever costs you less.',
@@ -1216,7 +1384,7 @@ export const LENS_BY_AGE = {
       whatHelps: [
         'Keep one folder, physical or digital, with everything in it. You will be asked the same questions repeatedly.',
         'Ask for a care coordinator if there is one. Chasing specialists should not be your job.',
-        'Play still matters and still counts, in hospital and at home, in five minute pieces.',
+        'Play still matters and still counts, in hospital and at home, in 5 minute pieces.',
         'Accept help with specific tasks, since general offers are hard to use.',
       ],
     },
@@ -1267,7 +1435,7 @@ export const LENS_BY_AGE = {
         'Having managed this their whole life and being tired of it.',
       ],
       whatHelps: [
-        'Start transition planning at fourteen. It takes longer than anyone tells you.',
+        'Start transition planning at 14. It takes longer than anyone tells you.',
         'Make sure they can list their own conditions, medications, and allergies from memory.',
         'Talk about the future as a plan with adjustments, not as a smaller version of everyone elses.',
         'Get them their own mental health support. Living with this is heavy and rarely asked about.',
@@ -1284,19 +1452,19 @@ export const LENS_BY_AGE = {
       ],
       whatHelps: [
         'Write down what you notice, with dates. Patterns are much clearer on paper.',
-        'Take video. Two minutes of ordinary play tells a clinician more than a paragraph.',
+        'Take video. 2 minutes of ordinary play tells a clinician more than a paragraph.',
         'Ask anyway. You are allowed to ask without being sure, and early is better than certain.',
       ],
     },
     early: {
       looksLike: [
-        'One or two things that keep coming back, while everything else is fine.',
+        'One or 2 things that keep coming back, while everything else is fine.',
         'Different answers from different people, including family members.',
         'Preschool seeing something you do not see, or the reverse.',
       ],
       whatHelps: [
         'Ask preschool to write down what they see, with examples and dates.',
-        'Bring your notes to the appointment. Memory is unreliable in a ten minute slot.',
+        'Bring your notes to the appointment. Memory is unreliable in a 10 minute slot.',
         'Try the strategies before the label. Most of them help regardless of the answer.',
       ],
     },
@@ -1310,7 +1478,7 @@ export const LENS_BY_AGE = {
         'Put the request for assessment in writing. Verbal requests disappear.',
         'Ask what would need to be true for an assessment to happen, and write the answer down.',
         'Keep using the strategies. A label changes the paperwork, not what helps today.',
-        'Trust the pattern you have seen for years over a twenty minute observation.',
+        'Trust the pattern you have seen for years over a 20 minute observation.',
       ],
     },
     middle: {
@@ -1342,7 +1510,7 @@ export const LENS_BY_AGE = {
   communication: {
     baby: {
       looksLike: [
-        'Not pointing, showing, or bringing you things by around fifteen months.',
+        'Not pointing, showing, or bringing you things by around 15 months.',
         'Very few sounds, or sounds that do not seem aimed at anyone.',
         'Frustration arriving fast, because there is no other way to say it.',
         'Understanding you clearly while giving almost nothing back.',

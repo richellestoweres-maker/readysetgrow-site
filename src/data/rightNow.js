@@ -68,7 +68,7 @@ export const ALWAYS_EMERGENCY = {
     'Their lips, gums, tongue, or the skin around their mouth look blue, gray, or dusky',
     'They are too breathless to talk, cry, feed, or finish a sentence',
     'They are unresponsive, limp, or you cannot wake them',
-    'They are having a seizure for the first time, or one lasting more than five minutes',
+    'They are having a seizure for the first time, or one lasting more than 5 minutes',
     'They had a serious fall, a head injury with vomiting or confusion, or you suspect a broken bone in the neck or back',
     'They may have swallowed a battery, a magnet, a medication, or a household chemical',
     'You think they are choking and cannot cough, cry, or breathe',
@@ -92,7 +92,7 @@ export const FEVER_TRIAGE = [
     urgency: 'emergency',
     headline: 'Under 3 months with a fever is an emergency',
     detail:
-      'A rectal temperature of 100.4 F (38 C) or higher in a baby under three months needs medical ' +
+      'A rectal temperature of 100.4 F (38 C) or higher in a baby under 3 months needs medical ' +
       'evaluation right away, day or night. Do not wait to see how the night goes and do not give ' +
       'fever medicine first, since that can mask what a doctor needs to see. This is true even if ' +
       'your baby seems fine otherwise.',
@@ -102,7 +102,7 @@ export const FEVER_TRIAGE = [
     urgency: 'callNow',
     headline: 'Call for any fever at this age',
     detail:
-      'Between three and six months, call your pediatrician for a temperature of 100.4 F (38 C) or ' +
+      'Between 3 and 6 months, call your pediatrician for a temperature of 100.4 F (38 C) or ' +
       'higher, even if your baby seems comfortable. They will tell you whether to come in.',
   },
   {
@@ -110,7 +110,7 @@ export const FEVER_TRIAGE = [
     urgency: 'sameDay',
     headline: 'How they look matters more than the number',
     detail:
-      'Past six months, how your child is acting tells you more than the thermometer does. A child ' +
+      'Past 6 months, how your child is acting tells you more than the thermometer does. A child ' +
       'who is drinking, alert between fevers, and can be comforted is usually okay to watch at home. ' +
       'Call if the fever lasts more than a few days, if they seem very unwell, if they will not drink, ' +
       'if they have far fewer wet diapers, or if you are worried. Being worried is a good enough reason.',
@@ -146,10 +146,10 @@ export const RIGHT_NOW = [
     },
     tryRightNow: [
       'Take their shirt off and look at their bare chest and belly in good light. You cannot see retractions through clothing, which is why this gets missed.',
-      'Watch for the skin sucking IN as they breathe in. Check three places: the notch at the base of the throat, under the breastbone, and between each rib. That pulling in is called retractions and it means they are working hard to move air.',
+      'Watch for the skin sucking IN as they breathe in. Check 3 places: the notch at the base of the throat, under the breastbone, and between each rib. That pulling in is called retractions and it means they are working hard to move air.',
       'Look at their nostrils. Widening with each breath is nasal flaring.',
       'Listen at the end of the breath. A small grunt on the way out is the body trying to hold the lungs open, and in a baby that is a serious sign.',
-      'Count breaths for a full sixty seconds while they are calm or asleep. One rise and fall is one breath. Crying makes the number meaningless.',
+      'Count breaths for a full 60 seconds while they are calm or asleep. One rise and fall is one breath. Crying makes the number meaningless.',
       'Look at the color of their lips, gums and tongue, not their hands or feet. Cool hands and feet are common and not the same thing.',
       'If you see retractions, flaring, grunting, or color change, this is a call now, not a wait and see. Take a short video on your phone, it is genuinely useful to whoever sees them.',
     ],
@@ -175,10 +175,10 @@ export const RIGHT_NOW = [
     callDoctorIf: [
       'Any retractions, nasal flaring, or grunting, even if they seem mild',
       'Breathing faster than roughly 60 a minute under 2 months, 50 a minute from 2 to 12 months, or 40 a minute from 1 to 5 years, counted while calm',
-      'Pauses in breathing, or periods of noisy or laboured breathing during sleep',
+      'Pauses in breathing, or periods of noisy or labored breathing during sleep',
       'Wheezing, or a barking cough with a harsh noise breathing in',
       'They are feeding much less because they cannot breathe and suck at the same time',
-      'Any fever in a baby under three months alongside breathing changes',
+      'Any fever in a baby under 3 months alongside breathing changes',
       'Breathing changes in a baby born prematurely, or a child with a heart or lung condition, warrant a lower threshold to call',
     ],
     topics: ['breathing', 'sick-day'],
@@ -205,18 +205,18 @@ export const RIGHT_NOW = [
     },
     tryRightNow: [
       'Run through the quick list once: hungry, wet, too hot, too cold, a hair wrapped around a finger or toe, clothing tag, burp trapped.',
-      'Pick one soothing thing and do it for a full five minutes before switching. Cycling through six things every thirty seconds is its own kind of overstimulating.',
+      'Pick one soothing thing and do it for a full 5 minutes before switching. Cycling through 6 things every 30 seconds is its own kind of overstimulating.',
       'Go skin to skin, or hold them upright against your chest with their ear over your heart.',
       'Try steady loud shushing right by their ear, close to the volume of their own crying. Quiet shushing usually cannot be heard over the crying.',
       'Change the environment completely. Step outside. Cold air and a new set of sounds resets a lot of crying jags.',
       'Turn on the shower or a vacuum. Low steady sound is closer to what the womb sounded like than silence is.',
-      'If you are alone and running out, put them down safely and take five minutes. Then come back.',
+      'If you are alone and running out, put them down safely and take 5 minutes. Then come back.',
     ],
     timers: ['soothe-five', 'parent-break'],
     whatIsHappening: {
-      headline: 'Crying peaks around six to eight weeks and then it gets better',
+      headline: 'Crying peaks around 6 to 8 weeks and then it gets better',
       body:
-        'Infant crying follows a curve. It climbs from birth, peaks somewhere around six to eight ' +
+        'Infant crying follows a curve. It climbs from birth, peaks somewhere around 6 to 8 ' +
         'weeks, and drops off after that. During the peak, some babies cry for hours a day for no ' +
         'findable reason, and it is often worse in the late afternoon and evening. That is a stage ' +
         'in normal development, not a sign of a problem with your baby or with you.',
@@ -224,12 +224,12 @@ export const RIGHT_NOW = [
         'A newborn who cries a lot is not rejecting you and is not spoiled by being held.',
         'Some crying has no cause you can find. Not finding the reason does not mean you missed it.',
         'Babies who cry hard often cannot come down on their own yet, so the crying continues after the original trigger is gone.',
-        'You cannot spoil a baby under six months by responding. Responding is what builds the security they will regulate from later.',
+        'You cannot spoil a baby under 6 months by responding. Responding is what builds the security they will regulate from later.',
       ],
     },
     forYou: [
       'Listening to your own baby cry sets off a genuine stress response in your body. Feeling desperate is a physiological reaction, not a character failure.',
-      'Trade off with another adult in shifts if there is one. Two hours off duty is worth more than eight hours of both of you being frayed.',
+      'Trade off with another adult in shifts if there is one. 2 hours off duty is worth more than 8 hours of both of you being frayed.',
       'Tell someone how hard it is. This is the stage people hide, which is exactly why every parent thinks they are the only one.',
     ],
     callDoctorIf: [
@@ -254,7 +254,7 @@ export const RIGHT_NOW = [
     minMonths: 0, maxMonths: 5,
     priority: 99,
     tryRightNow: [
-      'Get ahead of it tomorrow rather than fighting it tonight. Start the calm part of the evening about thirty minutes before the fussing usually begins.',
+      'Get ahead of it tomorrow rather than fighting it tonight. Start the calm part of the evening about 30 minutes before the fussing usually begins.',
       'Cut the stimulation now. Lights down, TV off, one adult in the room instead of three.',
       'Offer the breast or bottle even if it does not feel like it should be time. Evening cluster feeding is normal and it is not a sign your supply failed.',
       'Move. A carrier, a walk outside, or a slow bounce works better than sitting still for most babies at this hour.',
@@ -266,8 +266,8 @@ export const RIGHT_NOW = [
       headline: 'The evening fussy stretch is a real and well described pattern',
       body:
         'Lots of babies have a predictable stretch of fussiness in the late afternoon and evening, ' +
-        'most commonly from around two weeks to three or four months. It is usually at its worst ' +
-        'around six weeks and then fades.',
+        'most commonly from around 2 weeks to 3 or 4 months. It is usually at its worst ' +
+        'around 6 weeks and then fades.',
       points: [
         'By evening a newborn has absorbed a whole day of input with no way to discharge it. The fussing is often overload coming back out.',
         'Their internal clock is not set yet. The hormone rhythms that will eventually make evening feel like wind down time are still developing.',
@@ -280,7 +280,7 @@ export const RIGHT_NOW = [
       'This is the hour to lower every other standard. Nothing else has to happen between 5 and 8.',
     ],
     callDoctorIf: [
-      'The crying is spreading well beyond the usual window, or getting worse rather than better after about three months',
+      'The crying is spreading well beyond the usual window, or getting worse rather than better after about 3 months',
       'They are arching, pulling their legs up, and seem in pain rather than just unhappy',
       'They are not gaining weight as expected',
       'There is blood or mucus in their stool',
@@ -307,22 +307,22 @@ export const RIGHT_NOW = [
     ],
     timers: ['wake-window', 'settle-check'],
     whatIsHappening: {
-      headline: 'Sleep reorganizes several times in the first two years',
+      headline: 'Sleep reorganizes several times in the first 2 years',
       body:
-        'Around three to four months, infant sleep changes permanently from two simple states into ' +
+        'Around 3 to 4 months, infant sleep changes permanently from 2 simple states into ' +
         'cycles with lighter stages, much closer to how adults sleep. Lighter stages mean more ' +
         'opportunities to surface fully. Later disruptions tend to cluster around big developmental ' +
         'leaps, new motor skills, separation awareness, and language bursts.',
       points: [
-        'The four month change is not a regression. It is a permanent upgrade in how their brain sleeps, and it does not go back.',
+        'The 4 month change is not a regression. It is a permanent upgrade in how their brain sleeps, and it does not go back.',
         'New skills get practiced at night. A baby learning to pull up will pull up at 2 AM.',
-        'Separation awareness developing around eight to ten months makes waking alone feel very different than it did before.',
+        'Separation awareness developing around 8 to 10 months makes waking alone feel very different than it did before.',
         'Teething, illness, travel, and a new room all cause the same picture, so it is worth ruling them out before concluding it is developmental.',
       ],
     },
     forYou: [
       'Broken sleep impairs you the way alcohol does. Be careful driving and be gentle with yourself about everything else.',
-      'If you can only fix one thing, fix getting one unbroken four hour stretch for one adult. That single block does more than an extra hour spread thin.',
+      'If you can only fix one thing, fix getting one unbroken 4 hour stretch for one adult. That single block does more than an extra hour spread thin.',
     ],
     callDoctorIf: [
       'They snore, gasp, or pause in their breathing during sleep',
@@ -342,12 +342,12 @@ export const RIGHT_NOW = [
     minMonths: 0, maxMonths: 60,
     priority: 88,
     tryRightNow: [
-      'Stop trying to put them down for a moment and reset. Ten minutes of calm holding in a dim room does more than thirty minutes of fighting the crib.',
+      'Stop trying to put them down for a moment and reset. 10 minutes of calm holding in a dim room does more than 30 minutes of fighting the crib.',
       'Turn everything down: lights, sound, and the number of people in the room.',
       'Go earlier tomorrow, not later. Overtired children fight sleep harder, and a later bedtime usually makes it worse.',
       'Use the same short sequence in the same order every night. Predictability does the work that persuasion cannot.',
-      'For toddlers and up, give a five minute and a one minute warning before the transition.',
-      'If it has been a battle for more than twenty minutes, stop, hold, and start the wind down again from the beginning.',
+      'For toddlers and up, give a 5 minute and a one minute warning before the transition.',
+      'If it has been a battle for more than 20 minutes, stop, hold, and start the wind down again from the beginning.',
     ],
     timers: ['wind-down', 'wake-window'],
     whatIsHappening: {
@@ -434,7 +434,7 @@ export const RIGHT_NOW = [
     minMonths: 0, maxMonths: 15,
     priority: 80,
     tryRightNow: [
-      'Keep them upright for about thirty minutes after a feed rather than laying them straight down.',
+      'Keep them upright for about 30 minutes after a feed rather than laying them straight down.',
       'Try smaller feeds more often instead of large ones.',
       'Burp at natural pauses during the feed rather than only at the end.',
       'Avoid tummy pressure right after eating, including the car seat if you can.',
@@ -444,8 +444,8 @@ export const RIGHT_NOW = [
     whatIsHappening: {
       headline: 'Most spitting up is laundry, not medicine',
       body:
-        'Spitting up usually starts around two to three weeks, peaks somewhere around four to five ' +
-        'months, and resolves for most babies between nine and twelve months as the muscle at the top ' +
+        'Spitting up usually starts around 2 to 3 weeks, peaks somewhere around 4 to 5 ' +
+        'months, and resolves for most babies between 9 and 12 months as the muscle at the top ' +
         'of the stomach matures. A baby who spits up a lot but is comfortable and gaining weight is ' +
         'described by pediatricians as a happy spitter, and that needs no treatment.',
       points: [
@@ -478,7 +478,7 @@ export const RIGHT_NOW = [
     minMonths: 3, maxMonths: 36,
     priority: 78,
     urgencyCheck: {
-      title: 'Two things to avoid completely',
+      title: '2 things to avoid completely',
       body:
         'Do not use benzocaine teething gels in babies and toddlers. The FDA warns they can cause a ' +
         'rare but serious blood condition. And do not use amber or beaded teething necklaces. The FDA ' +
@@ -502,8 +502,8 @@ export const RIGHT_NOW = [
         'something else happening at the same time, and teething is such a long stretch of a baby ' +
         'life that plenty of illnesses overlap with it.',
       points: [
-        'First teeth usually arrive somewhere between four and fifteen months, and the range is wide and normal.',
-        'The two or three days around a tooth actually cutting are usually the hard part.',
+        'First teeth usually arrive somewhere between 4 and 15 months, and the range is wide and normal.',
+        'The 2 or 3 days around a tooth actually cutting are usually the hard part.',
         'A low grade temperature can happen. A real fever should be treated as a fever, not attributed to teeth.',
       ],
     },
@@ -511,10 +511,10 @@ export const RIGHT_NOW = [
       'Teething is used to explain months of bad sleep. Sometimes it is genuinely teething, and sometimes it is a developmental change wearing a teething costume.',
     ],
     callDoctorIf: [
-      'There is a real fever, especially in a baby under three months where any fever is urgent',
+      'There is a real fever, especially in a baby under 3 months where any fever is urgent',
       'They have diarrhea, a widespread rash, or seem ill rather than uncomfortable',
       'They refuse to drink',
-      'No teeth at all by about eighteen months is worth mentioning, though it is often just their timeline',
+      'No teeth at all by about 18 months is worth mentioning, though it is often just their timeline',
     ],
     topics: ['teething'],
     relatedContent: [],
@@ -534,7 +534,7 @@ export const RIGHT_NOW = [
       'Say the want out loud once: you really wanted that. Then stop and wait.',
       'Do not try to reason, bargain, or explain during it. Save all of that for after.',
       'Keep them safe and keep the limit. You can be completely warm and still not change the answer.',
-      'If you are in public, five words to the onlookers is plenty: he is having a hard time.',
+      'If you are in public, 5 words to the onlookers is plenty: he is having a hard time.',
       'Move somewhere with less input if you can. Fewer people and less noise shortens it.',
     ],
     timers: ['parent-break'],
@@ -575,7 +575,7 @@ export const RIGHT_NOW = [
   {
     id: 'hitting-now',
     label: 'They just hit someone',
-    subtitle: 'And you need to handle it in the next ten seconds',
+    subtitle: 'And you need to handle it in the next 10 seconds',
     category: 'behavior',
     minMonths: 12, maxMonths: 84,
     priority: 90,
@@ -638,10 +638,10 @@ export const RIGHT_NOW = [
       body:
         'Separation distress appears once a child understands that you continue to exist when you are ' +
         'out of sight. Knowing you exist somewhere else is exactly what makes leaving worth protesting. ' +
-        'It commonly begins around seven to nine months and can return at new transitions for years.',
+        'It commonly begins around 7 to 9 months and can return at new transitions for years.',
       points: [
         'They cannot yet hold onto the idea that you will come back, so every goodbye feels open ended.',
-        'They have no sense of time. Ten minutes and a whole day feel the same.',
+        'They have no sense of time. 10 minutes and a whole day feel the same.',
         'A child who cries at goodbye and settles a few minutes later is doing well.',
         'The return is the part that teaches the lesson, so name it out loud when you come back.',
       ],
@@ -721,11 +721,11 @@ export const RIGHT_NOW = [
     minMonths: 18, maxMonths: 96,
     priority: 85,
     tryRightNow: [
-      'Give a five minute and a one minute warning before the routine starts.',
+      'Give a 5 minute and a one minute warning before the routine starts.',
       'Use the same short sequence in the same order. Predictability beats negotiation.',
       'Front load the requests. One drink, one more hug, one more question, all offered before lights out so there is nothing left to ask for.',
       'For getting out of bed, walk them back with almost no words and almost no eye contact. Any reaction is a reward.',
-      'Give them control over something real: which pajamas, which two books, which side of the bed.',
+      'Give them control over something real: which pajamas, which 2 books, which side of the bed.',
       'Move bedtime earlier if the battle is long. Overtired children resist harder.',
     ],
     timers: ['wind-down'],
@@ -735,7 +735,7 @@ export const RIGHT_NOW = [
         'Going to sleep means being alone and letting go of the day, and for a child who is working ' +
         'hard on independence, that is a lot to ask. The requests are rarely about the water.',
       points: [
-        'Fear of the dark and of being alone commonly appears around three to five and is developmentally normal.',
+        'Fear of the dark and of being alone commonly appears around 3 to 5 and is developmentally normal.',
         'A child with almost no say over their day will make a stand at the one point where they have leverage.',
         'Screens close to bedtime delay sleep onset in older children.',
         'Consistency matters more than which specific approach you use.',
@@ -743,7 +743,7 @@ export const RIGHT_NOW = [
     },
     scripts: [
       { situation: 'The endless requests', say: "That was our last one. I'll see you in the morning.", why: 'Names the end clearly, so there is nothing ambiguous to negotiate with.' },
-      { situation: 'They get out of bed', say: "It's sleep time.", why: 'Four words, no eye contact, walk them back. A boring response ends it fastest.' },
+      { situation: 'They get out of bed', say: "It's sleep time.", why: '4 words, no eye contact, walk them back. A boring response ends it fastest.' },
       { situation: 'They are scared', say: "You're safe. I'm just down the hall and I'll check on you.", why: 'Takes the fear seriously and gives a concrete, keepable promise.' },
     ],
     forYou: [
@@ -817,7 +817,7 @@ export const RIGHT_NOW = [
       'Stop pushing for a moment. A shut down brain does not restart under more pressure.',
       'Ask what part is confusing rather than telling them to get going. Often they are stuck, not refusing.',
       'Make the first step absurdly small. Open the book. Write the name. Do problem one.',
-      'Sit down next to them and do the first two minutes with them, then stay nearby and do your own thing.',
+      'Sit down next to them and do the first 2 minutes with them, then stay nearby and do your own thing.',
       'Set a visible timer for a short block with a real break after it.',
       'If it is genuinely too hard, stop and write a note to the teacher. Protecting the evening is worth more than a finished worksheet.',
     ],
@@ -837,7 +837,7 @@ export const RIGHT_NOW = [
     },
     scripts: [
       { situation: 'They are stuck', say: "What part is confusing? Let's start there.", why: 'Treats it as a problem to solve rather than a motivation failure.' },
-      { situation: 'They cannot begin', say: "Let's just do the first two minutes together.", why: 'Two minutes is small enough to agree to, and starting is usually the whole barrier.' },
+      { situation: 'They cannot begin', say: "Let's just do the first 2 minutes together.", why: '2 minutes is small enough to agree to, and starting is usually the whole barrier.' },
       { situation: 'It is genuinely too much tonight', say: "We're stopping. I'll write the teacher a note.", why: 'Protects the relationship and the evening, and teaches that adults can adjust demands.' },
     ],
     forYou: [

@@ -125,7 +125,7 @@ export const RECOVERY_TIMELINE = [
       'Say the crying out loud to someone. Not to hide it, just so it is not only in your head.',
     ],
     flag:
-      'Baby blues should peak around day 5 and be clearly easing by about two weeks. If it is getting worse ' +
+      'Baby blues should peak around day 5 and be clearly easing by about 2 weeks. If it is getting worse ' +
       'instead of better, or it never lifts, that is postpartum depression or anxiety and it is treatable. ' +
       'Call 1-833-852-6262 any time.',
   },
@@ -147,7 +147,7 @@ export const RECOVERY_TIMELINE = [
     ],
     doThis: [
       'You should be seen or contacted by your provider within the first 3 weeks, per ACOG guidance. If nobody has called you, call them. That is not being difficult.',
-      'Go outside once a day, even for five minutes. It is not a cure and it does help.',
+      'Go outside once a day, even for 5 minutes. It is not a cure and it does help.',
       'Accept specific help. People say let me know if you need anything and mean it, but nobody knows what to offer. Ask for a specific thing: a grocery run, an hour of holding the baby while you shower.',
       'Do not start a fitness plan yet. Walking is fine, and everything else waits for clearance.',
     ],
@@ -161,17 +161,17 @@ export const RECOVERY_TIMELINE = [
     window: 'Weeks 6 to 12',
     order: 40,
     body:
-      'The six week visit is not a finish line, and treating it as one is why so many people fall through. ' +
+      'The 6 week visit is not a finish line, and treating it as one is why so many people fall through. ' +
       'ACOG describes postpartum care as an ongoing process through 12 weeks and beyond, not one appointment. ' +
       'Around month 3 your hair starts falling out in handfuls, which is alarming and temporary.',
     expect: [
       'Hair shedding, sometimes a lot. It regrows.',
-      'Being cleared for exercise and sex at the six week visit, which is a clearance, not an instruction. Ready is a separate question.',
+      'Being cleared for exercise and sex at the 6 week visit, which is a clearance, not an instruction. Ready is a separate question.',
       'Your body not looking or feeling like it did. Some of that changes and some of it does not.',
       'Emotions leveling out, or not. Both happen and only one needs treatment.',
     ],
     doThis: [
-      'Bring a written list to the six week visit. You will forget otherwise.',
+      'Bring a written list to the 6 week visit. You will forget otherwise.',
       'Ask about pelvic floor physical therapy. In much of the world it is standard after birth and in the United States you usually have to ask. If you leak urine, feel heaviness or pressure, or sex is painful, that is what it is for and those things are common but not something you have to live with.',
       'Ask what contraception options work with feeding, if that is relevant to you.',
       'Ask to be screened for depression and anxiety, and answer honestly. The screening only works if you do.',
@@ -232,7 +232,7 @@ export const NOBODY_WARNED_ME = [
     id: 'hair-loss',
     thing: 'Your hair falls out around month 3',
     detail:
-      'In pregnancy you stopped shedding normally. Around three months postpartum, all of it sheds at once. ' +
+      'In pregnancy you stopped shedding normally. Around 3 months postpartum, all of it sheds at once. ' +
       'It looks alarming in the shower drain. It regrows, often as a fringe of short pieces at your hairline.',
   },
   {
@@ -277,7 +277,7 @@ export const NOBODY_WARNED_ME = [
   },
   {
     id: 'sex-later',
-    thing: 'Cleared at six weeks is not the same as ready',
+    thing: 'Cleared at 6 weeks is not the same as ready',
     detail:
       'Hormones, particularly while feeding, commonly cause dryness and lower desire. Pain is not something to ' +
       'push through, and it is a reason to be seen rather than a reason to avoid it forever.',
@@ -294,7 +294,7 @@ export const NOBODY_WARNED_ME = [
     thing: 'A wave of dread right as milk lets down is a real thing',
     detail:
       'Dysphoric milk ejection reflex, D-MER, is a brief and intense drop in mood in the seconds before ' +
-      'letdown, caused by a hormone shift. It lasts a minute or two and then lifts. It is physiological, not ' +
+      'letdown, caused by a hormone shift. It lasts a minute or 2 and then lifts. It is physiological, not ' +
       'psychological, and knowing it has a name helps enormously.',
   },
 ];
@@ -314,9 +314,9 @@ export const PERINATAL_MENTAL_HEALTH = {
   babyBluesVsMore: {
     babyBlues:
       'Tearful, fragile, up and down. Starts in the first days, peaks around day 5, and is clearly easing by ' +
-      'about two weeks. Affects most people. Does not need treatment.',
+      'about 2 weeks. Affects most people. Does not need treatment.',
     somethingMore:
-      'Persists past two weeks, or gets worse instead of better, or starts later. Can begin any time in the ' +
+      'Persists past 2 weeks, or gets worse instead of better, or starts later. Can begin any time in the ' +
       'first year. Needs support, and treatment works.',
   },
   whatItLooksLike: [

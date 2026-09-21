@@ -44,7 +44,7 @@
  *
  * WHAT IS DELIBERATELY NOT HERE
  * Doses to argue about. The drug amounts are named once so the words
- * are recognisable on a consent form, and nothing in this file is
+ * are recognizable on a consent form, and nothing in this file is
  * written so that a woman can tell a midwife she is giving the wrong
  * amount. The point is questions, not corrections.
  *
@@ -59,7 +59,7 @@
 
 export const IND_TITLE = 'Induction, and the chart';
 
-export const IND_SUB = 'The five numbers that decide what happens next, what each one means, and '
+export const IND_SUB = 'The 5 numbers that decide what happens next, what each one means, and '
   + 'what to ask before anybody breaks your water.';
 
 export const IND_TABS = [
@@ -73,8 +73,8 @@ export const IND_TABS = [
 export const IND_HEAD = 'There is a chart. You are allowed to know your number.';
 
 export const IND_INTRO = [
-  'At almost every induction somebody puts a hand inside you and feels for five things. Each one is '
-  + 'given points. The five add up to a number out of thirteen, and that number is what decides '
+  'At almost every induction somebody puts a hand inside you and feels for 5 things. Each one is '
+  + 'given points. The 5 add up to a number out of 13, and that number is what decides '
   + 'whether you are given something to soften the cervix first or whether they go straight to '
   + 'breaking your waters and starting the drip.',
   'It is called the Bishop score. It is in your notes. It is almost never said out loud, and you '
@@ -85,7 +85,7 @@ export const IND_INTRO = [
    THE CHART
 
    Transcribed from Table 1 of ACOG Practice Bulletin 107, August
-   2009, which is itself labelled as modified from Bishop EH, Pelvic
+   2009, which is itself labeled as modified from Bishop EH, Pelvic
    scoring for elective induction, Obstetrics and Gynecology 1964.
    The same five factors carry into ACOG Clinical Practice Guideline
    number 9, July 2025.
@@ -102,8 +102,8 @@ export const BISHOP_ROWS = [
     id: 'dil',
     label: 'How open',
     term: 'Dilation',
-    what: 'How far open the cervix is, in centimetres. Ten is fully open, which is the number '
-      + 'people know from television. Before labour most people are closed or very nearly.',
+    what: 'How far open the cervix is, in centimeters. 10 is fully open, which is the number '
+      + 'people know from television. Before labor most people are closed or very nearly.',
     options: [
       { v: 0, label: 'Closed' },
       { v: 1, label: '1 to 2 cm' },
@@ -128,7 +128,7 @@ export const BISHOP_ROWS = [
     id: 'sta',
     label: 'How low',
     term: 'Station',
-    what: 'How far down the baby has come, measured against two bony points in your pelvis. Zero '
+    what: 'How far down the baby has come, measured against 2 bony points in your pelvis. Zero '
       + 'means level with them. Minus numbers are above, plus numbers are below.',
     options: [
       { v: 0, label: 'Minus 3' },
@@ -153,7 +153,7 @@ export const BISHOP_ROWS = [
     id: 'pos',
     label: 'Which way it points',
     term: 'Position',
-    what: 'Which way the cervix is facing. Before labour it usually points backwards, towards your '
+    what: 'Which way the cervix is facing. Before labor it usually points backwards, towards your '
       + 'spine, and it swings forward as things get going.',
     options: [
       { v: 0, label: 'Pointing back' },
@@ -195,68 +195,68 @@ export function bishopHowMany(marks) {
 
 /* The three bands, and what each one means in practice. The wording
    is careful on purpose. Six or less is the number the trials used to
-   mean an unfavourable cervix. More than eight is the number at which
-   an induction behaves like labour that started on its own. Seven and
+   mean an unfavorable cervix. More than eight is the number at which
+   an induction behaves like labor that started on its own. Seven and
    eight sit in between and one large hospital calls that band
    intermediate rather than pretending it falls one side. */
 export function bishopRead(total) {
   if (typeof total !== 'number') return null;
   if (total <= 6) {
     return {
-      band: 'low', label: 'Six or less',
-      says: 'This is the range the research calls an unfavourable cervix. It does not mean anything '
+      band: 'low', label: '6 or less',
+      says: 'This is the range the research calls an unfavorable cervix. It does not mean anything '
         + 'has gone wrong. It means the cervix has not started yet, and the usual next step is '
         + 'something to soften and open it before anything else happens.',
       uk: 'In Britain this is the number that says ripen first. National guidance offers a '
-        + 'medicine or a balloon at six or less, not amniotomy and a drip.',
+        + 'medicine or a balloon at 6 or less, not amniotomy and a drip.',
     };
   }
   if (total <= 8) {
     return {
-      band: 'mid', label: 'Seven or eight',
-      says: 'In between. Some places treat anything above six as ready to go. Others wait for eight '
-        + 'before they expect an induction to behave like ordinary labour. This is the band where '
+      band: 'mid', label: '7 or 8',
+      says: 'In between. Some places treat anything above six as ready to go. Others wait for 8 '
+        + 'before they expect an induction to behave like ordinary labor. This is the band where '
         + 'it is most worth asking what your hospital does and why.',
-      uk: 'British guidance splits at six, so seven and eight sit on the ready side of the line '
+      uk: 'British guidance splits at six, so 7 and 8 sit on the ready side of the line '
         + 'there, and amniotomy with a drip would usually be offered.',
     };
   }
   return {
     band: 'ready', label: 'More than eight',
     says: 'At more than eight the chance of ending in a vaginal birth is about the same as it '
-      + 'would be if labour had started by itself. This is the range the original 1964 paper had '
+      + 'would be if labor had started by itself. This is the range the original 1964 paper had '
       + 'in mind.',
     uk: 'Well above the British threshold of six, so amniotomy and a drip would be the usual offer.',
   };
 }
 
-export const BISHOP_BLANKS = 'Two of the five stop at two points. Position and consistency have no '
-  + 'three point row, and that is not a mistake in this app. It is how the original chart is '
-  + 'printed. It is also why thirteen is the top and not fifteen.';
+export const BISHOP_BLANKS = 'Two of the 5 stop at 2 points. Position and consistency have no '
+  + '3 point row, and that is not a mistake in this app. It is how the original chart is '
+  + 'printed. It is also why 13 is the top and not 15.';
 
 export const BISHOP_STATION = {
   title: 'The station numbers, which are genuinely confusing',
   body: [
-    'The chart runs from minus three to plus three. But since 1988 American hospitals have charted '
-    + 'station on a different scale that runs from minus five to plus five, so your notes can say '
+    'The chart runs from minus 3 to plus three. But since 1988 American hospitals have charted '
+    + 'station on a different scale that runs from minus 5 to plus five, so your notes can say '
     + 'minus four when the chart has no row for it.',
-    'Almost everybody handles that by putting minus four and minus five in the minus three row. If '
+    'Almost everybody handles that by putting minus 4 and minus five in the minus 3 row. If '
     + 'your notes say a number the chart does not have, that is why, and it is worth asking which '
     + 'scale they wrote it on.',
   ],
 };
 
 export const BISHOP_FEEL = 'Two of the five, how soft and which way it points, are somebody’s '
-  + 'judgement by hand. Two people examining you twenty minutes apart can write down different '
+  + 'judgement by hand. 2 people examining you 20 minutes apart can write down different '
   + 'numbers, and one large hospital says so plainly on its own patient page. That is not '
   + 'carelessness. It is the limit of what a hand can tell you.';
 
 export const BISHOP_ORIGIN = {
   title: 'Where the chart came from, which matters more than it sounds',
   body: [
-    'Edward Bishop published it in 1964 after scoring five hundred women who then went into labour '
-    + 'on their own. He proposed that an elective induction was safe at a score of nine or more.',
-    'Two things about that. It was built on women who had already had a baby, and it was built for '
+    'Edward Bishop published it in 1964 after scoring 500 women who then went into labor '
+    + 'on their own. He proposed that an elective induction was safe at a score of 9 or more.',
+    '2 things about that. It was built on women who had already had a baby, and it was built for '
     + 'choosing who to induce for convenience. It was never designed to work out whether a first '
     + 'time mother with a medical reason to be induced should go ahead. Every modern use of it is '
     + 'a stretch from its original job.',
@@ -266,15 +266,15 @@ export const BISHOP_ORIGIN = {
 export const BISHOP_HONEST = {
   title: 'How good a predictor it actually is',
   body: [
-    'Not very. A review of forty studies covering thirteen thousand seven hundred and fifty seven '
+    'Not very. A review of 40 studies covering 13,757 '
     + 'women concluded, in its own words, that the Bishop score is a poor predictor of the outcome '
-    + 'of induced labour and should not be used to decide whether to induce or not.',
-    'At the commonly used cutoff of six or less, it got it right about seventy eight percent of the '
-    + 'time for the women who did need help, and only about forty four percent of the time for the '
-    + 'women who did not. More than half of the women it labelled unfavourable went on to give '
+    + 'of induced labor and should not be used to decide whether to induce or not.',
+    'At the commonly used cutoff of 6 or less, it got it right about 78 percent of the '
+    + 'time for the women who did need help, and only about 44 percent of the time for the '
+    + 'women who did not. More than half of the women it labeled unfavorable went on to give '
     + 'birth vaginally anyway.',
     'ACOG’s own 2025 guideline says there is no universally accepted definition of an '
-    + 'unfavourable cervix and that thresholds anywhere from three to eight have been used.',
+    + 'unfavorable cervix and that thresholds anywhere from 3 to 8 have been used.',
   ],
   matters: 'So a low number is a plan, not a prophecy. It tells the room what to reach for first. '
     + 'It does not tell you how this ends.',
@@ -283,15 +283,15 @@ export const BISHOP_HONEST = {
 export const BISHOP_SIMPLE = {
   title: 'The short version of the chart',
   body: [
-    'A study of five thousand six hundred and ten first time mothers found that dropping the two '
+    'A study of 5,610 first time mothers found that dropping the 2 '
     + 'judgement calls, how soft and which way it points, and scoring only how open, how thin and '
-    + 'how low, predicted just as well. That version runs from zero to nine and above five counts '
-    + 'as favourable.',
-    'The honest reading is not that the short version is better. It is that the two subjective '
+    + 'how low, predicted just as well. That version runs from zero to 9 and above 5 counts '
+    + 'as favorable.',
+    'The honest reading is not that the short version is better. It is that the 2 subjective '
     + 'rows were adding almost nothing.',
-    'A later study of five thousand eight hundred and seven people found the short score is most '
+    'A later study of 5,807 people found the short score is most '
     + 'useful measured after ripening and before the drip starts. Above five at that point went '
-    + 'with an eleven percent caesarean rate. Five or under went with thirty two percent. If you '
+    + 'with an 11 percent cesarean rate. 5 or under went with 32 percent. If you '
     + 'are being ripened, the number worth asking for is the one after.',
   ],
 };
@@ -318,10 +318,10 @@ export const BISHOP_LONG = {
 
 export const IND_TRACK = {
   title: 'Your own numbers, over time',
-  body: 'Ask for the five numbers at each check and put them here. One score on its own says very '
-    + 'little. Three or four of them in a row show whether anything is moving, and that is the '
+  body: 'Ask for the 5 numbers at each check and put them here. One score on its own says very '
+    + 'little. 3 or four of them in a row show whether anything is moving, and that is the '
     + 'thing worth talking about.',
-  ask: 'What were my five numbers today, and what is my Bishop score out of thirteen?',
+  ask: 'What were my 5 numbers today, and what is my Bishop score out of 13?',
   empty: 'Nothing recorded yet. Add a check after your next appointment.',
   privacy: 'Kept on this profile with everything else about the baby. Nothing about it is sent '
     + 'anywhere by the app.',
@@ -333,23 +333,23 @@ export const IND_TRACK = {
 
 export const IND_UK = {
   title: 'Britain writes the rule down',
-  intro: 'The national guideline for inducing labour puts the score at the centre of the decision. '
+  intro: 'The national guideline for inducing labor puts the score at the center of the decision. '
     + 'These are its own recommendations, in its own words.',
   quotes: [
     'Explain to women that a vaginal examination to assess the readiness of the cervix, recorded as '
     + 'the Bishop score, will help to decide which method of induction they will be offered first, '
     + 'and obtain consent to carry this out.',
-    'For women with a Bishop score of 6 or less, offer induction of labour with dinoprostone as '
+    'For women with a Bishop score of 6 or less, offer induction of labor with dinoprostone as '
     + 'vaginal tablet, vaginal gel or controlled release vaginal delivery system or with low dose '
     + 'oral misoprostol tablets.',
-    'For women with a Bishop score of 6 or less, consider a mechanical method to induce labour, for '
+    'For women with a Bishop score of 6 or less, consider a mechanical method to induce labor, for '
     + 'example a balloon catheter or osmotic cervical dilator, if pharmacological methods are not '
     + 'suitable or the woman chooses to use a mechanical method.',
-    'For women with a Bishop score of more than 6, offer induction of labour with amniotomy and an '
+    'For women with a Bishop score of more than 6, offer induction of labor with amniotomy and an '
     + 'intravenous oxytocin infusion.',
   ],
-  plain: 'Six or less, soften first. More than six, then break the waters and start the drip. That '
-    + 'is the chart being followed, written out in four sentences.',
+  plain: '6 or less, soften first. More than six, then break the waters and start the drip. That '
+    + 'is the chart being followed, written out in 4 sentences.',
 };
 
 export const IND_US = {
@@ -358,10 +358,10 @@ export const IND_US = {
     'There is no American guideline that says a Bishop score has to be checked before your waters '
     + 'are broken. ACOG’s 2025 guideline on cervical ripening covers only pregnancies with the '
     + 'waters still intact and does not discuss breaking them at all. Their 2024 guideline on '
-    + 'managing labour recommends breaking the waters during an induction to shorten it, and says '
+    + 'managing labor recommends breaking the waters during an induction to shorten it, and says '
     + 'nothing about a cervical threshold.',
     'The closest American wording is the older 2009 bulletin, which said breaking the waters may be '
-    + 'used as a method of induction, especially if the condition of the cervix is favourable. That '
+    + 'used as a method of induction, especially if the condition of the cervix is favorable. That '
     + 'is a leaning, not a rule.',
     'So in America the chart is still used, still written in your notes and still the thing that '
     + 'decides whether you are ripened first. It is just not a rule anybody is breaking. Asking is '
@@ -383,9 +383,9 @@ export const RIPEN_METHODS = [
     name: 'A balloon',
     also: 'Foley catheter, or a double balloon',
     how: 'A thin tube is passed through the cervix and a small balloon on the end is filled with '
-      + 'about thirty millilitres of water. The gentle pressure opens the cervix from the inside. '
-      + 'It usually falls out by itself once you are around three centimetres.',
-    time: 'Often left for six to twelve hours. There does not seem to be a clear advantage to '
+      + 'about 30 milliliters of water. The gentle pressure opens the cervix from the inside. '
+      + 'It usually falls out by itself once you are around 3 centimeters.',
+    time: 'Often left for 6 to 12 hours. There does not seem to be a clear advantage to '
       + 'leaving it longer than six.',
     evidence: 'As effective as the gel for getting to a vaginal birth, with meaningfully fewer '
       + 'episodes of the uterus contracting too hard with changes to the baby’s heart rate, and '
@@ -401,12 +401,12 @@ export const RIPEN_METHODS = [
     also: 'Dinoprostone, Propess, Cervidil, Prostin',
     how: 'A hormone is placed in the vagina, either as a slow release insert on a tape or as a gel. '
       + 'It softens the cervix over hours.',
-    time: 'The insert runs at the same rate in both countries but the licence differs. Twelve hours '
-      + 'in America, twenty four in Britain. Worth knowing so a different number does not alarm you.',
+    time: 'The insert runs at the same rate in both countries but the license differs. 12 hours '
+      + 'in America, 24 in Britain. Worth knowing so a different number does not alarm you.',
     evidence: 'Recommended, on moderate quality evidence. Compared with misoprostol it was less '
-      + 'likely to get to a birth within twenty four hours and more likely to need the drip as '
+      + 'likely to get to a birth within 24 hours and more likely to need the drip as '
       + 'well.',
-    worth: 'It comes out if your waters break or are broken, if labour gets going properly, or if '
+    worth: 'It comes out if your waters break or are broken, if labor gets going properly, or if '
       + 'the uterus starts contracting too hard. That is standard and it is on the label.',
   },
   {
@@ -414,13 +414,13 @@ export const RIPEN_METHODS = [
     name: 'Misoprostol',
     also: 'Cytotec in America, Angusta in Britain',
     how: 'A small tablet, either swallowed or placed in the vagina.',
-    time: 'Swallowed every two to four hours, or vaginally every three to six, usually over a good '
+    time: 'Swallowed every 2 to 4 hours, or vaginally every 3 to 6, usually over a good '
       + 'part of a day.',
     evidence: 'Strongly recommended on high quality evidence, by either route. Newborn outcomes did '
-      + 'not differ between the two routes in the trials. Vaginal needed the drip less often. '
+      + 'not differ between the 2 routes in the trials. Vaginal needed the drip less often. '
       + 'Under the tongue is specifically not recommended for routine use because the uterus is '
       + 'more likely to contract too hard.',
-    worth: 'Two things to know. It is not used if you have had a caesarean or other surgery on the '
+    worth: '2 things to know. It is not used if you have had a cesarean or other surgery on the '
       + 'uterus, because of the risk of the scar giving way. And in Britain it is a licensed '
       + 'induction medicine while in America the same drug is used off label, which is legal, '
       + 'ordinary and worth understanding rather than being frightened by.',
@@ -431,8 +431,8 @@ export const RIPEN_METHODS = [
     also: 'Dilapan, laminaria',
     how: 'Small rods placed in the cervix that swell slowly as they absorb water and open it '
       + 'mechanically.',
-    time: 'Usually removed at twelve hours, sometimes up to twenty four.',
-    evidence: 'A 2024 review of fourteen studies found outcomes comparable to the gel with a lower '
+    time: 'Usually removed at 12 hours, sometimes up to 24.',
+    evidence: 'A 2024 review of 14 studies found outcomes comparable to the gel with a lower '
       + 'risk of the uterus contracting too hard.',
     worth: 'Another drug free option, less widely offered than the balloon.',
   },
@@ -442,24 +442,24 @@ export const RIPEN_METHODS = [
     also: 'Membrane sweep, stretch and sweep',
     how: 'A finger is swept around the inside of the cervix to separate the bag of waters from it. '
       + 'A few minutes, at an ordinary appointment, no admission.',
-    time: 'Any effect is over the next forty eight hours.',
-    evidence: 'This is the one to read carefully. Pooled across forty studies it made spontaneous '
-      + 'labour more likely and formal induction less likely, both on low certainty evidence. But '
-      + 'when the weaker studies were removed the labour finding stopped being statistically '
+    time: 'Any effect is over the next 48 hours.',
+    evidence: 'This is the one to read carefully. Pooled across 40 studies it made spontaneous '
+      + 'labor more likely and formal induction less likely, both on low certainty evidence. But '
+      + 'when the weaker studies were removed the labor finding stopped being statistically '
       + 'significant. An independent appraisal rated the benefits unclear.',
-    worth: 'It can hurt, and it can cause some bleeding. In Britain it is discussed from thirty '
-      + 'nine weeks and verbal consent is required first. Of the women asked in three studies, '
-      + 'eighty eight percent said they would choose it again.',
+    worth: 'It can hurt, and it can cause some bleeding. In Britain it is discussed from 39'
+      + ' weeks and verbal consent is required first. Of the women asked in 3 studies, '
+      + '88 percent said they would choose it again.',
   },
 ];
 
 export const RIPEN_COMBO = {
   title: 'Two at once',
   body: [
-    'A network analysis pulling together eleven reviews, two hundred and seven trials and more than '
-    + 'forty thousand people found that a balloon filled to thirty millilitres alongside vaginal '
-    + 'misoprostol at twenty five micrograms was the most effective and safest combination, with '
-    + 'the lowest odds of caesarean and the highest odds of a birth within twenty four hours.',
+    'A network analysis pulling together 11 reviews, 207 trials and more than '
+    + '40,000 people found that a balloon filled to 30 milliliters alongside vaginal '
+    + 'misoprostol at 25 micrograms was the most effective and safest combination, with '
+    + 'the lowest odds of cesarean and the highest odds of a birth within 24 hours.',
     'The guideline that quotes that finding also says plainly that the analysis could not assess '
     + 'whether the combination raises the risk of infection in the womb, which has been raised as a '
     + 'concern. So it is the best supported combination and there is an open question sitting next '
@@ -470,7 +470,7 @@ export const RIPEN_COMBO = {
 export const RIPEN_TRAUMA = 'One line from the 2025 American guideline is worth carrying in with '
   + 'you: it says a trauma informed approach should be used when discussing swallowed misoprostol '
   + 'as against the methods that go inside you. If repeated vaginal examinations and insertions are '
-  + 'hard for you, for any reason at all, that is a recognised reason to ask for the oral option '
+  + 'hard for you, for any reason at all, that is a recognized reason to ask for the oral option '
   + 'and you do not owe anybody the story behind it.';
 
 export const RIPEN_HOME = 'Some places send low risk people home during ripening. The 2025 '
@@ -509,8 +509,8 @@ export const WATER_CLOCK = {
   title: 'The clock starts here, not at the beginning',
   body: [
     'American guidance says an induction should not be called failed until the drip has been '
-    + 'running for at least twelve to eighteen hours after the waters were broken, and that '
-    + 'continuing past eighteen can be individualised.',
+    + 'running for at least 12 to 18 hours after the waters were broken, and that '
+    + 'continuing past 18 can be individualised.',
     'Read that again, because it is the most useful sentence in this whole page. The clock starts '
     + 'at the waters, not at the beginning. A day and a night of ripening before that does not '
     + 'count against you, and it does not mean the induction is failing.',
@@ -522,14 +522,14 @@ export const WATER_CLOCK = {
 export const WATER_TRADE = {
   title: 'Early or later, and what each costs',
   body: [
-    'A 2025 review of sixteen trials covering three thousand three hundred and seventy eight people '
+    'A 2025 review of 16 trials covering 3,378 people '
     + 'compared breaking the waters early in an induction against later.',
-    'Early got to the birth about two and a half hours sooner. It made no difference at all to the '
-    + 'caesarean rate. And it came with about a forty six percent higher relative risk of infection '
+    'Early got to the birth about 2 and a half hours sooner. It made no difference at all to the '
+    + 'cesarean rate. And it came with about a 46 percent higher relative risk of infection '
     + 'in the womb. There was no significant difference in cord prolapse, bleeding afterwards, or '
     + 'any of the newborn outcomes measured.',
     'Set against that, the American guideline from 2024 recommends breaking the waters during an '
-    + 'induction to shorten labour, on high quality evidence, and did not report that infection '
+    + 'induction to shorten labor, on high quality evidence, and did not report that infection '
     + 'signal. That is a real and recent disagreement between a guideline and a meta analysis, and '
     + 'this app is not going to pretend it is settled.',
   ],
@@ -552,15 +552,15 @@ export const WATER_HEAD = {
   ],
 };
 
-export const WATER_ROUTINE = 'One separate thing, in case you are told otherwise in labour that '
-  + 'started on its own. A review of fifteen trials covering five thousand five hundred and eighty '
-  + 'three women found that routinely breaking the waters to speed up a labour that began by itself '
+export const WATER_ROUTINE = 'One separate thing, in case you are told otherwise in labor that '
+  + 'started on its own. A review of 15 trials covering 5,583'
+  + ' women found that routinely breaking the waters to speed up a labor that began by itself '
   + 'did not meaningfully shorten it, and the authors said they cannot recommend it as part of '
-  + 'standard care. Induction is a different situation. Routine use in ordinary labour is not '
+  + 'standard care. Induction is a different situation. Routine use in ordinary labor is not '
   + 'supported.';
 
 export const WATER_QUESTIONS = [
-  'What is my Bishop score right now, and what are the five numbers behind it?',
+  'What is my Bishop score right now, and what are the 5 numbers behind it?',
   'Is the baby’s head engaged?',
   'What do we gain by breaking my waters now rather than after more ripening?',
   'Once they are broken, what is the plan and what is the time frame?',
@@ -578,11 +578,11 @@ export const WHY_INTRO = 'Induction is offered for very different reasons and th
 export const WHY_STRONG = {
   title: 'Where the evidence is strong',
   items: [
-    'High blood pressure in pregnancy or pre eclampsia. Delivery at thirty seven weeks for the '
+    'High blood pressure in pregnancy or pre eclampsia. Delivery at 37 weeks for the '
     + 'milder forms, earlier and faster for the severe ones.',
-    'Being past forty one weeks. This one is about as well supported as obstetric evidence gets.',
-    'Waters broken at term before labour starts. Delivery at the time of diagnosis is recommended, '
-    + 'on evidence that it reduces infection in both mother and baby without raising the caesarean '
+    'Being past 41 weeks. This one is about as well supported as obstetric evidence gets.',
+    'Waters broken at term before labor starts. Delivery at the time of diagnosis is recommended, '
+    + 'on evidence that it reduces infection in both mother and baby without raising the cesarean '
     + 'rate.',
     'A baby measuring small, with the timing graded steeply by what the blood flow scans show.',
     'Cholestasis of pregnancy, with the timing set by the bile acid level.',
@@ -590,17 +590,17 @@ export const WHY_STRONG = {
   ],
   note: 'For these the conversation is usually about how and when, not whether. And an unready '
     + 'cervix is not a reason to wait: in the one trial that looked specifically at this, women '
-    + 'with high blood pressure or mild pre eclampsia and an unfavourable cervix benefited more '
+    + 'with high blood pressure or mild pre eclampsia and an unfavorable cervix benefited more '
     + 'from induction than everybody else, not less.',
 };
 
 export const WHY_WEAK = {
   title: 'Where it is weaker, and honesty is the kindness',
   items: [
-    'Reduced movements. A study across thirty three hospitals and more than four hundred thousand '
+    'Reduced movements. A study across 33 hospitals and more than 400,000 '
     + 'pregnancies tested a whole package built around this and did not find a reduction in '
-    + 'stillbirth, while inductions rose from thirty six to forty one percent and caesareans from '
-    + 'twenty five to twenty eight percent.',
+    + 'stillbirth, while inductions rose from 36 to 41 percent and cesareans from '
+    + '25 to 28 percent.',
     'Well controlled gestational diabetes managed by diet alone. The recommended window is the '
     + 'widest on the whole list, which is what genuine uncertainty looks like in a guideline.',
   ],
@@ -610,23 +610,23 @@ export const WHY_WEAK = {
 };
 
 export const WHY_39 = {
-  title: 'Being offered induction at thirty nine weeks with nothing wrong',
+  title: 'Being offered induction at 39 weeks with nothing wrong',
   body: [
-    'This comes from one large American trial published in 2018, of six thousand one hundred and '
-    + 'six low risk first time mothers. Caesarean was eighteen point six percent in the induced '
-    + 'group against twenty two point two percent in those who waited, which works out at about one '
-    + 'caesarean avoided for every twenty eight women induced. High blood pressure problems were '
+    'This comes from one large American trial published in 2018, of 6,106'
+    + ' low risk first time mothers. Cesarean was 18.6 percent in the induced '
+    + 'group against 22.2 percent in those who waited, which works out at about one '
+    + 'cesarean avoided for every 28 women induced. High blood pressure problems were '
     + 'also lower.',
-    'The newborn outcome that gets quoted was four point three percent against five point four '
-    + 'percent, with the confidence interval touching one and a p value of point zero four nine. '
-    + 'That is sitting exactly on the line. The solid finding from that trial is the caesarean '
+    'The newborn outcome that gets quoted was 4.3 percent against 5.4 '
+    + 'percent, with the confidence interval touching one and a p value of 0.049. '
+    + 'That is sitting exactly on the line. The solid finding from that trial is the cesarean '
     + 'number, not the newborn one.',
-    'The criticisms are real. Only about twenty seven percent of eligible women agreed to take '
-    + 'part. It ran in academic hospitals with unusually low caesarean rates and strict protocols. '
+    'The criticisms are real. Only about 27 percent of eligible women agreed to take '
+    + 'part. It ran in academic hospitals with unusually low cesarean rates and strict protocols. '
     + 'And when the policy went out into ordinary practice the results split: one national dataset '
-    + 'of nearly three million births found a small caesarean reduction, while a thirteen hospital '
-    + 'study of twenty eight thousand births found elective inductions tripled with no change in '
-    + 'caesareans at all.',
+    + 'of nearly 3 million births found a small cesarean reduction, while a 13 hospital '
+    + 'study of 28,000 births found elective inductions tripled with no change in '
+    + 'cesareans at all.',
     'A replication trial is running now. That is the fairest summary of where this stands.',
   ],
   line: 'The professional bodies call it reasonable to offer, with shared decision making described '
@@ -635,31 +635,31 @@ export const WHY_39 = {
 };
 
 export const WHY_41 = {
-  title: 'Forty one weeks, which is a much clearer picture',
+  title: '41 weeks, which is a much clearer picture',
   body: [
-    'Pooling the two big trials, four thousand five hundred and sixty one women, induction at forty '
-    + 'one weeks against waiting to forty two: one death against eight. Serious problems for the '
-    + 'baby, ten against twenty three. Caesarean rates identical.',
-    'A review of thirty four trials covering more than twenty one thousand women and babies found '
+    'Pooling the 2 big trials, 4,561 women, induction at 41'
+    + ' weeks against waiting to 42: one death against eight. Serious problems for the '
+    + 'baby, 10 against 23. Cesarean rates identical.',
+    'A review of 34 trials covering more than 21,000 women and babies found '
     + 'induction at or beyond term reduced deaths around birth and stillbirths, both on high '
-    + 'certainty evidence, and reduced caesareans slightly as well.',
+    + 'certainty evidence, and reduced cesareans slightly as well.',
     'In that pooled analysis the benefit was concentrated in first time mothers. Women who had '
     + 'given birth before showed no significant benefit.',
   ],
 };
 
 export const WHY_CSECTION = {
-  title: 'Does being induced make a caesarean more likely',
+  title: 'Does being induced make a cesarean more likely',
   body: [
-    'You have almost certainly heard that it does. That belief comes from comparing induced labours '
-    + 'with labours that started on their own, and that is not the choice anybody actually faces.',
-    'A woman in spontaneous labour at forty weeks has already passed the test of going into labour. '
-    + 'Comparing her with a woman being induced the same day makes induction look about forty '
+    'You have almost certainly heard that it does. That belief comes from comparing induced labors '
+    + 'with labors that started on their own, and that is not the choice anybody actually faces.',
+    'A woman in spontaneous labor at 40 weeks has already passed the test of going into labor. '
+    + 'Comparing her with a woman being induced the same day makes induction look about 40 '
     + 'percent worse than it is. The real choice is being induced or waiting, and that includes '
     + 'everyone who waits and then needs inducing anyway.',
-    'When the trials make that comparison, induction does not raise the caesarean rate and at or '
+    'When the trials make that comparison, induction does not raise the cesarean rate and at or '
     + 'past term it slightly lowers it. Whether that reduction turns up in ordinary hospitals is '
-    + 'much less clear, and two of the three real world studies did not find it.',
+    + 'much less clear, and two of the 3 real world studies did not find it.',
   ],
 };
 
@@ -671,7 +671,7 @@ export const ASK_HEAD = 'You are not being difficult. You are being a patient.';
 
 export const ASK_RIGHT = {
   title: 'The sentence worth knowing',
-  quote: 'Recognise that women can decide to proceed with, delay, decline or stop an induction.',
+  quote: 'Recognize that women can decide to proceed with, delay, decline or stop an induction.',
   from: 'That is the British national guideline, in its own words, and the word almost nobody knows '
     + 'is in there is stop. An induction that has already started is still a thing you are '
     + 'consenting to, hour by hour.',
@@ -681,25 +681,25 @@ export const ASK_RIGHT = {
 };
 
 export const ASK_LIST = [
-  { q: 'What is my Bishop score, and what are the five numbers that make it up?',
+  { q: 'What is my Bishop score, and what are the 5 numbers that make it up?',
     why: 'This is the whole point of the page. The number exists and it is about you.' },
-  { q: 'Is it six or less? If so, what are you going to use to ripen my cervix first?',
-    why: 'Six or less is the trial definition of an unfavourable cervix and the British threshold '
+  { q: 'Is it 6 or less? If so, what are you going to use to ripen my cervix first?',
+    why: '6 or less is the trial definition of an unfavorable cervix and the British threshold '
       + 'for ripening before anything else.' },
   { q: 'Are you planning to break my waters, and is my cervix ready for that?',
     why: 'The older American bulletin leans this way and the British guideline requires it.' },
   { q: 'Is the head engaged?',
     why: 'A head that is not engaged is a listed reason to wait.' },
   { q: 'What happens to the clock once my waters are broken?',
-    why: 'The twelve to eighteen hours before an induction is called failed starts there.' },
+    why: 'The 12 to 18 hours before an induction is called failed starts there.' },
   { q: 'Can I have the balloon instead of the medicine?',
     why: 'Mechanical methods carry a strong recommendation on high quality evidence, and the '
       + 'British guideline allows choosing one simply because you want to.' },
   { q: 'Can it be placed by hand rather than with a speculum?',
     why: 'Studies found that more comfortable with no clinical downside.' },
   { q: 'How long is this likely to take, start to finish?',
-    why: 'The 2025 guideline says patients should be counselled on the expected time course. The '
-      + 'median in the big trial was twenty hours.' },
+    why: 'The 2025 guideline says patients should be counseled on the expected time course. The '
+      + 'median in the big trial was 20 hours.' },
   { q: 'If I wanted to wait, what would you watch and how often?',
     why: 'Declining or delaying comes with monitoring, not with being abandoned.' },
   { q: 'Can I pause or stop this once it has started?',
@@ -707,14 +707,14 @@ export const ASK_LIST = [
 ];
 
 export const ASK_BRAIN = {
-  title: 'The five letters, if you like a structure',
+  title: 'The 5 letters, if you like a structure',
   body: 'Benefits, risks, alternatives, intuition, and nothing. What are the benefits of doing '
     + 'this. What are the risks. What else could we do. What is my gut saying. And what happens if '
     + 'we do nothing for now.',
   honest: 'It goes around birth classes and doula training as BRAIN or BRAN, and nobody seems to '
     + 'know who came up with it, including the midwife most often credited. It is not from any '
     + 'guideline body and this app is not going to pretend otherwise. It is just a useful way to '
-    + 'remember five questions when you are frightened and being asked to decide.',
+    + 'remember 5 questions when you are frightened and being asked to decide.',
 };
 
 export const ASK_ALONE = 'Take somebody with you if you can, and tell them in advance that their '
@@ -723,7 +723,7 @@ export const ASK_ALONE = 'Take somebody with you if you can, and tell them in ad
 
 export const IND_DISCLAIMER = 'Educational information, not medical advice, and not a substitute '
   + 'for the people looking after you. The chart here is reproduced as guidelines print it so you '
-  + 'can recognise your own numbers, not so you can score yourself. Only an examination can '
+  + 'can recognize your own numbers, not so you can score yourself. Only an examination can '
   + 'produce those numbers.';
 
 export const IND_SOURCES = [
@@ -746,13 +746,13 @@ export const IND_SOURCES = [
   { org: 'NIH', label: 'Laughon 2011, the simplified score, five thousand six hundred and ten women',
     url: 'https://pubmed.ncbi.nlm.nih.gov/21383643/' },
   { org: 'Cochrane', label: 'Mechanical methods for induction of labour, 2023',
-    url: 'https://www.cochrane.org/evidence/CD001233_mechanical-methods-induction-labour' },
+    url: 'https://www.cochrane.org/evidence/CD001233_mechanical-methods-induction-labor' },
   { org: 'Cochrane', label: 'Membrane sweeping, 2020, including how fragile the finding is',
-    url: 'https://www.cochrane.org/evidence/CD000451_membrane-sweeping-induction-labour' },
+    url: 'https://www.cochrane.org/evidence/CD000451_membrane-sweeping-induction-labor' },
   { org: 'Cochrane', label: 'Induction at or beyond thirty seven weeks, 2020',
-    url: 'https://www.cochrane.org/evidence/CD004945_induction-labour-women-normal-pregnancies-or-beyond-37-weeks' },
+    url: 'https://www.cochrane.org/evidence/CD004945_induction-labor-women-normal-pregnancies-or-beyond-37-weeks' },
   { org: 'Cochrane', label: 'Amniotomy for shortening spontaneous labour, 2013',
-    url: 'https://www.cochrane.org/CD006167/PREG_amniotomy-for-shortening-spontaneous-labour' },
+    url: 'https://www.cochrane.org/CD006167/PREG_amniotomy-for-shortening-spontaneous-labor' },
   { org: 'PLOS Medicine', label: 'Induction at forty one weeks against waiting, pooled trials, 2020',
     url: 'https://journals.plos.org/plosmedicine/article?id=10.1371%2Fjournal.pmed.1003436' },
   { org: 'Karger', label: 'Early against late amniotomy, sixteen trials, 2025',
@@ -762,7 +762,7 @@ export const IND_SOURCES = [
   { org: 'NIHR', label: 'The reduced movements trial, and why the package did not work',
     url: 'https://evidence.nihr.ac.uk/alert/a-care-package-to-increase-awareness-of-fetal-movements-does-not-reduce-risk-of-stillbirth/' },
   { org: 'NHS', label: 'Inducing labour, the patient page',
-    url: 'https://www.nhs.uk/pregnancy/labour-and-birth/signs-of-labour/inducing-labour/' },
+    url: 'https://www.nhs.uk/pregnancy/labor-and-birth/signs-of-labor/inducing-labor/' },
 ];
 
 export default BISHOP_ROWS;

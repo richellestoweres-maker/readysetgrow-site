@@ -43,14 +43,14 @@ export const CARE_TOPICS = [
       'The questions almost every new parent has at 3 AM and feels embarrassed to ask. Diaper counts, ' +
       'weight, the cord, and how to know feeding is actually working.',
     keyPoints: [
-      'Wet diapers are the simplest measure of intake. A rough guide for the first week is one wet diaper on day one, two on day two, and so on, reaching about six or more a day by around day five and staying there.',
-      'Stool changes on a schedule: black tarry meconium for the first day or two, then greenish transitional, then yellow and seedy by around day four or five if breastfeeding. Formula fed stools are usually tan and firmer.',
-      'Most newborns lose weight in the first days. Losing up to about 7 to 10 percent of birth weight is common, and most babies are back to birth weight by about two weeks.',
+      'Wet diapers are the simplest measure of intake. A rough guide for the first week is one wet diaper on day one, two on day two, and so on, reaching about 6 or more a day by around day 5 and staying there.',
+      'Stool changes on a schedule: black tarry meconium for the first day or two, then greenish transitional, then yellow and seedy by around day 4 or 5 if breastfeeding. Formula fed stools are usually tan and firmer.',
+      'Most newborns lose weight in the first days. Losing up to about 7 to 10 percent of birth weight is common, and most babies are back to birth weight by about 2 weeks.',
       'Newborn breathing is irregular by nature. Fast stretches followed by brief pauses of a few seconds, called periodic breathing, are normal. Pauses longer than about 20 seconds, or with color change, are not.',
-      'Keep the cord stump dry and let it fall off on its own, usually in one to three weeks. Sponge baths until then.',
+      'Keep the cord stump dry and let it fall off on its own, usually in 1 to 3 weeks. Sponge baths until then.',
       'Newborns sneeze, hiccup, grunt, and make constant noise in their sleep. Nearly all of it is normal.',
       'Newborn skin does a lot: peeling, milia, baby acne, and a blotchy rash called erythema toxicum are all common and all resolve.',
-      'Feed on cues, roughly eight to twelve times in twenty four hours. Do not let a newborn go more than about four hours without feeding until weight gain is established.',
+      'Feed on cues, roughly 8 to 12 times in 24 hours. Do not let a newborn go more than about 4 hours without feeding until weight gain is established.',
     ],
     myths: [
       { myth: 'A newborn who sleeps a lot is an easy baby.', truth: 'A very sleepy newborn who is hard to wake for feeds needs to be checked. Excessive sleepiness can be a sign of jaundice, low blood sugar, or infection.' },
@@ -85,7 +85,7 @@ export const CARE_TOPICS = [
       'small number of babies who need treatment, which is why follow up timing is not optional.',
     keyPoints: [
       'Jaundice is a yellow tint to the skin and the whites of the eyes, caused by bilirubin. More than half of newborns get some.',
-      'It usually appears after the first day, peaks around days three to five, and fades over the following week or two.',
+      'It usually appears after the first day, peaks around days 3 to 5, and fades over the following week or two.',
       'It typically shows up on the face first and moves downward. Yellowing that reaches the belly, arms or legs suggests higher levels and needs checking.',
       'Check in natural daylight rather than indoor lighting. Press gently on the skin and look at the color as you release.',
       'Every newborn should have bilirubin measured before leaving the hospital, and a follow up visit timed to their risk. Do not skip or delay that visit.',
@@ -96,7 +96,7 @@ export const CARE_TOPICS = [
     myths: [
       { myth: 'Sunlight through a window treats jaundice.', truth: 'It is not a treatment and it risks sunburn and overheating. Phototherapy uses specific wavelengths and is medically supervised.' },
       { myth: 'Jaundice means you should stop breastfeeding.', truth: 'In almost all cases breastfeeding continues, and feeding more often helps. Do not stop without your pediatrician telling you to.' },
-      { myth: 'Yellow skin at two weeks is just leftover jaundice.', truth: 'Jaundice that persists past about two weeks needs evaluation, because a small number of causes are serious and treatable.' },
+      { myth: 'Yellow skin at 2 weeks is just leftover jaundice.', truth: 'Jaundice that persists past about 2 weeks needs evaluation, because a small number of causes are serious and treatable.' },
     ],
     redFlags: [
       'Yellow color that reaches the belly, arms, or legs',
@@ -104,7 +104,7 @@ export const CARE_TOPICS = [
       'Your baby is very sleepy, hard to wake, or feeding poorly',
       'High pitched crying, arching, or stiffness',
       'Jaundice that is getting more intense rather than fading',
-      'Any jaundice still present after about two weeks',
+      'Any jaundice still present after about 2 weeks',
       'Pale or chalky stools, or dark urine',
     ],
     sources: [
@@ -127,7 +127,7 @@ export const CARE_TOPICS = [
       'completely, so what your mother was told is now the opposite of current guidance.',
     keyPoints: [
       'Readiness signs, and you want all of them: sits with little or no support, holds their head steady, opens their mouth toward food, and can move food to the back of the mouth rather than pushing it out with the tongue.',
-      'Most babies are ready around six months. Some are ready a little before, but not before about four months.',
+      'Most babies are ready around 6 months. Some are ready a little before, but not before about 4 months.',
       'Milk stays the main nutrition through the first year. Early solids are practice, not replacement.',
       'Introduce common allergens early rather than delaying. Delaying does not prevent allergy, and for peanut, early introduction can reduce it.',
       'The common allergens are peanut, egg, dairy, wheat, soy, sesame, tree nuts, fish and shellfish.',
@@ -138,16 +138,16 @@ export const CARE_TOPICS = [
       'Foods to avoid in year one: honey (infant botulism risk), cow milk as a main drink, and choking shapes.',
     ],
     myths: [
-      { myth: 'Delay allergens until age three to prevent allergy.', truth: 'That was old advice and it was reversed. Delaying does not prevent allergy, and for peanut, early introduction reduces risk.' },
-      { myth: 'Rice cereal at four months helps them sleep.', truth: 'Solids do not improve sleep, and starting before readiness carries risk without benefit.' },
+      { myth: 'Delay allergens until age 3 to prevent allergy.', truth: 'That was old advice and it was reversed. Delaying does not prevent allergy, and for peanut, early introduction reduces risk.' },
+      { myth: 'Rice cereal at 4 months helps them sleep.', truth: 'Solids do not improve sleep, and starting before readiness carries risk without benefit.' },
       { myth: 'Gagging means choking.', truth: 'They are different. Gagging is noisy and protective, the baby is red faced and making sound, and it is how they learn to manage food. Choking is silent or nearly silent, the baby cannot cough or cry, and it is an emergency.' },
-      { myth: 'Babies need water with solids.', truth: 'Small sips of water with meals are fine after six months, but milk still provides hydration. Large amounts of water can be dangerous for infants.' },
+      { myth: 'Babies need water with solids.', truth: 'Small sips of water with meals are fine after 6 months, but milk still provides hydration. Large amounts of water can be dangerous for infants.' },
     ],
     redFlags: [
       'Hives, swelling of the lips, face or tongue, vomiting, or a sudden rash after a food',
       'Any trouble breathing, wheezing, or a hoarse or weak cry after eating: call 911, this can be anaphylaxis',
       'Repeated gagging that turns into silent distress',
-      'Refusing all solids well past eight or nine months',
+      'Refusing all solids well past 8 or 9 months',
       'Poor weight gain once solids have started',
     ],
     sources: [
@@ -211,7 +211,7 @@ export const CARE_TOPICS = [
       'not look like it does in films. This is the topic most parenting apps skip.',
     keyPoints: [
       'Use layers of protection, because no single measure is enough: barriers, supervision, swim skills, life jackets, and someone ready to respond.',
-      'A home pool needs four sided isolation fencing at least four feet high, with a self closing and self latching gate that opens away from the pool, latch at least 54 inches up. Fencing that uses the house as one side is far less protective.',
+      'A home pool needs 4 sided isolation fencing at least 4 feet high, with a self closing and self latching gate that opens away from the pool, latch at least 54 inches up. Fencing that uses the house as one side is far less protective.',
       'Touch supervision for young children means within arm reach, not watching from a chair. Drowning is usually silent, with no splashing or shouting.',
       'Name a designated water watcher when adults are around a pool. Shared supervision is how children go unnoticed.',
       'Most bathtub drownings happen during a brief lapse. Never leave a young child in the bath, even for a moment, and do not leave an older sibling in charge.',
@@ -311,7 +311,7 @@ export const CARE_TOPICS = [
     redFlags: [
       'Losing skills they previously had, at any age, warrants a call rather than a wait',
       'No babbling, pointing, or gestures by about 12 months',
-      'No single words by about 16 months, or no two word phrases by about 24 months',
+      'No single words by about 16 months, or no 2 word phrases by about 24 months',
       'Not responding to their name consistently',
       'You have raised a concern and felt dismissed. You can request evaluation yourself.',
     ],
@@ -335,25 +335,25 @@ export const CARE_TOPICS = [
       'The person this app is written for also needs care. Perinatal mood and anxiety conditions are ' +
       'among the most common complications of childbirth, and they are treatable.',
     keyPoints: [
-      'Baby blues are common in the first two weeks: tearfulness, mood swings, feeling overwhelmed. They lift on their own.',
-      'When it lasts beyond about two weeks, or gets worse, or makes it hard to function, that is different and worth treating.',
+      'Baby blues are common in the first 2 weeks: tearfulness, mood swings, feeling overwhelmed. They lift on their own.',
+      'When it lasts beyond about 2 weeks, or gets worse, or makes it hard to function, that is different and worth treating.',
       'Postpartum anxiety is as common as postpartum depression and gets talked about far less. Racing thoughts, constant checking, and a body that will not settle even when the baby sleeps.',
       'Intrusive thoughts, sudden unwanted images of something bad happening to the baby, are very common and very frightening. Having them is not the same as wanting them, and they respond well to treatment.',
       'It is not only birthing parents. Partners experience postpartum depression too.',
       'It can start any time in the first year, not just right after birth. Weaning and returning to work are both common trigger points.',
       'Pediatric visits often include a screening questionnaire for the parent. It is there because this is common, not because anyone suspects you.',
       'Treatment works: therapy, support, and where appropriate medication, including options compatible with breastfeeding.',
-      'Sleep deprivation makes everything worse and is not a character test. One protected four hour block does more than eight broken hours.',
+      'Sleep deprivation makes everything worse and is not a character test. One protected 4 hour block does more than 8 broken hours.',
       'In the US, the National Maternal Mental Health Hotline is 1-833-TLC-MAMA (1-833-852-6262), available 24 hours in English and Spanish.',
     ],
     myths: [
       { myth: 'Good mothers do not feel this way.', truth: 'This is a medical complication, as much as any physical one. It says nothing about your love for your baby.' },
       { myth: 'You have to stop breastfeeding to get treatment.', truth: 'Many treatments are compatible with breastfeeding. Ask rather than assuming you must choose.' },
-      { myth: 'It is just tiredness.', truth: 'Exhaustion is real and so is this. If it has lasted more than two weeks or is affecting how you function, get it looked at.' },
+      { myth: 'It is just tiredness.', truth: 'Exhaustion is real and so is this. If it has lasted more than 2 weeks or is affecting how you function, get it looked at.' },
       { myth: 'Intrusive thoughts mean you are dangerous.', truth: 'Distressing unwanted thoughts are a recognized and treatable symptom. Telling someone is the way through, not a risk to your family.' },
     ],
     redFlags: [
-      'Symptoms lasting more than two weeks, or getting worse',
+      'Symptoms lasting more than 2 weeks, or getting worse',
       'Unable to sleep even when the baby sleeps, or unable to eat',
       'Feeling disconnected from your baby, or from yourself',
       'Thoughts of harming yourself or your baby: get help immediately, call 988 in the US and Canada, or go to an emergency room',
@@ -379,14 +379,14 @@ export const CARE_TOPICS = [
       'Parents are told to watch for trouble breathing and almost never told what that looks like. ' +
       'These are the specific things to look at, and most of them need the shirt off and good light.',
     keyPoints: [
-      'Retractions are the key sign. The skin sucks inward with each breath in three places: the notch at the base of the throat, under the breastbone, and between the ribs. The lower and deeper the pulling, the harder they are working.',
+      'Retractions are the key sign. The skin sucks inward with each breath in 3 places: the notch at the base of the throat, under the breastbone, and between the ribs. The lower and deeper the pulling, the harder they are working.',
       'You cannot see retractions through clothing. Take the shirt off and look at the bare chest and belly.',
       'Nasal flaring means the nostrils widen with each breath in, and it signals extra effort.',
       'Grunting is a short sound at the end of a breath out. In a baby it is a serious sign, not a cute noise. It is an attempt to keep the lungs from collapsing.',
       'Stridor is a harsh noise breathing IN, and points to the upper airway. Wheezing is a whistling noise usually breathing OUT, and points lower down.',
       'Head bobbing, or using neck muscles to breathe, is the same story as retractions: extra effort.',
       'Color matters centrally. Look at lips, gums and tongue. Blue or dusky there is an emergency. Blue hands and feet alone in a newborn is usually just circulation.',
-      'Count breaths for a full sixty seconds while they are calm or asleep. Crying makes the number meaningless.',
+      'Count breaths for a full 60 seconds while they are calm or asleep. Crying makes the number meaningless.',
       'A child who has been working hard and then suddenly goes quiet and still may be tiring, not improving. Treat that as an emergency.',
       'Babies breathe mainly through their nose, so congestion alone can sound alarming. Saline and suction first, then look again at the effort.',
     ],
@@ -435,13 +435,13 @@ export const CARE_TOPICS = [
       'Back to sleep, every sleep, until their first birthday. Once a baby can roll both ways on their own, you do not have to flip them back.',
       'A firm, flat, non inclined surface. A crib, bassinet, or play yard with a fitted sheet and nothing else.',
       'Nothing else in the sleep space. No blankets, pillows, bumpers, stuffed toys, or positioners.',
-      'Share a room, not a bed. The AAP recommends the baby sleep in your room on their own surface, ideally for at least the first six months.',
+      'Share a room, not a bed. The AAP recommends the baby sleep in your room on their own surface, ideally for at least the first 6 months.',
       'Couches, sofas, and armchairs are among the most dangerous places for a baby to fall asleep with an adult.',
       'Offer a pacifier at naps and bedtime once feeding is going well.',
       'Do not overheat. Dress them in about one more layer than you are comfortable in.',
       'Breastfeeding and avoiding smoke exposure both lower the risk.',
-      'Stop swaddling as soon as your baby shows any sign of trying to roll, usually somewhere around two to four months.',
-      'Supervised tummy time while awake, building toward 15 to 30 minutes a day by about seven weeks.',
+      'Stop swaddling as soon as your baby shows any sign of trying to roll, usually somewhere around 2 to 4 months.',
+      'Supervised tummy time while awake, building toward 15 to 30 minutes a day by about 7 weeks.',
     ],
     myths: [
       { myth: 'Babies with reflux should sleep propped up or inclined.', truth: 'Inclined sleep is not safe and is not recommended for reflux. Never prop the mattress or use a wedge. Keeping baby upright after a feed is the safe version of this idea.' },
@@ -473,10 +473,10 @@ export const CARE_TOPICS = [
       'reflux from something that needs treatment is discomfort and growth, not volume.',
     keyPoints: [
       'GER is ordinary spitting up. GERD is when reflux comes with other symptoms or lasts beyond infancy.',
-      'It usually starts around two to three weeks, peaks around four to five months, and resolves for most babies between nine and twelve months.',
+      'It usually starts around 2 to 3 weeks, peaks around 4 to 5 months, and resolves for most babies between 9 and 12 months.',
       'A baby who spits up a lot but is comfortable and growing is what pediatricians call a happy spitter, and needs no treatment.',
       'Burp at natural pauses during a feed rather than only at the end.',
-      'Keep them upright for about thirty minutes after feeding.',
+      'Keep them upright for about 30 minutes after feeding.',
       'Smaller, more frequent feeds often help more than anything else.',
       'A cow milk protein allergy can look very much like reflux, so if a breastfeeding parent removing dairy is being considered, do it with your pediatrician rather than alone.',
     ],
@@ -548,7 +548,7 @@ export const CARE_TOPICS = [
       'The early weeks are the hardest and the most fixable. Most problems have a cause you can find, ' +
       'and skilled help early changes the whole trajectory.',
     keyPoints: [
-      'Newborns feed often, roughly eight to twelve times in twenty four hours, and that frequency is normal rather than a sign of insufficient milk.',
+      'Newborns feed often, roughly 8 to 12 times in 24 hours, and that frequency is normal rather than a sign of insufficient milk.',
       'Feed on cues rather than a clock: rooting, hands to mouth, stirring. Crying is a late cue.',
       'Supply is driven by removal. The more milk taken out, the more gets made.',
       'Cluster feeding, especially in the evening, is normal and is not evidence your supply dropped.',
@@ -558,14 +558,14 @@ export const CARE_TOPICS = [
       'Ask for a lactation consultant early rather than as a last resort. Many hospitals and insurance plans cover this.',
     ],
     myths: [
-      { myth: 'Soft breasts mean low supply.', truth: 'Breasts stop feeling full once supply regulates, usually around six to twelve weeks. That is your body getting efficient, not failing.' },
+      { myth: 'Soft breasts mean low supply.', truth: 'Breasts stop feeling full once supply regulates, usually around 6 to 12 weeks. That is your body getting efficient, not failing.' },
       { myth: 'A baby feeding often is not getting enough.', truth: 'Frequent feeding is how newborns are built to eat, and it is also how supply gets established.' },
       { myth: 'Pumping output tells you your supply.', truth: 'A pump is far less efficient than a baby. Low pump output is not a measurement of what your baby gets.' },
       { myth: 'Breastfeeding is supposed to hurt at first.', truth: 'Some tenderness is common. Cracking, bleeding, and sharp ongoing pain are signals, not rites of passage.' },
     ],
     redFlags: [
       'Fever, chills, body aches, or a red wedge shaped area on the breast, which can be mastitis and needs treatment',
-      'Your baby is not back to birth weight by about two weeks',
+      'Your baby is not back to birth weight by about 2 weeks',
       'Fewer wet diapers than expected for their age',
       'Your baby is very sleepy and hard to wake for feeds',
       'You are dreading feeds or feeling hopeless. That is worth telling your own doctor.',
@@ -593,8 +593,8 @@ export const CARE_TOPICS = [
       'Signs the flange is wrong: pain, a lot of areola pulled into the tunnel, rubbing, white or blanched nipple after, or output that drops off.',
       'Pumping should not hurt. Turn the suction up only to the highest setting that is still comfortable, because higher is not more effective.',
       'To build supply, add sessions rather than lengthening them. Frequency of removal matters more than duration.',
-      'A session is usually about fifteen to twenty minutes, or a few minutes past the last let down.',
-      'Returning to work: pumping roughly as often as the baby would feed protects supply, commonly about every three hours.',
+      'A session is usually about 15 to 20 minutes, or a few minutes past the last let down.',
+      'Returning to work: pumping roughly as often as the baby would feed protects supply, commonly about every 3 hours.',
       'Hands on pumping, compressing and massaging while you pump, meaningfully increases output for most people.',
       'Under US federal law many employees have the right to reasonable break time and a private, non bathroom space to pump. Worth knowing before you negotiate.',
     ],
@@ -633,7 +633,7 @@ export const CARE_TOPICS = [
     ],
     keyPoints: [
       'Room temperature means 77 F (25 C) or cooler. Refrigerator means 40 F (4 C). Freezer means 0 F (minus 18 C) or colder.',
-      'Store in small amounts, two to four ounces, so less gets thrown away.',
+      'Store in small amounts, 2 to 4 ounces, so less gets thrown away.',
       'Leave room at the top of the container, because milk expands as it freezes.',
       'Label every container with the date it was pumped.',
       'Store in the back of the fridge or freezer, never in the door, where the temperature swings.',
@@ -643,7 +643,7 @@ export const CARE_TOPICS = [
     ],
     myths: [
       { myth: 'You can refreeze thawed milk if it still seems cold.', truth: 'Never refreeze thawed human milk.' },
-      { myth: 'Leftover milk in a bottle keeps for later if you refrigerate it.', truth: 'Once a baby has fed from it, use within two hours. Bacteria from the mouth are now in the bottle.' },
+      { myth: 'Leftover milk in a bottle keeps for later if you refrigerate it.', truth: 'Once a baby has fed from it, use within 2 hours. Bacteria from the mouth are now in the bottle.' },
       { myth: 'Shaking damages the milk.', truth: 'Swirling is preferred and gentler, but this one is far less important than people are told.' },
     ],
     redFlags: [],
@@ -662,7 +662,7 @@ export const CARE_TOPICS = [
     priority: 68,
     reviewedAgainst: 'FDA safety communications and AAP guidance',
     summary:
-      'Two widely sold teething products carry FDA warnings, one of them following reported deaths. ' +
+      '2 widely sold teething products carry FDA warnings, one of them following reported deaths. ' +
       'That is the most important part of this topic.',
     keyPoints: [
       'Safe relief: firm counter pressure from a clean finger, a chilled damp washcloth, or a refrigerated teether that is not frozen solid.',
@@ -670,19 +670,19 @@ export const CARE_TOPICS = [
       'Wipe drool and use a barrier ointment on the chin, since drool rash makes everything worse.',
       'Ask your pediatrician about acetaminophen for pain that is genuinely disrupting sleep, and dose by weight as they direct.',
       'Teething causes drooling, chewing, gum discomfort, irritability and disrupted sleep. It does not cause high fever, diarrhea, or a widespread rash.',
-      'First teeth commonly arrive somewhere between four and fifteen months, and that whole range is normal.',
+      'First teeth commonly arrive somewhere between 4 and 15 months, and that whole range is normal.',
     ],
     myths: [
       { myth: 'Amber teething necklaces relieve pain.', truth: 'There is no evidence they do anything, and the FDA has warned about teething jewelry following reports of strangulation and choking deaths. Do not use them, awake or asleep.' },
       { myth: 'Numbing gels are the obvious fix.', truth: 'The FDA warns against benzocaine teething products in infants and young children because of a rare but serious blood condition called methemoglobinemia.' },
-      { myth: 'Teething causes fever.', truth: 'A true fever is not from teething. Treat it as a fever, which in a baby under three months means urgent care.' },
+      { myth: 'Teething causes fever.', truth: 'A true fever is not from teething. Treat it as a fever, which in a baby under 3 months means urgent care.' },
       { myth: 'Frozen teethers are best.', truth: 'Rock hard frozen objects can bruise gums. Chilled, not frozen solid.' },
     ],
     redFlags: [
-      'A true fever, and in a baby under three months any fever is an emergency',
+      'A true fever, and in a baby under 3 months any fever is an emergency',
       'Diarrhea, a widespread rash, or a child who seems ill rather than uncomfortable',
       'Refusing to drink',
-      'No teeth at all by about eighteen months is worth mentioning, though often it is just their timeline',
+      'No teeth at all by about 18 months is worth mentioning, though often it is just their timeline',
     ],
     sources: [
       { org: 'AAP', label: 'FDA: teething necklaces can lead to choking and strangulation', url: 'https://publications.aap.org/aapnews/news/9241/FDA-Teething-necklaces-can-lead-to-choking' },
@@ -704,11 +704,11 @@ export const CARE_TOPICS = [
       'the actual limits of their seat, which is usually much longer than parents expect.',
     keyPoints: [
       'Rear facing from the first ride home, and stay rear facing until they reach the maximum height or weight their seat allows.',
-      'The age two rule was replaced. It is now height and weight based, and many convertible seats rear face well past two years.',
+      'The age 2 rule was replaced. It is now height and weight based, and many convertible seats rear face well past 2 years.',
       'Then forward facing with a harness, again until they max out the seat limits.',
       'Then a belt positioning booster, until the adult seat belt fits correctly on its own.',
-      'The belt fits when the lap belt sits low across the upper thighs and the shoulder belt crosses the chest and shoulder, with knees bent at the seat edge. That is usually somewhere around four foot nine.',
-      'The back seat is the safest place, and children should ride there through at least age thirteen.',
+      'The belt fits when the lap belt sits low across the upper thighs and the shoulder belt crosses the chest and shoulder, with knees bent at the seat edge. That is usually somewhere around 4 foot nine.',
+      'The back seat is the safest place, and children should ride there through at least age 13.',
       'Nothing bulky under the harness. Coats go on backwards over the buckled harness, not underneath it.',
       'The harness should be snug enough that you cannot pinch a horizontal fold of webbing at the shoulder, with the chest clip at armpit level.',
       'A free car seat check with a certified technician is available in most areas and catches installation errors that are extremely common.',
@@ -741,14 +741,14 @@ export const CARE_TOPICS = [
       'Colds are the most common reason parents worry and the least common reason a child needs ' +
       'medicine. What matters most is how they are acting, not the number on the thermometer.',
     keyPoints: [
-      'A young child having many colds a year is normal, especially in childcare, and each one can run seven to ten days.',
+      'A young child having many colds a year is normal, especially in childcare, and each one can run 7 to 10 days.',
       'Fever is the immune system working, not the illness itself. Treat the child, not the number.',
-      'Under three months, a rectal temperature of 100.4 F (38 C) or higher is an emergency evaluation every time, day or night.',
+      'Under 3 months, a rectal temperature of 100.4 F (38 C) or higher is an emergency evaluation every time, day or night.',
       'Do not give over the counter cough and cold medicines to young children. They have not been shown to help and they carry real risks.',
       'Honey helps cough in children over one year. Never give honey under one year because of the risk of infant botulism.',
       'For congestion: saline drops and suction, a cool mist humidifier, and fluids.',
       'Watch hydration rather than appetite. Wet diapers and drinking matter, eating less for a few days does not.',
-      'Ask your pediatrician for weight based dosing of acetaminophen or ibuprofen and write it down, rather than guessing at 2 AM. Ibuprofen is not used under six months.',
+      'Ask your pediatrician for weight based dosing of acetaminophen or ibuprofen and write it down, rather than guessing at 2 AM. Ibuprofen is not used under 6 months.',
       'Never give aspirin to a child, because of the risk of Reye syndrome.',
     ],
     myths: [
@@ -757,13 +757,13 @@ export const CARE_TOPICS = [
       { myth: 'You should alternate fever medicines routinely.', truth: 'Only do this if your pediatrician tells you to, because alternating raises the chance of a dosing error.' },
     ],
     redFlags: [
-      'Any fever in a baby under three months',
+      'Any fever in a baby under 3 months',
       'Any sign of breathing effort: skin pulling in at the ribs, neck or under the breastbone, flaring nostrils, or grunting. See the breathing topic for what to look for.',
       'Fast breathing at rest, counted for a full minute while calm',
       'Signs of dehydration: far fewer wet diapers, no tears, a dry mouth, unusual sleepiness',
       'A rash that does not fade when you press a glass against it',
       'Very difficult to wake, confused, or unusually floppy',
-      'A fever that lasts more than about three days, or goes away and comes back',
+      'A fever that lasts more than about 3 days, or goes away and comes back',
       'Your gut says something is wrong',
     ],
     sources: [

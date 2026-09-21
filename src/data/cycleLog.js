@@ -27,8 +27,8 @@
 
 export const CYCLOG_TITLE = 'How today felt';
 
-export const CYCLOG_SUB = 'Flow, mood, and what your body was doing. Takes about ten seconds and '
-  + 'answers the questions you get asked in a five minute appointment.';
+export const CYCLOG_SUB = 'Flow, mood, and what your body was doing. Takes about 10 seconds and '
+  + 'answers the questions you get asked in a 5 minute appointment.';
 
 export const CYCLOG_FLOW = [
   { id: 'spot', label: 'Spotting' },
@@ -152,21 +152,21 @@ export const CYCLOG_WHEN_ASK = {
     + 'waiting out, especially in the first couple of years when everything is still settling.',
   items: [
     'Soaking through a pad or tampon every hour or two',
-    'Bleeding for more than about seven days',
+    'Bleeding for more than about 7 days',
     'Clots bigger than the end of your thumb',
     'Pain that stops her going to school, or painkillers not touching it',
-    'Periods that stop for three months or more once they had settled into a pattern',
+    'Periods that stop for 3 months or more once they had settled into a pattern',
     'Bleeding between periods',
     'Feeling faint, breathless or unusually tired, which can be low iron from heavy bleeding',
   ],
-  note: 'Adolescent cycles are commonly anywhere from twenty one to forty five days apart in the '
+  note: 'Adolescent cycles are commonly anywhere from 21 to 45 days apart in the '
     + 'first few years, which is wider than the adult range, so irregular on its own is usually '
     + 'just young rather than wrong.',
 };
 
 export const CYCLOG_FIRST = {
   title: 'Has she had her first period?',
-  body: 'Some girls start at nine and some at fifteen and both are ordinary. Answering this only '
+  body: 'Some girls start at 9 and some at 15 and both are ordinary. Answering this only '
     + 'decides what this screen shows her.',
   yes: 'Yes, it has started',
   no: 'Not yet',

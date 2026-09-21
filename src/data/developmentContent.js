@@ -54,7 +54,7 @@ export const DEVELOPMENT_CONTENT = [
   /* ---------------------------------------------------------------- */
   {
     id: 'sleep-4-month-change',
-    title: 'Sleep Falls Apart Around Four Months',
+    title: 'Sleep Falls Apart Around 4 Months',
     category: 'sleep',
     minMonths: 3,
     maxMonths: 7,
@@ -63,14 +63,14 @@ export const DEVELOPMENT_CONTENT = [
       'A baby who was sleeping in long stretches suddenly wakes every hour or two. This one is not ' +
       'a setback. It is a permanent change in how their brain sleeps.',
     whatYouMayNotice: [
-      'A baby who slept in long stretches now wakes every one to two hours.',
+      'A baby who slept in long stretches now wakes every 1 to 2 hours.',
       'Naps get shorter, sometimes only one sleep cycle long.',
       'They wake fully rather than stirring and settling.',
       'What used to get them back down stops working.',
       'It seems to arrive out of nowhere, often alongside rolling or new alertness.',
     ],
     whyItHappens: [
-      'Newborn sleep is only two states. Around this age it reorganizes into cycles with lighter stages, much closer to adult sleep.',
+      'Newborn sleep is only 2 states. Around this age it reorganizes into cycles with lighter stages, much closer to adult sleep.',
       'Lighter stages mean more chances to surface fully, and at this age they cannot yet bridge back into the next cycle alone.',
       'This is a permanent change in sleep architecture, which is why it is not really a regression. Their sleep grew up.',
       'New motor skills such as rolling often land at the same time, and babies practice new skills at night.',
@@ -82,7 +82,7 @@ export const DEVELOPMENT_CONTENT = [
     parentStrategies: [
       'Watch wake windows rather than the clock. Overtired babies wake more, not less.',
       'Give plenty of daytime practice for whatever new skill they are working on, so they rehearse it less at 2 AM.',
-      'Keep the last twenty minutes before sleep the same every night. Predictability does more here than any single technique.',
+      'Keep the last 20 minutes before sleep the same every night. Predictability does more here than any single technique.',
       'Give a minute before going in. Some wakings resolve on their own, and some do not, and you will not know which without waiting.',
       'Dark room, white noise if it helps, and a cool temperature all reduce the number of things that can wake them.',
       'Trade nights with a partner if you have one. This phase is survived, not solved.',
@@ -128,8 +128,8 @@ export const DEVELOPMENT_CONTENT = [
       'They have just worked out that you continue to exist when you are out of sight. Before that, gone was simply gone.',
       'Knowing you exist elsewhere is exactly what makes your absence worth protesting.',
       'They cannot yet hold the idea that you will come back, so every exit feels open ended.',
-      'They have no sense of time. Ten minutes and the whole day feel the same.',
-      'Preferring one or two specific people is a healthy sign of a secure attachment forming, not a sign of being spoiled.',
+      'They have no sense of time. 10 minutes and the whole day feel the same.',
+      'Preferring one or 2 specific people is a healthy sign of a secure attachment forming, not a sign of being spoiled.',
     ],
     whatIsTypical:
       'Very common from around 7 to 9 months, often peaking somewhere between 10 and 18 months, and ' +
@@ -188,7 +188,7 @@ export const DEVELOPMENT_CONTENT = [
       'Being told no is also their first experience of a limit on a will that suddenly feels enormous.',
     ],
     whatIsTypical:
-      'Extremely common through the toddler years, usually peaking somewhere around two to three ' +
+      'Extremely common through the toddler years, usually peaking somewhere around 2 to 3 ' +
       'and easing as language and self control develop. Frequency matters less than whether they ' +
       'can be comforted and recover afterward.',
     parentStrategies: [
@@ -196,7 +196,7 @@ export const DEVELOPMENT_CONTENT = [
       'Say the feeling out loud before solving anything. Being understood ends more tantrums than being fixed.',
       'Stay nearby and quiet rather than reasoning. Words do not land while a brain is flooded.',
       'Hold the limit but soften the delivery. You can be completely warm and still say no.',
-      'Offer two acceptable choices rather than open questions, so they get real control over something.',
+      'Offer 2 acceptable choices rather than open questions, so they get real control over something.',
       'Look at what came before it. Hunger, tiredness, and too much stimulation cause more meltdowns than defiance does.',
       'Do the teaching afterward, when they are calm. During is for safety and presence only.',
     ],
@@ -205,10 +205,10 @@ export const DEVELOPMENT_CONTENT = [
       { situation: 'They want something they cannot have', say: "You want the cookie. It's not cookie time. That's disappointing.", why: 'Validates the desire and holds the limit in the same breath, so the limit does not read as rejection.' },
       { situation: 'They are hitting or throwing', say: "I won't let you hit. I'm going to move you here so you're safe.", why: 'Stops the behavior by acting rather than by asking, and describes what you are doing so it is not frightening.' },
       { situation: 'Afterward, when calm', say: "That was a big feeling. Big feelings are okay. Next time you can tell me mad.", why: 'Teaches at the only moment teaching can be heard, and names the alternative rather than only the problem.' },
-      { situation: 'In public with an audience', say: "We're okay. He's having a hard time.", why: 'Answers the onlookers in five words so you can put your attention back where it belongs.' },
+      { situation: 'In public with an audience', say: "We're okay. He's having a hard time.", why: 'Answers the onlookers in 5 words so you can put your attention back where it belongs.' },
     ],
     forYou: [
-      'A tantrum in public is not a performance review. It is a two year old with a two year old brain.',
+      'A tantrum in public is not a performance review. It is a 2 year old with a 2 year old brain.',
       'If you feel yourself escalating, it is fine to say "I need a second" and step just far enough away to breathe, as long as they are safe.',
       'You will lose your patience sometimes. Repair afterward matters more than never slipping.',
     ],
@@ -265,7 +265,7 @@ export const DEVELOPMENT_CONTENT = [
       { situation: 'Right after they hit', say: "I won't let you hit. Hands are for playing.", why: 'A limit plus a replacement, short enough to actually land.' },
       { situation: 'After biting another child', say: "Teeth hurt people. Let's check on her.", why: 'Names the consequence in concrete terms and moves straight to repair.' },
       { situation: 'When it is excitement rather than anger', say: "You're so excited. Big energy is okay. Let's use it safely. Stomp with me.", why: 'Does not treat excitement as bad, it redirects the energy somewhere the body can still discharge it.' },
-      { situation: 'Teaching the alternative when calm', say: "When you're mad, you can say mad, or stomp, or come find me.", why: 'Three concrete options given before the moment, when there is room to learn them.' },
+      { situation: 'Teaching the alternative when calm', say: "When you're mad, you can say mad, or stomp, or come find me.", why: '3 concrete options given before the moment, when there is room to learn them.' },
       { situation: 'To another parent at the park', say: "We're working on hands. I'm sorry, are you okay?", why: 'Handles the social moment honestly without a lecture about your child in front of your child.' },
     ],
     forYou: [
@@ -312,7 +312,7 @@ export const DEVELOPMENT_CONTENT = [
       'A well known feature of the second and third years. It usually softens as language grows and ' +
       'as they get more real chances to decide things.',
     parentStrategies: [
-      'Give real choices where you genuinely do not care. Two shirts, two snacks, stairs or elevator.',
+      'Give real choices where you genuinely do not care. 2 shirts, 2 snacks, stairs or elevator.',
       'Never offer a choice you cannot honor. A fake choice teaches them that choices are not real.',
       'Build in more time rather than more speed. Most power struggles are actually schedule problems.',
       'Let them do the last step. You pull the sock most of the way, they pull it over the heel.',
@@ -332,7 +332,7 @@ export const DEVELOPMENT_CONTENT = [
     ],
     worthMentioning: [
       'Refusal is so total that eating, sleeping, or leaving the house have become genuinely difficult.',
-      'They have very few words, or are not combining words by around two years.',
+      'They have very few words, or are not combining words by around 2 years.',
       'Rigidity about order or sameness is extreme, and any change causes major distress.',
       'You find yourself in physical struggles with your child most days and it feels like it is escalating.',
     ],
@@ -349,7 +349,7 @@ export const DEVELOPMENT_CONTENT = [
     maxMonths: 66,
     ageRange: '3.5 to 5 years',
     summary:
-      'Your four year old seems more aggressive, and often not because they are angry. They crash, ' +
+      'Your 4 year old seems more aggressive, and often not because they are angry. They crash, ' +
       'wrestle, hit during play, and use their body at full volume.',
     whatYouMayNotice: [
       'Hitting or pushing while laughing, not while upset.',
@@ -361,7 +361,7 @@ export const DEVELOPMENT_CONTENT = [
     ],
     whyItHappens: [
       'Impulse control is still years from finished. They can name the rule perfectly and still not stop their body in time, and knowing the rule is not the same skill as using it.',
-      'Excitement and aggression feel almost identical in a four year old body. Big feeling comes out as big movement regardless of whether the feeling was good or bad.',
+      'Excitement and aggression feel almost identical in a 4 year old body. Big feeling comes out as big movement regardless of whether the feeling was good or bad.',
       'Many children are sensory seeking at this age. Crashing and wrestling give the deep pressure input their body is actively looking for.',
       'Rough and tumble play is normal developmental work. It is how children learn force, limits, and reading other people.',
       'Boundary testing is a real job at this age. They are checking whether the rule is the same today as yesterday, and whether it is the same when you are tired.',
@@ -386,12 +386,12 @@ export const DEVELOPMENT_CONTENT = [
       { situation: 'They hit during excited play', say: "Big energy is okay. Let's use it safely.", why: 'Does not shame the energy, which is not the problem, and points it somewhere it can go.' },
       { situation: 'You need it stopped now', say: "Stop. Bodies are for keeping safe.", why: 'One word first, because at full speed a sentence arrives too late.' },
       { situation: 'They want to wrestle', say: "You want to crash. Let's build a crash pile and you can jump into that.", why: 'Says yes to the need and no to the location, which is usually the actual problem.' },
-      { situation: 'They did not stop when a friend said stop', say: "She said stop. When someone says stop, the game stops. Let's check if she still wants to play.", why: 'Teaches consent in the simplest form a four year old can use, and puts repair right after the rule.' },
+      { situation: 'They did not stop when a friend said stop', say: "She said stop. When someone says stop, the game stops. Let's check if she still wants to play.", why: 'Teaches consent in the simplest form a 4 year old can use, and puts repair right after the rule.' },
       { situation: 'After school intensity', say: "You held it together all day. Let's get that out. Race me to the fence.", why: 'Names what actually happened and gives the body a way to discharge it before you ask for calm.' },
       { situation: 'They are testing you deliberately', say: "You're checking if the rule is still the rule. It is. Feet on the floor.", why: 'Naming the test defuses it, and repeating the limit unchanged answers the real question.' },
     ],
     forYou: [
-      'A four year old who is aggressive in play is not becoming a violent person. This is one of the most misread stages there is.',
+      'A 4 year old who is aggressive in play is not becoming a violent person. This is one of the most misread stages there is.',
       'If you dread the hour after pickup, plan for it rather than hoping for a better version of it.',
       'The behavior often looks worse with you than at school. That means you are safe, not that you are doing it wrong.',
     ],
@@ -431,7 +431,7 @@ export const DEVELOPMENT_CONTENT = [
       'They think in absolutes. The broken banana is not a damaged banana, it is a ruined one.',
       'Fairness is a brand new concept and they apply it rigidly, because nuance comes much later.',
       'By evening they have spent all day managing themselves, and there is nothing left in reserve.',
-      'They cannot yet hold two feelings at once, so disappointment fills the entire space.',
+      'They cannot yet hold 2 feelings at once, so disappointment fills the entire space.',
     ],
     whatIsTypical:
       'Very common through the preschool years. Look at recovery rather than intensity. A child who ' +
@@ -516,7 +516,7 @@ export const DEVELOPMENT_CONTENT = [
       { situation: 'The wish underneath', say: "You wish you had a puppy. Me too. Let's pretend about it.", why: 'Answers what they actually meant rather than correcting what they literally said.' },
     ],
     forYou: [
-      'A four year old who lies is not showing you a character flaw. This is normal cognitive development and nearly every child does it.',
+      'A 4 year old who lies is not showing you a character flaw. This is normal cognitive development and nearly every child does it.',
     ],
     worthMentioning: [
       'Lying is frequent, deliberate, and continues well past this age range.',
@@ -567,7 +567,7 @@ export const DEVELOPMENT_CONTENT = [
       'Lower expectations for the hour after pickup, on purpose, as a policy rather than a concession.',
     ],
     scripts: [
-      { situation: 'The moment they get in the car', say: "Snack's here. We don't have to talk yet.", why: 'Removes both demands at once, food and conversation, which are the two things they cannot manage right now.' },
+      { situation: 'The moment they get in the car', say: "Snack's here. We don't have to talk yet.", why: 'Removes both demands at once, food and conversation, which are the 2 things they cannot manage right now.' },
       { situation: 'They snap at you', say: "You held it together all day. You can let it out with me.", why: 'Tells them the release is allowed and, importantly, tells you what it means so it stings less.' },
       { situation: 'They will not say what is wrong', say: "You don't have to tell me. I'm here when you want to.", why: 'Keeps the door open without pushing, which is what usually gets them to walk through it later.' },
       { situation: 'Later, when you want the real conversation', say: "Tell me one thing that was good and one thing that was annoying.", why: 'Specific and small, which gets answers where how was your day gets fine.' },
@@ -589,7 +589,7 @@ export const DEVELOPMENT_CONTENT = [
   /* ---------------------------------------------------------------- */
   {
     id: 'picky-eating',
-    title: 'They Will Only Eat Four Things',
+    title: 'They Will Only Eat 4 Things',
     category: 'feeding',
     minMonths: 18,
     maxMonths: 84,
@@ -683,33 +683,33 @@ export const DEVELOPMENT_CONTENT = [
       'They genuinely cannot fall asleep at the time that used to work.',
       'Waking them for school feels like waking someone from anesthesia.',
       'They are exhausted all week and then sleep until noon on Saturday.',
-      'They insist they are not tired at eleven at night, and they are telling the truth.',
+      'They insist they are not tired at 11 at night, and they are telling the truth.',
       'Mood, focus, and patience all get noticeably worse across the school week.',
     ],
     whyItHappens: [
-      'At puberty the body clock shifts later by around two hours. Melatonin, the hormone that starts sleep, simply arrives later than it did.',
-      'Teenagers still need roughly eight to ten hours. The need did not shrink, only the window moved.',
+      'At puberty the body clock shifts later by around 2 hours. Melatonin, the hormone that starts sleep, simply arrives later than it did.',
+      'Teenagers still need roughly 8 to 10 hours. The need did not shrink, only the window moved.',
       'Most school start times were set for a body clock teenagers no longer have, so the week runs at a deficit by design.',
       'Screens do not cause the shift, and light late at night does push it a little further out.',
       'The weekend lie in is the body repaying debt, and it also makes Monday harder, which is a genuinely unfair trap.',
     ],
     whatIsTypical:
-      'Nearly universal from around age eleven or twelve through the late teens, and it starts to ' +
+      'Nearly universal from around age 11 or 12 through the late teens, and it starts to ' +
       'drift back earlier in the early twenties.',
     parentStrategies: [
       'Treat the shift as real. Arguing with biology costs you credibility you will want for other things.',
       'Anchor the wake time rather than the bedtime. Wake time is what actually moves a body clock.',
-      'Get light into them in the morning, ideally outdoors, even for ten minutes.',
-      'Keep weekend sleep within about two hours of the school day, rather than letting it run to noon.',
+      'Get light into them in the morning, ideally outdoors, even for 10 minutes.',
+      'Keep weekend sleep within about 2 hours of the school day, rather than letting it run to noon.',
       'Dim the house in the last hour, which does more than banning a phone at nine.',
       'Move homework earlier where you can, since the late night session is usually the least productive hour of their day.',
-      'Protect naps under thirty minutes and before mid afternoon, and treat longer ones as a sign of real debt.',
+      'Protect naps under 30 minutes and before mid afternoon, and treat longer ones as a sign of real debt.',
     ],
     scripts: [
       { situation: 'They say they are not tired', say: "I believe you. Your body clock genuinely moved. Let's work with it instead of fighting it.", why: 'Believing them is the whole move here, and it buys you a conversation rather than an argument.' },
-      { situation: 'The phone at midnight', say: "The phone isn't the problem, the clock is. Can we park it at eleven and see if anything changes in a week?", why: 'Frames it as an experiment you run together rather than a confiscation, which is the difference between compliance and a fight.' },
-      { situation: 'Weekend sleeping until one in the afternoon', say: "Sleep in, that's fair. Can we cap it around eleven so Monday isn't brutal?", why: 'Concedes the real need while protecting the thing that actually wrecks their week.' },
-      { situation: 'Morning, and they are impossible', say: "I know this hour is the worst. Ten minutes, then food.", why: 'Removes conversation from the hardest part of their day, which is the same restraint that works at pickup when they are five.' },
+      { situation: 'The phone at midnight', say: "The phone isn't the problem, the clock is. Can we park it at 11 and see if anything changes in a week?", why: 'Frames it as an experiment you run together rather than a confiscation, which is the difference between compliance and a fight.' },
+      { situation: 'Weekend sleeping until one in the afternoon', say: "Sleep in, that's fair. Can we cap it around 11 so Monday isn't brutal?", why: 'Concedes the real need while protecting the thing that actually wrecks their week.' },
+      { situation: 'Morning, and they are impossible', say: "I know this hour is the worst. 10 minutes, then food.", why: 'Removes conversation from the hardest part of their day, which is the same restraint that works at pickup when they are five.' },
     ],
     forYou: [
       'The morning fight is not about respect, and treating it as a discipline problem tends to lose you both the morning and the relationship.',
@@ -752,21 +752,21 @@ export const DEVELOPMENT_CONTENT = [
       'Chronic sleep debt lowers the threshold for all of this, every single time.',
     ],
     whatIsTypical:
-      'Very common from around eleven, usually peaking somewhere between thirteen and fifteen, and ' +
+      'Very common from around 11, usually peaking somewhere between 13 and 15, and ' +
       'easing through the later teens as the braking system finishes.',
     parentStrategies: [
       'Do not match the volume. The louder person in the room stops being the adult.',
       'Postpone the conversation. Nothing useful is learned during the surge, exactly as when they were three.',
       'Come back within a day. Skipping the repair teaches that blowups simply end rather than get resolved.',
       'Separate the behavior from the person out loud, since they cannot yet do it for themselves.',
-      'Pick the two or three things that genuinely matter and let the rest go, because you cannot win on volume and content at once.',
+      'Pick the 2 or 3 things that genuinely matter and let the rest go, because you cannot win on volume and content at once.',
       'Apologize when you get it wrong. It is the single most effective thing you can model at this age.',
       'Have hard conversations side by side, in the car or on a walk, rather than face to face across a table.',
     ],
     scripts: [
       { situation: 'Mid explosion', say: "I'm not going anywhere. We'll talk when we're both calmer.", why: 'Says the relationship is not in danger, which is the fear underneath most of these, while refusing to hold the conversation now.' },
       { situation: 'After, when they are back', say: "That got big. I want to hear your side before I say anything else.", why: 'Being asked first is what makes a teenager willing to hear the second half.' },
-      { situation: 'You lost your temper too', say: "I shouted, and that was mine, not yours. I'm sorry.", why: 'Models repair without cancelling the original limit, which is a distinction teenagers watch closely.' },
+      { situation: 'You lost your temper too', say: "I shouted, and that was mine, not yours. I'm sorry.", why: 'Models repair without canceling the original limit, which is a distinction teenagers watch closely.' },
       { situation: 'They say you never listen', say: "Tell me the part I got wrong. I'll actually listen this time.", why: 'Defending yourself here ends the conversation. Asking keeps it open, which is worth more than being right.' },
     ],
     forYou: [
@@ -775,7 +775,7 @@ export const DEVELOPMENT_CONTENT = [
     ],
     worthMentioning: [
       'Aggression that involves real harm to people, animals, or property.',
-      'Mood that stays low or irritable for more than two weeks rather than swinging.',
+      'Mood that stays low or irritable for more than 2 weeks rather than swinging.',
       'Withdrawal from friends and from things they used to love.',
       'Any mention of self harm or of not wanting to be here, which is always worth acting on the same day.',
       'You are afraid of your child, which is a reason to get support for the whole family.',
@@ -810,11 +810,11 @@ export const DEVELOPMENT_CONTENT = [
       'They are often protecting you as much as themselves, especially if they think you will worry or be disappointed.',
     ],
     whatIsTypical:
-      'Very common from around eleven or twelve, and most intense in the middle teens. Closeness ' +
+      'Very common from around 11 or 12, and most intense in the middle teens. Closeness ' +
       'usually returns in a different form in the later teens and twenties.',
     parentStrategies: [
       'Be available rather than interested. Presence gets more than questions do.',
-      'Take the openings when they come, even at eleven at night when you are exhausted. The window is theirs to open, not yours.',
+      'Take the openings when they come, even at 11 at night when you are exhausted. The window is theirs to open, not yours.',
       'Do things shoulder to shoulder. Driving, cooking, walking, and gaming all produce more talking than sitting across a table.',
       'Ask about their world rather than about them. The friend drama, the game, the music, all of it is a door.',
       'React small. A big reaction to a small disclosure is how you stop hearing the big ones.',
@@ -822,7 +822,7 @@ export const DEVELOPMENT_CONTENT = [
       'Say what you like about them out loud, specifically. Teenagers hear correction constantly and praise almost never.',
     ],
     scripts: [
-      { situation: 'They say nothing happened today', say: "Fair enough. I'm around if that changes.", why: 'Ends the pressure and leaves the door visibly open, which is what gets you the story three hours later.' },
+      { situation: 'They say nothing happened today', say: "Fair enough. I'm around if that changes.", why: 'Ends the pressure and leaves the door visibly open, which is what gets you the story 3 hours later.' },
       { situation: 'They tell you something alarming', say: "Thanks for telling me. Let me think for a second before I say anything.", why: 'Buys you the moment you need to not overreact, and it tells them that telling you was the right call.' },
       { situation: 'You want to know about friends', say: "What's the group chat losing its mind about this week?", why: 'Asks about the world rather than about them, which is a far lower toll to pay.' },
       { situation: 'They snap that you are prying', say: "You're right, that was too much. I miss you, that's all.", why: 'Honest, brief, and puts the feeling on you rather than making them responsible for managing it.' },
@@ -861,14 +861,14 @@ export const DEVELOPMENT_CONTENT = [
       'Reluctance to go to school on specific days.',
     ],
     whyItHappens: [
-      'Social groups reorganize hard in early adolescence as everyone works out who they are becoming, and friendships built at seven often do not survive that.',
+      'Social groups reorganize hard in early adolescence as everyone works out who they are becoming, and friendships built at 7 often do not survive that.',
       'Belonging feels like survival at this age, because for most of human history it was. Exclusion genuinely hurts, and brain imaging shows it running through pain pathways.',
       'Status becomes visible and countable through phones, which is new and which makes exclusion measurable in a way it never used to be.',
       'Most teenagers are also excluding someone while being excluded. Very few are purely one or the other.',
       'Neurodivergent teens often get hit hardest here, because the unwritten rules multiply at exactly the age they get less explicit.',
     ],
     whatIsTypical:
-      'Very common between eleven and fifteen, and usually settling by sixteen or seventeen as groups ' +
+      'Very common between 11 and 15, and usually settling by 16 or 17 as groups ' +
       'stabilize around actual shared interests rather than status.',
     parentStrategies: [
       'Listen without fixing first. The urge to solve it is strong and it usually ends the conversation.',
@@ -877,7 +877,7 @@ export const DEVELOPMENT_CONTENT = [
       'Name the difference between a hard friendship and bullying, and take the second one to the school in writing.',
       'Help them practice exits. Knowing how to leave a group chat or a party is a real skill and it can be rehearsed.',
       'Tell them about your own version of this. Teenagers assume they are uniquely defective, and evidence helps.',
-      'Watch what the phone is doing at night, since exclusion is a twenty four hour broadcast now rather than something that ends at the school gate.',
+      'Watch what the phone is doing at night, since exclusion is a 24 hour broadcast now rather than something that ends at the school gate.',
     ],
     scripts: [
       { situation: 'They were left out', say: "That's a horrible feeling, and it says nothing about whether you're worth including.", why: 'Names the feeling and separates it from the conclusion they are already drawing about themselves.' },
@@ -891,7 +891,7 @@ export const DEVELOPMENT_CONTENT = [
     ],
     worthMentioning: [
       'Repeated targeting by the same person or group, which is bullying and needs the school involved in writing.',
-      'They are refusing school, or ill every morning and fine by ten.',
+      'They are refusing school, or ill every morning and fine by 10.',
       'No friends at all across a long period, alongside low mood.',
       'Anything involving images, threats, or someone older online.',
       'Talk of self harm or of not wanting to be here, which needs same day attention.',
@@ -921,12 +921,12 @@ export const DEVELOPMENT_CONTENT = [
     whyItHappens: [
       'The organizational demand roughly multiplies at the same moment that the single adult tracking everything is removed. That is a structural change, not a character change.',
       'Executive skills, meaning starting, planning, remembering, and judging time, mature slowly and unevenly, well into the twenties.',
-      'When those skills are a genuine difficulty, they often run about three years behind same age peers. An eleven year old can be functioning organizationally like an eight year old while reasoning like a fourteen year old.',
+      'When those skills are a genuine difficulty, they often run about 3 years behind same age peers. An 11 year old can be functioning organizationally like an 8 year old while reasoning like a 14 year old.',
       'Long term projects require estimating time, which is the specific skill many of these teenagers do not have.',
       'A bright child can coast on ability for years and hit the wall precisely when the coasting stops working, which makes it look sudden.',
     ],
     whatIsTypical:
-      'Extremely common in the first two years of middle school, and more pronounced in teenagers with ' +
+      'Extremely common in the first 2 years of middle school, and more pronounced in teenagers with ' +
       'ADHD, autism, anxiety, or a learning difference, including ones identified late.',
     parentStrategies: [
       'Build the system with them, not for them. A system they did not agree to will not survive a week.',
@@ -940,9 +940,9 @@ export const DEVELOPMENT_CONTENT = [
     ],
     scripts: [
       { situation: 'Work done but not turned in', say: "That's so annoying, you did the hard part. Where does the finished work go so it can't hide?", why: 'Names the real problem, which is a handoff step, and skips a lecture that would not fix it anyway.' },
-      { situation: 'A project due tomorrow', say: "Okay. Tonight we salvage. Tomorrow we figure out how we saw it coming earlier.", why: 'Solves the crisis first, since nothing is learnable at ten at night, and keeps the review alive.' },
+      { situation: 'A project due tomorrow', say: "Okay. Tonight we salvage. Tomorrow we figure out how we saw it coming earlier.", why: 'Solves the crisis first, since nothing is learnable at 10 at night, and keeps the review alive.' },
       { situation: 'They insist they have it handled', say: "I believe you can. Can we look at it together on Sundays so I stop asking on Tuesdays?", why: 'Trades constant nagging for one agreed checkpoint, which is a deal most teenagers will actually take.' },
-      { situation: 'They say they are stupid', say: "You're not. Getting things in is a different skill from understanding them, and it's the one we're working on.", why: 'Splits the two things apart, which is the belief that most needs protecting at this age.' },
+      { situation: 'They say they are stupid', say: "You're not. Getting things in is a different skill from understanding them, and it's the one we're working on.", why: 'Splits the 2 things apart, which is the belief that most needs protecting at this age.' },
     ],
     forYou: [
       'This is the age where doing less for them is the goal and doing nothing is not. Scaffolding that comes down slowly is the actual target.',
@@ -953,7 +953,7 @@ export const DEVELOPMENT_CONTENT = [
       'It is not improving despite real support at home.',
       'Anxiety or shame about school that is growing rather than settling.',
       'One specific subject is far behind the rest, which can point to a learning difference.',
-      'Attention or organization has been a problem in more than one setting for six months or longer.',
+      'Attention or organization has been a problem in more than one setting for 6 months or longer.',
     ],
     strategyTags: ['visual-schedule', 'break-into-steps', 'checklist', 'body-double', 'timer', 'first-then'],
     relatedLenses: ['executiveFunction', 'adhd', 'learningDifferences', 'gifted', 'anxiety'],
@@ -975,12 +975,12 @@ export const DEVELOPMENT_CONTENT = [
       'Shutting down completely after school rather than melting down.',
       'Skills that were reliable dropping away, such as replying to messages or managing hygiene.',
       'Exhaustion that sleep does not fix.',
-      'It gets worse across a term and better in the holidays.',
+      'It gets worse across a term and better over school breaks.',
     ],
     whyItHappens: [
       'Masking means suppressing what your body wants to do and performing what the room expects. It works, and it is expensive, and the bill arrives later.',
       'A teenager may be spending most of their attention on eye contact, posture, tone, and reading the room, and the rest of it on the actual lesson.',
-      'The social rules multiply enormously in secondary school at exactly the age adults stop explaining them.',
+      'The social rules multiply enormously in middle and high school at exactly the age adults stop explaining them.',
       'Sustained masking can tip into burnout, meaning a longer collapse where skills genuinely go offline for weeks or months rather than for an evening.',
       'This is a large part of why many autistic and ADHD teenagers, girls especially, are identified late or not at all. They were never a problem in class, so nobody looked.',
     ],
@@ -1009,9 +1009,9 @@ export const DEVELOPMENT_CONTENT = [
     worthMentioning: [
       'Skills disappearing for weeks rather than for an evening, which points toward burnout rather than tiredness.',
       'School refusal, or long standing illness on school mornings.',
-      'Low mood, hopelessness, or withdrawal that lasts more than two weeks.',
+      'Low mood, hopelessness, or withdrawal that lasts more than 2 weeks.',
       'Any mention of self harm or of not wanting to be here, which needs attention the same day.',
-      'You suspect there is something unidentified going on. Late identification is extremely common, and an evaluation at fifteen is still worth having.',
+      'You suspect there is something unidentified going on. Late identification is extremely common, and an evaluation at 15 is still worth having.',
     ],
     strategyTags: ['quiet-space', 'reduce-demands', 'connection-first', 'co-regulate', 'noise-reduction'],
     relatedLenses: ['autism', 'adhd', 'anxiety', 'sensory', 'emotionalRegulation', 'exploring'],
@@ -1043,13 +1043,13 @@ export const DEVELOPMENT_CONTENT = [
       'For neurodivergent teenagers this stage often carries an extra question, which is whether to tell people. That decision is theirs, including the timing.',
     ],
     whatIsTypical:
-      'Universal, running roughly from twelve through the late teens, and usually settling into ' +
+      'Universal, running roughly from 12 through the late teens, and usually settling into ' +
       'something recognizable in the late teens and early twenties.',
     parentStrategies: [
       'Do not mock any of it, ever, including the parts that are objectively funny. Being laughed at here is remembered for decades.',
       'Say yes to the reversible things. Hair, clothes, and room decor cost you nothing and buy you enormous credibility.',
       'Argue with them properly rather than pulling rank. Teenagers can tell the difference and they respect the first one.',
-      'Get curious about the interest, even briefly. Learning two facts about the thing they love is worth an hour of questions about their feelings.',
+      'Get curious about the interest, even briefly. Learning 2 facts about the thing they love is worth an hour of questions about their feelings.',
       'Keep your values visible and stop selling them. What you do is the argument they will actually weigh.',
       'Let the drafts go without comment. Pointing out that they used to love something is a small humiliation with no upside.',
       'Make it clear that nothing they could tell you about themselves would change how you feel. Say it before it is needed rather than after.',
@@ -1083,7 +1083,7 @@ export const DEVELOPMENT_CONTENT = [
     maxMonths: 228,
     ageRange: '11 to 18 years',
     summary:
-      'Their social life now runs twenty four hours a day on a device in their pocket. The goal is not ' +
+      'Their social life now runs 24 hours a day on a device in their pocket. The goal is not ' +
       'to win a war over screen time, it is to stay the person they come to when something goes wrong.',
     whatYouMayNotice: [
       'The phone is the first thing in the morning and the last thing at night.',
@@ -1094,7 +1094,7 @@ export const DEVELOPMENT_CONTENT = [
     ],
     whyItHappens: [
       'For this generation online is not separate from social life, it is where most of it happens. Removing it is removing the friendships, not the distraction.',
-      'The feeds are built to be hard to leave, by people who are extremely good at their jobs. That is not a failure of willpower at fourteen.',
+      'The feeds are built to be hard to leave, by people who are extremely good at their jobs. That is not a failure of willpower at 14.',
       'Exclusion used to end at the school gate. Now it is visible, timestamped, and available all night.',
       'The comparison is against an edited highlight reel, and adolescence is the moment a person is most vulnerable to exactly that comparison.',
       'The genuine risk is not screen time in hours. It is what happens in specific places, with specific people, at night, unsupervised.',
@@ -1113,7 +1113,7 @@ export const DEVELOPMENT_CONTENT = [
     ],
     scripts: [
       { situation: 'Setting the rule up front', say: "Phones charge in the kitchen overnight, mine too. That's the deal for all of us.", why: 'Shared rather than imposed, which removes most of the argument before it starts.' },
-      { situation: 'They bring you something upsetting', say: "I'm really glad you showed me. You're not in trouble. Let's sort it out.", why: 'The three sentences that decide whether they ever show you the next one.' },
+      { situation: 'They bring you something upsetting', say: "I'm really glad you showed me. You're not in trouble. Let's sort it out.", why: 'The 3 sentences that decide whether they ever show you the next one.' },
       { situation: 'Scrolling has clearly wrecked their mood', say: "You seem worse after that app than before it. Worth noticing?", why: 'An observation rather than a ban, which lets them draw the conclusion and keeps it theirs.' },
       { situation: 'They want an app you do not know', say: "Show me how it works and who's on it, and let's see.", why: 'Makes them the expert and gets you real information, which a flat no never does.' },
     ],
@@ -1211,13 +1211,13 @@ export const DEVELOPMENT_CONTENT = [
     ],
     whyItHappens: [
       'Adolescence genuinely involves big mood shifts, driven by hormones, a rebuilding brain, and chronic sleep debt. Most of it is ordinary.',
-      'The difference is duration and reach. Ordinary teenage mood moves. Depression sits still, lasts more than two weeks, and takes things with it, including friends, interests, and sleep.',
+      'The difference is duration and reach. Ordinary teenage mood moves. Depression sits still, lasts more than 2 weeks, and takes things with it, including friends, interests, and sleep.',
       'Anxiety and depression frequently arrive together, and in teenagers both often look like anger from the outside.',
       'Neurodivergent teenagers carry a higher risk here, largely because of the daily cost of masking and of not fitting a setting built for someone else.',
       'These conditions respond well to treatment, and earlier is genuinely better, which is the main argument for asking sooner rather than waiting to be sure.',
     ],
     whatIsTypical:
-      'Mood swings are typical. Two weeks or more of persistent low or irritable mood, with withdrawal ' +
+      'Mood swings are typical. 2 weeks or more of persistent low or irritable mood, with withdrawal ' +
       'and loss of interest, is not, and it is common enough that asking about it is unremarkable.',
     parentStrategies: [
       'Ask directly and plainly. Asking a teenager about low mood, including about thoughts of suicide, does not plant the idea, and it does give them permission to answer.',
@@ -1240,7 +1240,7 @@ export const DEVELOPMENT_CONTENT = [
     ],
     worthMentioning: [
       'Any talk of suicide, self harm, or not wanting to be here. Call your pediatrician the same day, or 988, and go to an emergency room if there is immediate danger.',
-      'Low or irritable mood lasting more than two weeks.',
+      'Low or irritable mood lasting more than 2 weeks.',
       'Withdrawal from friends and from things they used to enjoy.',
       'Big changes in sleep, appetite, or weight.',
       'Giving away possessions, or saying goodbye in a way that sits wrong with you.',

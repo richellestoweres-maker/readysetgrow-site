@@ -21,7 +21,7 @@
 export const CPR_STANCE = {
   headline: 'This is a reference, not a certification. Take the class.',
   body: [
-    'An in person infant and child CPR class takes about two hours and costs very little, and several places run them free. The Red Cross, the American Heart Association, most hospitals, and many fire departments all offer them.',
+    'An in person infant and child CPR class takes about 2 hours and costs very little, and several places run them free. The Red Cross, the American Heart Association, most hospitals, and many fire departments all offer them.',
     'What you cannot get from a screen is the feel of how hard compressions actually are, and that is the part people get wrong. Almost everyone pushes too softly the first time.',
     'What you can get from a screen is the sequence, so it is in your head, and the confidence that doing something imperfectly is far better than doing nothing. Bystander CPR roughly doubles survival, and nobody has ever been sued for trying.',
   ],
@@ -31,18 +31,18 @@ export const CPR_STANCE = {
 };
 
 export const WHATS_NEW_2025 = {
-  headline: 'Two things changed in October 2025. If you trained before then, read this part.',
+  headline: '2 things changed in October 2025. If you trained before then, read this part.',
   changes: [
     {
       change: 'Choking in a child over one now starts with back blows.',
       detail:
-        'The sequence is now five back blows alternating with five abdominal thrusts, repeated. ' +
+        'The sequence is now 5 back blows alternating with 5 abdominal thrusts, repeated. ' +
         'Abdominal thrusts alone were the old teaching for children.',
     },
     {
-      change: 'The two finger technique for infant compressions was dropped.',
+      change: 'The 2 finger technique for infant compressions was dropped.',
       detail:
-        'It was removed because it does not reliably reach the needed depth. Use the two thumbs ' +
+        'It was removed because it does not reliably reach the needed depth. Use the 2 thumbs ' +
         'encircling hands technique, or the heel of one hand, instead.',
     },
   ],
@@ -66,7 +66,7 @@ export const CPR_BY_AGE = [
       'Gasping is not breathing. If all you see is occasional gasps, treat it as not breathing.',
     ],
     callForHelp:
-      'Shout for someone to call 911 and get an AED. If you are completely alone, do two minutes of CPR first, then call, ' +
+      'Shout for someone to call 911 and get an AED. If you are completely alone, do 2 minutes of CPR first, then call, ' +
       'because a baby in arrest almost always needs air before anything else.',
     steps: [
       'Put them on their back on a firm flat surface. The floor is better than a bed.',
@@ -77,7 +77,7 @@ export const CPR_BY_AGE = [
       'Then give 2 breaths. Cover their nose and mouth with your mouth, or pinch the nose and seal over the mouth, and puff just enough to make the chest rise. Small puffs. Their lungs are tiny.',
       'Keep going 30 and 2 until they respond or help takes over. If someone else is helping and you are both trained, switch to 15 and 2.',
     ],
-    technique: 'Two thumbs encircling hands, or the heel of one hand.',
+    technique: '2 thumbs encircling hands, or the heel of one hand.',
     depth: 'About 1.5 inches, roughly one third of the chest.',
     rate: '100 to 120 compressions a minute.',
     ratio: '30 compressions to 2 breaths alone, 15 to 2 with a second trained rescuer.',
@@ -95,11 +95,11 @@ export const CPR_BY_AGE = [
       'Gasping is not breathing.',
     ],
     callForHelp:
-      'Shout for someone to call 911 and get an AED. If you are alone with no phone, do two minutes of CPR first, then go and call.',
+      'Shout for someone to call 911 and get an AED. If you are alone with no phone, do 2 minutes of CPR first, then go and call.',
     steps: [
       'Put them on their back on a firm flat surface.',
       'Use the heel of one hand in the center of the chest, on the lower half of the breastbone. Use both hands if they are a bigger child or if one hand is not enough.',
-      'Push down about two inches, which is roughly one third of the depth of their chest.',
+      'Push down about 2 inches, which is roughly one third of the depth of their chest.',
       'Let the chest fully recoil between pushes.',
       'Do 30 compressions at 100 to 120 a minute.',
       'Then give 2 breaths. Tilt the head back, lift the chin, pinch the nose, and blow until you see the chest rise.',
@@ -124,13 +124,13 @@ export const CPR_BY_AGE = [
     steps: [
       'Heel of one hand in the center of the chest, the other hand on top, fingers interlocked.',
       'Arms straight, shoulders directly over your hands, push with your body weight rather than your arms.',
-      'Push down at least two inches, and no more than about two and a half.',
+      'Push down at least 2 inches, and no more than about 2 and a half.',
       'Let the chest come fully back up each time.',
       '30 compressions to 2 breaths, at 100 to 120 a minute.',
       'If you are untrained or unwilling to give breaths, do compressions only and do not stop. Hands only CPR works for a teenager or adult who collapsed suddenly.',
       'Use an AED the moment it arrives and follow its spoken instructions.',
     ],
-    technique: 'Two hands, heel of one hand with the other on top.',
+    technique: '2 hands, heel of one hand with the other on top.',
     depth: 'At least 2 inches.',
     rate: '100 to 120 compressions a minute.',
     ratio: '30 compressions to 2 breaths, or compressions only if untrained.',
@@ -164,7 +164,7 @@ export const CHOKING_BY_AGE = [
       'Sit down and lay them face down along your forearm, head lower than their body, supporting the jaw and head with your hand. Rest your arm on your thigh.',
       'Give 5 firm back blows with the heel of your other hand, between the shoulder blades.',
       'Turn them face up along your other forearm, still head down.',
-      'Give 5 chest thrusts. Two fingers in the center of the chest just below the nipple line, pushing about one and a half inches, sharper and slower than compressions.',
+      'Give 5 chest thrusts. 2 fingers in the center of the chest just below the nipple line, pushing about one and a half inches, sharper and slower than compressions.',
       'Look in the mouth. Remove the object only if you can see it clearly.',
       'Repeat 5 back blows and 5 chest thrusts until it clears or they go unresponsive.',
       'If they go unresponsive, start CPR. Look in the mouth each time before you give breaths.',
@@ -209,7 +209,7 @@ export const ANTI_CHOKING_DEVICES = {
   whatTheyAre:
     'Handheld suction devices such as LifeVac and Dechoker. You put a mask over the mouth and nose and ' +
     'pull, and the suction is meant to lift the object out the way a hard cough would. They cost around ' +
-    'fifty to seventy dollars and they do not expire quickly.',
+    '50 to 70 dollars and they do not expire quickly.',
   theOneRule:
     'Back blows and thrusts first, every time. The device is what you try when those have failed and ' +
     'someone is already calling 911, not instead of them. Every second spent opening a box is a second ' +
@@ -221,7 +221,7 @@ export const ANTI_CHOKING_DEVICES = {
     'The American Academy of Pediatrics has no position on them either way.',
   ],
   whatTheResearchShows: [
-    'A 2025 systematic review and meta analysis of six studies covering 789 cases found high success rates, with LifeVac around 98 percent and abdominal thrusts around 71 percent.',
+    'A 2025 systematic review and meta analysis of 6 studies covering 789 cases found high success rates, with LifeVac around 98 percent and abdominal thrusts around 71 percent.',
     'The same review flagged high heterogeneity and probable publication bias, and concluded plainly that comparative effectiveness remains unproven and traditional techniques should remain the priority.',
     'A lot of the underlying case data comes from registries run by the manufacturers, which is not the same thing as independent evidence.',
     'A 2023 cadaver study found the device failed to remove cashews or whole grapes, which are two of the most common things a small child actually chokes on, and caused some tissue swelling.',
@@ -229,7 +229,7 @@ export const ANTI_CHOKING_DEVICES = {
   soShouldYouBuyOne: [
     'It is a reasonable thing to own. Plenty of thoughtful parents keep one, and there are documented cases of them working after back blows and thrusts did not.',
     'It is not a substitute for knowing what to do, and buying one instead of taking a class is the wrong trade.',
-    'If you get one, open the box now. Practice assembling it in the dark, and put it somewhere you can reach in five seconds, not in a cupboard behind the pots.',
+    'If you get one, open the box now. Practice assembling it in the dark, and put it somewhere you can reach in 5 seconds, not in a cupboard behind the pots.',
     'Tell every adult who watches your child that it exists, where it is, and that it comes second.',
     'If money is tight, spend it on the class before the device. The class is the part with the evidence behind it.',
   ],

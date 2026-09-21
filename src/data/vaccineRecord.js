@@ -125,7 +125,7 @@ export const VAX_SERIES = [
   {
     id: 'flu', label: 'Flu', long: 'Influenza', seasonal: true,
     protects: 'Whatever flu is going round this winter. It changes every year, which is why this one does too.',
-    note: 'From 6 months, once a year. The first year a child has it they need two doses about a month apart, and after that it is one.',
+    note: 'From 6 months, once a year. The first year a child has it they need 2 doses about a month apart, and after that it is one.',
     doses: [],
   },
   {
@@ -150,7 +150,7 @@ export const VAX_SERIES = [
   {
     id: 'hpv', label: 'HPV', long: 'Human papillomavirus',
     protects: 'The virus behind almost all cervical cancer and a large share of throat cancers, in both sexes.',
-    note: 'Two doses if it is started before the thirteenth birthday, three if it is started later. Starting earlier means fewer needles, which is most of why the age is where it is.',
+    note: '2 doses if it is started before the thirteenth birthday, three if it is started later. Starting earlier means fewer needles, which is most of why the age is where it is.',
     doses: [
       { n: 1, at: 138, window: '11 to 12 years' },
       { n: 2, at: 144, window: '6 to 12 months after the first' },
@@ -159,7 +159,7 @@ export const VAX_SERIES = [
   },
   {
     id: 'menacwy', label: 'Meningococcal ACWY', long: 'MenACWY',
-    protects: 'Four kinds of meningococcal disease, which is rare and can kill a healthy teenager in a day.',
+    protects: '4 kinds of meningococcal disease, which is rare and can kill a healthy teenager in a day.',
     doses: [
       { n: 1, at: 138, window: '11 to 12 years' },
       { n: 2, at: 192, window: '16 years' },
@@ -168,7 +168,7 @@ export const VAX_SERIES = [
   {
     id: 'menb', label: 'Meningococcal B', long: 'MenB', sdm: true,
     protects: 'The fifth kind, the one ACWY does not cover. Common in college outbreaks.',
-    note: 'This one has been a decide with your doctor vaccine for years rather than a routine one, and it is usually discussed around sixteen.',
+    note: 'This one has been a decide with your doctor vaccine for years rather than a routine one, and it is usually discussed around 16.',
     doses: [
       { n: 1, at: 192, window: '16 to 18 years' },
       { n: 2, at: 198, window: 'A few months after the first' },
@@ -200,7 +200,7 @@ export const VAX_RECORD_INTRO =
 export const VAX_RECORD_HOW = {
   title: 'Filling it in',
   items: [
-    'Copy it off the card from the last appointment rather than from memory. Memory reliably merges two visits into one.',
+    'Copy it off the card from the last appointment rather than from memory. Memory reliably merges 2 visits into one.',
     'If you do not have the dates, your pediatrician has them, and every state has an immunization registry that can send you a full copy.',
     'An approximate date is far better than a blank. Put the month if that is all you have.',
     'If you have decided against one, mark it as not being given. It will read as settled rather than sitting there looking overdue forever.',
@@ -228,7 +228,7 @@ export const VAX_SCHEDULE_SOURCES = [
  * WHY THIS EXISTS, IN HER WORDS: "are all the vaccine check offs by
  * age?"
  *
- * The list above is organised by vaccine, which is how a schedule is
+ * The list above is organized by vaccine, which is how a schedule is
  * printed and is the wrong way round for a parent. Nobody walks out of
  * a pediatric office having had the third dose of four unrelated
  * series. They walk out of the four month visit having had five shots,
@@ -262,9 +262,9 @@ export const VAX_VISITS = [
   { id: 'm12', label: 'The 12 month visit', when: '12 to 15 months', from: 13, to: 15.9 },
   { id: 'm15', label: 'The 15 to 18 month visit', when: '15 to 18 months', from: 16, to: 20.9 },
   { id: 'm18', label: 'Between 18 months and 4 years', when: 'The quiet stretch, one dose in it', from: 21, to: 59.9,
-    note: 'Almost nothing is due in these years. The one to finish is the second hepatitis A, at least six months after the first.' },
+    note: 'Almost nothing is due in these years. The one to finish is the second hepatitis A, at least 6 months after the first.' },
   { id: 'y4', label: 'Before they start school', when: '4 to 6 years', from: 60, to: 137.9,
-    note: 'The big one. Four boosters together, and most states want them on the form before kindergarten.' },
+    note: 'The big one. 4 boosters together, and most states want them on the form before kindergarten.' },
   { id: 'y11', label: 'The 11 to 12 year visit', when: '11 to 12 years', from: 138, to: 143.9 },
   { id: 'y12', label: 'Between 12 and 16 years', when: 'The follow up doses', from: 144, to: 191.9,
     note: 'The second HPV dose comes 6 to 12 months after the first. A series started at 15 or older needs a third.' },

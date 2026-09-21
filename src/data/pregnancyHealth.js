@@ -127,7 +127,7 @@ export const INFECTIONS = [
       'cold sores, say so early in pregnancy so it can be planned for.',
     ifYouHaveIt: [
       'If you have a history of genital herpes, ACOG suggests suppressive antiviral medication can be offered from 36 weeks, which reduces outbreaks at delivery.',
-      'A cesarean is recommended if there are active lesions or warning symptoms when labour starts.',
+      'A cesarean is recommended if there are active lesions or warning symptoms when labor starts.',
       'A cesarean is not recommended just because you have a history of HSV with nothing active.',
       'A first infection in the third trimester usually means a referral to maternal fetal medicine or infectious disease.',
     ],
@@ -148,7 +148,7 @@ export const INFECTIONS = [
     headline: 'Cases have risen more than tenfold, and it is completely treatable when caught',
     whyItMatters:
       'Congenital syphilis in the United States reached 3,882 cases in 2023, including 279 stillbirths ' +
-      'and infant deaths, the highest in more than thirty years. Untreated, it causes stillbirth, ' +
+      'and infant deaths, the highest in more than 30 years. Untreated, it causes stillbirth, ' +
       'premature birth, and permanent damage to bones, vision and hearing. Treated in pregnancy, it is ' +
       'usually preventable entirely. This is one of the clearest cases in medicine where a test changes ' +
       'an outcome.',
@@ -182,7 +182,7 @@ export const INFECTIONS = [
     id: 'gbs',
     label: 'Group B strep',
     priority: 88,
-    headline: 'Routine, common, and handled with antibiotics during labour',
+    headline: 'Routine, common, and handled with antibiotics during labor',
     whyItMatters:
       'Group B strep is bacteria that lives harmlessly in the body of roughly a quarter of people. It ' +
       'matters only because it can be passed to a baby during delivery, where it can cause serious ' +
@@ -193,13 +193,13 @@ export const INFECTIONS = [
     ],
     prevention: [
       'Screening late in pregnancy, usually around 36 to 37 weeks, because status can change.',
-      'If positive, antibiotics through an IV during labour, not before, since the aim is to protect the baby at delivery.',
+      'If positive, antibiotics through an IV during labor, not before, since the aim is to protect the baby at delivery.',
     ],
     testing: 'A swab, late in pregnancy. Simple, quick, and routine.',
     ifYouHaveIt: [
-      'Tell whoever is caring for you in labour that you are GBS positive, especially if you arrive somewhere unexpected.',
-      'Antibiotics work best given several hours before delivery, which is one reason to call when labour starts rather than waiting.',
-      'If you are having a planned cesarean without labour or broken waters, antibiotics for GBS are usually not needed.',
+      'Tell whoever is caring for you in labor that you are GBS positive, especially if you arrive somewhere unexpected.',
+      'Antibiotics work best given several hours before delivery, which is one reason to call when labor starts rather than waiting.',
+      'If you are having a planned cesarean without labor or broken waters, antibiotics for GBS are usually not needed.',
     ],
     askYourProvider: [
       'When will I be screened for group B strep, and what happens if I am positive?',
@@ -228,7 +228,7 @@ export const INFECTIONS = [
       'Avoid refrigerated smoked seafood such as lox, unless it is cooked into something.',
       'Avoid raw or undercooked meat, poultry, fish, sushi and ceviche.',
       'Avoid raw sprouts, unpasteurized juice or cider, raw cookie dough and homemade eggnog.',
-      'Refrigerate cut melon within two hours and wash all produce.',
+      'Refrigerate cut melon within 2 hours and wash all produce.',
     ],
     testing: 'No routine screening. If you develop fever and body aches after a suspect food, tell your provider you are pregnant and mention listeria specifically.',
     askYourProvider: [

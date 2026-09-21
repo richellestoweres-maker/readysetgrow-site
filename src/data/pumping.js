@@ -58,7 +58,7 @@ export const FLANGE_FITTING = {
     'Measure the nipple only, straight across at its widest point, which is usually the base. Do not include any of the areola, the darker circle around it.',
     'Measure in millimeters. A ruler works. Many pump companies also send a printable measuring card.',
     'Add 2 to 4mm to your measurement. That is your likely flange size.',
-    'Measure both sides. It is very common for them to be different sizes, and it is fine to use two different flanges.',
+    'Measure both sides. It is very common for them to be different sizes, and it is fine to use 2 different flanges.',
   ],
   example:
     'If you measure 17mm, you are likely looking at a 19mm to 21mm flange, not the 24mm that came in the box.',
@@ -84,13 +84,13 @@ export const FLANGE_FITTING = {
   ],
   keepChecking:
     'Your size changes. Most people size down at least once in the first several months, and swelling in ' +
-    'the first two weeks postpartum can make you temporarily larger. If pumping suddenly starts hurting, or ' +
+    'the first 2 weeks postpartum can make you temporarily larger. If pumping suddenly starts hurting, or ' +
     'output drops for no reason, re measure before you assume anything about your supply.',
   inserts:
     'If you are between sizes, or you need to go smaller than the smallest flange your pump sells, silicone ' +
     'inserts drop a flange down by a few millimeters and are cheap. They are a normal solution, not a hack.',
   askForHelp:
-    'An IBCLC will size you in about five minutes and watch you pump. If pumping hurts and adjusting the ' +
+    'An IBCLC will size you in about 5 minutes and watch you pump. If pumping hurts and adjusting the ' +
     'size has not fixed it, that is a reason to be seen, not a reason to push through.',
   sources: [
     {
@@ -116,7 +116,7 @@ export const PUMP_SETTINGS = {
   evidence: 'established',
   headline: 'Higher suction is not more milk',
   intro:
-    'Most double electric pumps have two modes and two dials, and most people are never shown how to use ' +
+    'Most double electric pumps have 2 modes and 2 dials, and most people are never shown how to use ' +
     'them. Turning everything to maximum is the most common mistake and it usually reduces output while ' +
     'causing damage.',
   modes: [
@@ -128,7 +128,7 @@ export const PUMP_SETTINGS = {
     {
       name: 'Expression mode',
       what: 'Slower, deeper cycles that mimic how a baby drinks once milk is flowing.',
-      how: 'Stay here while milk is actively flowing. If flow stops for a minute or two, switch back to letdown mode to trigger another one. Most people get two or three letdowns per session.',
+      how: 'Stay here while milk is actively flowing. If flow stops for a minute or two, switch back to letdown mode to trigger another one. Most people get 2 or 3 letdowns per session.',
     },
   ],
   suctionRule:
@@ -202,8 +202,8 @@ export const PUMPING_GOALS = [
     priority: 94,
     who: 'You are feeding directly when you are together, and pumping while you are apart.',
     principle:
-      'Match the pump to the feeds you miss. If your baby eats three times while you are gone, pump three ' +
-      'times. Trying to fit four feeds worth into two sessions is what causes supply to slide.',
+      'Match the pump to the feeds you miss. If your baby eats 3 times while you are gone, pump 3 ' +
+      'times. Trying to fit 4 feeds worth into 2 sessions is what causes supply to slide.',
     guidance: [
       'Start practicing about 2 weeks before you go back, so bottles are familiar and so you have a small buffer.',
       'You need far less of a freezer stash than the internet suggests. Enough for the first few days is plenty, because what you pump today feeds your baby tomorrow.',
@@ -269,7 +269,7 @@ export const PUMPING_GOALS = [
       'learning a trick, it is protecting your body while you run a supply above what one baby needs.',
     guidance: [
       'Add sessions rather than lengthening them. Frequency drives supply far more than duration does.',
-      'Power pumping once a day for a week is the usual way to push a step change. Sixty minutes, broken into pump, rest, pump, rest, pump.',
+      'Power pumping once a day for a week is the usual way to push a step change. 60 minutes, broken into pump, rest, pump, rest, pump.',
       'Expect oversupply to come with engorgement, leaking, clogs and a higher mastitis risk. That is the cost of the goal, and it is manageable rather than a reason to stop.',
       'Keep a session on the clock even when you are full. Skipping to relieve fullness is what turns a full breast into a clogged one.',
       'Learn what early mastitis feels like, and treat a clog quickly. A wedge of heat and hard massage is out of date guidance. Current advice is ice, gentle lymphatic stroking toward the collarbone and armpit, ibuprofen, and no aggressive massage.',
@@ -293,7 +293,7 @@ export const PUMPING_GOALS = [
       'If you are here because your baby died, first: your milk coming in is not your body being cruel to ' +
       'you, and you get to decide what happens next. There is no right answer. Some people want it to stop ' +
       'as fast as possible. Some pump for a while and wean gently. Some donate, and describe it as the one ' +
-      'thing in an unbearable stretch that felt like it meant something. Some make keepsake jewellery from a ' +
+      'thing in an unbearable stretch that felt like it meant something. Some make keepsake jewelry from a ' +
       'small amount. All of those are whole, reasonable choices, and nobody gets to rank them for you. ' +
       'Most milk banks have bereavement donation programs with their own materials and support, and it is ' +
       'worth saying on the phone that this is why you are calling. Whichever way you go, stopping gradually ' +
@@ -333,7 +333,7 @@ export const PUMPING_GOALS = [
       { time: 'Then', note: 'Pump for 15 minutes' },
     ],
     reassurance:
-      'If you are triple feeding, you are working three jobs at once around the clock. Anyone who tells you ' +
+      'If you are triple feeding, you are working 3 jobs at once around the clock. Anyone who tells you ' +
       'to just relax has not done it. Get an IBCLC involved, and set an end date you revisit together.',
   },
   {
@@ -478,7 +478,7 @@ export const OUTPUT_EXPECTATIONS = {
   variation: [
     'Morning sessions are almost always your largest.',
     'Late afternoon and evening are almost always your smallest. This is normal and daily.',
-    'The two sides are rarely equal. One side out producing the other by a lot is extremely common.',
+    'The 2 sides are rarely equal. One side out producing the other by a lot is extremely common.',
     'Output varies day to day with sleep, stress, illness and your cycle.',
   ],
   theTrap:
@@ -591,7 +591,7 @@ export const HIGH_LIPASE = {
     'the milk is stored, and it changes the smell and taste to something soapy, metallic, or occasionally ' +
     'fishy. The milk is not spoiled. It is not unsafe. Its nutrition is intact.',
   whyItHurts:
-    'People usually find this out after they have built a freezer stash of a hundred ounces or more, when ' +
+    'People usually find this out after they have built a freezer stash of 100 ounces or more, when ' +
     'their baby refuses the first bottle. Discovering that months of pumping might be unusable is genuinely ' +
     'devastating, and it is worth knowing before you get there, not after.',
   testFirst: [

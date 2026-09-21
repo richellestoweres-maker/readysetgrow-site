@@ -219,7 +219,7 @@ export const MILESTONE_CHECKPOINTS = [
       ],
       cognitive: [
         { id: 'm9-cog-1', text: 'Looks for objects when dropped out of sight', tags: ['problemSolving'] },
-        { id: 'm9-cog-2', text: 'Bangs two things together', tags: ['play', 'fineMotor'] },
+        { id: 'm9-cog-2', text: 'Bangs 2 things together', tags: ['play', 'fineMotor'] },
       ],
       movement: [
         { id: 'm9-mov-1', text: 'Gets to a sitting position by themselves', tags: ['grossMotor'] },
@@ -267,14 +267,14 @@ export const MILESTONE_CHECKPOINTS = [
         { id: 'm15-se-5', text: 'Shows you affection with hugs, cuddles, or kisses', tags: ['attachment', 'emotions'] },
       ],
       language: [
-        { id: 'm15-lang-1', text: 'Tries to say one or two words besides mama or dada', tags: ['speech'] },
+        { id: 'm15-lang-1', text: 'Tries to say one or 2 words besides mama or dada', tags: ['speech'] },
         { id: 'm15-lang-2', text: 'Looks at a familiar object when you name it', tags: ['understanding'] },
         { id: 'm15-lang-3', text: 'Follows directions given with both a gesture and words', tags: ['understanding'] },
         { id: 'm15-lang-4', text: 'Points to ask for something or to get help', tags: ['speech', 'social'] },
       ],
       cognitive: [
         { id: 'm15-cog-1', text: 'Tries to use things the right way, like a phone, cup, or book', tags: ['play', 'problemSolving'] },
-        { id: 'm15-cog-2', text: 'Stacks at least two small objects, like blocks', tags: ['fineMotor', 'problemSolving'] },
+        { id: 'm15-cog-2', text: 'Stacks at least 2 small objects, like blocks', tags: ['fineMotor', 'problemSolving'] },
       ],
       movement: [
         { id: 'm15-mov-1', text: 'Takes a few steps on their own', tags: ['grossMotor'] },
@@ -295,7 +295,7 @@ export const MILESTONE_CHECKPOINTS = [
         { id: 'm18-se-5', text: 'Helps you dress them by pushing an arm through a sleeve or lifting a foot', tags: ['selfCare'] },
       ],
       language: [
-        { id: 'm18-lang-1', text: 'Tries to say three or more words besides mama or dada', tags: ['speech'] },
+        { id: 'm18-lang-1', text: 'Tries to say 3 or more words besides mama or dada', tags: ['speech'] },
         { id: 'm18-lang-2', text: 'Follows one step directions without any gestures', tags: ['understanding'] },
       ],
       cognitive: [
@@ -323,8 +323,8 @@ export const MILESTONE_CHECKPOINTS = [
       ],
       language: [
         { id: 'm24-lang-1', text: 'Points to things in a book when you ask, like where is the bear', tags: ['understanding', 'literacy'] },
-        { id: 'm24-lang-2', text: 'Says at least two words together, like more milk', tags: ['speech'] },
-        { id: 'm24-lang-3', text: 'Points to at least two body parts when you ask', tags: ['understanding'] },
+        { id: 'm24-lang-2', text: 'Says at least 2 words together, like more milk', tags: ['speech'] },
+        { id: 'm24-lang-3', text: 'Points to at least 2 body parts when you ask', tags: ['understanding'] },
         { id: 'm24-lang-4', text: 'Uses more gestures than just waving and pointing, like blowing a kiss or nodding', tags: ['social'] },
       ],
       cognitive: [
@@ -352,14 +352,14 @@ export const MILESTONE_CHECKPOINTS = [
       ],
       language: [
         { id: 'm30-lang-1', text: 'Says about 50 words', tags: ['speech'] },
-        { id: 'm30-lang-2', text: 'Says two or more words together with one action word, like doggie run', tags: ['speech'] },
+        { id: 'm30-lang-2', text: 'Says 2 or more words together with one action word, like doggie run', tags: ['speech'] },
         { id: 'm30-lang-3', text: 'Names things in a book when you point and ask what is this', tags: ['speech', 'literacy'] },
         { id: 'm30-lang-4', text: 'Says words like I, me, or we', tags: ['speech'] },
       ],
       cognitive: [
         { id: 'm30-cog-1', text: 'Uses things to pretend, like feeding a block to a doll as if it were food', tags: ['play'] },
         { id: 'm30-cog-2', text: 'Shows simple problem solving, like standing on a stool to reach something', tags: ['problemSolving'] },
-        { id: 'm30-cog-3', text: 'Follows two step instructions, like put the toy down and close the door', tags: ['understanding'] },
+        { id: 'm30-cog-3', text: 'Follows 2 step instructions, like put the toy down and close the door', tags: ['understanding'] },
         { id: 'm30-cog-4', text: 'Shows they know at least one color', tags: ['problemSolving'] },
       ],
       movement: [
@@ -380,7 +380,7 @@ export const MILESTONE_CHECKPOINTS = [
         { id: 'm36-se-2', text: 'Notices other children and joins them to play', tags: ['social', 'play'] },
       ],
       language: [
-        { id: 'm36-lang-1', text: 'Talks with you in conversation using at least two back and forth exchanges', tags: ['speech', 'social'] },
+        { id: 'm36-lang-1', text: 'Talks with you in conversation using at least 2 back and forth exchanges', tags: ['speech', 'social'] },
         { id: 'm36-lang-2', text: 'Asks who, what, where, or why questions', tags: ['speech'] },
         { id: 'm36-lang-3', text: 'Says what action is happening in a picture or book when asked', tags: ['speech', 'literacy'] },
         { id: 'm36-lang-4', text: 'Says their first name when asked', tags: ['speech'] },
@@ -411,7 +411,7 @@ export const MILESTONE_CHECKPOINTS = [
         { id: 'm48-se-6', text: 'Changes their behavior based on where they are', tags: ['social', 'understanding'] },
       ],
       language: [
-        { id: 'm48-lang-1', text: 'Says sentences with four or more words', tags: ['speech'] },
+        { id: 'm48-lang-1', text: 'Says sentences with 4 or more words', tags: ['speech'] },
         { id: 'm48-lang-2', text: 'Says some words from a song, story, or nursery rhyme', tags: ['speech', 'literacy'] },
         { id: 'm48-lang-3', text: 'Talks about at least one thing that happened during their day', tags: ['speech'] },
         { id: 'm48-lang-4', text: 'Answers simple questions, like what is a coat for', tags: ['understanding'] },
@@ -419,7 +419,7 @@ export const MILESTONE_CHECKPOINTS = [
       cognitive: [
         { id: 'm48-cog-1', text: 'Names a few colors of items', tags: ['problemSolving'] },
         { id: 'm48-cog-2', text: 'Tells what comes next in a well known story', tags: ['literacy', 'problemSolving'] },
-        { id: 'm48-cog-3', text: 'Draws a person with three or more body parts', tags: ['fineMotor'] },
+        { id: 'm48-cog-3', text: 'Draws a person with 3 or more body parts', tags: ['fineMotor'] },
       ],
       movement: [
         { id: 'm48-mov-1', text: 'Catches a large ball most of the time', tags: ['grossMotor'] },
@@ -440,9 +440,9 @@ export const MILESTONE_CHECKPOINTS = [
         { id: 'm60-se-3', text: 'Does simple chores at home, like matching socks or clearing the table', tags: ['selfCare'] },
       ],
       language: [
-        { id: 'm60-lang-1', text: 'Tells a story they heard or made up with at least two events', tags: ['speech', 'literacy'] },
+        { id: 'm60-lang-1', text: 'Tells a story they heard or made up with at least 2 events', tags: ['speech', 'literacy'] },
         { id: 'm60-lang-2', text: 'Answers simple questions about a book or story after you read it', tags: ['understanding', 'literacy'] },
-        { id: 'm60-lang-3', text: 'Keeps a conversation going with more than three back and forth exchanges', tags: ['speech', 'social'] },
+        { id: 'm60-lang-3', text: 'Keeps a conversation going with more than 3 back and forth exchanges', tags: ['speech', 'social'] },
         { id: 'm60-lang-4', text: 'Uses or recognizes simple rhymes', tags: ['literacy'] },
       ],
       cognitive: [

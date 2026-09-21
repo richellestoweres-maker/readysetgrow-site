@@ -8,7 +8,7 @@
  *   "Use protection even if you're on birth control, because
  *   pregnancy is the least of your worries."
  *
- * THE ORGANISING IDEA
+ * THE ORGANIZING IDEA
  * Most teenagers are taught that the risk of sex is a baby. The
  * risk nobody explains well is the infection you do not notice. Many
  * of the common ones cause no symptoms at all, and one of them, left
@@ -95,8 +95,8 @@ export const SEXED_INTRO = [
 export const WHY_SILENT = {
   title: 'Why silent matters more than serious',
   body: [
-    'Chlamydia is the most commonly reported infection in both countries. Up to seven in ten women '
-    + 'and five in ten men who have it notice nothing at all. People aged fifteen to twenty four '
+    'Chlamydia is the most commonly reported infection in both countries. Up to 7 in 10 women '
+    + 'and 5 in 10 men who have it notice nothing at all. People aged 15 to 24 '
     + 'account for nearly half of all new sexually transmitted infections in the United States, and '
     + 'more than half of reported chlamydia.',
     'Nothing hurts, so nobody gets tested, so it stays. And while it stays, in some women, it '
@@ -107,12 +107,12 @@ export const WHY_SILENT = {
 export const WHY_TUBES = {
   title: 'What can happen, said carefully',
   body: [
-    'Untreated chlamydia or gonorrhoea can spread from the cervix up into the womb and fallopian '
+    'Untreated chlamydia or gonorrhea can spread from the cervix up into the womb and fallopian '
     + 'tubes. That is called pelvic inflammatory disease. The current best estimate is that roughly '
-    + 'one in six untreated chlamydia infections leads to it, with a wide range of uncertainty either '
-    + 'side. The older figure of up to forty percent is now thought to be too high for most young '
+    + '1 in 6 untreated chlamydia infections leads to it, with a wide range of uncertainty either '
+    + 'side. The older figure of up to 40 percent is now thought to be too high for most young '
     + 'women.',
-    'Pelvic inflammatory disease can scar the tubes. About one in eight women who have had it go on '
+    'Pelvic inflammatory disease can scar the tubes. About 1 in 8 women who have had it go on '
     + 'to have difficulty getting pregnant, and the risk rises sharply with each repeat episode and '
     + 'with how severe it was. It also raises the chance that a future pregnancy implants in the tube '
     + 'rather than the womb, which is an emergency.',
@@ -120,7 +120,7 @@ export const WHY_TUBES = {
     + 'symptom free pelvic inflammatory disease may carry a risk to fertility.',
   ],
   hydro: 'One of the ways this shows up is a blocked tube filled with fluid, called a hydrosalpinx. '
-    + 'Previous pelvic infection is the leading recognised cause, though not the only one, and in any '
+    + 'Previous pelvic infection is the leading recognized cause, though not the only one, and in any '
     + 'one woman it usually cannot be proven what caused it. Removing the affected tubes is often '
     + 'recommended before IVF, because the fluid lowers the chance of it working.',
 };
@@ -128,13 +128,13 @@ export const WHY_TUBES = {
 export const WHY_PROPORTION = {
   title: 'In proportion',
   body: 'Most people who get chlamydia will not lose their fertility to it. Out of every thousand '
-    + 'infections in women, modelling suggests roughly five end in fertility damage from blocked '
+    + 'infections in women, modelling suggests roughly 5 end in fertility damage from blocked '
     + 'tubes. But those five were almost all preventable with a urine test and a week of antibiotics, '
     + 'and the risk is concentrated in exactly the people who never knew they had it, or who caught it '
     + 'again.',
-  again: 'Catching it again is common. About one in seven young women treated for chlamydia have it '
+  again: 'Catching it again is common. About 1 in 7 young women treated for chlamydia have it '
     + 'again within a year, usually from a partner who was never treated. That is why both countries '
-    + 'recommend a retest about three months after treatment, and why repeat infections are the ones '
+    + 'recommend a retest about 3 months after treatment, and why repeat infections are the ones '
     + 'that matter most.',
 };
 
@@ -144,8 +144,8 @@ export const WHY_DUAL = {
     'The pill, the implant, the coil and the injection are very good at preventing pregnancy. They '
     + 'do nothing at all against infection. Only a barrier does that.',
     'This is the gap that matters. In an American survey of high school students, teenage girls using '
-    + 'an implant or coil were about sixty percent less likely to also use a condom than girls on the '
-    + 'pill. In another, only about nine percent of sexually active students were using a condom '
+    + 'an implant or coil were about 60 percent less likely to also use a condom than girls on the '
+    + 'pill. In another, only about 9 percent of sexually active students were using a condom '
     + 'together with a more reliable method. The better protected they felt against pregnancy, the '
     + 'less protected they were against everything else.',
   ],
@@ -156,7 +156,7 @@ export const WHY_DUAL = {
 export const WHY_TALK = {
   title: 'Does talking to them actually help',
   body: [
-    'A little, and more than nothing. Pooling fifty two studies of twenty five thousand teenagers, '
+    'A little, and more than nothing. Pooling 52 studies of 25,000 teenagers, '
     + 'talking openly with a parent about sex was associated with safer sex, meaning more condom and '
     + 'contraceptive use. The effect was small, strongest for girls, and strongest when it came from '
     + 'mothers.',
@@ -186,7 +186,7 @@ export const WHY_WHEN = 'There is no right age for the whole conversation, only 
 
    One card each. The field that matters most is silent, which is
    printed on the closed card, because that is the fact that changes
-   behaviour.
+   behavior.
    ================================================================== */
 
 export const STI_LIST = [
@@ -196,26 +196,26 @@ export const STI_LIST = [
     silent: 'Up to 7 in 10 women and 5 in 10 men have no symptoms',
     cure: 'curable',
     spread: 'Vaginal, anal and oral sex. It does not spread through skin contact alone.',
-    test: 'A urine sample or a swab you can take yourself. Test about two weeks after sex.',
-    treat: 'A week of antibiotics, or sometimes a single dose. No sex for seven days afterwards, and '
-      + 'partners need treating too or it comes straight back. Retest at about three months.',
+    test: 'A urine sample or a swab you can take yourself. Test about 2 weeks after sex.',
+    treat: 'A week of antibiotics, or sometimes a single dose. No sex for 7 days afterwards, and '
+      + 'partners need treating too or it comes straight back. Retest at about 3 months.',
     risk: 'In women, pelvic inflammatory disease, damage to the fallopian tubes, ectopic pregnancy '
       + 'and infertility. In men, a painful infection of the testicles and, rarely, reduced '
-      + 'fertility. This is the one the national screening programmes exist for.',
+      + 'fertility. This is the one the national screening programs exist for.',
   },
   {
     id: 'gonorrhoea',
-    name: 'Gonorrhoea',
+    name: 'Gonorrhea',
     silent: 'About half of women notice nothing. Throat and rectal infections are usually silent',
     cure: 'curable',
     spread: 'Vaginal, anal and oral sex, and shared sex toys. Throat infection is common and '
       + 'usually unnoticed.',
-    test: 'A urine sample or swab, including throat and rectal swabs where relevant. Test about two '
+    test: 'A urine sample or swab, including throat and rectal swabs where relevant. Test about 2 '
       + 'weeks after sex.',
-    treat: 'A single antibiotic injection. Two new oral treatments were approved in the United States '
+    treat: 'A single antibiotic injection. 2 new oral treatments were approved in the United States '
       + 'in December 2025. A throat infection needs a follow up test to make sure it has gone.',
     risk: 'The same damage to the tubes as chlamydia. It is also becoming resistant to antibiotics, '
-      + 'and England has recorded eighty eight cases resistant to the main treatment, which is why '
+      + 'and England has recorded 88 cases resistant to the main treatment, which is why '
       + 'catching and treating it properly matters for everyone, not only the person who has it.',
   },
   {
@@ -227,13 +227,13 @@ export const STI_LIST = [
       + 'but cannot remove it, because it does not cover all the skin.',
     test: 'There is no routine test for men or for teenagers, because it is so common in young people '
       + 'and usually clears, so testing would mostly find infections that are about to go by '
-      + 'themselves. Cervical screening starts at twenty one in the US and twenty five in the UK.',
-    treat: 'The virus itself is not treated. About nine in ten infections clear on their own within '
-      + 'two years. What is treated is what it causes: warts, and cell changes caught by screening '
+      + 'themselves. Cervical screening starts at 21 in the US and 25 in the UK.',
+    treat: 'The virus itself is not treated. About 9 in 10 infections clear on their own within '
+      + '2 years. What is treated is what it causes: warts, and cell changes caught by screening '
       + 'before they become cancer.',
-    risk: 'A few types cause cancer. Nearly all cervical cancer, over ninety percent of anal cancer, '
-      + 'and about seventy percent of throat cancer. In the United States HPV now causes more throat '
-      + 'cancer, about sixteen thousand a year, than cervical cancer, about eleven thousand, and most '
+    risk: 'A few types cause cancer. Nearly all cervical cancer, over 90 percent of anal cancer, '
+      + 'and about 70 percent of throat cancer. In the United States HPV now causes more throat '
+      + 'cancer, about 16,000 a year, than cervical cancer, about 11,000, and most '
       + 'of the throat cancers are in men. It spreads through oral sex.',
     boys: 'So this one is as much a conversation for sons as for daughters.',
   },
@@ -247,7 +247,7 @@ export const STI_LIST = [
       + 'does not cover.',
     test: 'A swab from a sore. Blood tests for people without symptoms are not recommended.',
     treat: 'Not curable, but very manageable. Antiviral tablets shorten outbreaks, and taking them '
-      + 'daily cuts outbreaks by seventy to eighty percent and roughly halves the chance of passing it '
+      + 'daily cuts outbreaks by 70 to 80 percent and roughly halves the chance of passing it '
       + 'on.',
     risk: 'Mostly recurring sores, which for many people are mild or rare. The heavier risk is to a '
       + 'newborn if a first infection happens late in pregnancy, which is something to tell the '
@@ -263,13 +263,13 @@ export const STI_LIST = [
     cure: 'curable',
     spread: 'Contact with a sore during vaginal, anal or oral sex. The sore can be somewhere a condom '
       + 'does not cover.',
-    test: 'A blood test. Symptoms appear from about three weeks, and a home test needs about six '
+    test: 'A blood test. Symptoms appear from about 3 weeks, and a home test needs about 6 '
       + 'weeks.',
     treat: 'Usually a penicillin injection. It cures the infection, but damage already done may not '
       + 'reverse, which is why catching it early matters.',
     risk: 'Left for years it can damage the brain, eyes, ears, heart and other organs. Passed to a '
       + 'baby in pregnancy it can cause stillbirth and death. American cases in newborns have risen '
-      + 'twelve years in a row and are nearly seven times what they were a decade ago. England had '
+      + '12 years in a row and are nearly 7 times what they were a decade ago. England had '
       + 'more cases in 2024 than in any year since the 1940s.',
   },
   {
@@ -278,14 +278,14 @@ export const STI_LIST = [
     silent: 'Often no symptoms for years. Only about half of infected Americans aged 13 to 24 know',
     cure: 'managed',
     spread: 'Blood, semen and vaginal or rectal fluids. Not through skin contact.',
-    test: 'A blood or finger prick test. Depending on the test, it can take from about ten days to '
-      + 'three months to turn positive. Everybody aged thirteen to sixty four should be tested at '
+    test: 'A blood or finger prick test. Depending on the test, it can take from about 10 days to '
+      + '3 months to turn positive. Everybody aged 13 to 64 should be tested at '
       + 'least once in the United States.',
     treat: 'Not curable, but daily treatment now gives near normal health. And someone whose '
       + 'treatment keeps the virus undetectable cannot pass it on through sex.',
     risk: 'Untreated, it destroys the immune system. Treated, it is a long term condition.',
     prevent: 'PrEP is a medicine taken before possible exposure to prevent HIV, and it is approved '
-      + 'for adolescents. PEP is an emergency medicine started within seventy two hours after a '
+      + 'for adolescents. PEP is an emergency medicine started within 72 hours after a '
       + 'possible exposure.',
   },
   {
@@ -295,8 +295,8 @@ export const STI_LIST = [
     cure: 'curable',
     spread: 'Mainly vaginal sex. It rarely infects the mouth or anus.',
     test: 'A swab or urine test.',
-    treat: 'An antibiotic, a single dose or a week of tablets. About one in five catch it again within '
-      + 'three months, so women should be retested.',
+    treat: 'An antibiotic, a single dose or a week of tablets. About 1 in 5 catch it again within '
+      + '3 months, so women should be retested.',
     risk: 'Raises the chance of premature birth in pregnancy and of catching HIV.',
   },
   {
@@ -307,7 +307,7 @@ export const STI_LIST = [
     spread: 'Blood, semen and other body fluids, through sex, birth and shared needles. Not through '
       + 'kissing or sharing cups.',
     test: 'A blood test.',
-    treat: 'About ninety five percent of adults clear it completely. Those who do not are managed with '
+    treat: 'About 95 percent of adults clear it completely. Those who do not are managed with '
       + 'medication rather than cured.',
     risk: 'Long term infection can lead to liver disease and liver cancer. There is a vaccine, and '
       + 'most children in both countries have had it, though not all current teenagers were routinely '
@@ -326,7 +326,7 @@ export function stiItem(id) {
   return null;
 }
 
-export const STI_ORAL = 'Oral sex is sex, as far as infections are concerned. Chlamydia, gonorrhoea, '
+export const STI_ORAL = 'Oral sex is sex, as far as infections are concerned. Chlamydia, gonorrhea, '
   + 'syphilis, herpes, HPV and HIV can all pass that way, and a lot of teenagers genuinely believe it '
   + 'does not count. It is worth saying out loud.';
 
@@ -340,15 +340,15 @@ export const STI_MGEN = 'You may also hear about mycoplasma genitalium. Routine 
 export const PROT_CONDOM = {
   title: 'What a condom actually does',
   rows: [
-    { what: 'HIV', how: 'Cuts the risk by about eighty percent when used every time' },
-    { what: 'Chlamydia and gonorrhoea', how: 'Protects well, on good observational evidence' },
-    { what: 'HPV', how: 'About seventy percent lower risk in one study of women whose partners used '
+    { what: 'HIV', how: 'Cuts the risk by about 80 percent when used every time' },
+    { what: 'Chlamydia and gonorrhea', how: 'Protects well, on good observational evidence' },
+    { what: 'HPV', how: 'About 70 percent lower risk in one study of women whose partners used '
       + 'them every time' },
-    { what: 'Herpes', how: 'About thirty percent lower risk. Partial, because herpes lives on skin a '
+    { what: 'Herpes', how: 'About 30 percent lower risk. Partial, because herpes lives on skin a '
       + 'condom does not cover' },
     { what: 'Syphilis', how: 'Protects when the sore is on skin the condom covers' },
-    { what: 'Pregnancy', how: 'About thirteen in a hundred in a year of real world use, two in a '
-      + 'hundred when used perfectly' },
+    { what: 'Pregnancy', how: 'About 13 in 100 in a year of real world use, 2 in 100'
+      + ' when used perfectly' },
   ],
   note: 'Latex or polyurethane, not lambskin, which does not stop viruses. For oral sex, a condom or '
     + 'a dental dam, which is a thin square of latex, or a condom cut open into one.',
@@ -369,16 +369,16 @@ export const PROT_COMPARE = {
 export const PROT_TEST = {
   title: 'Getting tested, and how ordinary it is',
   body: [
-    'In both countries, every sexually active young woman under twenty five is advised to test for '
+    'In both countries, every sexually active young woman under 25 is advised to test for '
     + 'chlamydia every year, and after every new partner. In the United States that includes '
-    + 'gonorrhoea. Young men are not routinely screened in the same way, but can and should test '
+    + 'gonorrhea. Young men are not routinely screened in the same way, but can and should test '
     + 'after a new partner or any symptom.',
     'For most teenagers a test is a urine sample, or a swab they take themselves in a toilet. Nobody '
     + 'needs to examine them. HIV and syphilis need a small blood sample, which can be a finger prick.',
   ],
-  uk: 'In the UK, free postal test kits are available to under twenty fives, usually from sixteen, and '
+  uk: 'In the UK, free postal test kits are available to under 20 fives, usually from 16, and '
     + 'NHS sexual health clinics are free and see young people.',
-  us: 'In the United States, a school based health centre, a county health department clinic, a '
+  us: 'In the United States, a school based health center, a county health department clinic, a '
     + 'Title X family planning clinic, Planned Parenthood, or a family doctor. The government’s '
     + 'own locator at gettested.cdc.gov finds free and low cost testing nearby.',
 };
@@ -387,10 +387,10 @@ export const PROT_CONFIDENTIAL = {
   title: 'They can be tested without you, and that is a good thing',
   body: [
     'In every American state and in Washington DC, a teenager can consent to their own STI testing '
-    + 'and treatment without a parent. Eight states set a minimum age, from twelve to fourteen. In '
+    + 'and treatment without a parent. 8 states set a minimum age, from 12 to 14. In '
     + 'some states a doctor is allowed to tell a parent in certain circumstances, and the rules differ, '
     + 'so if it matters, check your own state.',
-    'In the UK, a young person under sixteen can be seen confidentially at a sexual health clinic if '
+    'In the UK, a young person under 16 can be seen confidentially at a sexual health clinic if '
     + 'the clinician believes they understand what is involved, under what are called the Gillick and '
     + 'Fraser principles. The NHS is explicit that the clinic will not tell parents unless there is a '
     + 'serious risk to the young person’s safety.',
@@ -411,23 +411,23 @@ export const PROT_HPV = {
   title: 'The HPV vaccine',
   body: [
     'It prevents the types of HPV that cause most cancers. In Scotland, among women fully vaccinated '
-    + 'at twelve or thirteen, no cases of cervical cancer have been found. In England, cervical cancer '
-    + 'fell by eighty seven percent in women offered it at twelve or thirteen, and no cervical cancer '
-    + 'deaths were recorded in women aged twenty to twenty four between 2020 and 2024. In the United '
-    + 'States, precancers in screened women aged twenty to twenty four fell by seventy nine percent.',
-    'It works best given young, before any exposure, which is why it is offered at eleven or twelve '
+    + 'at 12 or 13, no cases of cervical cancer have been found. In England, cervical cancer '
+    + 'fell by 87 percent in women offered it at 12 or 13, and no cervical cancer '
+    + 'deaths were recorded in women aged 20 to 24 between 2020 and 2024. In the United '
+    + 'States, precancers in screened women aged 20 to 24 fell by 79 percent.',
+    'It works best given young, before any exposure, which is why it is offered at 11 or 12 '
     + 'and can start at nine. It is for boys as well as girls in both countries.',
     'For throat cancer the evidence is still indirect. Vaccinated people have far less of the relevant '
     + 'HPV in their mouths, and the American regulator approved it for preventing head and neck cancers '
     + 'on that basis, with a confirming trial still running.',
   ],
-  uk: 'In the UK, one dose at twelve to thirteen in school, with catch up to the twenty fifth '
+  uk: 'In the UK, one dose at 12 to 13 in school, with catch up to the 20 fifth '
     + 'birthday.',
-  us: 'In the United States, the recommendation in force is routine vaccination at eleven to twelve, '
-    + 'able to start at nine, with two doses if started before fifteen and three after, and catch up '
-    + 'to twenty six. A federal change to one dose announced in January 2026 was paused by a court in '
+  us: 'In the United States, the recommendation in force is routine vaccination at 11 to 12, '
+    + 'able to start at nine, with 2 doses if started before 15 and 3 after, and catch up '
+    + 'to 26. A federal change to one dose announced in January 2026 was paused by a court in '
     + 'March 2026, and the appeal is due to be heard on 6 October 2026. The American Academy of '
-    + 'Pediatrics recommends starting between nine and twelve and currently keeps two doses.',
+    + 'Pediatrics recommends starting between 9 and 12 and currently keeps 2 doses.',
   checked: 'Checked September 2026. The American schedule is expected to change after the appeal, so '
     + 'check with your child’s doctor.',
 };
@@ -448,9 +448,9 @@ export const PREG_INTRO = [
   + 'But the evidence points in one direction about what makes it dangerous, and it is not the '
   + 'pregnancy. It is hiding it.',
   'In a study of American newborns who died in their first day at the hands of their mother, about '
-  + 'three quarters of the pregnancies had been concealed and two thirds of the babies were born at '
-  + 'home with nobody there to help. Pregnant teenagers who had no antenatal care at all were about '
-  + 'seven times more likely to give birth prematurely than those who had it.',
+  + '3 quarters of the pregnancies had been concealed and 2 thirds of the babies were born at '
+  + 'home with nobody there to help. Pregnant teenagers who had no prenatal care at all were about '
+  + '7 times more likely to give birth prematurely than those who had it.',
 ];
 
 /* For a son, the pregnancy is his partner's, and the useful message is
@@ -469,7 +469,7 @@ export const PREG_SON = {
 export const PREG_WHY_HIDE = {
   title: 'Why they hide it',
   body: 'When pregnant teenagers are asked why they delayed telling anyone or getting care, the same '
-    + 'things come up: not recognising the signs, not wanting it to be true, and fear of how their '
+    + 'things come up: not recognizing the signs, not wanting it to be true, and fear of how their '
     + 'parents would react. Some wait well into the second trimester. The studies are small, but that '
     + 'last reason appears in nearly all of them.',
   so: 'So the most protective thing a parent can do happens years before it is needed. It is saying, '
@@ -487,12 +487,12 @@ export const PREG_SAY = [
 export const PREG_CARE = {
   title: 'Care starts as soon as she tells someone',
   body: [
-    'In most of the United States, thirty seven states and Washington DC, a pregnant minor can consent '
-    + 'to her own antenatal care without a parent. In the UK, a young person under sixteen can consent '
+    'In most of the United States, 37 states and Washington DC, a pregnant minor can consent '
+    + 'to her own prenatal care without a parent. In the UK, a young person under 16 can consent '
     + 'if she understands what is involved, and confidential advice is available from a GP, a practice '
     + 'nurse, a sexual health clinic or NHS 111.',
     'Early care matters for her as much as for the baby. It is where high blood pressure, infection and '
-    + 'anaemia get caught, and where she finds out how far along she is, which shapes every other '
+    + 'anemia get caught, and where she finds out how far along she is, which shapes every other '
     + 'decision.',
   ],
 };
@@ -505,7 +505,7 @@ export const PREG_OPTIONS = {
   us: 'In the United States, abortion law varies by state and has changed a great deal since 2022, and '
     + 'many states have rules about parental involvement for minors. Current state by state information '
     + 'is kept up to date by the Guttmacher Institute.',
-  uk: 'In England, Scotland and Wales, abortion is legal up to twenty four weeks, and the same '
+  uk: 'In England, Scotland and Wales, abortion is legal up to 24 weeks, and the same '
     + 'principles about a young person’s ability to consent apply.',
   adult: 'Whatever she decides, the research on young mothers is consistent that having a trusted '
     + 'adult involved helps. If that cannot be you, helping her find someone who can is its own kind of '
@@ -517,7 +517,7 @@ export const PREG_HAVEN = {
   us: 'Every American state has a Safe Haven law. A newborn can be handed over safely at a hospital, '
     + 'and in most states a fire station or police station, and in some states a secure baby box. '
     + 'Usually no name has to be given, and a parent who follows their state’s rules will not be '
-    + 'prosecuted. The age limit for the baby varies by state, from seventy two hours to thirty days or '
+    + 'prosecuted. The age limit for the baby varies by state, from 72 hours to 30 days or '
     + 'more.',
   line: 'The National Safe Haven Alliance runs a confidential line, day and night.',
   phone: '1-888-510-2229',
@@ -539,10 +539,10 @@ export const MORE_READY = {
   title: 'The emotional side, which nobody tests them on',
   body: [
     'A large British study asked young people about their first time. Just under half of young women '
-    + 'and over a quarter of young men said it had not been the right time. Almost one in five young '
+    + 'and over a quarter of young men said it had not been the right time. Almost 1 in 5 young '
     + 'women said they and their partner had not been equally willing.',
-    'In an American study of teenagers who started having sex during the study, sixty one percent of '
-    + 'girls and thirty nine percent of boys said they wished they had waited longer.',
+    'In an American study of teenagers who started having sex during the study, 61 percent of '
+    + 'girls and 39 percent of boys said they wished they had waited longer.',
   ],
   so: 'None of that is a reason for shame. It is a reason to talk about readiness as its own thing, '
     + 'separate from protection: whether they want to, whether it is their own decision rather than '
@@ -552,8 +552,8 @@ export const MORE_READY = {
 export const MORE_PORN = {
   title: 'Pornography, which is teaching them whether you do or not',
   body: [
-    'In an American survey of teenagers aged thirteen to seventeen, seventy three percent had seen '
-    + 'pornography online, most often for the first time at about twelve, and more than half had come '
+    'In an American survey of teenagers aged 13 to 17, 73 percent had seen '
+    + 'pornography online, most often for the first time at about 12, and more than half had come '
     + 'across it by accident. More than a quarter thought it showed how most people actually have sex.',
     'In England, almost half of young adults surveyed said girls expect sex to involve physical '
     + 'aggression. Researchers link heavy early exposure with more aggressive attitudes, though that '

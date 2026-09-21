@@ -42,7 +42,7 @@
  *
  * ON WHAT IS STATED AS PROVEN
  * The research on how a parent should respond is correlational. It
- * shows that blame, disbelief, minimising, taking over the decisions
+ * shows that blame, disbelief, minimizing, taking over the decisions
  * and distancing travel with worse outcomes. It does not prove the
  * reaction causes them, and it is mostly drawn from adults rather
  * than teenagers telling a parent. The advice is sound and it is
@@ -72,8 +72,8 @@ export const CON_TABS = [
 export const TOLD_HEAD = 'Read this part first. The rest can wait.';
 
 export const TOLD_FIRST = {
-  title: 'The first thirty seconds',
-  intro: 'What you say now is what they will remember about this for the rest of their life. Three '
+  title: 'The first 30 seconds',
+  intro: 'What you say now is what they will remember about this for the rest of their life. 3 '
     + 'sentences, in this order, before anything else.',
   lines: [
     'I believe you.',
@@ -86,14 +86,14 @@ export const TOLD_FIRST = {
 };
 
 export const TOLD_DONT = {
-  title: 'The five things not to say',
+  title: 'The 5 things not to say',
   intro: 'These are the reactions that show up in the research alongside worse outcomes afterwards. '
     + 'Every one of them is something a frightened parent says out of love.',
   items: [
     'Why did you not fight, or scream, or leave. Freezing is the usual response, not the rare one, '
     + 'and it is involuntary. This question tells a child it was their fault.',
     'What were you wearing, how much did you drink, why were you there. However you mean it, it '
-    + 'lands as blame, and it is the reason two thirds of children tell nobody.',
+    + 'lands as blame, and it is the reason 2 thirds of children tell nobody.',
     'Why did you not tell me sooner. They are telling you now. That is the hard part and they have '
     + 'just done it.',
     'Right, here is what we are going to do. Taking the decisions away is its own harm. Something '
@@ -109,7 +109,7 @@ export const TOLD_DONT = {
    parents do not know exists. Everything else on this screen can wait
    until the morning. These cannot. */
 export const TOLD_CLOCKS = {
-  title: 'Two things have a clock on them',
+  title: '2 things have a clock on them',
   intro: 'Almost nothing about this has to be decided tonight. These two do, and most parents have '
     + 'never been told they exist.',
   items: [
@@ -126,21 +126,21 @@ export const TOLD_CLOCKS = {
 export const TOLD_EC = {
   title: 'Emergency contraception, plainly',
   intro: 'There is more than one and they are not the same. Which one matters more than most people '
-    + 'realise, and a pharmacist will not always volunteer the difference.',
+    + 'realize, and a pharmacist will not always volunteer the difference.',
   options: [
     { name: 'Plan B and its generics, levonorgestrel',
-      window: 'Labelled for 72 hours. Works best in the first 24.',
+      window: 'Labeled for 72 hours. Works best in the first 24.',
       how: 'Over the counter, no prescription, no age limit, no identification needed. Anybody of '
         + 'any age can buy it, including your child, including you for your child. Usually 10 to 50 '
         + 'dollars, and the generics are the same medicine.',
       note: 'Often locked in a cabinet or behind the counter, which costs time. Ask at the counter '
         + 'rather than hunting the shelves.' },
     { name: 'ella, ulipristal',
-      window: 'Works for the full 120 hours, five days',
+      window: 'Works for the full 120 hours, 5 days',
       how: 'Needs a prescription, at any age, which is the main obstacle. A telehealth appointment '
         + 'can often write one the same day.',
       note: 'The important difference: levonorgestrel fades as the hours pass and ella does not. '
-        + 'After the first day, ella is the better option, and after three days it is clearly better.' },
+        + 'After the first day, ella is the better option, and after 3 days it is clearly better.' },
     { name: 'A copper or hormonal IUD',
       window: 'Up to 120 hours',
       how: 'Needs a clinician to place it, so it is the highest effort option.',
@@ -150,7 +150,7 @@ export const TOLD_EC = {
   ],
   weight: 'One thing nobody tells you. Levonorgestrel works less well at higher body weight. At a '
     + 'BMI over 25 the pregnancy rate is around one and a half times higher, and over 30 it is more '
-    + 'than three times. American regulators have not put a warning on the label because they judged '
+    + 'than 3 times. American regulators have not put a warning on the label because they judged '
     + 'the data inconclusive, but professional guidance is to use ella or an IUD instead above that '
     + 'point. Nobody should ever be refused Plan B over their weight, it is still worth taking, and '
     + 'it is worth asking for one of the others as well.',
@@ -166,8 +166,8 @@ export const TOLD_EXAM = {
     + 'anybody talks to the police.',
   ],
   window: 'Almost every page on the internet says 72 hours. Do not use that number to decide you are '
-    + 'too late. Current best practice in many places collects evidence up to seven days, and some go '
-    + 'to ten. Go as soon as you can, because sooner is better, and if it has already been four days, '
+    + 'too late. Current best practice in many places collects evidence up to 7 days, and some go '
+    + 'to 10. Go as soon as you can, because sooner is better, and if it has already been 4 days, '
     + 'call anyway and ask rather than deciding for yourself that the window has closed.',
   preserve: 'Ideally, do not shower, change clothes, brush hair or use the bathroom first, and put '
     + 'the clothes in a paper bag rather than plastic. If they already showered, that does not end it '
@@ -177,7 +177,7 @@ export const TOLD_EXAM = {
 export const TOLD_REPORT = {
   title: 'What will happen about the police, honestly',
   body: [
-    'If your child is under eighteen and you take them to a hospital or a doctor and say what '
+    'If your child is under 18 and you take them to a hospital or a doctor and say what '
     + 'happened, expect a report to be made. Medical staff are mandated reporters in every state, '
     + 'and in many places it is not optional and you will not be asked to agree to it.',
     'That is worth knowing in the car rather than discovering in a waiting room, because a young '
@@ -212,8 +212,8 @@ export const TOLD_AFTER = {
     + 'much as the first.',
     'Let them keep control of who knows. Telling somebody else without asking is its own betrayal.',
     'Watch sleep, school, eating and friendships rather than asking how they are every day.',
-    'There are follow up appointments that matter. Repeat testing at one to two weeks, and blood '
-    + 'tests at six weeks and three months. Put them in the calendar.',
+    'There are follow up appointments that matter. Repeat testing at 1 to 2 weeks, and blood '
+    + 'tests at 6 weeks and 3 months. Put them in the calendar.',
     'Offer a therapist without making it a condition. Somebody who works with this specifically, not '
     + 'just anybody.',
     'Look after yourself somewhere they cannot see, because a parent falling apart in front of them '
@@ -227,7 +227,7 @@ export const TOLD_LINES = [
       + 'you through what happens in your state. Chat at rainn.org, or text HOPE to 64673.',
     url: 'https://rainn.org/' },
   { name: 'Childhelp National Child Abuse Hotline', contact: '1-800-422-4453',
-    detail: 'Counsellors, 24 hours, 170 languages, and explicitly for parents. You can call before '
+    detail: 'Counselors, 24 hours, 170 languages, and explicitly for parents. You can call before '
       + 'you have decided anything.',
     url: 'https://childhelphotline.org/' },
   { name: 'Love Is Respect, for teenagers', contact: '1-866-331-9474',
@@ -273,15 +273,15 @@ export const WHAT_CAPACITY = {
 export const WHAT_FREEZE = {
   title: 'The part that stops children telling anybody',
   body: [
-    'Freezing is the usual response, not the rare one. In the best known study, of nearly three '
-    + 'hundred women examined after rape, around seven in ten reported significant involuntary '
+    'Freezing is the usual response, not the rare one. In the best known study, of nearly 300'
+    + ' women examined after rape, around 7 in 10 reported significant involuntary '
     + 'freezing during it, and nearly half reported it at the extreme end. It has a name, tonic '
     + 'immobility, it is a reflex, and it is not something anybody chooses.',
     'This matters more than almost anything else on this page. A young person who did not fight, did '
     + 'not shout and did not run concludes that it therefore was not really assault, or that they '
     + 'must have wanted it, or that nobody will believe them. Then they tell nobody.',
   ],
-  say: 'So say it before anything ever happens, out loud, to a twelve year old: if your body freezes '
+  say: 'So say it before anything ever happens, out loud, to a 12 year old: if your body freezes '
     + 'and you cannot move or speak, that is normal, it happens to most people, and it does not mean '
     + 'you agreed to anything. Not fighting is not saying yes.',
 };
@@ -317,7 +317,7 @@ export const WHAT_LAW = {
   title: 'What the law says, and why not to lean on it',
   body: [
     'Worth being honest with a teenager about this rather than letting them find out later. Around '
-    + 'thirteen states have no statutory definition of consent at all. Only a handful spell out in '
+    + '13 states have no statutory definition of consent at all. Only a handful spell out in '
     + 'law that consent can be taken back partway through. Most states define the absence of consent '
     + 'rather than requiring the presence of it, and what counts as too drunk varies enormously from '
     + 'one state line to the next.',
@@ -331,7 +331,7 @@ export const WHAT_WHO = {
   title: 'Who it usually is',
   body: [
     'Not a stranger. For children and teenagers, the person who does it is usually another young '
-    + 'person. In a large national sample, around seven in ten were other juveniles, and for teenage '
+    + 'person. In a large national sample, around 7 in 10 were other juveniles, and for teenage '
     + 'girls it was most often a boyfriend or a male acquaintance.',
     'Which is why a rule about strangers protects almost nobody, and why the conversation has to '
     + 'include the possibility that it is somebody your child likes, somebody you have met, and '
@@ -345,7 +345,7 @@ export const WHAT_WHO = {
 
 export const CON_BY_AGE = [
   {
-    id: 'tiny', label: 'Two to four', from: 18, to: 59,
+    id: 'tiny', label: '2 to 4', from: 18, to: 59,
     head: 'Nothing about sex. Everything about your body being yours.',
     items: [
       'Nobody has to hug or kiss anybody, including grandparents. Offer a wave, a high five, a '
@@ -361,7 +361,7 @@ export const CON_BY_AGE = [
     ],
   },
   {
-    id: 'small', label: 'Five to eight', from: 60, to: 107,
+    id: 'small', label: '5 to 8', from: 60, to: 107,
     head: 'The rules about touch, and the promise.',
     items: [
       'The parts a swimsuit covers are private. Nobody looks at them or touches them, except to keep '
@@ -377,23 +377,23 @@ export const CON_BY_AGE = [
     ],
   },
   {
-    id: 'middle', label: 'Nine to eleven', from: 108, to: 143,
+    id: 'middle', label: '9 to 11', from: 108, to: 143,
     head: 'Both directions, and the first mention that it is usually somebody you know.',
     items: [
       'Say it plainly for the first time: most of the time this is not a stranger. It is somebody '
       + 'you know, and sometimes somebody you like.',
       'Somebody being nice to you does not mean what they are doing is alright, and you are allowed '
-      + 'to feel two things at once about the same person.',
+      + 'to feel 2 things at once about the same person.',
       'You are in charge of your own body and everybody else is in charge of theirs. Both halves, '
       + 'said together, from now on.',
       'Pictures. If anybody asks for one, that is an adult problem and not yours, and it stops the '
       + 'second you tell me.',
-      'Practise it out loud. What would you say, what would you do, who would you find. Saying it in '
+      'Practice it out loud. What would you say, what would you do, who would you find. Saying it in '
       + 'the kitchen makes it reachable later.',
     ],
   },
   {
-    id: 'teen', label: 'Twelve to fifteen', from: 144, to: 191,
+    id: 'teen', label: '12 to 15', from: 144, to: 191,
     head: 'The real version, before they need it.',
     items: [
       'Consent is a yes, from somebody in a state to give one, for this, now. Not the absence of a '
@@ -413,7 +413,7 @@ export const CON_BY_AGE = [
     ],
   },
   {
-    id: 'older', label: 'Sixteen to eighteen', from: 192, to: 400,
+    id: 'older', label: '16 to 18', from: 192, to: 400,
     head: 'The practical half, and saying the promise out loud one more time.',
     items: [
       'Tell them emergency contraception exists, what it is called, that it works best within hours, '
@@ -425,7 +425,7 @@ export const CON_BY_AGE = [
       + 'time it is, and I would not ask a single question in the car.',
       'Say the part about the police honestly rather than promising something you cannot deliver. If '
       + 'we go to a hospital they may have to report it, and I will tell you before we walk in.',
-      'And then say the whole promise again, because sixteen is when they most need it and least '
+      'And then say the whole promise again, because 16 is when they most need it and least '
       + 'expect it to still apply.',
     ],
   },
@@ -442,13 +442,13 @@ export function conStageFor(months) {
 
 export const CON_PROMISE = {
   title: 'The promise, written out',
-  body: 'This is the whole of it. Say it at five in small words, say it at twelve in bigger ones, '
-    + 'and say it again at sixteen when they have stopped listening to most things.',
+  body: 'This is the whole of it. Say it at five in small words, say it at 12 in bigger ones, '
+    + 'and say it again at 16 when they have stopped listening to most things.',
   words: 'You will never be in trouble for telling me. Not about a photograph, not about who you '
     + 'were with, not about where you were, not about what you drank or took, not about lying to me '
     + 'about where you were going. If something happens, come to me. I will believe you, I will not '
     + 'be angry, and we will work out what to do together.',
-  why: 'Only about three in ten children who are sexually abused or assaulted tell a parent. Two '
+  why: 'Only about 3 in 10 children who are sexually abused or assaulted tell a parent. 2 '
     + 'thirds tell no adult at all. The single thing most likely to move your child from that second '
     + 'group to the first is having heard that promise, in those words, before anything ever '
     + 'happened.',
@@ -479,7 +479,7 @@ export const RAISE_SAY = {
     + 'and you ask, and if asking feels like it would ruin the mood, that is the moment it matters.',
     'Silence is not a yes. Going still is not a yes. Freezing is what most people’s bodies do '
     + 'when they are frightened, and it is the single most misread thing there is.',
-    'Being drunk does not make it not count, and it will not be a defence for you either.',
+    'Being drunk does not make it not count, and it will not be a defense for you either.',
     'If somebody says fine, whatever, just to make you stop asking, you did not get a yes. You wore '
     + 'somebody down, and you know the difference.',
     'Yes can be taken back partway through, and when it is, you stop immediately and without sulking '
@@ -494,10 +494,10 @@ export const RAISE_SAY = {
 export const RAISE_FRIENDS = {
   title: 'The part that actually moves the numbers',
   body: [
-    'The programmes with the best evidence behind them are not the ones that lecture teenagers about '
+    'The programs with the best evidence behind them are not the ones that lecture teenagers about '
     + 'consent. They are the ones that change what a young person thinks their friends will tolerate.',
-    'A bystander programme run across twenty six high schools cut sexual violence perpetration by '
-    + 'roughly a fifth. A coach led programme with male athletes reduced dating violence a year '
+    'A bystander program run across 26 high schools cut sexual violence perpetration by '
+    + 'roughly a fifth. A coach led program with male athletes reduced dating violence a year '
     + 'later, and the striking part is what moved first. Their stated attitudes barely shifted. What '
     + 'changed was whether they laughed along with their friends.',
   ],
@@ -506,12 +506,12 @@ export const RAISE_FRIENDS = {
     + 'get the girl a lift home. Those are the questions worth asking, and a teenager will actually '
     + 'answer them.',
   honest: 'Said honestly: no study has shown that a parent teaching this at home reduces anything, '
-    + 'because nobody has been able to measure it. The programme evidence is real and the effects are '
+    + 'because nobody has been able to measure it. The program evidence is real and the effects are '
     + 'modest. Do it anyway, for the obvious reason.',
 };
 
 export const RAISE_BOTH = 'One more thing, because it gets missed. Boys are assaulted too, by around '
-  + 'one in twenty by the age of seventeen, and they tell people even less often than girls do. A '
+  + '1 in 20 by the age of 17, and they tell people even less often than girls do. A '
   + 'son needs both halves of this conversation just as much as a daughter does.';
 
 export const CON_SOURCES = [

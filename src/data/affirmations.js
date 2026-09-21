@@ -57,6 +57,27 @@ export const MARGIN_LINES = [
   { id: 'mistakes', lines: ['Mistakes help me', 'learn and grow'] },
   { id: 'different', lines: ['Growth looks different', 'for everyone'] },
   { id: 'seeds', lines: ['Planting seeds', 'of love'] },
+  /* Written to fill the margins, September 2026, in the same voice. */
+  { id: 'betterThan', lines: ['You are doing', 'better than', 'you think'] },
+  { id: 'slowMornings', lines: ['Slow mornings', 'still count'] },
+  { id: 'littleHands', lines: ['Little hands,', 'big hearts'] },
+  { id: 'graceOver', lines: ['Grace over', 'perfect'] },
+  { id: 'restIsPart', lines: ['Rest is', 'part of', 'growing'] },
+  { id: 'oneSmall', lines: ['One small thing', 'at a time'] },
+  { id: 'loveFirst', lines: ['Love first,', 'always'] },
+  { id: 'messyDays', lines: ['Messy days', 'make the', 'best memories'] },
+  { id: 'ownSeason', lines: ['Bloom in', 'your own', 'season'] },
+  { id: 'quietMoments', lines: ['Quiet moments', 'grow deep'] },
+  { id: 'beginHere', lines: ['Begin where', 'you are'] },
+  { id: 'softer', lines: ['Softer than', 'yesterday'] },
+  { id: 'keepShowing', lines: ['Keep', 'showing up'] },
+  { id: 'stillForward', lines: ['Tiny steps', 'are still', 'forward'] },
+  { id: 'safePlace', lines: ['You are their', 'safe place'] },
+  { id: 'patienceGrows', lines: ['Patience grows', 'like everything', 'else'] },
+  { id: 'sunAfter', lines: ['Sunshine after', 'the rain'] },
+  { id: 'gentleHands', lines: ['Gentle hands,', 'gentle hearts'] },
+  { id: 'wholeJob', lines: ['Here is the', 'whole job'] },
+  { id: 'roomToBe', lines: ['Room to be', 'exactly', 'who they are'] },
 ];
 
 /* ------------------------------------------------------------------
@@ -112,7 +133,7 @@ export const PARENT_NOTES = [
  * The mixing step at the end matters more than it looks. Date strings for
  * two days in a row differ by one character, and a plain rolling hash
  * turns that into a near constant step, so "yesterday plus one" lands on
- * a predictable neighbour once you take it modulo a short list. The
+ * a predictable neighbor once you take it modulo a short list. The
  * finalizer scrambles the bits so consecutive days scatter instead.
  */
 function hashSeed(seed) {
@@ -154,7 +175,7 @@ export function pickMarginLines(seed, count) {
   };
   const out = [];
   // Spread the picks around the list rather than taking a run of
-  // neighbours, so two shapes on the same screen never read as a pair.
+  // neighbors, so two shapes on the same screen never read as a pair.
   for (let i = 0; i < want; i++) out.push(pick(h + i * 3 + (h % (i + 2))));
   return out;
 }

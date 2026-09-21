@@ -149,8 +149,8 @@ export const SUPPORT_LENSES = [
         'This is not a shortage of attention. It is attention that will not stay where it is told.',
       mind: [
         'The part of the brain that decides what to pay attention to is doing a harder job here than it does for other children. Your child can focus intensely on something interesting, sometimes for hours, and then be completely unable to focus on something boring. That gap is the thing itself, not proof they could do it if they cared.',
-        'Motivation works differently too. Most people can run on "this matters later". A child with ADHD mostly runs on interest, urgency, novelty, and challenge. A reward at the end of the week is nearly invisible to them. A reward in five minutes is real.',
-        'Time is the other piece. Many of these children experience time as now and not now, with very little in between. That is why fifteen minutes and an hour feel the same, and why waiting is genuinely uncomfortable rather than merely annoying.',
+        'Motivation works differently too. Most people can run on "this matters later". A child with ADHD mostly runs on interest, urgency, novelty, and challenge. A reward at the end of the week is nearly invisible to them. A reward in 5 minutes is real.',
+        'Time is the other piece. Many of these children experience time as now and not now, with very little in between. That is why 15 minutes and an hour feel the same, and why waiting is genuinely uncomfortable rather than merely annoying.',
         'And movement is often regulation, not misbehavior. Plenty of children think better while their body is busy. Asking for stillness can cost them the attention you were trying to get.',
       ],
       strengths: [
@@ -184,13 +184,13 @@ export const SUPPORT_LENSES = [
       'Give one instruction at a time rather than a list.',
       'Build movement into the day on purpose, before it is needed.',
       'Use a visual schedule so the next step is visible instead of remembered.',
-      'Warn before transitions, at five minutes and again at one.',
+      'Warn before transitions, at 5 minutes and again at one.',
       'Get their eyes or their hand before you speak, not their name shouted from another room.',
       'Put the reward close. Later is a concept, now is a feeling.',
     ],
     whenToAsk:
-      'Bring it up with your pediatrician if attention or impulses are causing trouble in two or more ' +
-      'settings, such as home and school, and it has been going on for six months or more.',
+      'Bring it up with your pediatrician if attention or impulses are causing trouble in 2 or more ' +
+      'settings, such as home and school, and it has been going on for 6 months or more.',
     milestoneFlexMonths: 0,
     suppressesRedFlags: false,
   },
@@ -216,7 +216,7 @@ export const SUPPORT_LENSES = [
       key: 'level',
       label: 'Support level, if one has been discussed',
       help:
-        'Optional. These are the three levels used in the DSM 5. They describe support needs, not ' +
+        'Optional. These are the 3 levels used in the DSM 5. They describe support needs, not ' +
         'ability or intelligence, and a child can look like a different level on a different day.',
       choices: [
         {
@@ -294,7 +294,7 @@ export const SUPPORT_LENSES = [
       'Join the play your child is already doing before trying to redirect it.',
       'Keep routines steady, and preview changes to them ahead of time.',
       'Let stimming be, unless it is causing harm.',
-      'Build a landing pad after school. Quiet, food, no questions for twenty minutes.',
+      'Build a landing pad after school. Quiet, food, no questions for 20 minutes.',
     ],
     whenToAsk:
       'An evaluation is worth asking about at any age, and earlier means earlier support. You do not ' +
@@ -377,7 +377,7 @@ export const SUPPORT_LENSES = [
       'When a child cannot get their message across, frustration usually shows up as behavior. ' +
       'Adding ways to communicate often reduces the behavior on its own.',
     understanding: {
-      headline: 'The words going in and the words coming out are two different systems, and they can be very far apart.',
+      headline: 'The words going in and the words coming out are 2 different systems, and they can be very far apart.',
       mind: [
         'Understanding language almost always runs ahead of producing it. Your child very likely knows far more than they can show you, which means talking to them at their real level matters, not at the level of their speech.',
         'When the message cannot get out, the feeling still has to go somewhere. It usually arrives as a scream, a grab, or a hit. That is communication too, just the only channel currently open.',
@@ -406,7 +406,7 @@ export const SUPPORT_LENSES = [
     emphasizes: ['language', 'frustration', 'choices', 'modeling'],
     strategyTags: ['sign-language', 'offer-choices', 'model-language', 'wait-time', 'picture-cards', 'narrate'],
     environmentTips: [
-      'Offer two choices instead of an open question.',
+      'Offer 2 choices instead of an open question.',
       'Wait longer than feels natural after asking something.',
       'Say the word you want back, rather than asking them to say it.',
       'Accept pointing, signs, and sounds as real communication.',
@@ -432,7 +432,7 @@ export const SUPPORT_LENSES = [
       headline: 'Speech is a physical skill. Language is a thinking skill. A child can need help with either one alone.',
       mind: [
         'Making a sound correctly takes precise coordination of lips, tongue, jaw, and breath. Some children know exactly which word they want and their mouth cannot yet build it. Correcting them does not add coordination, practice does.',
-        'A useful yardstick for strangers understanding your child is roughly half at age two, three quarters at age three, and nearly all at age four. Family members are terrible judges here, because you have learned to translate without noticing.',
+        'A useful yardstick for strangers understanding your child is roughly half at age two, 3 quarters at age three, and nearly all at age four. Family members are terrible judges here, because you have learned to translate without noticing.',
         'Being asked to say it again, repeatedly, is what teaches children to stop talking. Reply to the meaning first and model the correct version inside your reply.',
       ],
       strengths: [
@@ -482,7 +482,7 @@ export const SUPPORT_LENSES = [
       mind: [
         'This is an anxiety response, not a stubbornness problem. The word selective is misleading and it has cost a lot of children a lot of unfair pressure. Nothing is being selected.',
         'Freezing is the body doing something automatic. Attention lands on them, the throat closes, and no amount of encouragement reopens it. A room full of adults waiting for a word makes it far less likely, not more.',
-        'It usually shows up between age two and five, often when a child starts school and the gap between home and outside becomes obvious. It rarely resolves by itself with time alone, and it responds well to the right support.',
+        'It usually shows up between age 2 and 5, often when a child starts school and the gap between home and outside becomes obvious. It rarely resolves by itself with time alone, and it responds well to the right support.',
         'Progress goes in order. Comfortable in the room, then a nod, then a whisper to one person, then a word. Skipping steps costs you the ones you already had.',
       ],
       strengths: [
@@ -530,10 +530,10 @@ export const SUPPORT_LENSES = [
       'For children who pass hearing tests but lose what was said, especially in noise or when ' +
       'instructions are long. Strategies focus on fewer words, more time, and less background sound.',
     framing:
-      'Hearing a sound and making sense of it are two different jobs. Some children need the second ' +
+      'Hearing a sound and making sense of it are 2 different jobs. Some children need the second ' +
       'one to go slower or quieter than it usually does.',
     understanding: {
-      headline: 'The sound arrives. The meaning arrives late, and by then you have said three more things.',
+      headline: 'The sound arrives. The meaning arrives late, and by then you have said 3 more things.',
       mind: [
         'Think of it as buffering. The words come in, and unpacking them takes an extra beat. If you keep talking during that beat, the new sentence lands on top of the one still being unpacked, and both are lost.',
         'Background noise costs far more here than it does for other people. A classroom, a busy kitchen, or a car with music can make speech genuinely unavailable, even though your child can hear it perfectly.',
@@ -576,6 +576,90 @@ export const SUPPORT_LENSES = [
     suppressesRedFlags: false,
   },
 
+  /* Added because the app had eighteen lenses and not one of them was
+     for a child who does not hear. That is a gap that says something,
+     and what it said was that this app assumed every child takes in
+     language through their ears.
+
+     The framing throughout is the one Deaf families themselves ask
+     for: this is a difference in how language arrives, and the thing
+     that predicts how a deaf child does is early full access to a
+     language, whichever language that is. Delay is the risk. Signing
+     is not the fallback for when speech fails. */
+  {
+    id: 'deafHoh',
+    group: 'communication',
+    label: 'Deaf or hard of hearing',
+    aka: ['deaf', 'hard of hearing', 'hearing loss', 'HoH', 'cochlear implant', 'hearing aids'],
+    tagline: 'Language gets in. It just does not have to come through the ears.',
+    description:
+      'For families of a child who is deaf or hard of hearing. Strategies lean on visual language, ' +
+      'getting attention before speaking, and protecting full access to language early.',
+    framing:
+      'A deaf child who has full access to a language from the start develops language on time. ' +
+      'The thing that causes delay is not deafness, it is the months spent without a language they ' +
+      'can fully reach.',
+    understanding: {
+      headline: 'Nothing about their thinking is different. Everything about how language reaches them is.',
+      mind: [
+        'A deaf child learns language on the same timetable as anybody else when the language is fully available to them. Sign counts. Speech with hearing aids or an implant counts. Both together counts. What does not work is a year of waiting to see how the hearing technology goes, because that year is a year of language.',
+        'Attention is single channel. They cannot watch your face and watch the toy at the same time, so anything you say while they are looking at something else did not happen. Get the eyes first, then talk or sign, then let them look back.',
+        'Hard of hearing is not a mild version of deaf with nothing to manage. A child who catches most of what is said in a quiet room may catch almost none of it in a classroom, a car, or a birthday party, and they will usually not tell you that, because from the inside it feels like everybody else is just keeping up.',
+        'Listening through hearing aids or an implant is work. A child who is fine in the morning and falling apart at five is often not being difficult, they are out of fuel. It has a name, concentration fatigue, and the answer to it is breaks, not discipline.',
+        'They miss what they were never in the conversation for. Hearing children pick up a huge amount from talk that was not aimed at them, at the dinner table, in the back of the car, in the next room. A deaf child gets almost none of that unless somebody brings them in on purpose. Filling that in is a real and ongoing job, and it is why they can seem to have gaps in things nobody ever taught anyone.',
+        'Deafness is a culture as well as an audiogram. Plenty of Deaf adults do not experience it as a loss or want it fixed, and meeting Deaf adults early is one of the few things that changes outcomes for the whole family, not just the child.',
+      ],
+      strengths: [
+        'Strong visual attention and unusually good at reading faces and rooms.',
+        'Often excellent at noticing what changed, since watching is the main channel.',
+        'Good at repair. Children who constantly have to check what was said get skilled at asking.',
+        'Bilingual where sign and speech are both in the house, with everything that comes with that.',
+      ],
+      misreadAs: [
+        {
+          looksLike: 'Ignoring you.',
+          isOften: 'Not knowing you spoke. A tap, a wave, or a light flick is not rudeness, it is how you start.',
+        },
+        {
+          looksLike: 'Selective hearing, since they heard it yesterday.',
+          isOften: 'Real and normal variation. Quiet room, familiar voice, facing them, known topic, and it lands. Change any one of those and it might not.',
+        },
+        {
+          looksLike: 'Falling apart in the late afternoon.',
+          isOften: 'Concentration fatigue after a whole day of listening work.',
+        },
+        {
+          looksLike: 'Nodding along, so they understood.',
+          isOften: 'A learned habit from years of being asked. Ask them to tell you the plan back instead.',
+        },
+        {
+          looksLike: 'Gaps in general knowledge.',
+          isOften: 'Everything they were never in earshot for. Not a learning problem.',
+        },
+      ],
+    },
+    emphasizes: ['language', 'environment', 'school', 'connection'],
+    strategyTags: ['sign-language', 'visual-schedule', 'model-language', 'narrate', 'wait-time', 'join-their-play', 'repetition', 'connection-first', 'one-step-directions', 'noise-reduction'],
+    environmentTips: [
+      'Get their attention before you speak or sign, every time. A tap on the shoulder, a wave in their line of sight, or flicking the light.',
+      'Let them see your face. Not backlit, not across the room, not talking while you walk away or while your hands are over your mouth.',
+      'Sign with them, and learn it as a family rather than leaving it to the child. A child who is the only signer in the house is still alone in the house.',
+      'Narrate what happened that they missed. The phone call, the joke, why everyone laughed. Say it even when it seems too small to bother with.',
+      'Cut background noise during anything that matters. Hearing aids and implants amplify the dishwasher just as happily as your voice.',
+      'Expect the wall at the end of the day and build in a quiet stretch before you need anything from them.',
+      'Find Deaf adults and Deaf children. Families who do this early describe it as the thing that changed how the whole house felt.',
+      'Caption everything. Television, tablets, films. It costs nothing and it builds reading.',
+    ],
+    whenToAsk:
+      'Newborn hearing screening catches a lot and misses some, and hearing can change later, so a ' +
+      'concern at any age is worth a full audiology assessment rather than a wait and see. Ask your ' +
+      'audiologist and your early intervention team about a language plan with a date on it, since ' +
+      'the strongest evidence is about how early full language access starts, not about which ' +
+      'language it is in.',
+    milestoneFlexMonths: 0,
+    suppressesRedFlags: false,
+  },
+
   /* ================= SENSES AND BODY ================= */
   {
     id: 'sensory',
@@ -592,7 +676,7 @@ export const SUPPORT_LENSES = [
       headline: 'Their volume dials are set differently, and they cannot turn them down by deciding to.',
       mind: [
         'Everyone filters sensory information constantly without noticing. When that filter runs differently, a tag in a shirt does not fade into the background, it keeps shouting all day. The complaint is accurate. The sensation really is that loud.',
-        'There are two directions, and most children are a mix. Seeking means needing more input, which looks like crashing, spinning, chewing, and touching everything. Avoiding means needing less, which looks like covering ears, refusing textures, and melting down in busy rooms. The same child can seek movement and avoid sound.',
+        'There are 2 directions, and most children are a mix. Seeking means needing more input, which looks like crashing, spinning, chewing, and touching everything. Avoiding means needing less, which looks like covering ears, refusing textures, and melting down in busy rooms. The same child can seek movement and avoid sound.',
         'Giving the input on purpose, before it is needed, works far better than waiting. Heavy work, meaning pushing, carrying, climbing, or squeezing, is the single most useful tool, because it calms a seeking body and organizes an overwhelmed one.',
         'Food refusal is frequently sensory rather than behavioral. Texture, smell, and temperature are doing the deciding, and hunger does not override them.',
       ],
@@ -616,7 +700,7 @@ export const SUPPORT_LENSES = [
         },
         {
           looksLike: 'A meltdown at a birthday party.',
-          isOften: 'Two hours of noise, light, and people with nowhere to put it.',
+          isOften: '2 hours of noise, light, and people with nowhere to put it.',
         },
       ],
     },
@@ -635,6 +719,93 @@ export const SUPPORT_LENSES = [
     milestoneFlexMonths: 0,
     suppressesRedFlags: false,
   },
+  /* The mirror of the lens above. Written with the same rule: this
+     changes how the world arrives, not how the child thinks. The
+     content leans hard on the two things blind parents and teachers of
+     the visually impaired say get missed by sighted families, which
+     are that nothing is learned by watching and that hands are how the
+     looking happens. */
+  {
+    id: 'blindLowVision',
+    group: 'sensoryBody',
+    label: 'Blind or low vision',
+    aka: ['blind', 'low vision', 'visually impaired', 'VI', 'sight loss', 'CVI'],
+    tagline: 'They are taking it all in. Just not by looking.',
+    description:
+      'For families of a child who is blind or has low vision. Strategies lean on describing out ' +
+      'loud, hands on exploring, and keeping the world predictable enough to move through.',
+    framing:
+      'Almost nothing here is about ability. It is about the fact that a great deal of early ' +
+      'learning happens by watching, and that channel has to be replaced on purpose rather than ' +
+      'left to happen.',
+    understanding: {
+      headline: 'Sighted children learn a huge amount by accident. A blind child learns the same things on purpose, or not at all.',
+      mind: [
+        'Watching is how most children learn to wave, to use a spoon, to put on a coat, and to know that the milk lives in the fridge. None of that arrives on its own here. It has to be said out loud and put in their hands, and once it is, it is learned exactly as well.',
+        'Hands are how the looking happens. A child who has to touch everything is not being destructive, they are doing what a sighted child does with a glance. Hand under hand, where your hand goes under theirs rather than grabbing and steering, lets them stay in charge of their own looking.',
+        'Low vision is not a dimmer switch. Most children called blind see something, and what they see can change with light, contrast, distance, fatigue and clutter. Struggling in one room and managing in the next is normal and is not them putting it on.',
+        'A predictable world is a walkable world. A room whose furniture stays put is a room they can cross confidently. Moving the couch without telling them takes that away, and it is the kind of thing a sighted family does without thinking.',
+        'Early motor and social milestones often run late for a reason that has nothing to do with capability. A baby crawls toward something they saw. A baby who hears something has to learn first that a sound means an object is over there, which is a real concept and it arrives a bit later.',
+        'Rocking, eye pressing and hand flapping turn up often here. Usually it is a body getting the input it is not getting any other way. Offer more real movement and more real texture before trying to stop it, and get eye pressing looked at, since it can irritate the eye.',
+        'Say who you are when you come in, and say when you leave. Walking out of a silent room is how a child ends up talking to nobody.',
+      ],
+      strengths: [
+        'Strong listening and unusually good memory for routes, sequences and detail.',
+        'Excellent at recognizing people by voice and by step.',
+        'Often very verbal, since language is doing more of the work.',
+        'Real independence once a space is learned, which is quicker than most sighted people expect.',
+      ],
+      misreadAs: [
+        {
+          looksLike: 'Touching everything.',
+          isOften: 'Looking. It is the same act, done with different equipment.',
+        },
+        {
+          looksLike: 'Not interested in a toy.',
+          isOften: 'Not knowing it is there. Put it in their hand and say what it is.',
+        },
+        {
+          looksLike: 'Clumsy or hesitant.',
+          isOften: 'A space they have not learned yet, or something that got moved.',
+        },
+        {
+          looksLike: 'Being antisocial, since they did not join in.',
+          isOften: 'Not knowing who is in the room or that the game started. Nobody said.',
+        },
+        {
+          looksLike: 'Copying phrases without meaning them.',
+          isOften: 'Learning language in chunks, which is common here and usually sorts itself out as the meaning fills in.',
+        },
+        {
+          looksLike: 'Seeing fine, since they picked up the crumb.',
+          isOften: 'Real variability with light, contrast and distance. Both things are true.',
+        },
+      ],
+    },
+    emphasizes: ['motor', 'language', 'environment', 'selfCare', 'connection'],
+    strategyTags: ['narrate', 'model-language', 'break-into-steps', 'repetition', 'sensory-bin', 'fine-motor-play', 'adaptive-tools', 'celebrate-partial', 'join-their-play', 'hand-under-hand', 'consistent-layout', 'high-contrast'],
+    environmentTips: [
+      'Narrate. What you are doing, what you are about to do to them, what that noise was, who just came in. It feels like talking too much and it is not.',
+      'Say their name first so they know the sentence is theirs.',
+      'Put it in their hands rather than pointing. Let them explore it before you name it.',
+      'Use hand under hand rather than taking their hands and driving them.',
+      'Keep furniture and belongings where they live, and tell them when something moves.',
+      'Light and contrast do a lot for low vision. A dark plate under light food, a light switch that is not in shadow, and less clutter on a surface.',
+      'Warn before you lift them. Being picked up out of nowhere is startling in a way it is not for a sighted child.',
+      'Teach the boring self care steps explicitly, in order, since they cannot be copied. Dressing, brushing teeth, making a sandwich.',
+      'Ask your team about orientation and mobility early. A cane is a tool for exploring, not a last resort, and plenty of toddlers use one.',
+      'Find blind adults. They know things about doing this that no sighted professional does.',
+    ],
+    whenToAsk:
+      'Anything that looks like a vision concern gets a pediatric ophthalmology referral rather than ' +
+      'a wait and see, including eyes that do not follow, that wander past about 4 months, a white ' +
+      'reflection in photographs, or vision that seems to come and go. Ask about early intervention ' +
+      'and about a teacher of students with visual impairments, and about an orientation and mobility ' +
+      'assessment, all of which many families are never told exist.',
+    milestoneFlexMonths: 4,
+    suppressesRedFlags: false,
+  },
+
   {
     id: 'motor',
     group: 'sensoryBody',
@@ -651,7 +822,7 @@ export const SUPPORT_LENSES = [
       headline: 'Planning the movement is the hard part, not the muscles.',
       mind: [
         'Most of what looks like clumsiness is a planning job. The brain has to sequence a movement before the body performs it, and when that sequencing is harder, every new physical skill takes many more repetitions than it takes other children.',
-        'Skills that are automatic for other children stay effortful here for longer. Doing up a coat while listening to you is two tasks, and one of them will drop.',
+        'Skills that are automatic for other children stay effortful here for longer. Doing up a coat while listening to you is 2 tasks, and one of them will drop.',
         'This costs confidence quickly, because motor skills are the most visible ones in a playground. Children often avoid the activity rather than risk looking foolish, which removes the practice they needed.',
         'Core strength underpins everything, including sitting still and handwriting. Climbing and carrying build the thing that a chair demands.',
       ],
@@ -761,7 +932,7 @@ export const SUPPORT_LENSES = [
     understanding: {
       headline: 'During a meltdown, the thinking part of their brain is offline. Reasoning with it is talking to a room nobody is in.',
       mind: [
-        'Feelings arrive in the fast part of the brain and get managed by the slow part. In children the slow part is still being built, and it is not finished until well into their twenties. A four year old with no brakes is not failing. The brakes are not installed yet.',
+        'Feelings arrive in the fast part of the brain and get managed by the slow part. In children the slow part is still being built, and it is not finished until well into their twenties. A 4 year old with no brakes is not failing. The brakes are not installed yet.',
         'A meltdown and a tantrum are different things. A tantrum has a goal and stops when the goal is met or clearly lost. A meltdown is a system overload, and it has to run its course. Consequences applied during a meltdown teach nothing, because nothing is going in.',
         'Children borrow calm before they make their own. Your steady voice and slow breathing are doing more work than any of your words. This is also why your own regulation is not a luxury item.',
         'The teaching happens afterwards, once the storm has passed and the thinking brain is back. Same day is fine. Same minute is wasted.',
@@ -969,10 +1140,10 @@ export const SUPPORT_LENSES = [
     emphasizes: ['predictability', 'connection', 'regulation', 'routine'],
     strategyTags: ['visual-schedule', 'connection-first', 'transition-warning', 'co-regulate', 'observe-and-note', 'quiet-space'],
     environmentTips: [
-      'Hold one or two routines completely steady, even if everything else moves.',
+      'Hold one or 2 routines completely steady, even if everything else moves.',
       'Tell them what is happening in simple, true words, and say plainly that it is not their fault.',
       'Expect old skills to wobble, and help with them again without commentary.',
-      'Protect a small amount of undivided time daily. Ten focused minutes beats a whole distracted day.',
+      'Protect a small amount of undivided time daily. 10 focused minutes beats a whole distracted day.',
       'Keep your own support in place, because their steadiness is downstream of yours.',
     ],
     whenToAsk:
@@ -995,13 +1166,13 @@ export const SUPPORT_LENSES = [
       'Starting a task, holding the steps in mind, and finishing are separate skills. A child can ' +
       'be strong at one and still need support with another.',
     understanding: {
-      headline: 'Knowing what to do and being able to start doing it are two different abilities, and only one of them is visible.',
+      headline: 'Knowing what to do and being able to start doing it are 2 different abilities, and only one of them is visible.',
       mind: [
         'Executive function is the set of skills that gets an intention turned into action. Starting, holding steps in mind, switching, resisting distraction, and estimating time. They develop separately and on their own schedules.',
         'A child can explain the whole plan perfectly and still be stuck on the floor, unable to begin. That gap is not defiance and it is not laziness. Starting is its own skill, and for some children it is the weakest one they have.',
-        'Working memory is the other frequent bottleneck. Go upstairs, get your shoes, and bring the laundry is three things to hold. If two fall out on the stairs, what comes back down is one shoe and no idea why.',
-        'Time blindness is real. Ten minutes and forty minutes feel similar from the inside, which is why estimates are wildly wrong and why visible timers help so much more than reminders do.',
-        'Roughly, expect executive skills to run about three years behind same age peers when they are a struggle. Setting expectations at that younger level is not lowering the bar, it is aiming at the actual child.',
+        'Working memory is the other frequent bottleneck. Go upstairs, get your shoes, and bring the laundry is 3 things to hold. If 2 fall out on the stairs, what comes back down is one shoe and no idea why.',
+        'Time blindness is real. 10 minutes and 40 minutes feel similar from the inside, which is why estimates are wildly wrong and why visible timers help so much more than reminders do.',
+        'Roughly, expect executive skills to run about 3 years behind same age peers when they are a struggle. Setting expectations at that younger level is not lowering the bar, it is aiming at the actual child.',
       ],
       strengths: [
         'Often excellent at the parts they can hyperfocus on.',
@@ -1011,7 +1182,7 @@ export const SUPPORT_LENSES = [
       misreadAs: [
         {
           looksLike: 'Lazy.',
-          isOften: 'Stuck at the starting line. Start it with them for two minutes and watch what happens.',
+          isOften: 'Stuck at the starting line. Start it with them for 2 minutes and watch what happens.',
         },
         {
           looksLike: 'Careless, from forgetting half of what you asked.',
@@ -1031,7 +1202,7 @@ export const SUPPORT_LENSES = [
     strategyTags: ['visual-schedule', 'break-into-steps', 'timer', 'checklist', 'body-double', 'first-then'],
     environmentTips: [
       'Make the next step visible rather than something to remember.',
-      'Start the task alongside them for the first two minutes.',
+      'Start the task alongside them for the first 2 minutes.',
       'Use a visible timer so time becomes something they can see.',
       'Break one task into steps small enough that the first one feels easy.',
       'Put the system where the task happens, not on a chart in another room.',
@@ -1058,15 +1229,15 @@ export const SUPPORT_LENSES = [
     understanding: {
       headline: 'This is a wiring difference in one narrow area, sitting next to completely ordinary intelligence.',
       mind: [
-        'With reading, the usual bottleneck is hearing the separate sounds inside a word. If cat does not break into three sounds easily, letters cannot be matched to them, and reading stays effortful long after other children have gone automatic. It has nothing to do with seeing letters backwards, which is a myth that has lasted far too long.',
-        'With writing, the physical act can take so much attention that spelling, punctuation, and ideas all suffer at once. A child who tells brilliant stories out loud and writes four flat sentences is usually not being lazy. The channel is expensive.',
+        'With reading, the usual bottleneck is hearing the separate sounds inside a word. If cat does not break into 3 sounds easily, letters cannot be matched to them, and reading stays effortful long after other children have gone automatic. It has nothing to do with seeing letters backwards, which is a myth that has lasted far too long.',
+        'With writing, the physical act can take so much attention that spelling, punctuation, and ideas all suffer at once. A child who tells brilliant stories out loud and writes 4 flat sentences is usually not being lazy. The channel is expensive.',
         'With math, the difficulty is often number sense itself, meaning the intuition for how big numbers are and how they relate. Facts get memorized without ever feeling true, so they fall out again.',
         'The most damaging part is rarely the skill. It is the conclusion a child draws, usually by around age seven, that they are stupid. That belief does more long term harm than the reading gap, and it is the thing you can protect against starting today.',
         'These respond well to the right teaching, and specifically to structured, explicit, repeated instruction. More of the same instruction that already failed is not it.',
       ],
       strengths: [
         'Often strong at reasoning, big picture thinking, and problem solving.',
-        'Frequently creative, three dimensional thinkers.',
+        'Frequently creative, 3 dimensional thinkers.',
         'Persistent, having worked harder for every result.',
         'Verbally sharp, even when reading is hard.',
       ],
@@ -1115,14 +1286,14 @@ export const SUPPORT_LENSES = [
       'intensity, perfectionism, or sense of fairness makes ordinary days hard.',
     framing:
       'Being ahead intellectually does not move emotional development along with it. A child can ' +
-      'reason like a ten year old and fall apart like the six year old they are.',
+      'reason like a 10 year old and fall apart like the 6 year old they are.',
     understanding: {
       headline: 'Uneven is the norm here, and the emotions are running at the age on the birth certificate.',
       mind: [
-        'Advanced thinking does not bring advanced coping. A child who can discuss extinction at dinner still needs help sharing a toy afterwards, and the gap between those two things confuses everyone, including the child.',
+        'Advanced thinking does not bring advanced coping. A child who can discuss extinction at dinner still needs help sharing a toy afterwards, and the gap between those 2 things confuses everyone, including the child.',
         'Perfectionism is very common and it looks strange from the outside. A child may refuse to try something they cannot already do well, because the gap between their standard and their skill is unbearable. That refusal is not arrogance, it is fear of being ordinary at something.',
         'Intensity comes as a package. Big enthusiasm, big injustice, big sensory reactions, big questions at bedtime about death. It is not a behavior problem to be managed down.',
-        'Twice exceptional means gifted alongside a learning difference, ADHD, or autism. The two frequently mask each other, so the child looks merely average and neither need gets met. That masking is why plenty of these children are only identified late, or never.',
+        'Twice exceptional means gifted alongside a learning difference, ADHD, or autism. The 2 frequently mask each other, so the child looks merely average and neither need gets met. That masking is why plenty of these children are only identified late, or never.',
         'Boredom in these children rarely looks like boredom. It looks like clowning, arguing, daydreaming, or refusing to hand work in.',
       ],
       strengths: [
@@ -1142,7 +1313,7 @@ export const SUPPORT_LENSES = [
         },
         {
           looksLike: 'Fine, since grades are average.',
-          isOften: 'Possibly twice exceptional, with strength and difficulty cancelling out on paper.',
+          isOften: 'Possibly twice exceptional, with strength and difficulty canceling out on paper.',
         },
         {
           looksLike: 'Dramatic.',
@@ -1229,10 +1400,10 @@ export const SUPPORT_LENSES = [
     group: 'development',
     label: 'Born early',
     aka: ['premature', 'preemie', 'NICU', 'corrected age', 'adjusted age'],
-    tagline: 'Two birthdays, and one of them is the one milestones follow.',
+    tagline: '2 birthdays, and one of them is the one milestones follow.',
     description:
       'For families whose baby arrived early. Milestones are read against corrected age rather than ' +
-      'the date on the birth certificate, for the first two years.',
+      'the date on the birth certificate, for the first 2 years.',
     framing:
       'A baby born early is doing developmental work on the schedule their brain is actually on, ' +
       'which is not the schedule the calendar says.',
@@ -1240,19 +1411,19 @@ export const SUPPORT_LENSES = [
       key: 'weeksEarly',
       label: 'How many weeks early?',
       help:
-        'Full term is forty weeks. If your baby was born at thirty two weeks, that is eight weeks ' +
+        'Full term is 40 weeks. If your baby was born at 32 weeks, that is 8 weeks ' +
         'early. Ready Set Grow will use this to show corrected age alongside actual age.',
       min: 1,
       max: 17,
       unit: 'weeks',
     },
     understanding: {
-      headline: 'Corrected age is actual age minus how early they arrived, and it is the fairer measure until about two years old.',
+      headline: 'Corrected age is actual age minus how early they arrived, and it is the fairer measure until about 2 years old.',
       mind: [
-        'The American Academy of Pediatrics is clear on this. For the first two years, corrected age gives you a far better idea of when to expect common developmental goals.',
-        'The math is simple. Subtract the weeks of prematurity from the weeks since birth. A baby born at thirty two weeks is eight weeks early, so at four months old their corrected age is two months, and two month skills such as head control and social smiling are what to look for.',
+        'The American Academy of Pediatrics is clear on this. For the first 2 years, corrected age gives you a far better idea of when to expect common developmental goals.',
+        'The math is simple. Subtract the weeks of prematurity from the weeks since birth. A baby born at 32 weeks is 8 weeks early, so at 4 months old their corrected age is 2 months, and 2 month skills such as head control and social smiling are what to look for.',
         'This matters emotionally as much as practically. Comparison to term babies the same age is the fastest route to a miserable first year, and the comparison is not a fair one. You are looking at a younger baby.',
-        'By around two years, most children who were born early have caught up enough that corrected age stops being useful, and you can go back to the calendar.',
+        'By around 2 years, most children who were born early have caught up enough that corrected age stops being useful, and you can go back to the calendar.',
         'A NICU stay leaves marks on parents too. Hypervigilance, flinching at monitors, and a hard time relaxing into ordinary parenting are extremely common and worth taking seriously rather than pushing through.',
       ],
       strengths: [
@@ -1267,7 +1438,7 @@ export const SUPPORT_LENSES = [
         },
         {
           looksLike: 'A small baby who will always be small.',
-          isOften: 'Growth that often catches up substantially over the first two to three years.',
+          isOften: 'Growth that often catches up substantially over the first 2 to 3 years.',
         },
         {
           looksLike: 'Overreacting parents.',
@@ -1366,7 +1537,7 @@ export const SUPPORT_LENSES = [
       mind: [
         'Nothing here requires a diagnosis. Visual schedules, movement breaks, transition warnings, and naming feelings are good parenting for any child. If a strategy helps, use it, and you never have to justify why.',
         'Your observations are data, and they are the data a professional cannot collect. What happened, when, what came right before, how long it lasted, and what helped. A few weeks of that is worth more at an appointment than anything you can say from memory.',
-        'One hard day is not a pattern. Look across two or three weeks before drawing any conclusion, since sleep, illness, and growth spurts can imitate almost anything.',
+        'One hard day is not a pattern. Look across 2 or 3 weeks before drawing any conclusion, since sleep, illness, and growth spurts can imitate almost anything.',
         'And the concern that brought you here is worth taking seriously. Parents are right far more often than they expect to be, and asking early has essentially no downside.',
       ],
       strengths: [

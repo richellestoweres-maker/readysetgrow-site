@@ -64,24 +64,24 @@ export const PUB_GIRL = [
     id: 'breast', label: 'Breasts starting',
     what: 'A firm, often tender lump under one nipple, frequently on one side for a while. This is '
       + 'usually the first sign of anything.',
-    typical: 'Usually around ten, anywhere from eight to twelve',
-    gap: 30, gapText: 'A first period usually comes about two to two and a half years after this',
+    typical: 'Usually around 10, anywhere from 8 to 12',
+    gap: 30, gapText: 'A first period usually comes about 2 to 2 and a half years after this',
   },
   {
     id: 'hair', label: 'Pubic hair',
     what: 'Sometimes before the breasts, more often just after.',
     typical: 'Usually within a year of the breasts starting',
-    gap: 18, gapText: 'A first period usually comes one to two years after this',
+    gap: 18, gapText: 'A first period usually comes 1 to 2 years after this',
   },
   {
-    id: 'smell', label: 'Body odour',
+    id: 'smell', label: 'Body odor',
     what: 'The day you notice they need deodorant. It catches parents off guard because it often '
       + 'arrives before anything else is visible.',
     typical: 'Often the first thing anybody notices',
   },
   {
     id: 'spurt', label: 'A growth spurt',
-    what: 'Trousers short, shoes too small, eating constantly. In girls this comes earlier in the '
+    what: 'Pants short, shoes too small, eating constantly. In girls this comes earlier in the '
       + 'process than it does in boys.',
     typical: 'Often about a year before a first period',
     gap: 12, gapText: 'A first period often comes around a year after this',
@@ -102,7 +102,7 @@ export const PUB_GIRL = [
     what: 'A clear or milky discharge in her underwear. Nobody warns girls about this and a lot of '
       + 'them think something is wrong with them. It is the body getting ready and it is normal.',
     typical: 'The most useful single sign that it is close',
-    gap: 9, gapText: 'A first period usually comes six to twelve months after this starts',
+    gap: 9, gapText: 'A first period usually comes 6 to 12 months after this starts',
     big: true,
   },
   {
@@ -114,7 +114,7 @@ export const PUB_GIRL = [
   {
     id: 'period', label: 'First period',
     what: 'The day it happened. Once this is recorded the app can start tracking the cycle.',
-    typical: 'On average around twelve, and earlier than that is common',
+    typical: 'On average around 12, and earlier than that is common',
     opensCycle: true,
   },
 ];
@@ -124,7 +124,7 @@ export const PUB_BOY = [
     id: 'testes', label: 'Testicles getting bigger',
     what: 'The actual first sign, and almost nobody notices it. If you are not going to record this '
       + 'one, that is completely fine, and it is on the list because it is the honest starting point.',
-    typical: 'Usually around eleven and a half, anywhere from nine and a half to fourteen',
+    typical: 'Usually around 11 and a half, anywhere from 9 and a half to 14',
   },
   {
     id: 'hair', label: 'Pubic hair',
@@ -132,13 +132,13 @@ export const PUB_BOY = [
     typical: 'Soon after the testicles start changing',
   },
   {
-    id: 'smell', label: 'Body odour',
+    id: 'smell', label: 'Body odor',
     what: 'Often early, often sudden, and often the first conversation about deodorant.',
     typical: 'Often one of the first noticeable things',
   },
   {
     id: 'spurt', label: 'A growth spurt',
-    what: 'Nearly four inches in a year at the peak. Growing pains, eating constantly, and clumsy '
+    what: 'Nearly 4 inches in a year at the peak. Growing pains, eating constantly, and clumsy '
       + 'with it because the limbs arrived before the coordination.',
     typical: 'Later in the process than in girls',
   },
@@ -266,8 +266,8 @@ export function pubPeriodHint(sex, marks, today) {
 }
 
 export const PUB_HINT_OVERDUE = 'Later than the usual gap, which happens to plenty of girls and is '
-  + 'not on its own a problem. The ages that are worth an appointment are no period by fifteen, or '
-  + 'more than three years since her breasts started.';
+  + 'not on its own a problem. The ages that are worth an appointment are no period by 15, or '
+  + 'more than 3 years since her breasts started.';
 
 /* ==================================================================
    PRIVACY, AND WHOSE RECORD THIS IS
@@ -284,7 +284,7 @@ export const PUB_START = {
   title: 'Before you start',
   body: [
     'This is a record of your child’s body, and that is a different kind of thing from a '
-    + 'vaccination card. Worth thirty seconds before you begin.',
+    + 'vaccination card. Worth 30 seconds before you begin.',
   ],
   items: [
     'Anybody you have shared this child with can see everything on it. A co parent, a grandparent, '
@@ -296,7 +296,7 @@ export const PUB_START = {
     + 'that and you will know. When it comes, hand it over or delete it rather than keeping it quietly.',
   ],
   ask: 'Does your child know you are keeping this? For a younger child that question does not really '
-    + 'arise. For a thirteen year old it does, and being told is usually better than being found out.',
+    + 'arise. For a 13 year old it does, and being told is usually better than being found out.',
   btn: 'Start keeping track',
   notNow: 'Not for now',
 };
@@ -333,7 +333,7 @@ export const CYC_SUB = 'The same calendar you use for yourself, for her, so some
 
 export const CYC_INTRO = [
   'Log the first day of each period. After two the app works out her own average rather than '
-  + 'assuming twenty eight days, and after a few it can say whether her cycles are settling.',
+  + 'assuming 28 days, and after a few it can say whether her cycles are settling.',
   'The first few years are irregular and that is expected. What this is really for is having an '
   + 'accurate answer when a doctor asks, because nobody remembers and the answer matters.',
 ];
@@ -343,10 +343,10 @@ export const CYC_NORMAL = {
   items: [
     'Anywhere from 21 to 45 days apart. That is the adolescent range and it is wider than the adult '
     + 'one, so do not measure her against a chart written for you.',
-    'Fewer than seven days of bleeding.',
-    'Three to six pads or tampons a day.',
+    'Fewer than 7 days of bleeding.',
+    '3 to 6 pads or tampons a day.',
     'Irregular for the first few years, and taking longer to settle than it used to. In one large '
-    + 'study the share of girls whose cycles were regular within two years of starting fell from 76 '
+    + 'study the share of girls whose cycles were regular within 2 years of starting fell from 76 '
     + 'percent in those born in the 1950s and 60s to 56 percent in those born in the early 2000s.',
   ],
 };
@@ -355,15 +355,15 @@ export const CYC_RED = {
   title: 'Worth a doctor',
   items: [
     'Cycles closer together than every 21 days, or further apart than every 45.',
-    'Ninety days between periods, even once.',
-    'Bleeding for more than seven days.',
-    'Soaking through more than one pad or tampon every one to two hours.',
+    '90 days between periods, even once.',
+    'Bleeding for more than 7 days.',
+    'Soaking through more than one pad or tampon every 1 to 2 hours.',
     'Pain that keeps her off school. Period pain that stops a girl living her life is worth '
     + 'investigating rather than enduring, and a generation of women were told otherwise.',
     'A lot of bruising or bleeding generally, or a bleeding disorder in the family.',
   ],
   note: 'This is exactly what the log is for. Turning up with dates beats turning up with a guess, '
-    + 'and it is the difference between being taken seriously and being told to come back in six months.',
+    + 'and it is the difference between being taken seriously and being told to come back in 6 months.',
 };
 
 export const CYC_NO_FERTILE = 'Deliberately left out: this does not show a fertile window or '

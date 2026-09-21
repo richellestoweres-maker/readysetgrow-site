@@ -327,7 +327,7 @@ export const STAGES = [
 export const GROWTH_STATES = [
   { id: 'seed', label: 'Seed', order: 0, description: 'A seed resting in soil, not yet sprouted.' },
   { id: 'sprouting-seed', label: 'Sprouting', order: 1, description: 'The seed cracks open, one small leaf appears.' },
-  { id: 'sprout', label: 'Sprout', order: 2, description: 'A short stem with two rounded leaves.' },
+  { id: 'sprout', label: 'Sprout', order: 2, description: 'A short stem with 2 rounded leaves.' },
   { id: 'young-plant', label: 'Young plant', order: 3, description: 'Standing upright, a few more leaves.' },
   { id: 'leafy-plant', label: 'Leafy plant', order: 4, description: 'Fuller, with a clear stem and several leaves.' },
   { id: 'growing-plant', label: 'Growing plant', order: 5, description: 'Taller than it is wide, starting to look sturdy.' },
