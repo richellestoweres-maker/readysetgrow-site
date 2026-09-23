@@ -623,6 +623,26 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
   font:400 14.5px/1.3 inherit;color:var(--muted);
 }
 /* A CHILD'S PROFILE, TIDIED. One tile per area, two across. */
+/* THIS WEEK, BEFORE SCHOOL */
+.elesson{background:#fff;border:1px solid rgba(74,103,65,.14);border-radius:18px;padding:14px 15px;margin-bottom:11px}
+.elesson.on{background:#F4F7F0;border-color:rgba(74,103,65,.28)}
+.elesson-h{display:flex;align-items:flex-start;gap:11px}
+.etick{
+  width:26px;height:26px;flex:none;margin-top:1px;border-radius:9px;cursor:pointer;
+  border:1.5px solid rgba(74,103,65,.3);background:#fff;display:grid;place-items:center;padding:0;
+}
+.etick[aria-pressed="true"]{background:var(--sage);border-color:var(--sage)}
+.etick:focus-visible{outline:2px solid var(--deep);outline-offset:2px}
+.elesson-t{display:block;font-size:15px;font-weight:600;color:var(--ink);line-height:1.3}
+.elesson-s{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.eweeknav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;flex-wrap:wrap}
+.eweeknav .chip[disabled]{opacity:.4;cursor:default}
+.espan{display:flex;align-items:baseline;gap:9px;padding:7px 0;border-top:1px solid rgba(0,0,0,.055)}
+.espan:first-child{border-top:0;padding-top:0}
+.espan-es{font-size:15px;font-weight:600;color:var(--ink)}
+.espan-en{font-size:13.5px;color:var(--body)}
+.espan-say{font-size:12px;color:var(--muted);margin-left:auto}
+
 .facebtn{background:none;border:0;padding:0;cursor:pointer;border-radius:50%;display:block;margin:0 auto}
 .facebtn:focus-visible{outline:2px solid var(--deep);outline-offset:4px}
 .tapedit{margin:6px 0 0;text-align:center;font-size:11.5px;color:var(--muted)}

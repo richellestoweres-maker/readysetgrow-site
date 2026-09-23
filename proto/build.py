@@ -107,6 +107,7 @@ order = [
     ('willowShort',         SRC/'data/willowShort.js'),
     ('findIndex',           SRC/'data/findIndex.js'),
     ('monthReview',         SRC/'data/monthReview.js'),
+    ('earlyLessons',        SRC/'data/earlyLessons.js'),
     ('firebaseConfig',      SRC/'data/firebaseConfig.js'),
 ]
 

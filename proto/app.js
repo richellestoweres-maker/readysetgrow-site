@@ -1015,6 +1015,10 @@ function newChildRecord(name, birthday) {
        the last month whose summary was put away. See monthReview.js. */
     monthNotes: {},
     monthSeen: '',
+    /* The day this child's weekly lessons started, so week 1 is their
+       week 1, and which ones have been ticked off. See earlyLessons.js. */
+    earlyStart: '',
+    earlyDone: {},
     /* Weights, lengths and head measurements, one entry per occasion,
        always stored in kilograms and centimeters whatever the parent
        reads. See src/data/growth.js. */
@@ -2785,7 +2789,22 @@ function initControls() {
     state.name = e.target.value; render();
   });
   document.addEventListener('input', (e) => {
-    if (e.target.matches('[data-wake]')) { state.wakeTime = e.target.value || '06:30'; render(); }
+    if (e.target.matches('[data-wake]')) {
+      /* THE TIME THAT KEPT DISAPPEARING.
+
+         A time field fires an input event for every part of it, so
+         half typed values arrive here as 06: or as nothing at all. The
+         old line turned those into the default and repainted the
+         screen underneath her, which wiped what she had just typed.
+
+         So a half typed time is now left alone, and the day is only
+         rebuilt once there is a whole one. The field also has an id, so
+         the repaint puts the cursor back where it was. */
+      const v = String(e.target.value || '');
+      if (!/^\d{1,2}:\d{2}$/.test(v)) return;
+      state.wakeTime = v;
+      render();
+    }
     else if (e.target.id === 'askIn') { state.askQuery = e.target.value; }
     else if (e.target.id === 'willowIn') { willow.input = e.target.value; }
     else if (e.target.id === 'findQ') {
@@ -3016,7 +3035,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3712,6 +3731,14 @@ function initControls() {
       // back on later does not silently restore an old support level.
       if (i !== -1) { delete state.lensOptions[id]; delete state.lensNumbers[id]; }
       t.setAttribute('aria-pressed', i === -1);
+    } else if (t.dataset.early) {
+      const how = t.dataset.early;
+      const kid = activeChild();
+      const at = earlySeen(kid);
+      if (how === 'tick') earlyToggle(t.dataset.id);
+      else if (how === 'back') store.earlyWeek = Math.max(1, at - 1);
+      else if (how === 'next') store.earlyWeek = Math.min(12, at + 1);
+      else if (how === 'now') store.earlyWeek = null;
     } else if (t.dataset.cipop) {
       const id = t.dataset.id;
       if (t.dataset.cipop === 'go') {
@@ -4122,7 +4149,7 @@ function screenSleep(c) {
   <div class="sc">
     <div class="card">
       <p class="eyebrow">What time did they wake up?</p>
-      <input type="time" data-wake="1" value="${esc(state.wakeTime)}"
+      <input type="time" id="wakeIn" data-wake="1" value="${esc(state.wakeTime)}"
         style="font:inherit;font-size:24px;font-family:var(--serif);font-weight:600;color:var(--ink);
         border:0;background:transparent;padding:4px 0;width:100%">
       ${band ? `<p class="tiny" style="margin-top:2px">${esc(band.label)} &middot; usually ${band.naps.typical === 0 ? 'no naps' : band.naps.typical + (band.naps.typical === 1 ? ' nap' : ' naps')}</p>` : ''}
@@ -16798,7 +16825,7 @@ function screenChild(c) {
           : 'Turn on what fits them, and read what it actually means',
         'data-go="screen" data-id="understand"')}
       ${showsLearning(months) ? childRow('book', 'Learning',
-        esc('What a structured day looks like at ' + (learnBandFor(months) || {}).label.toLowerCase()),
+        esc(earlyRowSub(months)),
         'data-go="screen" data-id="learning"') : ''}
       ${childRow('hand', signRowTitle(), signRowSub(months),
         'data-go="screen" data-id="signs"')}
@@ -19238,6 +19265,8 @@ function normalizeChild(k) {
     cycleDays: k.cycleDays && typeof k.cycleDays === 'object' ? k.cycleDays : {},
     monthNotes: k.monthNotes && typeof k.monthNotes === 'object' ? k.monthNotes : {},
     monthSeen: typeof k.monthSeen === 'string' ? k.monthSeen : '',
+    earlyStart: typeof k.earlyStart === 'string' ? k.earlyStart : '',
+    earlyDone: k.earlyDone && typeof k.earlyDone === 'object' ? k.earlyDone : {},
     updatedAt: Number(k.updatedAt) || 0,
   });
 }
@@ -21980,17 +22009,20 @@ function learnBandChoice(months) {
 function screenLearning(c) {
   const months = c.months;
   const band = learnBandChoice(months);
-  const tab = store.learnTab || 'day';
-  const tabs = [
+  const early = earlyShows(months);
+  let tab = store.learnTab || (early ? 'week' : 'day');
+  const tabs = (early ? [{ id: 'week', label: EARLY_TITLE }] : []).concat([
     { id: 'day', label: 'The day' },
     { id: 'subjects', label: 'Subjects' },
     { id: 'kit', label: 'What you need' },
     { id: 'how', label: 'Running it' },
-  ];
-  const body = tab === 'subjects' ? learnSubjectsTab(months)
-    : tab === 'kit' ? learnKitTab()
-      : tab === 'how' ? learnHowTab()
-        : learnDayTab(band, months);
+  ]);
+  if (!tabs.some((t) => t.id === tab)) tab = tabs[0].id;
+  const body = tab === 'week' ? earlyWeekTab(months)
+    : tab === 'subjects' ? learnSubjectsTab(months)
+      : tab === 'kit' ? learnKitTab()
+        : tab === 'how' ? learnHowTab()
+          : learnDayTab(band, months);
 
   return `
   ${cornerLeaves()}
@@ -22003,6 +22035,145 @@ function screenLearning(c) {
     ${subTabs('learnTab', tab, tabs)}
     ${body}
   </div>`;
+}
+
+/* =================================================================
+   THIS WEEK, FOR THE YEARS BEFORE SCHOOL
+
+   3 short lessons, a few Spanish words and a sign, new every week and
+   counted from the day this child started. See earlyLessons.js.
+   ================================================================= */
+
+/* The day this child's weeks are counted from. Written the first time
+   it is opened rather than at signup, so week 1 is the week they
+   actually began. */
+function earlyStartOf(kid) {
+  if (!kid) return ciToday();
+  if (!kid.earlyStart) {
+    kid.earlyStart = ciToday();
+    kid.updatedAt = Date.now();
+    flushStore();
+  }
+  return kid.earlyStart;
+}
+
+function earlyWeekNow(kid) {
+  return earlyWeekFor(earlyStartOf(kid), ciToday());
+}
+
+/* Which week is on screen. Theirs unless she has stepped forward or
+   back to look, and that only lasts the visit. */
+function earlySeen(kid) {
+  const now = earlyWeekNow(kid);
+  const n = Number(store.earlyWeek);
+  return n >= 1 && n <= 12 ? n : now;
+}
+
+function earlyDoneOf(kid) {
+  if (!kid) return {};
+  if (!kid.earlyDone || typeof kid.earlyDone !== 'object') kid.earlyDone = {};
+  return kid.earlyDone;
+}
+
+function earlyToggle(id) {
+  const kid = activeChild();
+  if (!kid || !id) return;
+  const done = earlyDoneOf(kid);
+  if (done[id]) delete done[id]; else done[id] = ciToday();
+  kid.updatedAt = Date.now();
+  flushStore();
+}
+
+function earlyLessonCard(l, done) {
+  const on = !!done[l.id];
+  return `
+  <div class="elesson${on ? ' on' : ''}">
+    <div class="elesson-h">
+      <button class="etick" data-early="tick" data-id="${esc(l.id)}" aria-pressed="${on}"
+        aria-label="${on ? 'Done' : 'Mark as done'}">${on ? icon('check', 14, '#fff') : ''}</button>
+      <span class="grow">
+        <span class="elesson-t">${esc(l.title)}</span>
+        <span class="elesson-s">${esc(l.subject)} &middot; ${esc(l.minutes)} min</span>
+      </span>
+    </div>
+    <p class="tiny" style="margin:9px 0 0">You need: ${esc((l.need || []).join(', ').toLowerCase())}.</p>
+    <ol class="dlist" style="counter-reset:none;margin-top:8px">
+      ${(l.steps || []).map((x) => `<li>${esc(x)}</li>`).join('')}
+    </ol>
+    <p class="bodytext" style="margin:8px 0 0"><strong style="color:var(--ink)">What it builds.</strong> ${esc(l.teaches)}</p>
+    <details class="cihow" style="margin-top:8px">
+      <summary>If it is too hard, or too easy</summary>
+      <p class="tiny" style="margin-top:6px"><strong style="color:var(--ink)">Easier.</strong> ${esc(l.easier)}</p>
+      <p class="tiny" style="margin-top:5px"><strong style="color:var(--ink)">Harder.</strong> ${esc(l.harder)}</p>
+    </details>
+  </div>`;
+}
+
+function earlyWeekTab(months) {
+  const kid = activeChild();
+  const band = earlyBandFor(months);
+  if (!kid || !band) return '<div class="card flat"><p class="bodytext">Open this from a child with a birthday on their profile.</p></div>';
+  const n = earlySeen(kid);
+  const now = earlyWeekNow(kid);
+  const w = earlyWeek(band.id, n);
+  if (!w) return '';
+  const done = earlyDoneOf(kid);
+  const doneCount = (w.lessons || []).filter((l) => done[l.id]).length;
+
+  return `
+  <div class="card leafy">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(band.label)}</p>
+    <p class="bodytext" style="margin-top:6px"><strong style="color:var(--ink)">Week ${n}. ${esc(w.focus)}</strong></p>
+    <p class="tiny" style="margin-top:5px">${esc(EARLY_INTRO)}</p>
+    <div class="eweeknav">
+      <button class="chip" data-early="back" ${n <= 1 ? 'disabled' : ''}>Week ${n - 1 < 1 ? 1 : n - 1}</button>
+      ${n === now ? `<span class="tiny">${doneCount} of ${(w.lessons || []).length} done this week</span>`
+        : `<button class="chip" data-early="now">Back to their week</button>`}
+      <button class="chip" data-early="next" ${n >= 12 ? 'disabled' : ''}>Week ${n + 1 > 12 ? 12 : n + 1}</button>
+    </div>
+  </div>
+
+  ${(w.lessons || []).map((l) => earlyLessonCard(l, done)).join('')}
+
+  ${w.spanish ? `
+  <div class="dsec">
+    <h4>Spanish this week</h4>
+    <div class="card flat">
+      ${(w.spanish.words || []).map((x) => `
+        <div class="espan">
+          <span class="espan-es">${esc(x.es)}</span>
+          <span class="espan-en">${esc(x.en)}</span>
+          <span class="espan-say">say ${esc(x.say)}</span>
+        </div>`).join('')}
+      <p class="tiny" style="margin-top:9px">${esc(w.spanish.tip)}</p>
+    </div>
+  </div>` : ''}
+
+  ${w.sign ? `
+  <div class="dsec">
+    <h4>The sign this week</h4>
+    <div class="card flat">
+      <p style="font-size:15px;font-weight:600;color:var(--ink);margin:0">${esc(w.sign.word)}</p>
+      <p class="bodytext" style="margin-top:6px">${esc(w.sign.how)}</p>
+      <p class="tiny" style="margin-top:6px">${esc(w.sign.use)}</p>
+      <button class="chip" style="margin-top:10px" data-go="screen" data-id="signs">More signs for this age</button>
+    </div>
+  </div>` : ''}
+
+  <p class="tiny" style="margin-top:4px">${esc(EARLY_LOOP_NOTE)}</p>
+  <p class="tiny" style="margin-top:7px">${esc(EARLY_DONE_NOTE)}</p>`;
+}
+
+/* What the Learning row says on a child's page. Before school it is
+   this week's focus, because that is the thing to go and do. */
+function earlyRowSub(months) {
+  const kid = activeChild();
+  const band = earlyBandFor(months);
+  if (kid && band) {
+    const w = earlyWeek(band.id, earlyWeekNow(kid));
+    if (w) return 'Week ' + earlyWeekNow(kid) + ': ' + w.focus;
+  }
+  return 'What a structured day looks like at ' + ((learnBandFor(months) || {}).label || '').toLowerCase();
 }
 
 function learnDayTab(band, months) {
