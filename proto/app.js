@@ -2709,6 +2709,11 @@ function render() {
     postCaret = null;
   } else if (keepId) restoreFocus(keepId, keepStart, keepEnd);
 
+  /* If something else repainted while she was part way through typing a
+     time, put back what she had typed rather than the old value. */
+  const wi = document.getElementById('wakeIn');
+  if (wi && wakeTyping != null && keepId === 'wakeIn') wi.value = wakeTyping;
+
   document.getElementById('tabs').innerHTML = tabList().map((t) => {
     const on = state.tab === t.id && !state.view;
     if (t.center) {
@@ -2789,22 +2794,7 @@ function initControls() {
     state.name = e.target.value; render();
   });
   document.addEventListener('input', (e) => {
-    if (e.target.matches('[data-wake]')) {
-      /* THE TIME THAT KEPT DISAPPEARING.
-
-         A time field fires an input event for every part of it, so
-         half typed values arrive here as 06: or as nothing at all. The
-         old line turned those into the default and repainted the
-         screen underneath her, which wiped what she had just typed.
-
-         So a half typed time is now left alone, and the day is only
-         rebuilt once there is a whole one. The field also has an id, so
-         the repaint puts the cursor back where it was. */
-      const v = String(e.target.value || '');
-      if (!/^\d{1,2}:\d{2}$/.test(v)) return;
-      state.wakeTime = v;
-      render();
-    }
+    if (e.target.matches('[data-wake]')) { wakeSet(e.target.value); return; }
     else if (e.target.id === 'askIn') { state.askQuery = e.target.value; }
     else if (e.target.id === 'willowIn') { willow.input = e.target.value; }
     else if (e.target.id === 'findQ') {
@@ -2956,6 +2946,11 @@ function initControls() {
   let bdayTimer = null;
 
   document.addEventListener('change', (e) => {
+    /* Some phones only report a time once the picker is closed, which
+       arrives as a change rather than an input. Without this the time
+       was typed, never saved, and the next repaint put the old one
+       back. That is the glitch she kept hitting. */
+    if (e.target.matches('[data-wake]')) { wakeSet(e.target.value); return; }
     if (e.target.matches('[data-postchild]')) {
       postDraft().childId = e.target.value;
       flushStore();
@@ -4130,41 +4125,48 @@ function viewSituation(c, id) {
    SLEEP AND THE SCHEDULE BUILDER
    ================================================================= */
 
-function screenSleep(c) {
-  if (c.months == null) return emptyScreen('Add a birthday first.');
+/* WHAT TIME THEY WOKE UP.
+
+   Three things were going wrong here, and all three are fixed in this
+   one function.
+
+   1. A time field reports every half typed value, and the old code read
+      an empty one as "cleared" and put the default back.
+   2. Saving it did not stamp the child's record, so the next sync from
+      another device, holding the older time, looked newer and won. That
+      is why it kept coming back to the same time.
+   3. Every keystroke repainted the whole screen, which threw away the
+      field she was typing in.
+
+   So a half typed time is ignored, a whole one is stamped and saved,
+   and only the built day underneath is redrawn. */
+let wakeTyping = null;
+
+function wakeSet(v) {
+  const t = String(v || '');
+  /* Remembered raw, so a repaint from somewhere else puts back what she
+     is part way through typing rather than the old time. */
+  wakeTyping = t;
+  if (!/^\d{1,2}:\d{2}$/.test(t)) return;
+  const kid = activeChild();
+  state.wakeTime = t;
+  if (kid) kid.updatedAt = Date.now();
+  flushStore();
+  const box = document.getElementById('rhythmDay');
+  if (box) box.innerHTML = sleepDayHtml(ctx());
+  else render();
+}
+
+/* The built day, on its own so a change to the wake time can redraw
+   just this part. Rebuilding the whole screen while she was typing in
+   the time field is what kept wiping the time she had just put in. */
+function sleepDayHtml(c) {
   const day = buildDay({ months: c.months, wakeTime: state.wakeTime, naps: state.napOverride });
   const rows = day.ok ? describeDay(day) : [];
   const needs = c.sleepNeeds;
   const band = c.band;
-
   const rowIcon = { wake: 'sun', nap: 'moon', winddown: 'heart', bedtime: 'moon' };
-
   return `
-  ${cornerLeaves()}
-  <div class="sc-head">
-    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
-    <h1 class="title" style="margin-top:6px">Today's Rhythm</h1>
-    <p class="sub">Tell it one thing. It builds the rest of the day.</p>
-  </div>
-  <div class="sc">
-    <div class="card">
-      <p class="eyebrow">What time did they wake up?</p>
-      <input type="time" id="wakeIn" data-wake="1" value="${esc(state.wakeTime)}"
-        style="font:inherit;font-size:24px;font-family:var(--serif);font-weight:600;color:var(--ink);
-        border:0;background:transparent;padding:4px 0;width:100%">
-      ${band ? `<p class="tiny" style="margin-top:2px">${esc(band.label)} &middot; usually ${band.naps.typical === 0 ? 'no naps' : band.naps.typical + (band.naps.typical === 1 ? ' nap' : ' naps')}</p>` : ''}
-    </div>
-
-    ${band && band.naps.max > 0 ? `
-    <div style="display:flex;gap:6px;margin-bottom:13px;align-items:center;flex-wrap:wrap">
-      <span class="tiny" style="margin-right:2px">Naps today</span>
-      ${Array.from({ length: band.naps.max + 1 }, (_, n) => n).map((n) => {
-        const active = (state.napOverride == null ? band.naps.typical : state.napOverride) === n;
-        return `<button class="mb" data-naps="${n}" aria-pressed="${active}"
-          style="${active ? 'background:var(--sage);color:#fff' : ''}">${n}</button>`;
-      }).join('')}
-    </div>` : ''}
-
     ${day.ok ? `
     <div class="card" style="padding:6px 14px 14px">
       ${rows.map((r, i) => `
@@ -4268,6 +4270,45 @@ function screenSleep(c) {
         <p class="tiny" style="margin-top:4px"><strong style="color:var(--ink)">Evidence.</strong> ${esc(a.evidence)}</p>
       </div>`).join('')}` : ''}
     <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>
+  `;
+}
+
+function screenSleep(c) {
+  if (c.months == null) return emptyScreen('Add a birthday first.');
+  const day = buildDay({ months: c.months, wakeTime: state.wakeTime, naps: state.napOverride });
+  const rows = day.ok ? describeDay(day) : [];
+  const needs = c.sleepNeeds;
+  const band = c.band;
+
+  const rowIcon = { wake: 'sun', nap: 'moon', winddown: 'heart', bedtime: 'moon' };
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title" style="margin-top:6px">Today's Rhythm</h1>
+    <p class="sub">Tell it one thing. It builds the rest of the day.</p>
+  </div>
+  <div class="sc">
+    <div class="card">
+      <p class="eyebrow">What time did they wake up?</p>
+      <input type="time" id="wakeIn" data-wake="1" value="${esc(state.wakeTime)}"
+        style="font:inherit;font-size:24px;font-family:var(--serif);font-weight:600;color:var(--ink);
+        border:0;background:transparent;padding:4px 0;width:100%">
+      ${band ? `<p class="tiny" style="margin-top:2px">${esc(band.label)} &middot; usually ${band.naps.typical === 0 ? 'no naps' : band.naps.typical + (band.naps.typical === 1 ? ' nap' : ' naps')}</p>` : ''}
+    </div>
+
+    ${band && band.naps.max > 0 ? `
+    <div style="display:flex;gap:6px;margin-bottom:13px;align-items:center;flex-wrap:wrap">
+      <span class="tiny" style="margin-right:2px">Naps today</span>
+      ${Array.from({ length: band.naps.max + 1 }, (_, n) => n).map((n) => {
+        const active = (state.napOverride == null ? band.naps.typical : state.napOverride) === n;
+        return `<button class="mb" data-naps="${n}" aria-pressed="${active}"
+          style="${active ? 'background:var(--sage);color:#fff' : ''}">${n}</button>`;
+      }).join('')}
+    </div>` : ''}
+
+    <div id="rhythmDay">${sleepDayHtml(c)}</div>
   </div>`;
 }
 
