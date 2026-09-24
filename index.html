@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-24 13:18">
+<meta name="rsg-build" content="2026-09-24 14:02">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1739,7 +1739,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-24 13:18';
+const BUILD_STAMP = '2026-09-24 14:02';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -34341,6 +34341,8 @@ function tabList() {
     ];
 }
 let lastFocus = { id: null, start: null, end: null };
+let lastScreenHTML = null;
+let lastBarHTML = null;
 let focusedTag = '';
 let lastRoute = null;
 function routeKey() {
@@ -34402,7 +34404,36 @@ function paintBackground() {
     lastBgSeed = seed;
     layer.innerHTML = desktopHeader(pickAffirmations(state.birthday));
 }
+let renderCount = 0;
+let renderWindow = 0;
+let renderPaused = 0;
+let renderSame = 0;
+function renderLooping() {
+    const now = Date.now();
+    if (now < renderPaused)
+        return true;
+    if (now - renderWindow > 1000) {
+        renderWindow = now;
+        renderCount = 0;
+        renderSame = 0;
+    }
+    renderCount++;
+    if (renderCount < 150 && renderSame < 80)
+        return false;
+    renderPaused = now + 500;
+    renderCount = 0;
+    renderSame = 0;
+    try {
+        const where = state.view ? (state.view.type + ':' + state.view.id) : ('tab:' + state.tab);
+        store.loopNote = { at: now, where: where, build: buildStamp() };
+        localStorage.setItem('rsg:loop', JSON.stringify(store.loopNote));
+    }
+    catch (err) { }
+    return true;
+}
 function render() {
+    if (renderLooping())
+        return;
     const live = document.activeElement;
     focusedTag = live && live.tagName ? live.tagName : '';
     if (live && live.id && canRefocus(live)) {
@@ -34435,6 +34466,7 @@ function render() {
         paintBackground();
         document.getElementById('screen').innerHTML =
             auth.checking ? screenRestoring() : screenAuth();
+        lastScreenHTML = null;
         const tabsEl = document.getElementById('tabs');
         if (tabsEl)
             tabsEl.innerHTML = '';
@@ -34459,6 +34491,8 @@ function render() {
         }
         else
             screen.innerHTML = topBar(true) + obHtml;
+        lastScreenHTML = null;
+        lastBarHTML = null;
         const obTabs = document.getElementById('tabs');
         if (obTabs)
             obTabs.innerHTML = '';
@@ -34656,11 +34690,28 @@ function render() {
     const bar = state.tab === 'welcome' ? '' : topBar();
     const barSlot = document.getElementById('topbar');
     if (barSlot) {
-        barSlot.innerHTML = bar;
-        screen.innerHTML = html;
+        if (bar !== lastBarHTML) {
+            barSlot.innerHTML = bar;
+            lastBarHTML = bar;
+        }
+        if (html !== lastScreenHTML) {
+            screen.innerHTML = html;
+            lastScreenHTML = html;
+            renderSame = 0;
+        }
+        else
+            renderSame++;
     }
-    else
-        screen.innerHTML = bar + html;
+    else {
+        const both = bar + html;
+        if (both !== lastScreenHTML) {
+            screen.innerHTML = both;
+            lastScreenHTML = both;
+            renderSame = 0;
+        }
+        else
+            renderSame++;
+    }
     const willowSlot = document.getElementById('willow');
     const bday = birthdayOverlay();
     const pendingSave = !!(v && v.type === 'screen' && v.id === 'milestones'
@@ -34803,8 +34854,10 @@ function initControls() {
         else if (e.target.id === 'findQ') {
             state.findQ = e.target.value;
             const box = document.getElementById('findResults');
-            if (box)
+            if (box) {
                 box.innerHTML = findResultsHtml(state.findQ);
+                lastScreenHTML = null;
+            }
         }
         else if (e.target.matches('[data-sharefield]')) {
             share.joinInput = e.target.value;
@@ -34988,6 +35041,8 @@ function initControls() {
     });
     document.addEventListener('blur', (e) => {
         if (e.target && e.target.matches && e.target.matches('[data-childbday]')) {
+            if (!document.contains(e.target))
+                return;
             if (bdayTimer) {
                 clearTimeout(bdayTimer);
                 bdayTimer = null;
@@ -35560,6 +35615,13 @@ function initControls() {
         }
         else if (t.dataset.update === 'later') {
             update.dismissed = true;
+        }
+        else if (t.dataset.update === 'clearloop') {
+            store.loopNote = null;
+            try {
+                localStorage.removeItem('rsg:loop');
+            }
+            catch (err) { }
         }
         else if (t.dataset.share === 'link') {
             inviteSend(t.dataset.code);
@@ -36448,7 +36510,7 @@ function viewSituation(c, id) {
     <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>
   </div>`;
 }
-function clockLabel(t) {
+function wakeClockLabel(t) {
     const parts = String(t || '06:30').split(':');
     let h = Number(parts[0]);
     const m = parts[1] || '00';
@@ -36516,8 +36578,10 @@ function wakeSet(v) {
         kid.updatedAt = Date.now();
     flushStore();
     const box = document.getElementById('rhythmDay');
-    if (box)
+    if (box) {
         box.innerHTML = sleepDayHtml(ctx());
+        lastScreenHTML = null;
+    }
     const chips = document.querySelectorAll('[data-waketime="set"]');
     for (let i = 0; i < chips.length; i++) {
         chips[i].setAttribute('aria-pressed', chips[i].dataset.val === t);
@@ -36655,7 +36719,7 @@ function screenSleep(c) {
       <div class="chips" style="margin-top:10px">
         ${['05:30', '06:00', '06:30', '07:00', '07:30', '08:00'].map((t) => `
           <button class="chip" data-waketime="set" data-val="${t}"
-            aria-pressed="${state.wakeTime === t}">${esc(clockLabel(t))}</button>`).join('')}
+            aria-pressed="${state.wakeTime === t}">${esc(wakeClockLabel(t))}</button>`).join('')}
       </div>
       ${band ? `<p class="tiny" style="margin-top:10px">${esc(band.label)} &middot; usually ${band.naps.typical === 0 ? 'no naps' : band.naps.typical + (band.naps.typical === 1 ? ' nap' : ' naps')}</p>` : ''}
     </div>
@@ -37903,6 +37967,29 @@ function screenAbout(c) {
         ? `<button class="btn" data-update="go">Load the new version</button>`
         : `<button class="chip" data-update="check">Check again</button>`}
     </div>
+    ${(() => {
+        let note = store.loopNote;
+        if (!note) {
+            try {
+                note = JSON.parse(localStorage.getItem('rsg:loop') || 'null');
+            }
+            catch (err) {
+                note = null;
+            }
+        }
+        if (!note || !note.at)
+            return '';
+        const when = new Date(note.at);
+        return `
+      <div class="card flat">
+        <p class="eyebrow">${icon('info', 11, 'var(--taupe)')} A glitch was caught and stopped</p>
+        <p class="tiny" style="margin-top:6px">The app started repainting itself on
+          <strong style="color:var(--ink)">${esc(String(note.where || 'a screen'))}</strong>
+          at ${esc(when.toLocaleString())}, on build ${esc(String(note.build || ''))}. It was stopped
+          automatically. Telling me this line says exactly where to look.</p>
+        <button class="chip" style="margin-top:9px" data-update="clearloop">Clear this</button>
+      </div>`;
+    })()}
     <div class="dsec">
       <h4>Where the guidance comes from</h4>
       <p class="bodytext">Everything clinical in this app is written against published guidance from
