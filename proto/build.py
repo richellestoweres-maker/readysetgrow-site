@@ -142,7 +142,15 @@ def check_collisions():
     # because after the ESM is stripped they all live in the same
     # scope. So all four shapes are collected now.
     owner, bad = {}, []
-    for name, path in order:
+    # THE APP FILE COUNTS TOO.
+    #
+    # The gate used to read the data modules and stop there, and that
+    # gap cost a real bug: proto/app.js grew its own clockLabel while
+    # src/data/routines.js already had one, the app's definition won,
+    # and every step of the bedtime routine printed a nonsense time.
+    # app.js sits in the same scope as everything else, so it is
+    # checked with everything else.
+    for name, path in list(order) + [('proto/app.js', OUT / 'app.js')]:
         text = path.read_text()
         names = set(re.findall(r'^export\s+const\s+([A-Za-z_$][\w$]*)', text, re.M))
         names |= set(re.findall(r'^export\s+function\s+([A-Za-z_$][\w$]*)', text, re.M))

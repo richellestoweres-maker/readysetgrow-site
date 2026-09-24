@@ -1607,7 +1607,7 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-24 13:18';
+const BUILD_STAMP = '2026-09-24 14:02';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -42298,6 +42298,8 @@ function tabList() {
 }
 
 let lastFocus = { id: null, start: null, end: null };
+let lastScreenHTML = null;
+let lastBarHTML = null;
 let focusedTag = '';
 
 /* Which screen the last paint was of. Everything in this app repaints
@@ -42386,7 +42388,40 @@ function paintBackground() {
   layer.innerHTML = desktopHeader(pickAffirmations(state.birthday));
 }
 
+/* THE SAFETY NET.
+
+   If anything ever puts the app into a repaint loop again, this stops
+   it rather than letting the phone flicker until it is force quit.
+   It also leaves a note behind, which shows on the About page, so the
+   screen it happened on is known instead of guessed at. */
+let renderCount = 0;
+let renderWindow = 0;
+let renderPaused = 0;
+let renderSame = 0;
+
+function renderLooping() {
+  const now = Date.now();
+  if (now < renderPaused) return true;
+  if (now - renderWindow > 1000) { renderWindow = now; renderCount = 0; renderSame = 0; }
+  renderCount++;
+  /* A loop is a great many repaints that all produce the same screen.
+     Tapping quickly produces a great many repaints that do not, so the
+     count on its own is not enough to judge by and the threshold for
+     it is deliberately far above anything a person can do. */
+  if (renderCount < 150 && renderSame < 80) return false;
+  renderPaused = now + 500;
+  renderCount = 0;
+  renderSame = 0;
+  try {
+    const where = state.view ? (state.view.type + ':' + state.view.id) : ('tab:' + state.tab);
+    store.loopNote = { at: now, where: where, build: buildStamp() };
+    localStorage.setItem('rsg:loop', JSON.stringify(store.loopNote));
+  } catch (err) { /* a note about a problem must never become one */ }
+  return true;
+}
+
 function render() {
+  if (renderLooping()) return;
   const live = document.activeElement;
   /* Noted before the screen is rebuilt, because rebuilding it moves
      focus to the page itself. The evening pop up uses this to stay out
@@ -42420,6 +42455,7 @@ function render() {
     paintBackground();
     document.getElementById('screen').innerHTML =
       auth.checking ? screenRestoring() : screenAuth();
+    lastScreenHTML = null;
     const tabsEl = document.getElementById('tabs');
     if (tabsEl) tabsEl.innerHTML = '';
     const barEl = document.getElementById('topbar');
@@ -42443,6 +42479,8 @@ function render() {
     const obBar = document.getElementById('topbar');
     if (obBar) { obBar.innerHTML = topBar(true); screen.innerHTML = obHtml; }
     else screen.innerHTML = topBar(true) + obHtml;
+    lastScreenHTML = null;
+    lastBarHTML = null;
     const obTabs = document.getElementById('tabs');
     if (obTabs) obTabs.innerHTML = '';
     const obW = document.getElementById('willow');
@@ -42592,10 +42630,31 @@ function render() {
   /* The desktop shell gives the header its own pinned row above the
      scroll. The phone build has no such row, so there it is simply the
      first thing on the page. Either way it is written once, here. */
+  /* THE FLICKER.
+
+     Every keystroke, every sync and every tap repainted the whole
+     screen, and replacing the markup under a field that has focus is
+     what a phone shows as flickering: the keyboard or the picker
+     closes and opens again, and a tap can land on an element that no
+     longer exists. Most of those repaints produce exactly the same
+     markup as the one before.
+
+     So the screen is now only rewritten when what we would write has
+     actually changed. Compared against what we last wrote rather than
+     against innerHTML, for the same reason as Willow's panel below.
+     Anything that edits the screen by hand clears lastScreenHTML so
+     the next repaint is not skipped. */
   const bar = state.tab === 'welcome' ? '' : topBar();
   const barSlot = document.getElementById('topbar');
-  if (barSlot) { barSlot.innerHTML = bar; screen.innerHTML = html; }
-  else screen.innerHTML = bar + html;
+  if (barSlot) {
+    if (bar !== lastBarHTML) { barSlot.innerHTML = bar; lastBarHTML = bar; }
+    if (html !== lastScreenHTML) { screen.innerHTML = html; lastScreenHTML = html; renderSame = 0; }
+    else renderSame++;
+  } else {
+    const both = bar + html;
+    if (both !== lastScreenHTML) { screen.innerHTML = both; lastScreenHTML = both; renderSame = 0; }
+    else renderSame++;
+  }
 
   /* Willow sits outside the scrolling screen so she stays put, and
      outside the header so she is reachable with a thumb. */
@@ -42779,7 +42838,7 @@ function initControls() {
       /* Only the results are redrawn, so the box keeps its caret. */
       state.findQ = e.target.value;
       const box = document.getElementById('findResults');
-      if (box) box.innerHTML = findResultsHtml(state.findQ);
+      if (box) { box.innerHTML = findResultsHtml(state.findQ); lastScreenHTML = null; }
     }
     else if (e.target.matches('[data-sharefield]')) {
       /* No repaint while she types, or the caret jumps. The value is
@@ -42955,6 +43014,10 @@ function initControls() {
      waiting out the timer. */
   document.addEventListener('blur', (e) => {
     if (e.target && e.target.matches && e.target.matches('[data-childbday]')) {
+      /* A repaint removes the field, which fires blur on a node that is
+         no longer in the page. Rendering again from that is how a
+         repaint turns into a loop. */
+      if (!document.contains(e.target)) return;
       if (bdayTimer) { clearTimeout(bdayTimer); bdayTimer = null; }
       render();
     }
@@ -43377,6 +43440,9 @@ function initControls() {
       return;
     } else if (t.dataset.update === 'later') {
       update.dismissed = true;
+    } else if (t.dataset.update === 'clearloop') {
+      store.loopNote = null;
+      try { localStorage.removeItem('rsg:loop'); } catch (err) {}
     } else if (t.dataset.share === 'link') {
       inviteSend(t.dataset.code);
       return;
@@ -44116,7 +44182,11 @@ function viewSituation(c, id) {
    So there is no phone time wheel here any more. 3 plain dropdowns and
    a row of the usual wake times, which is faster on a phone anyway and
    cannot reopen anything. */
-function clockLabel(t) {
+/* Named for what it is used for. routines.js already has a clockLabel
+   of its own that takes minutes since midnight, and two functions with
+   one name in one bundle is how the bedtime routine ended up printing
+   2:00 PM for a bath. */
+function wakeClockLabel(t) {
   const parts = String(t || '06:30').split(':');
   let h = Number(parts[0]);
   const m = parts[1] || '00';
@@ -44196,7 +44266,7 @@ function wakeSet(v) {
   /* Only the built day is redrawn. The dropdowns she is using are left
      exactly as they are. */
   const box = document.getElementById('rhythmDay');
-  if (box) box.innerHTML = sleepDayHtml(ctx());
+  if (box) { box.innerHTML = sleepDayHtml(ctx()); lastScreenHTML = null; }
   const chips = document.querySelectorAll('[data-waketime="set"]');
   for (let i = 0; i < chips.length; i++) {
     chips[i].setAttribute('aria-pressed', chips[i].dataset.val === t);
@@ -44343,7 +44413,7 @@ function screenSleep(c) {
       <div class="chips" style="margin-top:10px">
         ${['05:30', '06:00', '06:30', '07:00', '07:30', '08:00'].map((t) => `
           <button class="chip" data-waketime="set" data-val="${t}"
-            aria-pressed="${state.wakeTime === t}">${esc(clockLabel(t))}</button>`).join('')}
+            aria-pressed="${state.wakeTime === t}">${esc(wakeClockLabel(t))}</button>`).join('')}
       </div>
       ${band ? `<p class="tiny" style="margin-top:10px">${esc(band.label)} &middot; usually ${band.naps.typical === 0 ? 'no naps' : band.naps.typical + (band.naps.typical === 1 ? ' nap' : ' naps')}</p>` : ''}
     </div>
@@ -45930,6 +46000,22 @@ function screenAbout(c) {
         ? `<button class="btn" data-update="go">Load the new version</button>`
         : `<button class="chip" data-update="check">Check again</button>`}
     </div>
+
+    ${(() => {
+      let note = store.loopNote;
+      if (!note) { try { note = JSON.parse(localStorage.getItem('rsg:loop') || 'null'); } catch (err) { note = null; } }
+      if (!note || !note.at) return '';
+      const when = new Date(note.at);
+      return `
+      <div class="card flat">
+        <p class="eyebrow">${icon('info', 11, 'var(--taupe)')} A glitch was caught and stopped</p>
+        <p class="tiny" style="margin-top:6px">The app started repainting itself on
+          <strong style="color:var(--ink)">${esc(String(note.where || 'a screen'))}</strong>
+          at ${esc(when.toLocaleString())}, on build ${esc(String(note.build || ''))}. It was stopped
+          automatically. Telling me this line says exactly where to look.</p>
+        <button class="chip" style="margin-top:9px" data-update="clearloop">Clear this</button>
+      </div>`;
+    })()}
 
     <div class="dsec">
       <h4>Where the guidance comes from</h4>
