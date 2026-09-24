@@ -2344,6 +2344,7 @@ function tabList() {
 }
 
 let lastFocus = { id: null, start: null, end: null };
+let focusedTag = '';
 
 /* Which screen the last paint was of. Everything in this app repaints
    the whole screen on every tap, which used to throw a parent back to
@@ -2379,11 +2380,36 @@ function routeKey() {
   ].join('|');
 }
 
+/* WHAT MAY BE GIVEN FOCUS BACK, AND WHAT MUST NEVER BE.
+
+   This is the bug that made the app flicker and freeze on her phone.
+   Putting focus back into a text box is right: without it, typing a
+   message to Willow loses the caret on every repaint. Putting focus
+   back into a dropdown or a time field is a disaster, because a phone
+   opens its own wheel the moment one is focused. A repaint then put
+   the focus back, which opened the wheel again, which repainted, and
+   the app sat there flickering with pickers stacked on top of each
+   other and nothing tappable underneath.
+
+   So only text like fields are ever refocused. */
+const TEXTY = ['text', 'search', 'email', 'password', 'tel', 'url', 'number'];
+function canRefocus(el) {
+  if (!el || !el.tagName) return false;
+  if (el.tagName === 'TEXTAREA') return true;
+  if (el.tagName !== 'INPUT') return false;
+  const type = String(el.type || 'text').toLowerCase();
+  if (type === 'time' || type === 'date' || type === 'datetime-local'
+    || type === 'month' || type === 'week' || type === 'color' || type === 'file') return false;
+  return TEXTY.indexOf(type) !== -1;
+}
+
 function restoreFocus(id, start, end) {
   const useId = id || lastFocus.id;
   if (!useId) return;
   const back = document.getElementById(useId);
   if (!back) return;
+  if (!canRefocus(back)) return;
+  if (document.activeElement === back) return;
   back.focus();
   const s = id ? start : lastFocus.start;
   const e = id ? end : lastFocus.end;
@@ -2408,7 +2434,11 @@ function paintBackground() {
 
 function render() {
   const live = document.activeElement;
-  if (live && live.id && live.tagName === 'INPUT') {
+  /* Noted before the screen is rebuilt, because rebuilding it moves
+     focus to the page itself. The evening pop up uses this to stay out
+     of the way of something she is in the middle of. */
+  focusedTag = live && live.tagName ? live.tagName : '';
+  if (live && live.id && canRefocus(live)) {
     let st = null, en = null;
     try { st = live.selectionStart; en = live.selectionEnd; } catch (err) {}
     if (st == null) { st = String(live.value || '').length; en = st; }
@@ -2591,7 +2621,7 @@ function render() {
   const inRewritten = !!act && (screen.contains(act)
     || (willowSlotNow && willowSlotNow.contains(act))
     || (barSlotNow && barSlotNow.contains(act)));
-  const keepId = act && inRewritten && act.id ? act.id : null;
+  const keepId = act && inRewritten && act.id && canRefocus(act) ? act.id : null;
   // Some input types report selectionStart as null. Falling back to the
   // end of the value keeps typing in order instead of reversing it.
   let keepStart = null;
@@ -2709,11 +2739,6 @@ function render() {
     postCaret = null;
   } else if (keepId) restoreFocus(keepId, keepStart, keepEnd);
 
-  /* If something else repainted while she was part way through typing a
-     time, put back what she had typed rather than the old value. */
-  const wi = document.getElementById('wakeIn');
-  if (wi && wakeTyping != null && keepId === 'wakeIn') wi.value = wakeTyping;
-
   document.getElementById('tabs').innerHTML = tabList().map((t) => {
     const on = state.tab === t.id && !state.view;
     if (t.center) {
@@ -2794,8 +2819,7 @@ function initControls() {
     state.name = e.target.value; render();
   });
   document.addEventListener('input', (e) => {
-    if (e.target.matches('[data-wake]')) { wakeSet(e.target.value); return; }
-    else if (e.target.id === 'askIn') { state.askQuery = e.target.value; }
+    if (e.target.id === 'askIn') { state.askQuery = e.target.value; }
     else if (e.target.id === 'willowIn') { willow.input = e.target.value; }
     else if (e.target.id === 'findQ') {
       /* Only the results are redrawn, so the box keeps its caret. */
@@ -2946,11 +2970,8 @@ function initControls() {
   let bdayTimer = null;
 
   document.addEventListener('change', (e) => {
-    /* Some phones only report a time once the picker is closed, which
-       arrives as a change rather than an input. Without this the time
-       was typed, never saved, and the next repaint put the old one
-       back. That is the glitch she kept hitting. */
-    if (e.target.matches('[data-wake]')) { wakeSet(e.target.value); return; }
+    /* The 3 wake time dropdowns, read back as one time. */
+    if (e.target.matches('[data-waketime="part"]')) { wakeSet(wakeFromSelects(e.target)); return; }
     if (e.target.matches('[data-postchild]')) {
       postDraft().childId = e.target.value;
       flushStore();
@@ -3030,7 +3051,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3726,6 +3747,9 @@ function initControls() {
       // back on later does not silently restore an old support level.
       if (i !== -1) { delete state.lensOptions[id]; delete state.lensNumbers[id]; }
       t.setAttribute('aria-pressed', i === -1);
+    } else if (t.dataset.waketime === 'set') {
+      wakeSet(t.dataset.val);
+      return;
     } else if (t.dataset.early) {
       const how = t.dataset.early;
       const kid = activeChild();
@@ -3736,6 +3760,9 @@ function initControls() {
       else if (how === 'now') store.earlyWeek = null;
     } else if (t.dataset.cipop) {
       const id = t.dataset.id;
+      /* A tap inside the card is not a tap on the dimmed area behind
+         it, so filling it in never closes it by accident. */
+      if (t.dataset.cipop === 'keep') return;
       if (t.dataset.cipop === 'go') {
         selectChild(id);
         ciEnsureDraft();
@@ -4125,6 +4152,69 @@ function viewSituation(c, id) {
    SLEEP AND THE SCHEDULE BUILDER
    ================================================================= */
 
+/* THE TIME FIELD THAT FOUGHT HER.
+
+   A phone's own time wheel opens the moment the field is focused, and
+   the app puts focus back after a repaint, so the wheel kept reopening
+   on top of itself. Pickers stacked up, and the time she chose was gone
+   by the time she got out of them.
+
+   So there is no phone time wheel here any more. 3 plain dropdowns and
+   a row of the usual wake times, which is faster on a phone anyway and
+   cannot reopen anything. */
+function clockLabel(t) {
+  const parts = String(t || '06:30').split(':');
+  let h = Number(parts[0]);
+  const m = parts[1] || '00';
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12; if (h === 0) h = 12;
+  return h + ':' + m + ' ' + ampm;
+}
+
+function wakeSelects(value) {
+  const parts = String(value || '06:30').split(':');
+  let h24 = Number(parts[0]);
+  if (!isFinite(h24)) h24 = 6;
+  const min = String(parts[1] || '30').padStart(2, '0');
+  const ampm = h24 >= 12 ? 'PM' : 'AM';
+  let h12 = h24 % 12; if (h12 === 0) h12 = 12;
+  const near = String(Math.round(Number(min) / 5) * 5 % 60).padStart(2, '0');
+
+  let hours = '';
+  for (let h = 1; h <= 12; h++) hours += `<option value="${h}"${h === h12 ? ' selected' : ''}>${h}</option>`;
+  let mins = '';
+  for (let m = 0; m < 60; m += 5) {
+    const v = String(m).padStart(2, '0');
+    mins += `<option value="${v}"${v === near ? ' selected' : ''}>${v}</option>`;
+  }
+  return `
+  <div class="daterow" style="margin-top:8px">
+    <select class="dsel" data-waketime="part" data-part="h" aria-label="Hour">${hours}</select>
+    <select class="dsel" data-waketime="part" data-part="m" aria-label="Minute">${mins}</select>
+    <select class="dsel" data-waketime="part" data-part="ap" aria-label="Morning or afternoon">
+      <option value="AM"${ampm === 'AM' ? ' selected' : ''}>AM</option>
+      <option value="PM"${ampm === 'PM' ? ' selected' : ''}>PM</option>
+    </select>
+  </div>`;
+}
+
+/* Reads the 3 dropdowns back into one time. */
+function wakeFromSelects(el) {
+  const row = el && el.closest ? el.closest('.daterow') : null;
+  if (!row) return '';
+  const get = (p) => {
+    const sel = row.querySelector('[data-part="' + p + '"]');
+    return sel ? sel.value : '';
+  };
+  let h = Number(get('h'));
+  const m = get('m');
+  const ap = get('ap');
+  if (!isFinite(h) || !m || !ap) return '';
+  if (ap === 'PM' && h !== 12) h += 12;
+  if (ap === 'AM' && h === 12) h = 0;
+  return String(h).padStart(2, '0') + ':' + m;
+}
+
 /* WHAT TIME THEY WOKE UP.
 
    Three things were going wrong here, and all three are fixed in this
@@ -4140,21 +4230,24 @@ function viewSituation(c, id) {
 
    So a half typed time is ignored, a whole one is stamped and saved,
    and only the built day underneath is redrawn. */
-let wakeTyping = null;
-
 function wakeSet(v) {
   const t = String(v || '');
-  /* Remembered raw, so a repaint from somewhere else puts back what she
-     is part way through typing rather than the old time. */
-  wakeTyping = t;
   if (!/^\d{1,2}:\d{2}$/.test(t)) return;
   const kid = activeChild();
   state.wakeTime = t;
+  /* Stamped, or the next sync from another device looks newer and puts
+     the old time back, which is what kept happening. */
   if (kid) kid.updatedAt = Date.now();
   flushStore();
+  /* Only the built day is redrawn. The dropdowns she is using are left
+     exactly as they are. */
   const box = document.getElementById('rhythmDay');
   if (box) box.innerHTML = sleepDayHtml(ctx());
-  else render();
+  const chips = document.querySelectorAll('[data-waketime="set"]');
+  for (let i = 0; i < chips.length; i++) {
+    chips[i].setAttribute('aria-pressed', chips[i].dataset.val === t);
+  }
+  if (!box) render();
 }
 
 /* The built day, on its own so a change to the wake time can redraw
@@ -4292,10 +4385,13 @@ function screenSleep(c) {
   <div class="sc">
     <div class="card">
       <p class="eyebrow">What time did they wake up?</p>
-      <input type="time" id="wakeIn" data-wake="1" value="${esc(state.wakeTime)}"
-        style="font:inherit;font-size:24px;font-family:var(--serif);font-weight:600;color:var(--ink);
-        border:0;background:transparent;padding:4px 0;width:100%">
-      ${band ? `<p class="tiny" style="margin-top:2px">${esc(band.label)} &middot; usually ${band.naps.typical === 0 ? 'no naps' : band.naps.typical + (band.naps.typical === 1 ? ' nap' : ' naps')}</p>` : ''}
+      ${wakeSelects(state.wakeTime)}
+      <div class="chips" style="margin-top:10px">
+        ${['05:30', '06:00', '06:30', '07:00', '07:30', '08:00'].map((t) => `
+          <button class="chip" data-waketime="set" data-val="${t}"
+            aria-pressed="${state.wakeTime === t}">${esc(clockLabel(t))}</button>`).join('')}
+      </div>
+      ${band ? `<p class="tiny" style="margin-top:10px">${esc(band.label)} &middot; usually ${band.naps.typical === 0 ? 'no naps' : band.naps.typical + (band.naps.typical === 1 ? ' nap' : ' naps')}</p>` : ''}
     </div>
 
     ${band && band.naps.max > 0 ? `
@@ -17097,6 +17193,11 @@ function monthTopCard(kid) {
 function ciPopKid() {
   if (new Date().getHours() < CI_POP_HOUR) return null;
   if (willow.open) return null;
+  /* Never over the top of something she is already doing. */
+  if (store.profileEdit || store.memOpen || store.postOpen) return null;
+  const live = document.activeElement;
+  const inPop = live && live.closest && live.closest('.cipop');
+  if (!inPop && ['INPUT', 'TEXTAREA', 'SELECT'].indexOf(focusedTag) !== -1) return null;
   const today = ciToday();
   const p = store.parent || {};
   const skip = p.ciPopSkip && p.ciPopSkip.day === today ? (p.ciPopSkip.ids || []) : [];
@@ -17121,8 +17222,10 @@ function ciPopupHtml() {
   const name = (k.name || 'them').split(/\s+/)[0];
   const filling = store.ciPopFor === k.id && store.ciOpen && activeChild() && activeChild().id === k.id;
   return `
-  <div class="wwel-scrim cipop" role="dialog" aria-modal="true" aria-label="${esc(CI_POP.ask(name))}">
-    <div class="wwel" style="padding-top:20px">
+  <div class="wwel-scrim cipop" role="dialog" aria-modal="true" aria-label="${esc(CI_POP.ask(name))}"
+    data-cipop="skip" data-id="${esc(k.id)}">
+    <div class="wwel" style="padding-top:20px" data-cipop="keep">
+      <button class="cipop-x" data-cipop="skip" data-id="${esc(k.id)}" aria-label="Close">&times;</button>
       ${filling ? checkinCard() : `
       <div class="wwel-face" style="width:54px;height:54px" aria-hidden="true">
         <span class="wwel-leaf">${icon('sun', 24, '#fff', 1.6)}</span>
