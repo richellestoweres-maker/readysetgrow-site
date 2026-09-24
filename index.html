@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-23 02:06">
+<meta name="rsg-build" content="2026-09-24 12:56">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1734,7 +1734,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-23 02:06';
+const BUILD_STAMP = '2026-09-24 12:56';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -34695,6 +34695,9 @@ function render() {
     }
     else if (keepId)
         restoreFocus(keepId, keepStart, keepEnd);
+    const wi = document.getElementById('wakeIn');
+    if (wi && wakeTyping != null && keepId === 'wakeIn')
+        wi.value = wakeTyping;
     document.getElementById('tabs').innerHTML = tabList().map((t) => {
         const on = state.tab === t.id && !state.view;
         if (t.center) {
@@ -34770,11 +34773,8 @@ function initControls() {
         });
     document.addEventListener('input', (e) => {
         if (e.target.matches('[data-wake]')) {
-            const v = String(e.target.value || '');
-            if (!/^\d{1,2}:\d{2}$/.test(v))
-                return;
-            state.wakeTime = v;
-            render();
+            wakeSet(e.target.value);
+            return;
         }
         else if (e.target.id === 'askIn') {
             state.askQuery = e.target.value;
@@ -34938,6 +34938,10 @@ function initControls() {
         });
     let bdayTimer = null;
     document.addEventListener('change', (e) => {
+        if (e.target.matches('[data-wake]')) {
+            wakeSet(e.target.value);
+            return;
+        }
         if (e.target.matches('[data-postchild]')) {
             postDraft().childId = e.target.value;
             flushStore();
@@ -36420,38 +36424,30 @@ function viewSituation(c, id) {
     <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>
   </div>`;
 }
-function screenSleep(c) {
-    if (c.months == null)
-        return emptyScreen('Add a birthday first.');
+let wakeTyping = null;
+function wakeSet(v) {
+    const t = String(v || '');
+    wakeTyping = t;
+    if (!/^\d{1,2}:\d{2}$/.test(t))
+        return;
+    const kid = activeChild();
+    state.wakeTime = t;
+    if (kid)
+        kid.updatedAt = Date.now();
+    flushStore();
+    const box = document.getElementById('rhythmDay');
+    if (box)
+        box.innerHTML = sleepDayHtml(ctx());
+    else
+        render();
+}
+function sleepDayHtml(c) {
     const day = buildDay({ months: c.months, wakeTime: state.wakeTime, naps: state.napOverride });
     const rows = day.ok ? describeDay(day) : [];
     const needs = c.sleepNeeds;
     const band = c.band;
     const rowIcon = { wake: 'sun', nap: 'moon', winddown: 'heart', bedtime: 'moon' };
     return `
-  ${cornerLeaves()}
-  <div class="sc-head">
-    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
-    <h1 class="title" style="margin-top:6px">Today's Rhythm</h1>
-    <p class="sub">Tell it one thing. It builds the rest of the day.</p>
-  </div>
-  <div class="sc">
-    <div class="card">
-      <p class="eyebrow">What time did they wake up?</p>
-      <input type="time" id="wakeIn" data-wake="1" value="${esc(state.wakeTime)}"
-        style="font:inherit;font-size:24px;font-family:var(--serif);font-weight:600;color:var(--ink);
-        border:0;background:transparent;padding:4px 0;width:100%">
-      ${band ? `<p class="tiny" style="margin-top:2px">${esc(band.label)} &middot; usually ${band.naps.typical === 0 ? 'no naps' : band.naps.typical + (band.naps.typical === 1 ? ' nap' : ' naps')}</p>` : ''}
-    </div>
-    ${band && band.naps.max > 0 ? `
-    <div style="display:flex;gap:6px;margin-bottom:13px;align-items:center;flex-wrap:wrap">
-      <span class="tiny" style="margin-right:2px">Naps today</span>
-      ${Array.from({ length: band.naps.max + 1 }, (_, n) => n).map((n) => {
-        const active = (state.napOverride == null ? band.naps.typical : state.napOverride) === n;
-        return `<button class="mb" data-naps="${n}" aria-pressed="${active}"
-          style="${active ? 'background:var(--sage);color:#fff' : ''}">${n}</button>`;
-    }).join('')}
-    </div>` : ''}
     ${day.ok ? `
     <div class="card" style="padding:6px 14px 14px">
       ${rows.map((r, i) => `
@@ -36551,6 +36547,41 @@ function screenSleep(c) {
         <p class="tiny" style="margin-top:4px"><strong style="color:var(--ink)">Evidence.</strong> ${esc(a.evidence)}</p>
       </div>`).join('')}` : ''}
     <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>
+  `;
+}
+function screenSleep(c) {
+    if (c.months == null)
+        return emptyScreen('Add a birthday first.');
+    const day = buildDay({ months: c.months, wakeTime: state.wakeTime, naps: state.napOverride });
+    const rows = day.ok ? describeDay(day) : [];
+    const needs = c.sleepNeeds;
+    const band = c.band;
+    const rowIcon = { wake: 'sun', nap: 'moon', winddown: 'heart', bedtime: 'moon' };
+    return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title" style="margin-top:6px">Today's Rhythm</h1>
+    <p class="sub">Tell it one thing. It builds the rest of the day.</p>
+  </div>
+  <div class="sc">
+    <div class="card">
+      <p class="eyebrow">What time did they wake up?</p>
+      <input type="time" id="wakeIn" data-wake="1" value="${esc(state.wakeTime)}"
+        style="font:inherit;font-size:24px;font-family:var(--serif);font-weight:600;color:var(--ink);
+        border:0;background:transparent;padding:4px 0;width:100%">
+      ${band ? `<p class="tiny" style="margin-top:2px">${esc(band.label)} &middot; usually ${band.naps.typical === 0 ? 'no naps' : band.naps.typical + (band.naps.typical === 1 ? ' nap' : ' naps')}</p>` : ''}
+    </div>
+    ${band && band.naps.max > 0 ? `
+    <div style="display:flex;gap:6px;margin-bottom:13px;align-items:center;flex-wrap:wrap">
+      <span class="tiny" style="margin-right:2px">Naps today</span>
+      ${Array.from({ length: band.naps.max + 1 }, (_, n) => n).map((n) => {
+        const active = (state.napOverride == null ? band.naps.typical : state.napOverride) === n;
+        return `<button class="mb" data-naps="${n}" aria-pressed="${active}"
+          style="${active ? 'background:var(--sage);color:#fff' : ''}">${n}</button>`;
+    }).join('')}
+    </div>` : ''}
+    <div id="rhythmDay">${sleepDayHtml(c)}</div>
   </div>`;
 }
 function screenTopics(c) {
