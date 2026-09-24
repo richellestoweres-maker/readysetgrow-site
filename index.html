@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-09-24 12:56">
+<meta name="rsg-build" content="2026-09-24 13:18">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -571,7 +571,12 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 .tapedit{margin:6px 0 0;text-align:center;font-size:11.5px;color:var(--muted)}
 .monthcard{background:#F1F4EB;border:1px solid rgba(74,103,65,.16);margin-bottom:12px}
 .monthline{padding:10px 0 2px;border-top:1px solid rgba(74,103,65,.12);margin-top:10px}
-.cipop .wwel{animation:none}
+.cipop .wwel{animation:none;position:relative}
+.cipop-x{
+  position:absolute;top:8px;right:10px;width:32px;height:32px;border:0;background:none;cursor:pointer;
+  color:var(--muted);font-size:22px;line-height:1;border-radius:50%;
+}
+.cipop-x:focus-visible{outline:2px solid var(--deep);outline-offset:2px}
 .cipop .cicard{box-shadow:none;border:0;padding:0;margin:0;background:transparent}
 
 .toppair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
@@ -1734,7 +1739,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-09-24 12:56';
+const BUILD_STAMP = '2026-09-24 13:18';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -34336,6 +34341,7 @@ function tabList() {
     ];
 }
 let lastFocus = { id: null, start: null, end: null };
+let focusedTag = '';
 let lastRoute = null;
 function routeKey() {
     const v = state.view;
@@ -34349,12 +34355,30 @@ function routeKey() {
         state.lensBand,
     ].join('|');
 }
+const TEXTY = ['text', 'search', 'email', 'password', 'tel', 'url', 'number'];
+function canRefocus(el) {
+    if (!el || !el.tagName)
+        return false;
+    if (el.tagName === 'TEXTAREA')
+        return true;
+    if (el.tagName !== 'INPUT')
+        return false;
+    const type = String(el.type || 'text').toLowerCase();
+    if (type === 'time' || type === 'date' || type === 'datetime-local'
+        || type === 'month' || type === 'week' || type === 'color' || type === 'file')
+        return false;
+    return TEXTY.indexOf(type) !== -1;
+}
 function restoreFocus(id, start, end) {
     const useId = id || lastFocus.id;
     if (!useId)
         return;
     const back = document.getElementById(useId);
     if (!back)
+        return;
+    if (!canRefocus(back))
+        return;
+    if (document.activeElement === back)
         return;
     back.focus();
     const s = id ? start : lastFocus.start;
@@ -34380,7 +34404,8 @@ function paintBackground() {
 }
 function render() {
     const live = document.activeElement;
-    if (live && live.id && live.tagName === 'INPUT') {
+    focusedTag = live && live.tagName ? live.tagName : '';
+    if (live && live.id && canRefocus(live)) {
         let st = null, en = null;
         try {
             st = live.selectionStart;
@@ -34613,7 +34638,7 @@ function render() {
     const inRewritten = !!act && (screen.contains(act)
         || (willowSlotNow && willowSlotNow.contains(act))
         || (barSlotNow && barSlotNow.contains(act)));
-    const keepId = act && inRewritten && act.id ? act.id : null;
+    const keepId = act && inRewritten && act.id && canRefocus(act) ? act.id : null;
     let keepStart = null;
     let keepEnd = null;
     if (keepId) {
@@ -34695,9 +34720,6 @@ function render() {
     }
     else if (keepId)
         restoreFocus(keepId, keepStart, keepEnd);
-    const wi = document.getElementById('wakeIn');
-    if (wi && wakeTyping != null && keepId === 'wakeIn')
-        wi.value = wakeTyping;
     document.getElementById('tabs').innerHTML = tabList().map((t) => {
         const on = state.tab === t.id && !state.view;
         if (t.center) {
@@ -34772,11 +34794,7 @@ function initControls() {
             render();
         });
     document.addEventListener('input', (e) => {
-        if (e.target.matches('[data-wake]')) {
-            wakeSet(e.target.value);
-            return;
-        }
-        else if (e.target.id === 'askIn') {
+        if (e.target.id === 'askIn') {
             state.askQuery = e.target.value;
         }
         else if (e.target.id === 'willowIn') {
@@ -34938,8 +34956,8 @@ function initControls() {
         });
     let bdayTimer = null;
     document.addEventListener('change', (e) => {
-        if (e.target.matches('[data-wake]')) {
-            wakeSet(e.target.value);
+        if (e.target.matches('[data-waketime="part"]')) {
+            wakeSet(wakeFromSelects(e.target));
             return;
         }
         if (e.target.matches('[data-postchild]')) {
@@ -35019,7 +35037,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -35970,6 +35988,10 @@ function initControls() {
             }
             t.setAttribute('aria-pressed', i === -1);
         }
+        else if (t.dataset.waketime === 'set') {
+            wakeSet(t.dataset.val);
+            return;
+        }
         else if (t.dataset.early) {
             const how = t.dataset.early;
             const kid = activeChild();
@@ -35985,6 +36007,8 @@ function initControls() {
         }
         else if (t.dataset.cipop) {
             const id = t.dataset.id;
+            if (t.dataset.cipop === 'keep')
+                return;
             if (t.dataset.cipop === 'go') {
                 selectChild(id);
                 ciEnsureDraft();
@@ -36424,10 +36448,66 @@ function viewSituation(c, id) {
     <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>
   </div>`;
 }
-let wakeTyping = null;
+function clockLabel(t) {
+    const parts = String(t || '06:30').split(':');
+    let h = Number(parts[0]);
+    const m = parts[1] || '00';
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12;
+    if (h === 0)
+        h = 12;
+    return h + ':' + m + ' ' + ampm;
+}
+function wakeSelects(value) {
+    const parts = String(value || '06:30').split(':');
+    let h24 = Number(parts[0]);
+    if (!isFinite(h24))
+        h24 = 6;
+    const min = String(parts[1] || '30').padStart(2, '0');
+    const ampm = h24 >= 12 ? 'PM' : 'AM';
+    let h12 = h24 % 12;
+    if (h12 === 0)
+        h12 = 12;
+    const near = String(Math.round(Number(min) / 5) * 5 % 60).padStart(2, '0');
+    let hours = '';
+    for (let h = 1; h <= 12; h++)
+        hours += `<option value="${h}"${h === h12 ? ' selected' : ''}>${h}</option>`;
+    let mins = '';
+    for (let m = 0; m < 60; m += 5) {
+        const v = String(m).padStart(2, '0');
+        mins += `<option value="${v}"${v === near ? ' selected' : ''}>${v}</option>`;
+    }
+    return `
+  <div class="daterow" style="margin-top:8px">
+    <select class="dsel" data-waketime="part" data-part="h" aria-label="Hour">${hours}</select>
+    <select class="dsel" data-waketime="part" data-part="m" aria-label="Minute">${mins}</select>
+    <select class="dsel" data-waketime="part" data-part="ap" aria-label="Morning or afternoon">
+      <option value="AM"${ampm === 'AM' ? ' selected' : ''}>AM</option>
+      <option value="PM"${ampm === 'PM' ? ' selected' : ''}>PM</option>
+    </select>
+  </div>`;
+}
+function wakeFromSelects(el) {
+    const row = el && el.closest ? el.closest('.daterow') : null;
+    if (!row)
+        return '';
+    const get = (p) => {
+        const sel = row.querySelector('[data-part="' + p + '"]');
+        return sel ? sel.value : '';
+    };
+    let h = Number(get('h'));
+    const m = get('m');
+    const ap = get('ap');
+    if (!isFinite(h) || !m || !ap)
+        return '';
+    if (ap === 'PM' && h !== 12)
+        h += 12;
+    if (ap === 'AM' && h === 12)
+        h = 0;
+    return String(h).padStart(2, '0') + ':' + m;
+}
 function wakeSet(v) {
     const t = String(v || '');
-    wakeTyping = t;
     if (!/^\d{1,2}:\d{2}$/.test(t))
         return;
     const kid = activeChild();
@@ -36438,7 +36518,11 @@ function wakeSet(v) {
     const box = document.getElementById('rhythmDay');
     if (box)
         box.innerHTML = sleepDayHtml(ctx());
-    else
+    const chips = document.querySelectorAll('[data-waketime="set"]');
+    for (let i = 0; i < chips.length; i++) {
+        chips[i].setAttribute('aria-pressed', chips[i].dataset.val === t);
+    }
+    if (!box)
         render();
 }
 function sleepDayHtml(c) {
@@ -36567,10 +36651,13 @@ function screenSleep(c) {
   <div class="sc">
     <div class="card">
       <p class="eyebrow">What time did they wake up?</p>
-      <input type="time" id="wakeIn" data-wake="1" value="${esc(state.wakeTime)}"
-        style="font:inherit;font-size:24px;font-family:var(--serif);font-weight:600;color:var(--ink);
-        border:0;background:transparent;padding:4px 0;width:100%">
-      ${band ? `<p class="tiny" style="margin-top:2px">${esc(band.label)} &middot; usually ${band.naps.typical === 0 ? 'no naps' : band.naps.typical + (band.naps.typical === 1 ? ' nap' : ' naps')}</p>` : ''}
+      ${wakeSelects(state.wakeTime)}
+      <div class="chips" style="margin-top:10px">
+        ${['05:30', '06:00', '06:30', '07:00', '07:30', '08:00'].map((t) => `
+          <button class="chip" data-waketime="set" data-val="${t}"
+            aria-pressed="${state.wakeTime === t}">${esc(clockLabel(t))}</button>`).join('')}
+      </div>
+      ${band ? `<p class="tiny" style="margin-top:10px">${esc(band.label)} &middot; usually ${band.naps.typical === 0 ? 'no naps' : band.naps.typical + (band.naps.typical === 1 ? ' nap' : ' naps')}</p>` : ''}
     </div>
     ${band && band.naps.max > 0 ? `
     <div style="display:flex;gap:6px;margin-bottom:13px;align-items:center;flex-wrap:wrap">
@@ -47081,6 +47168,12 @@ function ciPopKid() {
         return null;
     if (willow.open)
         return null;
+    if (store.profileEdit || store.memOpen || store.postOpen)
+        return null;
+    const live = document.activeElement;
+    const inPop = live && live.closest && live.closest('.cipop');
+    if (!inPop && ['INPUT', 'TEXTAREA', 'SELECT'].indexOf(focusedTag) !== -1)
+        return null;
     const today = ciToday();
     const p = store.parent || {};
     const skip = p.ciPopSkip && p.ciPopSkip.day === today ? (p.ciPopSkip.ids || []) : [];
@@ -47107,8 +47200,10 @@ function ciPopupHtml() {
     const name = (k.name || 'them').split(/\s+/)[0];
     const filling = store.ciPopFor === k.id && store.ciOpen && activeChild() && activeChild().id === k.id;
     return `
-  <div class="wwel-scrim cipop" role="dialog" aria-modal="true" aria-label="${esc(CI_POP.ask(name))}">
-    <div class="wwel" style="padding-top:20px">
+  <div class="wwel-scrim cipop" role="dialog" aria-modal="true" aria-label="${esc(CI_POP.ask(name))}"
+    data-cipop="skip" data-id="${esc(k.id)}">
+    <div class="wwel" style="padding-top:20px" data-cipop="keep">
+      <button class="cipop-x" data-cipop="skip" data-id="${esc(k.id)}" aria-label="Close">&times;</button>
       ${filling ? checkinCard() : `
       <div class="wwel-face" style="width:54px;height:54px" aria-hidden="true">
         <span class="wwel-leaf">${icon('sun', 24, '#fff', 1.6)}</span>
