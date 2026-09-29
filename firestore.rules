@@ -453,6 +453,24 @@ service cloud.firestore {
       allow delete: if isOwner(uid);
     }
 
+    /* ---------------------------------------------------------------
+     * SOMETHING IS WRONG
+     *
+     * Anybody signed in can send one, under their own account, and
+     * nobody but a moderator can read them. There is no update: a
+     * report is what somebody said at the time, and editing it later
+     * would make it worthless.
+     * --------------------------------------------------------------- */
+    match /feedback/{fbId} {
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 4000;
+      allow read, delete: if isModerator();
+      allow update: if false;
+    }
+
     match /reports/{reportId} {
       allow create: if signedIn()
         && request.resource.data.reporterUid == request.auth.uid;
