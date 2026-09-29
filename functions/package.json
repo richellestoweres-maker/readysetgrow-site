@@ -1,0 +1,12 @@
+{
+  "name": "readysetgrow-functions",
+  "description": "The half of the app that stays awake so it can send a notification",
+  "private": true,
+  "engines": { "node": "20" },
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^6.1.0"
+  }
+}
