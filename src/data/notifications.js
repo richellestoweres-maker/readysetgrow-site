@@ -33,7 +33,7 @@
    way the rest of the Firebase config is: it identifies the project to
    the browser's push service and authorizes nothing. Empty means the
    whole feature stays asleep. */
-export const WEB_PUSH_KEY = '';
+export const WEB_PUSH_KEY = 'BIVYVBuiOKbaqbNcjWO1w7ib5FyqpR6Ds-tc4umPFaNRO6vuuxpFVzUwpHYy1Pe-r0jI-yF_9jX6VMySCYrZZ00';
 
 export function pushConfigured() {
   return typeof WEB_PUSH_KEY === 'string' && WEB_PUSH_KEY.length > 20;
