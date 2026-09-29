@@ -1358,6 +1358,9 @@ function flushStore() {
       memDayHidden: store.memDayHidden,
       installHidden: store.installHidden,
       choreJobs: store.choreJobs,
+      /* Reports that could not go up yet. They wait on the device
+         rather than being lost when the app is closed. */
+      fbQueue: store.fbQueue,
       choreDone: store.choreDone,
       choreAdults: store.choreAdults,
       choreStarsOn: store.choreStarsOn,
@@ -1472,6 +1475,7 @@ function loadStore() {
     store.memDayHidden = typeof saved.memDayHidden === 'string' ? saved.memDayHidden : '';
     store.installHidden = typeof saved.installHidden === 'string' ? saved.installHidden : '';
     store.choreJobs = Array.isArray(saved.choreJobs) ? saved.choreJobs : [];
+    store.fbQueue = Array.isArray(saved.fbQueue) ? saved.fbQueue : [];
     store.choreDone = (saved.choreDone && typeof saved.choreDone === 'object') ? saved.choreDone : {};
     store.choreAdults = Array.isArray(saved.choreAdults) ? saved.choreAdults : [];
     /* Only a saved false turns stars off. A store from before this
@@ -2587,6 +2591,8 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'sexed') html = screenSexEd(c);
   else if (v && v.type === 'screen' && v.id === 'mycycle') html = screenMyCycle(c);
   else if (v && v.type === 'screen' && v.id === 'find') html = screenFind();
+  else if (v && v.type === 'screen' && v.id === 'feedback') html = screenFeedback();
+  else if (v && v.type === 'screen' && v.id === 'fbinbox') html = screenFeedbackInbox();
   /* Any route that lands on a normal child profile for a baby who is
      not born yet is sent to the seed profile instead, rather than
      drawing a page of milestones for somebody with no age. */
@@ -2880,6 +2886,12 @@ function initControls() {
   document.addEventListener('input', (e) => {
     if (e.target.id === 'askIn') { state.askQuery = e.target.value; }
     else if (e.target.id === 'willowIn') { willow.input = e.target.value; }
+    else if (e.target.matches('[data-fbtext]')) {
+      /* No repaint while she types. The button reads the value back. */
+      fb.text = e.target.value;
+      const btn = document.querySelector('[data-fb="send"]');
+      if (btn) btn.disabled = !String(fb.text || '').trim();
+    }
     else if (e.target.id === 'findQ') {
       /* Only the results are redrawn, so the box keeps its caret. */
       state.findQ = e.target.value;
@@ -3114,7 +3126,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3813,6 +3825,9 @@ function initControls() {
       // back on later does not silently restore an old support level.
       if (i !== -1) { delete state.lensOptions[id]; delete state.lensNumbers[id]; }
       t.setAttribute('aria-pressed', i === -1);
+    } else if (t.dataset.fb) {
+      if (t.dataset.fb === 'kind') fb.kind = fb.kind === t.dataset.id ? '' : t.dataset.id;
+      else if (t.dataset.fb === 'send') { fbSend(); return; }
     } else if (t.dataset.waketime === 'set') {
       wakeSet(t.dataset.val);
       return;
@@ -3855,6 +3870,9 @@ function initControls() {
       state.tab = t.dataset.id; state.view = null; navClear();
     } else if (t.dataset.go) {
       if (t.tagName === 'A') return; // source links open normally
+      /* Remember the screen they were on when they went to report a
+         problem, because that is the screen the problem is on. */
+      if (t.dataset.id === 'feedback') store.fbFrom = fbWhere();
       // Following one of her links means you want to read it, not keep chatting.
       if (willow.open && t.closest('.willowpanel')) willow.open = false;
       if (t.dataset.go === 'log') store.logFrom = { tab: state.tab, view: state.view };
@@ -13712,6 +13730,19 @@ function cornerMenu(who) {
     </button>
 
     <div class="cmenu-rule"></div>
+    <button class="cmenu-row" data-go="screen" data-id="feedback">
+      <span class="cmenu-ic">${icon('chat', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">${esc(FB_TITLE)}</span>
+      <span class="cmenu-s">Tell me what broke, or what you could not find</span></span>
+    </button>
+    ${feed.isMod ? `
+    <button class="cmenu-row" data-go="screen" data-id="fbinbox">
+      <span class="cmenu-ic">${icon('note', 15, 'var(--deep)')}</span>
+      <span class="grow"><span class="cmenu-t">${esc(FB_INBOX_TITLE)}</span>
+      <span class="cmenu-s">${esc(fb.items.length ? fb.items.length + ' so far' : 'Everything people have sent in')}</span></span>
+    </button>` : ''}
+
+    <div class="cmenu-rule"></div>
     <p class="cmenu-h">The rules and the small print</p>
     <button class="cmenu-row" data-go="screen" data-id="privacy">
       <span class="cmenu-ic">${icon('shield', 15, 'var(--deep)')}</span>
@@ -15803,6 +15834,171 @@ function calmTodayCard(kid) {
       today, and new again tomorrow.</p>
     <button class="btn" style="width:100%;margin-top:12px" data-go="screen" data-id="plan">See today's three</button>
   </div>`;
+}
+
+/* =================================================================
+   SOMETHING IS WRONG
+
+   A tester with no way to report a problem reports nothing. See
+   src/data/feedback.js for what is attached and what never is.
+   ================================================================= */
+
+const fb = { kind: '', text: '', busy: false, note: '', items: [], loaded: false };
+
+/* The screen a person was on when they hit the button, in words the
+   report can use. */
+function fbWhere() {
+  const v = state.view;
+  if (v && v.type === 'screen') return 'screen:' + v.id;
+  if (v && v.type) return v.type + ':' + (v.id || '');
+  return 'tab:' + state.tab;
+}
+
+function fbContext() {
+  let loop = store.loopNote || null;
+  if (!loop) { try { loop = JSON.parse(localStorage.getItem('rsg:loop') || 'null'); } catch (err) { loop = null; } }
+  return {
+    build: buildStamp(),
+    where: store.fbFrom || fbWhere(),
+    size: (window.innerWidth || 0) + 'x' + (window.innerHeight || 0),
+    agent: String(navigator.userAgent || '').slice(0, 300),
+    standalone: isInstalled ? !!isInstalled() : false,
+    loop: loop ? (loop.where + ' on ' + loop.build) : '',
+  };
+}
+
+/* Anything that cannot go now waits here rather than being lost. */
+function fbQueue() {
+  if (!Array.isArray(store.fbQueue)) store.fbQueue = [];
+  return store.fbQueue;
+}
+
+async function fbSend() {
+  const text = String(fb.text || '').trim();
+  if (!text) return;
+  const entry = Object.assign({
+    kind: fb.kind || 'broken',
+    text: text.slice(0, 4000),
+    at: Date.now(),
+    name: (store.parent.name || '').trim(),
+  }, fbContext());
+
+  fb.busy = true;
+  fb.note = '';
+  render();
+
+  if (!cloudOn()) {
+    fbQueue().push(entry);
+    fb.busy = false;
+    fb.text = '';
+    fb.note = auth.user ? FB_QUEUED : FB_GUEST;
+    flushStore();
+    render();
+    return;
+  }
+  try {
+    const fs = cloud.mod;
+    await fs.addDoc(fs.collection(cloud.db, 'feedback'), Object.assign({ uid: myUid() }, entry));
+    fb.text = '';
+    fb.note = FB_SENT;
+    /* Anything that waited on this device goes up behind it. */
+    const waiting = fbQueue().splice(0, fbQueue().length);
+    for (const old of waiting) {
+      try { await fs.addDoc(fs.collection(cloud.db, 'feedback'), Object.assign({ uid: myUid() }, old)); }
+      catch (err) { fbQueue().push(old); }
+    }
+    flushStore();
+  } catch (err) {
+    fbQueue().push(entry);
+    fb.note = FB_FAILED;
+    flushStore();
+  }
+  fb.busy = false;
+  render();
+}
+
+function screenFeedback() {
+  const c2 = fbContext();
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title" style="margin-top:6px">${esc(FB_TITLE)}</h1>
+    <p class="sub">${esc(FB_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="chips" style="margin-bottom:12px">
+      ${FB_KINDS.map((k) => `
+        <button class="chip" data-fb="kind" data-id="${esc(k.id)}"
+          aria-pressed="${fb.kind === k.id}">${esc(k.label)}</button>`).join('')}
+    </div>
+    ${fb.kind ? `<p class="tiny" style="margin:-4px 0 10px">${esc((FB_KINDS.filter((k) => k.id === fb.kind)[0] || {}).hint || '')}</p>` : ''}
+
+    <div class="card">
+      <p class="eyebrow">${esc(FB_PROMPT)}</p>
+      <textarea id="fbText" class="inp" data-fbtext="1" rows="5"
+        placeholder="${esc(FB_PLACEHOLDER)}"
+        style="margin-top:8px;width:100%;resize:vertical">${esc(fb.text)}</textarea>
+      <button class="btn" style="width:100%;margin-top:12px" data-fb="send"
+        ${fb.busy || !String(fb.text || '').trim() ? 'disabled' : ''}>
+        ${fb.busy ? 'Sending' : FB_SEND}
+      </button>
+      ${fb.note ? `<p class="tiny" style="margin-top:9px">${esc(fb.note)}</p>` : ''}
+      ${fbQueue().length ? `<p class="tiny" style="margin-top:7px">${fbQueue().length} waiting to send.</p>` : ''}
+    </div>
+
+    <div class="dsec">
+      <h4>${esc(FB_ATTACHED_TITLE)}</h4>
+      ${list(FB_ATTACHED)}
+      <p class="tiny" style="margin-top:8px">${esc(FB_NOT_ATTACHED)}</p>
+      <div class="card flat" style="margin-top:10px">
+        <p class="tiny" style="font-family:ui-monospace,monospace;word-break:break-word">
+          ${esc(c2.build)} &middot; ${esc(c2.where)} &middot; ${esc(c2.size)}${c2.loop ? ' &middot; loop caught on ' + esc(c2.loop) : ''}
+        </p>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* Hers, and only hers. The rules let a moderator read this and nobody
+   else, so a refusal here is the ordinary answer for everybody. */
+function screenFeedbackInbox() {
+  if (!fb.loaded) fbLoadInbox();
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title" style="margin-top:6px">${esc(FB_INBOX_TITLE)}</h1>
+    <p class="sub">${fb.items.length ? esc(fb.items.length + ' so far') : esc(FB_INBOX_EMPTY)}</p>
+  </div>
+  <div class="sc">
+    ${fb.items.map((it) => `
+    <div class="card">
+      <p class="eyebrow">${esc(fbKindLabel(it.kind))} &middot; ${esc(new Date(it.at || 0).toLocaleString())}</p>
+      <p class="bodytext" style="margin-top:7px">${esc(it.text || '')}</p>
+      <p class="tiny" style="margin-top:8px;font-family:ui-monospace,monospace;word-break:break-word">
+        ${esc(it.name || 'no name')} &middot; ${esc(it.build || '')} &middot; ${esc(it.where || '')} &middot; ${esc(it.size || '')}
+        ${it.loop ? ' &middot; loop on ' + esc(it.loop) : ''}
+      </p>
+      <p class="tiny" style="margin-top:6px">${esc(String(it.agent || '').slice(0, 120))}</p>
+    </div>`).join('') || `<div class="card flat"><p class="bodytext">${esc(FB_INBOX_EMPTY)}</p></div>`}
+  </div>`;
+}
+
+async function fbLoadInbox() {
+  if (fb.loaded || !cloudOn()) return;
+  fb.loaded = true;
+  try {
+    const fs = cloud.mod;
+    const snap = await fs.getDocs(fs.query(fs.collection(cloud.db, 'feedback'), fs.limit(200)));
+    const out = [];
+    snap.forEach((d) => out.push(Object.assign({ id: d.id }, d.data())));
+    out.sort((a, b) => (b.at || 0) - (a.at || 0));
+    fb.items = out;
+  } catch (err) {
+    fb.items = [];
+  }
+  render();
 }
 
 /* FIND ANYTHING. Her mom got lost, and "where is it?" has come up

@@ -108,6 +108,7 @@ order = [
     ('findIndex',           SRC/'data/findIndex.js'),
     ('monthReview',         SRC/'data/monthReview.js'),
     ('earlyLessons',        SRC/'data/earlyLessons.js'),
+    ('feedback',            SRC/'data/feedback.js'),
     ('firebaseConfig',      SRC/'data/firebaseConfig.js'),
 ]
 
