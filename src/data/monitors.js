@@ -356,3 +356,38 @@ export const MON_SOURCES = [
     label: 'Strangulation deaths prompt recall of video baby monitors with cords, and the 3 feet rule',
     url: 'https://www.cpsc.gov/Recalls/2011/two-strangulation-deaths-prompt-summer-infant-to-recall-video-baby-monitors-with-cords' },
 ];
+
+/* WHAT THE ROW SAYS, BY AGE, because the reason to open this page
+   changes completely. Under 2 it is the sock and the crib. After that
+   it is the thermometer and the battery in the back of it. */
+export function monRowSub(months) {
+  if (typeof months !== 'number') return 'What a monitor can tell you, and what it cannot';
+  if (months < 18) return 'What a sock or a forehead reading can tell you, and what it cannot';
+  if (months < 30) return 'Thermometers, cords, and the batteries nobody thinks about';
+  return 'Which thermometer to trust, and the button battery warning';
+}
+
+/* WHICH PARTS APPLY. The sock is cleared for 1 to 18 months, so a
+   parent of a 3 year old should not be reading about it. Thermometers
+   and button batteries stay to the end. */
+export function monSectionsFor(months) {
+  if (typeof months !== 'number' || months < 24) return MON_SECTIONS;
+  return MON_SECTIONS.filter((s) => !/owlet|dream sock|babysat|insurance|pulse ox/i.test(s.h));
+}
+
+/* THE OPENING CHANGES WITH THE CHILD TOO. The 2 halves of the sock
+   answer are the right way in for a parent of a baby. For a parent of
+   a 3 year old the sock is behind them, and what is left is which
+   thermometer to trust and the battery in the back of it. */
+export const MON_INTRO_OLDER = [
+  'The wearable sock monitors are cleared for babies, so that part of this has passed. What has not '
+    + 'passed is the rest of it: which thermometer actually tells you something at this age, what a '
+    + 'video monitor cord can do to a climbing toddler, and the small flat battery in the back of '
+    + 'half the devices in your house.',
+  'The battery part is the reason this page is still on their profile. It is a short read and it is '
+    + 'the one worth doing.',
+];
+
+export function monIntroFor(months) {
+  return typeof months === 'number' && months >= 24 ? MON_INTRO_OLDER : MON_INTRO;
+}

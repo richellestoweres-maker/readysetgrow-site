@@ -887,3 +887,27 @@ export function sfRowSub(months) {
   if (months < 18) return 'The room, the wind down, and what actually helps';
   return 'The room, the evening, and safe sleep at this age';
 }
+
+/* WHICH PAGES APPLY, which is her rule again, one level in. A parent of
+   a 2 year old should not be reading how to swaddle, and a parent of a
+   newborn does not need wake windows yet. The room, the wind down and
+   safe sleep are on every version of this page. */
+const SF_TAB_AGES = {
+  room:        { from: 0,  to: null },
+  swaddle:     { from: 0,  to: 8 },   // swaddling ends at rolling, and reading ahead is fine
+  stopswaddle: { from: 0,  to: 12 },  // the transition itself, with room to finish it
+  sacks:       { from: 0,  to: null },
+  windows:     { from: 2,  to: 24 },  // not a medical idea, and it stops being used after 2
+  winddown:    { from: 0,  to: null },
+  safesleep:   { from: 0,  to: 24 },  // the crib years
+};
+
+export function sfTabsFor(months) {
+  if (typeof months !== 'number') return SF_TABS;
+  return SF_TABS.filter((t) => {
+    const w = SF_TAB_AGES[t.id];
+    if (!w) return true;
+    if (months < w.from) return false;
+    return w.to === null || months < w.to;
+  });
+}
