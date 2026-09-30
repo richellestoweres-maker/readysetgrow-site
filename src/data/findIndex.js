@@ -64,6 +64,10 @@ export const FIND_INDEX = [
     words: 'feeding breastfeeding formula bottle bottles latch weight gain solids starting solids allergens baby led weaning milk' },
   { title: 'Diapers, how many you need', where: 'Child profile', go: { screen: 'diaperplan' },
     words: 'diapers nappies how many diapers sizes wet diapers' },
+  { title: 'Potty training', where: 'Child profile, Everyday care', go: { screen: 'potty' },
+    words: 'potty training toilet training potty train pee poop wee accidents underwear pull ups '
+      + 'night time bedwetting wetting the bed dry at night regression readiness ready to potty '
+      + 'train constipation holding it withholding standing to pee wiping boys girls' },
   { title: 'Sleep and naps', where: 'Child profile, Today', go: { screen: 'sleep' },
     words: 'sleep nap naps wake windows bedtime night waking regression schedule' },
   { title: 'Milestones', where: 'Child profile, Milestones', go: { screen: 'milestones' },
