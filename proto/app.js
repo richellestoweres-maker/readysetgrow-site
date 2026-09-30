@@ -1149,6 +1149,13 @@ const store = {
 
   /* Which page of the potty screen is open. */
   pottyTab: 'ready',
+  /* Sleep foundations, and nesting, the same idea. */
+  sfTab: '',
+  nestTab: 'nesting',
+  /* Whether comfort care for a fever is open. Starts closed every time
+     rather than being remembered, because the fever screen has to open
+     on the triage rather than on a long read. */
+  fcOpen: false,
 
   vaxTab: 'visits',
   vaxVisit: '',
@@ -1335,7 +1342,7 @@ const state = {};
     tabs, and to Jobs, Growth and the vaccine record with them. The
     build now refuses to finish if a data-sub key is not here. */
  'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'sexedTab',
- 'pottyTab',
+ 'pottyTab', 'sfTab', 'nestTab',
  'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -2556,7 +2563,7 @@ function render() {
   /* Screens that only make sense inside one child. Reaching one with no
      child open sends you to the picker rather than to an empty screen. */
   const CHILD_SCOPED = ['milestones', 'activities', 'topics', 'understand', 'feeding',
-    'safety', 'plan', 'sleep', 'development', 'checkins', 'potty'];
+    'safety', 'plan', 'sleep', 'development', 'checkins', 'potty', 'sleepfound', 'bumplabor'];
   if (v && v.type === 'screen' && CHILD_SCOPED.indexOf(v.id) !== -1 && !activeChild()) {
     v = null; state.view = null; state.tab = 'home';
   }
@@ -2584,6 +2591,10 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'sharing') html = screenSharing(c);
   else if (v && v.type === 'screen' && v.id === 'diaperplan') html = screenDiapers(c);
   else if (v && v.type === 'screen' && v.id === 'potty') html = screenPotty(c);
+  else if (v && v.type === 'screen' && v.id === 'sleepfound') html = screenSleepFound(c);
+  else if (v && v.type === 'screen' && v.id === 'monitors') html = screenMonitors(c);
+  else if (v && v.type === 'screen' && v.id === 'nesting') html = screenNesting(c);
+  else if (v && v.type === 'screen' && v.id === 'bumplabor') html = screenBumpLabor(c);
   else if (v && v.type === 'screen' && v.id === 'privacy') html = screenPrivacy(c);
   else if (v && v.type === 'screen' && v.id === 'rules') html = screenRules(c);
   else if (v && v.type === 'screen' && v.id === 'about') html = screenAbout(c);
@@ -3153,7 +3164,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3875,6 +3886,9 @@ function initControls() {
         willowAsk((live && live.ask) || 'Tell me about this.');
         return;
       }
+    } else if (t.dataset.fc) {
+      store.fcOpen = t.dataset.fc === 'open';
+      if (store.fcOpen) window.scrollTo(0, 0);
     } else if (t.dataset.rmode) {
       routineModeSet(t.dataset.rmode);
     } else if (t.dataset.rstep) {
@@ -4159,7 +4173,8 @@ function screenNow(c) {
       <p class="eyebrow" style="color:${urgColor[fever.urgency]}">Fever &middot; ${esc(URGENCY[fever.urgency].label)}</p>
       <h3 class="h3" style="font-size:16px">${esc(fever.headline)}</h3>
       <p class="bodytext" style="margin-top:5px">${esc(fever.detail)}</p>
-    </div>` : ''}
+    </div>
+    ${feverComfortBlock(c)}` : ''}
 
     ${asked ? '' : `
     <p class="sect">Tap what is happening</p>
@@ -5253,6 +5268,8 @@ function viewTopic(c, id) {
       <ul class="dlist warn">${t.redFlags.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>
     </div>` : ''}
 
+    ${t.extra ? topicExtra(t.extra) : ''}
+
     <div class="dsec">
       <h4>Sources</h4>
       ${sourceRows(t.sources)}
@@ -5260,6 +5277,36 @@ function viewTopic(c, id) {
     </div>
     <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>
   </div>`;
+}
+
+/* SOME TOPICS CARRY MORE THAN THE STANDARD SHAPE HOLDS.
+
+   Sleepwalking is the first: the single most useful thing on that page
+   is a table telling a parent which of these 5 things they are looking
+   at, because the answer changes what they should do with their hands.
+   A topic can hand that over in `extra` and it is drawn here, and a
+   topic without one is unchanged. */
+function topicExtra(x) {
+  return `
+  ${x.compare && x.compare.length ? `
+  <div class="dsec">
+    <h4>Which one is this</h4>
+    ${x.compare.map((r) => `
+      <div class="card flat" style="margin-bottom:8px">
+        <p style="margin:0;font-size:14px;font-weight:600;color:var(--ink)">${esc(r.what)}</p>
+        <p class="tiny" style="margin-top:3px">${esc(r.when)}</p>
+        <p class="bodytext" style="margin-top:7px"><strong style="color:var(--ink)">Them.</strong> ${esc(r.them)}</p>
+        <p class="bodytext" style="margin-top:5px"><strong style="color:var(--ink)">You.</strong> ${esc(r.you)}</p>
+      </div>`).join('')}
+  </div>` : ''}
+  ${x.inTheMoment && x.inTheMoment.length ? dsec('In the moment', list(x.inTheMoment)) : ''}
+  ${x.safety && x.safety.length ? dsec('Making the house safe', list(x.safety)) : ''}
+  ${x.triggers && x.triggers.length ? dsec('What makes a night more likely', list(x.triggers)) : ''}
+  ${x.scheduled && x.scheduled.length ? `
+  <div class="dsec">
+    <h4>If it happens at the same time every night</h4>
+    ${x.scheduled.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+  </div>` : ''}`;
 }
 
 
@@ -6850,6 +6897,284 @@ function pottyLogRow(kid, months) {
     with more accidents than the last one is ordinary rather than a step backward.</p>
     ${canLog ? `<button class="btn ghost sm" style="width:100%;margin-top:11px" data-go="log" data-id="potty">
       Log a potty trip</button>` : ''}
+  </div>`;
+}
+
+/* =================================================================
+   SLEEP FOUNDATIONS
+
+   Her ask, in her words: our version of what Taking Cara Babies does.
+   What makes it ours rather than theirs is that it sells nothing. The
+   room, the swaddle, the sack, the order of the evening, and safe
+   sleep, with the sources attached and the reassurance written in.
+   ================================================================= */
+
+function screenSleepFound(c) {
+  const kid = activeChild();
+  const months = c.months;
+  const first = kid && kid.name ? kid.name.split(/\s+/)[0] : '';
+  const want = store.sfTab;
+  const tab = SF_TABS.some((t) => t.id === want) ? want : sfFirstTab(months);
+  const page = SF_TABS.filter((t) => t.id === tab)[0] || SF_TABS[0];
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    ${first ? `<p class="eyebrow" style="margin-top:6px">${esc(first)}${c.summary.label ? ', ' + esc(c.summary.label) : ''}</p>` : ''}
+    <h1 class="title sm">${esc(SF_TITLE)}</h1>
+    <p class="sub">${esc(SF_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      ${SF_INTRO.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+    </div>
+
+    <div style="margin-top:13px">${subTabs('sfTab', tab, SF_TABS)}</div>
+
+    ${page.sections.map((s) => `
+      <div class="dsec">
+        <h4>${esc(s.h)}</h4>
+        ${(s.body || []).map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+        ${list(s.list, !!s.warn || page.id === 'safesleep')}
+      </div>`).join('')}
+
+    <div class="card flat" style="margin-top:13px">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Also here</p>
+      <button class="chip" style="margin-top:9px" data-go="screen" data-id="sleep">Today's rhythm</button>
+      <button class="chip" style="margin-top:9px" data-go="screen" data-id="monitors">${esc(MON_TITLE)}</button>
+    </div>
+
+    ${dsec('Sources', sourceRows(SF_SOURCES))}
+    <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>
+  </div>`;
+}
+
+/* =================================================================
+   MONITORS AND THERMOMETERS
+
+   She uses an Owlet, it calms her rather than frightening her, and she
+   still goes and checks on him because it is sometimes wrong. That is
+   the page, written down honestly, with the button battery warning she
+   asked for and the insurance answer she asked me to look up rather
+   than guess at.
+   ================================================================= */
+
+function screenMonitors(c) {
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(MON_TITLE)}</h1>
+    <p class="sub">${esc(MON_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      ${MON_INTRO.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+    </div>
+
+    ${MON_SECTIONS.map((s) => `
+      <div class="dsec">
+        <h4>${esc(s.h)}</h4>
+        ${(s.body || []).map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+        ${list(s.list, !!s.warn)}
+      </div>`).join('')}
+
+    ${dsec('Sources', sourceRows(MON_SOURCES))}
+    <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>
+  </div>`;
+}
+
+/* =================================================================
+   COMFORT CARE FOR A FEVER
+
+   The app knew when to call. It did not know what to do in the hours
+   in between, which is most of a fever. Drawn inside the fever screen
+   rather than off on its own, because the moment a parent needs it is
+   the moment they are already looking at the triage.
+   ================================================================= */
+
+function feverComfortBlock(c) {
+  const band = fcBandFor(c.months);
+  const open = !!store.fcOpen;
+  return `
+  <div class="card flat" style="margin-top:11px">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(FC_TITLE)}</p>
+    <p class="bodytext" style="margin-top:6px">${esc(FC_INTRO[0])}</p>
+    <button class="btn ghost sm" style="width:100%;margin-top:11px" data-fc="${open ? 'close' : 'open'}">
+      ${open ? 'Close this' : 'What I can actually do right now'}
+    </button>
+  </div>
+  ${!open ? '' : `
+  ${FC_INTRO.slice(1).length ? `<div class="card leafy" style="margin-top:11px">
+    ${FC_INTRO.slice(1).map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+  </div>` : ''}
+
+  ${band ? `
+  <div class="dsec">
+    <h4>${esc(band.label)}</h4>
+    ${(band.lines || []).map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+    ${list(band.list)}
+  </div>` : ''}
+
+  ${FC_GENERAL.map((s) => `
+    <div class="dsec">
+      <h4>${esc(s.h)}</h4>
+      ${(s.body || []).map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+      ${list(s.list, !!s.warn)}
+    </div>`).join('')}
+
+  ${dsec('Never, at any age', list(FC_NEVER, true))}
+
+  <div class="card leafy">
+    ${FC_REASSURE.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+  </div>
+
+  ${dsec('Sources', sourceRows(FC_SOURCES))}`}`;
+}
+
+/* =================================================================
+   NESTING, AND GETTING HELP LINED UP
+
+   Late pregnancy, the rooms she will actually be in at 3am, and the
+   help worth arranging before anybody is too tired to arrange it. Plus
+   her baby shower basket, which she builds herself and wanted to share.
+   ================================================================= */
+
+function screenNesting(c) {
+  const want = store.nestTab;
+  const tab = NEST_TABS.some((t) => t.id === want) ? want : 'nesting';
+  const page = NEST_TABS.filter((t) => t.id === tab)[0] || NEST_TABS[0];
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(NEST_TITLE)}</h1>
+    <p class="sub">${esc(NEST_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      ${NEST_INTRO.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+    </div>
+
+    <div style="margin-top:13px">${subTabs('nestTab', tab, NEST_TABS)}</div>
+
+    ${page.sections.map((s) => `
+      <div class="dsec">
+        <h4>${esc(s.h)}</h4>
+        ${(s.body || []).map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+        ${list(s.list, !!s.warn)}
+      </div>`).join('')}
+
+    ${tab !== 'basket' ? '' : `
+    <p class="sect">4 baskets that actually get used</p>
+    ${NEST_BASKETS.map((b) => `
+      <div class="card" style="margin-bottom:9px">
+        <p class="eyebrow">${esc(b.label)}</p>
+        <p class="bodytext" style="margin-top:5px">${esc(b.note)}</p>
+        <ul class="dlist" style="margin-top:9px">${b.items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>
+      </div>`).join('')}
+
+    ${dsec('Never put these in a basket', list(NEST_NEVER, true))}
+
+    <div class="card flat">
+      <p class="eyebrow">${icon('people', 11, 'var(--sage)')} Made one yourself</p>
+      <p class="tiny" style="margin-top:4px">People sell these, and people give much better ones than any
+      list. If you have put one together, post what went in it. Somebody 3 weeks from a shower will use it.</p>
+      <button class="btn ghost sm" style="width:100%;margin-top:11px" data-go="tab" data-id="community">
+        Share yours</button>
+    </div>`}
+
+    ${dsec('Sources', sourceRows(NEST_SOURCES))}
+    <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>
+  </div>`;
+}
+
+/* =================================================================
+   THE PREGNANCY DAY, AND THE 37 WEEK LIST
+
+   Every child's profile opens with Today's plan. Bean did not have
+   one, and she wanted the same thing: tell me what to do today, and
+   when I get to 37 weeks tell me about the curb walking and the dates
+   and the pineapple.
+
+   The plan rotates by the day of the month so a 40 week pregnancy is
+   not the same 3 lines every morning.
+   ================================================================= */
+
+function bumpPlanCard(kid, where) {
+  if (!where || typeof where.week !== 'number') return '';
+  const band = bumpBandFor(where.week);
+  if (!band) return '';
+  const day = Number(String(ciToday()).slice(8, 10)) || 1;
+  const items = bumpToday(where.week, day);
+  if (!items.length) return '';
+  const first = (kid.name || 'Baby').split(/\s+/)[0];
+
+  return `
+  <div class="card" style="border-left:3px solid var(--sage)">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(BUMP_PLAN_TITLE)}</p>
+    <p class="tiny" style="margin-top:4px">${esc(band.intro)}</p>
+    <div style="margin-top:11px">
+      ${items.map((it, i) => `
+        <div style="padding:10px 0;${i < items.length - 1 ? 'border-bottom:1px solid var(--line2)' : ''}">
+          <p style="margin:0;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3">${esc(it.what)}</p>
+          <p class="tiny" style="margin-top:3px">${esc(it.why)}</p>
+        </div>`).join('')}
+    </div>
+    ${bumpLaborShows(where.week) ? `
+      <button class="btn" style="width:100%;margin-top:11px" data-go="screen" data-id="bumplabor">
+        ${esc(BUMP_LABOR.title)}</button>` : ''}
+    <button class="chip" style="margin-top:9px" data-go="screen" data-id="nesting">${esc(NEST_TITLE)}</button>
+    <p class="tiny" style="margin-top:9px">${esc(BUMP_PLAN_SUB)} Growing ${esc(first)} is the work. The
+    rest of this is optional.</p>
+  </div>`;
+}
+
+function screenBumpLabor(c) {
+  const kid = activeChild();
+  const where = expWhereFor(kid);
+  const L = BUMP_LABOR;
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    ${where ? `<p class="eyebrow" style="margin-top:6px">${esc(expShortLabel(where))}</p>` : ''}
+    <h1 class="title sm">${esc(L.title)}</h1>
+    <p class="sub">${esc(L.sub)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      ${L.intro.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+    </div>
+
+    <div class="card" style="margin-top:11px;border-left:3px solid var(--sage)">
+      <p class="eyebrow">What 37, 39 and 41 weeks actually mean</p>
+      ${L.termNote.map((p) => `<p class="bodytext" style="margin:8px 0 0">${esc(p)}</p>`).join('')}
+    </div>
+
+    ${L.groups.map((g) => `
+      <p class="sect">${esc(g.label)}</p>
+      <div class="card flat"><p class="bodytext">${esc(g.note)}</p></div>
+      ${g.items.map((it) => `
+        <div class="card" style="margin-bottom:8px">
+          <p style="margin:0;font-size:15px;font-weight:600;color:var(--ink)">${esc(it.what)}</p>
+          <p class="bodytext" style="margin-top:6px">${esc(it.detail)}</p>
+        </div>`).join('')}`).join('')}
+
+    <div class="card" style="border:1.5px solid #E4C9BF;background:#FCF4F1">
+      <p class="eyebrow" style="color:#A85A44">Call now, do not wait until morning</p>
+      <ul class="dlist warn" style="margin-top:7px">${L.callNow.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+    </div>
+
+    <div class="card leafy">
+      ${L.closing.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+    </div>
+
+    ${dsec('Sources', sourceRows(BUMP_SOURCES))}
+    <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>
   </div>`;
 }
 
@@ -8855,6 +9180,7 @@ function screenExpecting(c) {
     ${subTabs('expTab', tab, tabs)}
 
     ${tab === 'week' ? `
+      ${where && !where.tooEarly ? bumpPlanCard(kid, where) : ''}
       ${!where ? `
         <div class="card flat"><p class="bodytext">Put a due date on this profile and the weeks
           start.</p></div>` : ''}
@@ -16828,6 +17154,9 @@ function findGo(i) {
   if (!e) return;
   const g = e.go || {};
   if (g.tab) { state.view = null; state.tab = g.tab; }
+  /* A few destinations are one care topic rather than a whole screen,
+     such as sleepwalking, so the index can point straight at it. */
+  if (g.topic) { state.view = { type: 'topic', id: g.topic }; }
   if (g.screen) {
     if (!activeChild()) {
       const real = store.children.filter((k) => !isExampleChild(k));
@@ -17957,6 +18286,9 @@ function screenChild(c) {
       ${showsDiaperContent(months) ? childRow('drop', esc(DIAPER_TITLE),
         esc(diaperBandFor(months).perDay + ' a day at this age, and what to send to daycare'),
         'data-go="screen" data-id="diaperplan"') : ''}
+      ${sfShows(months) ? childRow('moon', esc(SF_TITLE),
+        esc(sfRowSub(months)),
+        'data-go="screen" data-id="sleepfound"') : ''}
       ${pottyShows(months) ? childRow('check-circle', esc(POTTY_TITLE),
         esc(pottyRowSub(months)),
         'data-go="screen" data-id="potty"') : ''}
@@ -18027,6 +18359,9 @@ function screenChild(c) {
       ${childRow('pill', 'Something is wrong right now',
         'Fever, rashes, crying that will not stop, and when to call',
         'data-go="screen" data-id="now"')}
+      ${months != null && months <= 36 ? childRow('note', esc(MON_TITLE),
+        'What a sock or a forehead reading can tell you, and what it cannot',
+        'data-go="screen" data-id="monitors"') : ''}
       ${months != null && months >= 18 ? childRow('leaf', GROW_TITLE, growRowSub(months),
         'data-go="screen" data-id="growingup"') : ''}
       ${sexedShows(months) ? childRow('shield', SEXED_TITLE,

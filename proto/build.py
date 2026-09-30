@@ -111,6 +111,11 @@ order = [
     ('feedback',            SRC/'data/feedback.js'),
     ('willowTips',          SRC/'data/willowTips.js'),
     ('potty',               SRC/'data/potty.js'),
+    ('sleepFoundations',    SRC/'data/sleepFoundations.js'),
+    ('monitors',            SRC/'data/monitors.js'),
+    ('feverComfort',        SRC/'data/feverComfort.js'),
+    ('nesting',             SRC/'data/nesting.js'),
+    ('bumpPlan',            SRC/'data/bumpPlan.js'),
     ('firebaseConfig',      SRC/'data/firebaseConfig.js'),
 ]
 
