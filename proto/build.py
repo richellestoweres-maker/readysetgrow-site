@@ -116,6 +116,8 @@ order = [
     ('feverComfort',        SRC/'data/feverComfort.js'),
     ('nesting',             SRC/'data/nesting.js'),
     ('bumpPlan',            SRC/'data/bumpPlan.js'),
+    ('homeschool',          SRC/'data/homeschool.js'),
+    ('learnLenses',         SRC/'data/learnLenses.js'),
     ('firebaseConfig',      SRC/'data/firebaseConfig.js'),
 ]
 

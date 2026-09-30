@@ -1149,6 +1149,11 @@ const store = {
 
   /* Which page of the potty screen is open. */
   pottyTab: 'ready',
+  /* Learning. Whether the other age bands have been asked for, and
+     which program has its small print open. Neither is worth keeping
+     between visits, they just have to survive a repaint. */
+  learnAllBands: false,
+  hsOpen: '',
   /* Sleep foundations, and nesting, the same idea. */
   sfTab: '',
   nestTab: 'nesting',
@@ -3164,7 +3169,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3886,6 +3891,10 @@ function initControls() {
         willowAsk((live && live.ask) || 'Tell me about this.');
         return;
       }
+    } else if (t.dataset.hs !== undefined) {
+      store.hsOpen = t.dataset.hs || '';
+    } else if (t.dataset.learnall) {
+      store.learnAllBands = t.dataset.learnall === '1';
     } else if (t.dataset.agenew) {
       const ids = ageNewList(ctx().months, activeChild());
       if (t.dataset.agenew === 'hide') ageNewDismiss(ids);
@@ -23763,24 +23772,35 @@ function screenLearning(c) {
   const months = c.months;
   const band = learnBandChoice(months);
   const early = earlyShows(months);
+  const kid = activeChild();
+  const first = kid && kid.name ? kid.name.split(/\s+/)[0] : '';
+  /* The page a child's profile has depends on what is on that profile.
+     A tab named after them, only when something is turned on, and
+     programs only once a family is old enough to be choosing one. */
+  const hasLens = learnLensesFor(state.lenses || []).length > 0;
   let tab = store.learnTab || (early ? 'week' : 'day');
   const tabs = (early ? [{ id: 'week', label: EARLY_TITLE }] : []).concat([
     { id: 'day', label: 'The day' },
+  ]).concat(hasLens ? [{ id: 'forthem', label: first ? 'For ' + first : 'For them' }] : []).concat([
     { id: 'subjects', label: 'Subjects' },
+  ]).concat(hsShows(months) ? [{ id: 'programs', label: 'Programs' }] : []).concat([
     { id: 'kit', label: 'What you need' },
     { id: 'how', label: 'Running it' },
   ]);
   if (!tabs.some((t) => t.id === tab)) tab = tabs[0].id;
   const body = tab === 'week' ? earlyWeekTab(months)
-    : tab === 'subjects' ? learnSubjectsTab(months)
-      : tab === 'kit' ? learnKitTab()
-        : tab === 'how' ? learnHowTab()
-          : learnDayTab(band, months);
+    : tab === 'forthem' ? learnForThemTab(months)
+      : tab === 'programs' ? learnProgramsTab()
+        : tab === 'subjects' ? learnSubjectsTab(months)
+          : tab === 'kit' ? learnKitTab()
+            : tab === 'how' ? learnHowTab()
+              : learnDayTab(band, months);
 
   return `
   ${cornerLeaves()}
   <div class="sc-head">
     <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    ${first ? `<p class="eyebrow" style="margin-top:6px">${esc(first)}${c.summary.label ? ', ' + esc(c.summary.label) : ''}</p>` : ''}
     <h1 class="title">Learning</h1>
     <p class="sub">${esc(LEARN_INTRO)}</p>
   </div>
@@ -23929,14 +23949,177 @@ function earlyRowSub(months) {
   return 'What a structured day looks like at ' + ((learnBandFor(months) || {}).label || '').toLowerCase();
 }
 
+/* =================================================================
+   THE LEARNING DAY, SHAPED BY THIS CHILD
+
+   Her rule, applied where it matters most. The Learning screen used to
+   show all 8 age bands at once and the same day to every child. Now it
+   shows the band they are actually in, and it reads the support lenses
+   on their profile and says what changes.
+
+   See src/data/learnLenses.js for the content and why it is written
+   the way it is.
+   ================================================================= */
+
+/* A short strip on the day itself, so the adaptations are not hidden
+   behind a tab she has to know about. One line per lens, and the way
+   into the full version. */
+function learnLensStrip(months) {
+  const lenses = learnLensesFor(state.lenses || []);
+  if (!lenses.length) return '';
+  const kid = activeChild();
+  const first = kid && kid.name ? kid.name.split(/\s+/)[0] : 'them';
+  return `
+  <div class="card" style="border-left:3px solid var(--sage);margin-bottom:13px">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} What changes for ${esc(first)}</p>
+    <div style="margin-top:8px">
+      ${lenses.map((l, i) => `
+        <div style="padding:8px 0;${i < lenses.length - 1 ? 'border-bottom:1px solid var(--line2)' : ''}">
+          <p class="tiny" style="margin:0;font-weight:700;color:var(--deep2);text-transform:uppercase;letter-spacing:.08em">${esc(lensLabelOf(l.id))}</p>
+          <p class="bodytext" style="margin:3px 0 0">${esc(l.headline)}</p>
+        </div>`).join('')}
+    </div>
+    <button class="btn ghost sm" style="width:100%;margin-top:11px" data-sub="learnTab" data-val="forthem">
+      What that looks like, block by block</button>
+  </div>`;
+}
+
+function lensLabelOf(id) {
+  const l = getLens(id);
+  return l ? l.label : id;
+}
+
+/* The full version. Everything the lenses change about a day, written
+   out, with the part about what gets misread given its own weight
+   because that is the part a parent needs most. */
+function learnForThemTab(months) {
+  const lenses = learnLensesFor(state.lenses || []);
+  const kid = activeChild();
+  const first = kid && kid.name ? kid.name.split(/\s+/)[0] : 'them';
+  if (!lenses.length) {
+    return `
+    <div class="card flat">
+      <p class="bodytext">Nothing is turned on for ${esc(first)} yet. If something about how they learn has
+      a name, or you think it might, turning it on here reshapes this whole screen rather than adding a
+      page about it.</p>
+      <button class="btn ghost sm" style="width:100%;margin-top:11px" data-go="screen" data-id="understand">
+        Understanding ${esc(first)}</button>
+    </div>`;
+  }
+  return `
+  <div class="card leafy">
+    ${LL_INTRO.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+    ${lenses.length > 1 ? `<p class="tiny" style="margin:4px 0 0">${esc(LL_STACK_NOTE)}</p>` : ''}
+  </div>
+
+  ${lenses.map((l) => `
+    <p class="sect" style="margin-top:18px">${esc(lensLabelOf(l.id))}</p>
+    <div class="card flat">
+      <p class="bodytext" style="margin:0"><strong style="color:var(--ink)">${esc(l.headline)}</strong></p>
+    </div>
+    ${dsec('The shape of the day', list(l.day))}
+    ${dsec('How to teach it', list(l.teaching))}
+    <div class="dsec">
+      <h4>What this is not</h4>
+      ${/* Given its own treatment on purpose. A parent who has been told
+            their child is lazy, and half believes it, should not have
+            to find this at the bottom of a list. */''}
+      <div class="card" style="background:var(--leaf3)">
+        <ul class="dlist" style="margin:0">${l.watch.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+      </div>
+    </div>
+    ${dsec('What they are often good at', list(l.wins))}
+    ${dsec('Worth asking about', list(l.ask, true))}`).join('')}
+
+  ${dsec('Sources', sourceRows(LL_SOURCES))}
+  <p class="disclaimer">${esc(LENS_DISCLAIMER)}</p>`;
+}
+
+/* =================================================================
+   HOMESCHOOL PROGRAMS
+
+   She asked for this and named the one she used, which is first on the
+   list. The accreditation explainer is above the list rather than
+   below it, because a parent who does not know what the word means
+   cannot read the list properly.
+   ================================================================= */
+
+const HS_KIND_LABEL = {
+  'full online school': 'Full online school',
+  'curriculum only': 'Curriculum only',
+  'public school at home': 'Public school at home',
+  'free resource': 'Free resource',
+  hybrid: 'Campuses and online',
+};
+
+function learnProgramsTab() {
+  const open = store.hsOpen || '';
+  return `
+  <div class="card leafy">
+    ${HS_INTRO.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+  </div>
+
+  <p class="sect" style="margin-top:16px">${esc(HS_TITLE)}</p>
+  ${HS_PROGRAMS.map((p) => {
+    const isOpen = open === p.name;
+    const unsure = /could not confirm/i.test(p.accredited);
+    const none = /^not accredited/i.test(p.accredited);
+    return `
+    <div class="card" style="margin-bottom:9px">
+      <p style="margin:0;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.3">${esc(p.name)}</p>
+      <div class="chips" style="gap:5px;margin-top:7px">
+        <span class="tag">${esc(p.grades)}</span>
+        <span class="tag${unsure || none ? '' : ' time'}">${esc(unsure ? 'Accreditation unconfirmed' : (none ? 'Not accredited' : p.accredited))}</span>
+        <span class="tag">${esc(HS_KIND_LABEL[p.kind] || p.kind)}</span>
+        <span class="tag">${esc(p.faith)}</span>
+      </div>
+      <p class="bodytext" style="margin-top:9px">${esc(p.who)}</p>
+      <p class="tiny" style="margin-top:7px"><strong style="color:var(--ink)">Cost.</strong> ${esc(p.cost)}</p>
+      ${p.note ? `
+        ${isOpen ? `<p class="bodytext" style="margin-top:9px">${esc(p.note)}</p>` : ''}
+        <button class="chip" style="margin-top:9px" data-hs="${isOpen ? '' : esc(p.name)}">
+          ${isOpen ? 'Less' : 'Worth knowing first'}</button>` : ''}
+      <p class="tiny" style="margin-top:8px"><a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer"
+        style="color:var(--deep)">${esc(p.url.replace(/^https?:\/\//, ''))}</a></p>
+    </div>`;
+  }).join('')}
+
+  <p class="sect" style="margin-top:18px">What accreditation actually means</p>
+  ${HS_ACCRED.map((s) => `
+    <div class="dsec">
+      <h4>${esc(s.h)}</h4>
+      ${(s.body || []).map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+      ${list(s.list)}
+    </div>`).join('')}
+
+  <p class="sect" style="margin-top:18px">How to choose one</p>
+  ${HS_CHOOSING.map((s) => `
+    <div class="dsec">
+      <h4>${esc(s.h)}</h4>
+      ${(s.body || []).map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+      ${list(s.list)}
+    </div>`).join('')}
+
+  ${dsec('Sources', sourceRows(HS_SOURCES))}
+  <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>`;
+}
+
 function learnDayTab(band, months) {
   const natural = learnBandFor(months);
   const off = natural && band.id !== natural.id;
+  /* HER RULE, ON THIS SCREEN. A profile should show the age it is,
+     not all 8 of them. So the other bands are not on the page at all
+     unless she goes looking, because a homeschooling parent does
+     sometimes want to see what is coming and taking that away would be
+     worse than the clutter was. Off by default, and clearly a side
+     door rather than the main thing. */
+  const showAll = !!store.learnAllBands || off;
   return `
+  ${!showAll ? '' : `
   <div class="chips" style="margin-bottom:12px">
     ${LEARN_BANDS.map((b) => `
       <button class="chip" data-learnband="${esc(b.id)}" aria-pressed="${b.id === band.id}">${esc(b.label)}</button>`).join('')}
-  </div>
+  </div>`}
   ${off && natural ? `
     <p class="tiny" style="margin:0 0 10px">You are looking at ${esc(band.label.toLowerCase())}.
     <button class="tiny" data-learnband="${esc(natural.id)}"
@@ -23947,6 +24130,8 @@ function learnDayTab(band, months) {
     <p class="bodytext" style="margin:0">${esc(band.sum)}</p>
   </div>
   ${band.note ? `<p class="tiny" style="margin:0 0 14px">${esc(band.note)}</p>` : ''}
+
+  ${learnLensStrip(months)}
 
   ${band.blocks.map((b, i) => `
     <div class="lblock">
@@ -23966,7 +24151,13 @@ function learnDayTab(band, months) {
   <div class="dsec">
     <h4>${esc(LEARN_RULES.title)}</h4>
     ${list(LEARN_RULES.items)}
-  </div>`;
+  </div>
+
+  ${/* The side door. Homeschooling parents do plan ahead, so the other
+        bands are reachable, they are simply not the page. */''}
+  ${showAll ? `
+    <button class="chip" data-learnall="0">Just ${esc(natural ? natural.label.toLowerCase() : 'their age')}</button>`
+    : `<button class="chip" data-learnall="1">Look at another age</button>`}`;
 }
 
 function learnSubjectsTab(months) {

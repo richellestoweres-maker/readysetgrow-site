@@ -48,7 +48,10 @@ body{
 
 /* The app fills the window the way it fills a phone. */
 .appshell{display:flex;flex-direction:column;height:100%;position:relative;z-index:1}
-.appshell,.scroll,.tabs{background:transparent}
+.appshell,.scroll{background:transparent}
+/* The tab bar is solid, so the field ends on a clean edge rather than
+   with shapes sliced in half behind the tabs. */
+.tabs{background:var(--cream)}
 body.locked .bglayer{display:block}
 /* The wordmark is painted into the fixed background layer at the top of
    the window, so the scrolling content has to start below it or the
@@ -67,7 +70,9 @@ body.locked .bglayer{display:block}
    on the right. Both side groups take an equal share of what is left so
    the wordmark sits on the true centre line whether there are no
    children or six. */
-.topbar-holder{flex:none;position:relative;z-index:4;background:var(--cream)}
+/* Transparent, so the field of shapes runs all the way up behind the
+   wordmark instead of stopping at a solid band across the top. */
+.topbar-holder{flex:none;position:relative;z-index:4;background:transparent}
 .topbar-holder:empty{display:none}
 /* The sprout grows up out of the O and reaches well above the letters,
    which is the whole point of the mark. That means the header needs
@@ -132,10 +137,15 @@ body.locked .topbar-holder{background:transparent}
 #willow{position:fixed;inset:0;pointer-events:none;z-index:8}
 #willow > *{pointer-events:auto}
 .willowdot{position:fixed;right:26px;bottom:96px}
+/* Sits directly on top of her pill. On a phone the slot is the frame
+   and percentages work, on a window the slot is the whole viewport, so
+   this has to be pinned to the same edge she is. */
+.wnudge{position:fixed;right:26px;bottom:154px;left:auto}
 .willowpanel{position:fixed;right:26px;left:auto;bottom:96px;width:min(420px, calc(100vw - 52px));
   max-height:min(620px, calc(100vh - 150px))}
 @media (max-width:620px){
   .willowdot{right:14px;bottom:84px}
+  .wnudge{right:14px;bottom:142px}
   .willowpanel{right:10px;left:10px;bottom:84px;width:auto;max-height:calc(100vh - 140px)}
 }
 body.locked #willow{display:none}
@@ -165,8 +175,8 @@ body.locked #willow{display:none}
 .corner-right{top:118px;right:24px;font-size:13px}
 .leafart-soft{opacity:.34}
 
-.affirm-mob,.affirm-core,.affirm-extra,.affirm-wide{display:none!important}
-.leafart-wide{display:none!important}
+.affirm-mob,.affirm-core,.affirm-extra,.affirm-wide,.affirm-xwide{display:none!important}
+.leafart-wide,.leafart-xwide{display:none!important}
 
 /* Phone. Shapes bleed off the edges, a little softer so the cards stay
    comfortably readable on top of them. */
@@ -177,22 +187,54 @@ body.locked #willow{display:none}
   .corner-right{display:none!important}
 }
 
-/* Once there is a gutter. */
+/* Each ribbon appears only once its gutter can hold it without
+   crowding the reading column. Outer at 1060, inner at 1540, and the
+   middle one plus its channel of sprouts on a really wide monitor. */
 @media (min-width:1060px){
-  .affirm-core{display:block!important}
+  .affirm-core,.affirm-extra{display:block!important}
 }
-@media (min-width:1120px){
-  .affirm-extra{display:block!important}
-}
-@media (min-width:860px){
-  .leafart-soft{display:block!important}
-}
-/* The inner column, once the two columns stop touching. */
 @media (min-width:1540px){
   .affirm-wide,.leafart-wide{display:block!important}
 }
-@media (max-width:859px){
-  .leafart-soft{display:none!important}
+@media (min-width:1800px){
+  .affirm-xwide,.leafart-xwide{display:block!important}
+}
+.leafart-soft{display:none!important}
+/* The middle band, where the cards land. Present, just quieter, so the
+   field runs right across the window without crowding what she reads. */
+.affirm-hush{opacity:.5}
+.leafart-hush{opacity:.42}
+
+/* KEEPING THE FIELD OUT FROM BEHIND THE WORDS.
+
+   She spotted this on the nesting screen and put it exactly right: a
+   card is easy to read because it has a surface of its own, and a long
+   stretch of prose that has none is not, because the hushed ribbons in
+   the middle band sit directly behind the text.
+
+   Quieting them further was not the answer. Anything faint enough to
+   read through is too faint to be worth drawing. So the reading column
+   carries its own backing, in the page color, which is invisible as a
+   band and simply stops the field before it reaches the words. The
+   gutters keep every ribbon they had.
+
+   The edges fade over 34px rather than stopping dead, so a ribbon
+   passing under the column thins out instead of being sliced off at a
+   vertical line. The fade happens inside the column's own padding, so
+   no text ever sits on the soft part. */
+@media (min-width:1060px){
+  .sc, .sc-head{
+    position:relative;
+    background:linear-gradient(to right,
+      rgba(247,245,239,0) 0,
+      var(--cream) 34px,
+      var(--cream) calc(100% - 34px),
+      rgba(247,245,239,0) 100%);
+  }
+  /* The head and the body are 2 elements stacked, so the backing has to
+     meet with no seam and no doubled edge between them. */
+  .sc-head{padding-bottom:10px}
+  .sc{margin-top:-6px;padding-top:6px}
 }
 
 /* ---------- THE PROFILE PANEL ---------- */
