@@ -369,12 +369,43 @@ export function buildDay(options = {}) {
   const bedMin = parseTime(band.bedtimeRange[0]);
   const bedMax = parseTime(band.bedtimeRange[1]);
 
+  /* HOW MUCH SLEEP THEY STILL NEED TONIGHT.
+
+     A nap is sleep. It counts against the night, which is why a child
+     who naps goes to bed LATER than the same child on a day they did
+     not, and why a nap that ran late pushes bedtime out rather than
+     pulling it in.
+
+     The old code ignored that for anybody who still naps: it put
+     bedtime a wake window after the nap and nothing else, so a 4 year
+     old who napped was sent to bed at 6:45 and the same child with no
+     nap at 7:00. That is backwards, and a parent notices immediately. */
+  const need = getSleepNeeds(months);
+  const target = need ? Math.round(((need.hours[0] + need.hours[1]) / 2) * 60) : 600;
+  const napSoFar = blocks.filter((b) => b.type === 'nap').reduce((n, b) => n + (b.minutes || 0), 0);
+  /* Day sleep does not swap for night sleep one for one, and a floor
+     stops a very long nap from pushing bedtime somewhere silly. */
+  const nightNeed = Math.max(target - napSoFar, 9 * 60);
+  const needBed = wake + 1440 - nightNeed;
+
   if (napCount === 0) {
     // Past naps, bedtime is driven by sleep need rather than by windows.
-    const need = getSleepNeeds(months);
-    const target = need ? Math.round(((need.hours[0] + need.hours[1]) / 2) * 60) : 600;
-    bedtime = Math.min(bedMax, Math.max(bedMin, wake + 1440 - target));
+    bedtime = Math.min(bedMax, Math.max(bedMin, needBed));
     notes.push('At this age bedtime works backwards from how much night sleep they need and when they have to be up, rather than from wake windows.');
+  } else if (typeof months === 'number' && months >= 18) {
+    /* Both matter once there is only a nap or two: they have to have
+       been awake long enough, AND the night has to be long enough. The
+       later of the two is the one that is actually true. */
+    const windowBed = bedtime;
+    bedtime = Math.max(windowBed, needBed);
+    if (napSoFar > 0 && needBed > windowBed) {
+      notes.push(`They slept about ${formatDuration(napSoFar)} in the day, so bedtime moves later by roughly that much. A nap does not disappear, it comes out of the night.`);
+    }
+    if (bedtime > bedMax) {
+      bedtime = bedMax;
+      notes.push(`A late or long nap pushes bedtime past ${formatTime(bedMax)}, so it is capped there. Expect a second wind rather than an easy night.`);
+    }
+    if (bedtime < bedMin) bedtime = bedMin;
   } else {
     if (bedtime < bedMin) {
       notes.push(`That lands bedtime at ${formatTime(bedtime)}, which is on the early side. An early bedtime is usually better than pushing a tired child through to a "normal" hour.`);
@@ -398,7 +429,6 @@ export function buildDay(options = {}) {
 
   const dayNap = blocks.filter((b) => b.type === 'nap').reduce((n, b) => n + (b.minutes || 0), 0);
   const night = 1440 - (bedtime - wake);
-  const need = getSleepNeeds(months);
   const total = dayNap + night;
 
   if (need && total < need.hours[0] * 60) {
