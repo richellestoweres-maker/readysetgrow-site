@@ -1019,6 +1019,9 @@ function newChildRecord(name, birthday) {
        week 1, and which ones have been ticked off. See earlyLessons.js. */
     earlyStart: '',
     earlyDone: {},
+    /* The naps that actually happened today, so the rest of the day is
+       built from what really occurred rather than from the plan. */
+    napTimes: { day: '', list: [] },
     /* Weights, lengths and head measurements, one entry per occasion,
        always stored in kilograms and centimeters whatever the parent
        reads. See src/data/growth.js. */
@@ -2740,7 +2743,7 @@ function render() {
        that almost never matches the string we generated. So this guard
        was always true and the panel was rebuilt on every repaint of
        the whole app, which is most of what was wrong with the chat. */
-    const willowHTML = bday || ciPopupHtml() || (pendingSave ? '' : (offerBubble() || nudgeBubble()) + willowBubble() + willowPanel());
+    const willowHTML = bday || ciPopupHtml() || (pendingSave ? '' : (tipBubble(c) || offerBubble() || nudgeBubble()) + willowBubble() + willowPanel());
     const replaced = lastWillowHTML !== willowHTML;
     if (replaced) {
       willowSlot.innerHTML = willowHTML;
@@ -3043,6 +3046,19 @@ function initControls() {
   document.addEventListener('change', (e) => {
     /* The 3 wake time dropdowns, read back as one time. */
     if (e.target.matches('[data-waketime="part"]')) { wakeSet(wakeFromSelects(e.target)); return; }
+    /* A nap time corrected by hand. The day is rebuilt from it. */
+    if (e.target.matches('[data-timepart]')) {
+      const got = timeFromSelects(e.target);
+      if (!got) return;
+      const m = String(got.target).match(/^nap(start|end)(\d+)$/);
+      if (!m) return;
+      napSet(Number(m[2]), m[1] === 'start' ? 'start' : 'end', got.value);
+      const box = document.getElementById('rhythmDay');
+      if (box) { box.innerHTML = sleepDayHtml(ctx()); lastScreenHTML = null; }
+      else render();
+      napCheckLate();
+      return;
+    }
     if (e.target.matches('[data-postchild]')) {
       postDraft().childId = e.target.value;
       flushStore();
@@ -3126,7 +3142,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3828,6 +3844,24 @@ function initControls() {
     } else if (t.dataset.fb) {
       if (t.dataset.fb === 'kind') fb.kind = fb.kind === t.dataset.id ? '' : t.dataset.id;
       else if (t.dataset.fb === 'send') { fbSend(); return; }
+    } else if (t.dataset.tip) {
+      const how = t.dataset.tip;
+      const id = t.dataset.id || '';
+      if (how === 'hide') tipHide(id);
+      else if (how === 'read') {
+        tipHide(id);
+        state.view = { type: 'screen', id: t.dataset.screen };
+        window.scrollTo(0, 0);
+      } else if (how === 'ask') {
+        const live = tipLive(ctx());
+        tipHide(id);
+        willow.open = true;
+        willow.stick = true;
+        willowAsk((live && live.ask) || 'Tell me about this.');
+        return;
+      }
+    } else if (t.dataset.nap === 'clear') {
+      napClear();
     } else if (t.dataset.waketime === 'set') {
       wakeSet(t.dataset.val);
       return;
@@ -4303,6 +4337,201 @@ function wakeFromSelects(el) {
   return String(h).padStart(2, '0') + ':' + m;
 }
 
+/* =================================================================
+   WILLOW NOTICING THINGS
+
+   See src/data/willowTips.js for the rules. One tip at a time, never
+   twice in a day, always dismissible, and anything clinical is the
+   app's own sourced content rather than something written fresh here.
+   ================================================================= */
+
+function tipsHidden() {
+  const p = store.parent || {};
+  if (!p.tipsHidden || typeof p.tipsHidden !== 'object') p.tipsHidden = {};
+  return p.tipsHidden;
+}
+
+function tipHide(id) {
+  tipsHidden()[id] = ciToday();
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+}
+
+function tipSeenToday(id) {
+  return tipsHidden()[id] === ciToday();
+}
+
+/* A fever logged today, with the temperature if one was entered. */
+function tipFeverToday(kid) {
+  if (!kid || !Array.isArray(kid.logs)) return null;
+  const today = ciToday();
+  for (const l of kid.logs) {
+    if (l.typeId !== 'symptoms' && l.typeId !== 'medication') continue;
+    if (String(l.at || '').slice(0, 10) !== today) continue;
+    const v = l.values || {};
+    const what = Array.isArray(v.what) ? v.what.join(' ') : String(v.what || '');
+    const temp = Number(v.temperature);
+    if (/fever/i.test(what) || (isFinite(temp) && temp >= 100.4)) {
+      return { temp: isFinite(temp) ? temp : null, how: v.howTaken || '' };
+    }
+  }
+  return null;
+}
+
+/* A nap that happened a good deal later than the day expected. */
+function tipNapLate(c) {
+  const kid = activeChild();
+  if (!kid || c.months == null) return false;
+  const real = napsToday(kid);
+  if (!real.length) return false;
+  const plan = buildDay({ months: c.months, wakeTime: state.wakeTime, naps: state.napOverride });
+  if (!plan.ok) return false;
+  const planned = plan.blocks.filter((b) => b.type === 'nap');
+  const mins = (t) => {
+    const p = String(t).split(':');
+    return Number(p[0]) * 60 + Number(p[1]);
+  };
+  return real.some((n, i) => planned[i] && mins(n.start) - planned[i].start >= 45);
+}
+
+/* Which tip, if any, belongs on screen right now. */
+function tipLive(c) {
+  if (willow.open || !hasAccess()) return null;
+  const kid = activeChild();
+  if (!kid) return null;
+
+  const fever = tipSeenToday('fever') ? null : tipFeverToday(kid);
+  if (fever) {
+    const band = c.months == null ? null : getFeverTriage(c.months);
+    return {
+      id: 'fever',
+      title: TIP_FEVER.title + (fever.temp ? ', ' + fever.temp + ' F' : ''),
+      lines: band ? [band.headline + '. ' + band.detail, TIP_FEVER.closing] : [TIP_FEVER.closing],
+      questions: TIP_SICK_QUESTIONS,
+      note: TIP_SICK_QUESTIONS_NOTE,
+      ask: TIP_FEVER.ask + ' ' + TIP_SICK_QUESTIONS.join(' '),
+      link: TIP_FEVER.link,
+      urgent: band ? band.urgency === 'emergency' || band.urgency === 'callNow' : false,
+    };
+  }
+
+  if (!tipSeenToday('napLate') && tipNapLate(c)) {
+    return {
+      id: 'napLate',
+      title: TIP_NAP_LATE.title,
+      lines: TIP_NAP_LATE.lines,
+      ask: TIP_NAP_LATE.ask,
+      link: TIP_NAP_LATE.link,
+    };
+  }
+  return null;
+}
+
+/* Willow's bubble for it, in her usual place in the corner. */
+function tipBubble(c) {
+  const t = tipLive(c);
+  if (!t) return '';
+  return `
+  <div class="wnudge tipcard${t.urgent ? ' urgent' : ''}">
+    <button class="wnudge-x" data-tip="hide" data-id="${esc(t.id)}" aria-label="${esc(TIP_DISMISS)}">&times;</button>
+    <div class="tipbody">
+      <span class="wnudge-t">${esc(WILLOW.name)}</span>
+      <p class="tip-t">${esc(t.title)}</p>
+      ${/* Short in the corner on purpose. The depth is one tap away,
+            either in the chat or on the page it points at. */''}
+      <p class="tip-l">${esc(t.lines[0])}</p>
+      <div class="tip-go">
+        <button class="chip" data-tip="ask" data-id="${esc(t.id)}">Talk to me about it</button>
+        ${t.link ? `<button class="chip" data-tip="read" data-id="${esc(t.id)}"
+          data-screen="${esc(t.link.screen)}">${esc(t.link.label)}</button>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* =================================================================
+   THE NAPS THAT ACTUALLY HAPPENED
+
+   She logs a nap and the day should follow it, because a nap at 3pm
+   and a nap at noon are different days. A logged sleep gives the end
+   time and how long it ran, which is enough to place it; anything the
+   app got wrong she can correct here by hand, and the rest of the day,
+   including bedtime, is rebuilt from it.
+   ================================================================= */
+
+function napTimesOf(kid) {
+  if (!kid) return [];
+  const n = kid.napTimes;
+  if (!n || typeof n !== 'object' || n.day !== ciToday()) return [];
+  return Array.isArray(n.list) ? n.list.filter((x) => x && x.start && x.end) : [];
+}
+
+/* Naps read off today's sleep logs. The log holds when it was saved and
+   how long it ran, so the nap ends when it was saved. */
+function napsFromLogs(kid) {
+  if (!kid || !Array.isArray(kid.logs)) return [];
+  const today = ciToday();
+  const out = [];
+  kid.logs.forEach((l) => {
+    if (l.typeId !== 'sleep') return;
+    if (String(l.at || '').slice(0, 10) !== today) return;
+    const v = l.values || {};
+    if (String(v.kind || '').toLowerCase() !== 'nap') return;
+    const mins = Number(v.duration);
+    if (!isFinite(mins) || mins <= 0) return;
+    const end = new Date(l.at);
+    if (isNaN(end.getTime())) return;
+    const endMin = end.getHours() * 60 + end.getMinutes();
+    const startMin = Math.max(0, endMin - Math.round(mins));
+    const hhmm = (m) => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+    out.push({ start: hhmm(startMin), end: hhmm(endMin), fromLog: true });
+  });
+  return out.sort((a, b) => (a.start < b.start ? -1 : 1));
+}
+
+/* What the day should be built from: her corrections first, then
+   anything logged, and nothing at all if neither exists. */
+function napsToday(kid) {
+  const mine = napTimesOf(kid);
+  if (mine.length) return mine;
+  return napsFromLogs(kid);
+}
+
+function napSet(index, which, value) {
+  const kid = activeChild();
+  if (!kid) return;
+  const today = ciToday();
+  if (!kid.napTimes || kid.napTimes.day !== today) {
+    kid.napTimes = { day: today, list: napsFromLogs(kid).map((n) => ({ start: n.start, end: n.end })) };
+  }
+  const list = kid.napTimes.list;
+  while (list.length <= index) list.push({ start: '12:30', end: '13:45' });
+  list[index][which] = value;
+  /* A nap that ends before it starts is a mis-tap, not a fact. */
+  if (list[index].end <= list[index].start) {
+    const parts = list[index].start.split(':');
+    const mins = Number(parts[0]) * 60 + Number(parts[1]) + 60;
+    list[index].end = String(Math.floor(mins / 60) % 24).padStart(2, '0') + ':' + String(mins % 60).padStart(2, '0');
+  }
+  kid.updatedAt = Date.now();
+  flushStore();
+}
+
+/* Called after a nap time is corrected, so Willow can speak up about a
+   late one straight away rather than at the next repaint. */
+function napCheckLate() {
+  if (tipSeenToday('napLate')) return;
+  render();
+}
+
+function napClear() {
+  const kid = activeChild();
+  if (!kid) return;
+  kid.napTimes = { day: ciToday(), list: [] };
+  kid.updatedAt = Date.now();
+  flushStore();
+}
+
 /* WHAT TIME THEY WOKE UP.
 
    Three things were going wrong here, and all three are fixed in this
@@ -4341,8 +4570,100 @@ function wakeSet(v) {
 /* The built day, on its own so a change to the wake time can redraw
    just this part. Rebuilding the whole screen while she was typing in
    the time field is what kept wiping the time she had just put in. */
+/* Minutes since midnight, back into the 24 hour form the rest of this
+   works in. */
+function formatTime24(mins) {
+  const m = ((Math.round(Number(mins) || 0) % 1440) + 1440) % 1440;
+  return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+}
+
+/* The same 3 dropdowns as the wake time, for anything else that needs a
+   time. Never a phone time wheel, for the reason in wakeSet. */
+function timeSelects(target, value) {
+  const parts = String(value || '12:30').split(':');
+  let h24 = Number(parts[0]);
+  if (!isFinite(h24)) h24 = 12;
+  const near = String(Math.round(Number(parts[1] || '0') / 5) * 5 % 60).padStart(2, '0');
+  const ampm = h24 >= 12 ? 'PM' : 'AM';
+  let h12 = h24 % 12; if (h12 === 0) h12 = 12;
+  let hours = '';
+  for (let h = 1; h <= 12; h++) hours += `<option value="${h}"${h === h12 ? ' selected' : ''}>${h}</option>`;
+  let mins = '';
+  for (let m = 0; m < 60; m += 5) {
+    const v = String(m).padStart(2, '0');
+    mins += `<option value="${v}"${v === near ? ' selected' : ''}>${v}</option>`;
+  }
+  return `
+  <span class="timerow" data-timefield="${esc(target)}">
+    <select class="dsel" data-timepart="h" aria-label="Hour">${hours}</select>
+    <select class="dsel" data-timepart="m" aria-label="Minute">${mins}</select>
+    <select class="dsel" data-timepart="ap" aria-label="Morning or afternoon">
+      <option value="AM"${ampm === 'AM' ? ' selected' : ''}>AM</option>
+      <option value="PM"${ampm === 'PM' ? ' selected' : ''}>PM</option>
+    </select>
+  </span>`;
+}
+
+function timeFromSelects(el) {
+  const row = el && el.closest ? el.closest('[data-timefield]') : null;
+  if (!row) return null;
+  const get = (p) => {
+    const sel = row.querySelector('[data-timepart="' + p + '"]');
+    return sel ? sel.value : '';
+  };
+  let h = Number(get('h'));
+  const m = get('m');
+  const ap = get('ap');
+  if (!isFinite(h) || !m || !ap) return null;
+  if (ap === 'PM' && h !== 12) h += 12;
+  if (ap === 'AM' && h === 12) h = 0;
+  return { target: row.dataset.timefield, value: String(h).padStart(2, '0') + ':' + m };
+}
+
+/* Correcting a nap. Two dropdowns, the same kind as the wake time, so
+   no phone picker can open on top of anything. */
+function napRow(i, nap) {
+  return `
+  <div class="naprow">
+    <p class="eyebrow">Nap ${i + 1}${nap.fromLog ? ' &middot; from your log' : ''}</p>
+    <div class="daterow" style="margin-top:7px">
+      <span class="tiny" style="align-self:center">From</span>
+      ${timeSelects('napstart' + i, nap.start)}
+    </div>
+    <div class="daterow" style="margin-top:7px">
+      <span class="tiny" style="align-self:center">To</span>
+      ${timeSelects('napend' + i, nap.end)}
+    </div>
+  </div>`;
+}
+
+function napEditor(c, day) {
+  const kid = activeChild();
+  if (!kid || c.months == null) return '';
+  const band = c.band;
+  if (!band || !band.naps || band.naps.max < 1) return '';
+  const real = napsToday(kid);
+  const planned = (day.blocks || []).filter((b) => b.type === 'nap');
+  const max = Math.min(band.naps.max, Math.max(real.length + 1, 1));
+  const rows = [];
+  for (let i = 0; i < max; i++) {
+    const r = real[i];
+    const p = planned[i];
+    rows.push(r || (p ? { start: formatTime24(p.start), end: formatTime24(p.end), planned: true } : null));
+  }
+  return `
+  <div class="card">
+    <p class="eyebrow">${icon('moon', 11, 'var(--sage)')} Naps that actually happened</p>
+    <p class="tiny" style="margin-top:5px">Change a time and the rest of the day, bedtime included, is built from
+      it. A nap is sleep, so a longer or later one moves bedtime later rather than earlier.</p>
+    ${rows.map((r, i) => r ? napRow(i, r) : '').join('')}
+    ${napTimesOf(kid).length ? `
+      <button class="chip" style="margin-top:10px" data-nap="clear">Go back to the suggested times</button>` : ''}
+  </div>`;
+}
+
 function sleepDayHtml(c) {
-  const day = buildDay({ months: c.months, wakeTime: state.wakeTime, naps: state.napOverride });
+  const day = buildDay({ months: c.months, wakeTime: state.wakeTime, naps: state.napOverride, actualNaps: napsToday(activeChild()) });
   const rows = day.ok ? describeDay(day) : [];
   const needs = c.sleepNeeds;
   const band = c.band;
@@ -4364,6 +4685,8 @@ function sleepDayHtml(c) {
           ${r.actual ? '<span class="tag">logged</span>' : ''}
         </div>`).join('')}
     </div>
+
+    ${napEditor(c, day)}
 
     ${day.notes.map((n) => `<div class="callout" style="margin-bottom:9px">${esc(n)}</div>`).join('')}
 
@@ -4456,7 +4779,7 @@ function sleepDayHtml(c) {
 
 function screenSleep(c) {
   if (c.months == null) return emptyScreen('Add a birthday first.');
-  const day = buildDay({ months: c.months, wakeTime: state.wakeTime, naps: state.napOverride });
+  const day = buildDay({ months: c.months, wakeTime: state.wakeTime, naps: state.napOverride, actualNaps: napsToday(activeChild()) });
   const rows = day.ok ? describeDay(day) : [];
   const needs = c.sleepNeeds;
   const band = c.band;
@@ -19693,6 +20016,9 @@ function normalizeChild(k) {
     monthSeen: typeof k.monthSeen === 'string' ? k.monthSeen : '',
     earlyStart: typeof k.earlyStart === 'string' ? k.earlyStart : '',
     earlyDone: k.earlyDone && typeof k.earlyDone === 'object' ? k.earlyDone : {},
+    napTimes: k.napTimes && typeof k.napTimes === 'object'
+      ? { day: String(k.napTimes.day || ''), list: Array.isArray(k.napTimes.list) ? k.napTimes.list : [] }
+      : { day: '', list: [] },
     updatedAt: Number(k.updatedAt) || 0,
   });
 }
