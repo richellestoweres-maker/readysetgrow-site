@@ -64,6 +64,30 @@ export const FIND_INDEX = [
     words: 'feeding breastfeeding formula bottle bottles latch weight gain solids starting solids allergens baby led weaning milk' },
   { title: 'Diapers, how many you need', where: 'Child profile', go: { screen: 'diaperplan' },
     words: 'diapers nappies how many diapers sizes wet diapers' },
+  { title: 'Sleep foundations', where: 'Child profile, Everyday care', go: { screen: 'sleepfound' },
+    words: 'swaddle swaddling how to swaddle stop swaddling sleep sack sleeping bag tog zipadee '
+      + 'merlin magic sleepsuit blackout curtains white noise sound machine shusher wake windows '
+      + 'drowsy but awake wind down bedtime routine safe sleep back to sleep room temperature '
+      + 'weighted sleep sack overheating rolling taking cara babies sleep training' },
+  { title: 'Monitors and thermometers', where: 'Child profile, Health', go: { screen: 'monitors' },
+    words: 'owlet dream sock babysat baby monitor pulse oximeter oxygen sock snuza thermometer '
+      + 'rectal forehead ear temporal momcozy button battery cr2032 swallowed battery cord '
+      + 'strangulation video monitor false alarm insurance hsa fsa' },
+  { title: 'Sleepwalking and night terrors', where: 'Care topics', go: { topic: 'sleepwalking' },
+    words: 'sleepwalking sleep walking night terrors sleep terrors screaming in sleep eyes open '
+      + 'not awake confusional arousal sleep talking nightmares scheduled awakenings parasomnia' },
+  { title: 'Nesting and getting help lined up', where: 'Bean, getting ready', go: { screen: 'nesting' },
+    words: 'nesting baby shower basket gift ideas what to buy new mom maternity clean postpartum '
+      + 'cleaner meal train doordash uber eats gift card postpartum doula night nurse newborn care '
+      + 'specialist lactation freezer meals registry sprinkle planning a shower' },
+  { title: 'Getting ready for labor', where: 'Bean, 37 weeks', go: { screen: 'bumplabor' },
+    words: 'induction naturally start labor dates pineapple curb walking miles circuit birth ball '
+      + 'yoga ball bouncing spinning babies raspberry leaf tea perineal massage membrane sweep '
+      + 'castor oil evening primrose nipple stimulation 37 weeks full term overdue 41 weeks' },
+  { title: 'Comfort care for a fever', where: 'I need help, Fever', go: { screen: 'now' },
+    words: 'fever comfort lukewarm bath cool cloth damp washcloth what to do for a fever dress '
+      + 'them light layer sheet fluids dehydration tylenol motrin acetaminophen ibuprofen febrile '
+      + 'seizure fever phobia' },
   { title: 'Potty training', where: 'Child profile, Everyday care', go: { screen: 'potty' },
     words: 'potty training toilet training potty train pee poop wee accidents underwear pull ups '
       + 'night time bedwetting wetting the bed dry at night regression readiness ready to potty '

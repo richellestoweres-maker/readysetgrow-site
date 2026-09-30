@@ -772,6 +772,316 @@ export const CARE_TOPICS = [
       { org: 'Poison Control', label: 'US Poison Control, 1-800-222-1222, 24 hours', url: 'https://www.poison.org/' },
     ],
   },
+  /* ----------------------------------------------------------------
+     Her ask. A child standing in the hallway with open eyes who does
+     not know you is one of the most frightening things a parent sees,
+     and it is almost always one of the most ordinary.
+
+     THE MOST USEFUL THING HERE is the difference from a nightmare. A
+     nightmare is REM sleep, later in the night, remembered, and she
+     wants you. A sleep terror is a partial arousal out of deep sleep
+     in the first third of the night, not remembered, and holding her
+     can make it worse. Everything else on this page follows from that.
+
+     AND THE AGE ANSWER IS NOT ONE NUMBER, which is the part that
+     surprises people. Sleep terrors peak in toddlers and fade.
+     Sleepwalking is uncommon before school age and peaks at 8 to 12.
+     ---------------------------------------------------------------- */
+  {
+    id: 'sleepwalking',
+    label: 'Sleepwalking and night terrors',
+    shortLabel: 'Sleepwalking',
+    category: 'health',
+    minMonths: 24, maxMonths: 216,
+    priority: 62,
+    reviewedAgainst: 'American Academy of Pediatrics, American Academy of Sleep Medicine, Stanford Children\'s '
+      + 'Health, Nationwide Children\'s Hospital, and peer reviewed prevalence research',
+    summary:
+      'If your child sat up screaming with their eyes wide open and did not seem to know you '
+        + 'were there, that was almost certainly a sleep terror, not a nightmare, and your child '
+        + 'is not frightened, not in pain, and will not remember a second of it in the morning. '
+        + 'These episodes are a partial waking out of the deepest stage of sleep, they are very '
+        + 'common in childhood, they run in families, and the great majority of children simply '
+        + 'grow out of them.',
+    keyPoints: [
+      'Sleepwalking, sleep terrors, confusional arousals, and sleep talking are all the same '
+        + 'thing wearing different clothes. Sleep researchers call them disorders of arousal, '
+        + 'which means your child\'s brain is stuck partway between deep sleep and being awake.',
+      'This is why they almost always happen in the first third of the night, often 1 to 3 '
+        + 'hours after your child falls asleep and frequently before you have gone to bed '
+        + 'yourself. Deep non REM sleep is loaded into the early part of the night, so that is '
+        + 'when a partial arousal has the chance to happen.',
+      'Your child\'s eyes can be wide open while your child is not awake at all. The parts of '
+        + 'the brain that run movement and raw emotion have switched on, while the parts that run '
+        + 'awareness, recognition, and memory are still asleep. That is why the stare looks blank '
+        + 'or glassy and why your child can look straight through you.',
+      'Because the memory system never came online, your child will have no recollection of '
+        + 'the episode. You do not need to bring it up the next morning, and it is usually kinder '
+        + 'not to.',
+      'Sleep terrors are most common in young children. One large study that followed '
+        + 'children from 18 months to 13 years found sleep terrors in 34.4 percent of children at '
+        + '18 months, falling to 5.3 percent by age 13, with just over half of children having at '
+        + 'least one episode somewhere in those years.',
+      'Sleepwalking starts later and peaks later. It is uncommon in the preschool years, '
+        + 'climbs through the school years, and peaks around ages 8 to 12, with about 13.4 '
+        + 'percent of children sleepwalking at age 10 in that same study. A separate review of 51 '
+        + 'studies put current sleepwalking at about 5 percent of children in any given year.',
+      'Confusional arousals are the mildest version, more moaning, thrashing, and foggy '
+        + 'confusion than full terror or walking. They are very common in the youngest children '
+        + 'and become less common after about age 5. In children they usually run 5 to 15 '
+        + 'minutes, sometimes longer.',
+      'Sleep talking is the most common of the whole group and the least worrying. It shows '
+        + 'up in about half of young children and needs nothing from you at all.',
+      'Most episodes are short, often under 5 minutes, though a sleep terror can occasionally '
+        + 'run much longer. Whatever the length, your child usually drops straight back into '
+        + 'normal sleep afterward, because your child was never awake.',
+      'These strongly run in families. If one parent sleepwalked as a child, the odds for '
+        + 'their child are roughly 3 times higher, and if both parents did, roughly 7 times '
+        + 'higher. If you or your partner did this as a kid, you already know how this story '
+        + 'usually ends, which is that it stops.',
+    ],
+    myths: [
+      { myth: 'You must never wake a sleepwalker, because it can cause shock or a heart attack.',
+        truth: 'Waking your child is not dangerous. It is just unhelpful. A child pulled out of deep '
+          + 'sleep wakes up confused, disoriented, and often frightened, and that can drag the '
+          + 'episode out longer than leaving it alone would have. Guide, do not wake.' },
+      { myth: 'A night terror means my child is traumatized, anxious, or having bad dreams.',
+        truth: 'Sleep terrors happen in healthy, happy, well loved children. They are mostly a story '
+          + 'about sleep biology and being short on sleep, not about your child\'s emotional '
+          + 'life. Your child is not experiencing fear the way the sound suggests, and there is '
+          + 'no dream attached to remember.' },
+      { myth: 'If I hold my child and comfort them, they will calm down faster.',
+        truth: 'This is the one that catches most parents, because it is exactly the right instinct '
+          + 'at the wrong moment. During a sleep terror your child does not know you are there, '
+          + 'and being held, restrained, or talked at can make the thrashing and screaming worse. '
+          + 'Stay close, stay quiet, and let it run its course.' },
+      { myth: 'Sleepwalking always looks like dramatic walking with arms out.',
+        truth: 'Most of the time it is far more ordinary and far stranger. Sitting up and picking at '
+          + 'the blanket, wandering to a corner, opening a closet, getting dressed, or urinating '
+          + 'somewhere that is not the toilet. The blank face and the lack of any memory are what '
+          + 'tell you what it was.' },
+      { myth: 'This means something is wrong with my child\'s brain.',
+        truth: 'For the vast majority of children this is a normal developmental phase that fades on '
+          + 'its own as they move toward the teen years, with no treatment at all. There are '
+          + 'specific situations worth a doctor\'s look, and those are listed below, but '
+          + 'frequency alone in a young child is usually not one of them.' },
+    ],
+    redFlags: [
+      'Episodes happening 2 or more times a week, or clustering several times in a single '
+        + 'night.',
+      'Any injury, or your child getting outside, near stairs, or near a window during an '
+        + 'episode.',
+      'Snoring, mouth breathing, gasping, or pauses in breathing at night, since sleep '
+        + 'disordered breathing is a real and treatable trigger.',
+      'Stiffening, rhythmic jerking, drooling, or the exact same movements every single time, '
+        + 'which can look more like a seizure than an arousal.',
+      'Episodes that happen in the second half of the night rather than the first third.',
+      'Daytime sleepiness, a drop in mood, or trouble getting through the school day.',
+      'Episodes still happening well into adolescence, or starting for the first time in the '
+        + 'teen years or after a new medication.',
+    ],
+    sources: [
+      { org: 'AAP',
+        label: 'Nightmares, Night Terrors and Sleepwalking in Children: How Parents Can Help',
+        url: 'https://www.healthychildren.org/English/ages-stages/preschool/Pages/Nightmares-and-Night-Terrors.aspx' },
+      { org: 'American Academy of Sleep Medicine',
+        label: 'Sleepwalking, sleep education patient guide',
+        url: 'https://sleepeducation.org/sleep-disorders/sleepwalking/' },
+      { org: 'American Academy of Sleep Medicine',
+        label: 'Sleep Terrors, sleep education patient guide',
+        url: 'https://sleepeducation.org/sleep-disorders/sleep-terrors/' },
+      { org: 'American Academy of Sleep Medicine',
+        label: 'Confusional Arousals, sleep education patient guide',
+        url: 'https://sleepeducation.org/sleep-disorders/confusional-arousals/' },
+      { org: 'American Academy of Sleep Medicine',
+        label: 'Afraid and confused: Understanding childhood parasomnias',
+        url: 'https://sleepeducation.org/afraid-and-confused-understanding-childhood-parasomnias/' },
+      { org: 'American Academy of Sleep Medicine',
+        label: 'Sleepwalking and Sleep Talking fact sheet',
+        url: 'https://aasm.org/resources/factsheets/sleepwalkingtalking.pdf' },
+      { org: 'Nationwide Children\'s Hospital',
+        label: 'Sleep Terrors and Sleepwalking, including the scheduled awakenings protocol',
+        url: 'https://www.nationwidechildrens.org/conditions/sleep-terrors-and-sleepwalking' },
+      { org: 'Stanford Medicine Children\'s Health',
+        label: 'Nightmares and Night Terrors',
+        url: 'https://www.stanfordchildrens.org/en/topic/default?id=nightmares-and-night-terrors-90-P02257' },
+      { org: 'Children\'s National Hospital',
+        label: 'What you need to know about sleepwalking in children',
+        url: 'https://riseandshine.childrensnational.org/what-you-need-to-know-about-sleepwalking-in-children/' },
+      { org: 'PLOS ONE',
+        label: 'Prevalence of Sleepwalking: A Systematic Review and Meta Analysis, 51 studies, '
+          + '100,490 participants',
+        url: 'https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0164769' },
+      { org: 'JAMA Pediatrics',
+        label: 'Petit et al., Childhood Sleepwalking and Sleep Terrors: A Longitudinal Study of '
+          + 'Prevalence and Familial Aggregation, 2015',
+        url: 'https://pubmed.ncbi.nlm.nih.gov/25938617/' },
+    ],
+    extra: {
+      compare: [
+        {
+          what: 'Sleep terror',
+          when: 'First third of the night, often 1 to 3 hours after falling asleep',
+          them: 'Screaming, crying, thrashing, sweating, heart racing, eyes open, face terrified. '
+            + 'Your child does not recognize you, does not respond to their name, and may push '
+            + 'you away or get more agitated if you touch them. No memory of it afterward.',
+          you: 'Do not wake them. Stay in the room, keep your hands off unless they are about to '
+            + 'get hurt, speak rarely and quietly if at all, and wait. It ends on its own and '
+            + 'your child drops back into sleep.',
+        },
+        {
+          what: 'Nightmare',
+          when: 'Second half of the night, when REM dreaming sleep is heaviest',
+          them: 'Your child wakes up fully, is genuinely scared, knows exactly who you are, wants '
+            + 'you, and can usually tell you something about the dream. Often does not want to go '
+            + 'back to sleep alone.',
+          you: 'Go to them, hold them, reassure them that they are safe and that dreams are not '
+            + 'real. A nightlight or a comfort object is fine. This is the one where comfort is '
+            + 'exactly the right answer.',
+        },
+        {
+          what: 'Sleepwalking',
+          when: 'First third of the night, same deep sleep window as sleep terrors',
+          them: 'Up and moving with a blank or glassy stare. Doing things that look purposeful, '
+            + 'such as opening doors, getting dressed, or wandering. May mumble, may seem to '
+            + 'answer you but the answers do not make sense. No memory of it.',
+          you: 'Do not wake them. Walk alongside, stay calm, and gently steer them back toward bed '
+            + 'with a light hand on the shoulder. The safety setup you did ahead of time is what '
+            + 'matters most here.',
+        },
+        {
+          what: 'Confusional arousal',
+          when: 'First third of the night',
+          them: 'Sitting up, moaning, whimpering, rolling around, looking foggy and bewildered '
+            + 'rather than terrified. Slow, confused, blunt if they speak at all. Common in '
+            + 'toddlers and preschoolers.',
+          you: 'The same approach. Do not wake them, keep the room dark and quiet, do not turn on '
+            + 'lights or start asking questions, and let it pass. It usually runs 5 to 15 '
+            + 'minutes.',
+        },
+        {
+          what: 'Sleep talking',
+          when: 'Any stage of sleep, any time of night',
+          them: 'Mumbling, full sentences, sometimes laughing or shouting. Completely harmless and '
+            + 'extremely common in young children. No memory of it.',
+          you: 'Nothing. Genuinely nothing. Do not answer, do not engage, and do not repeat it '
+            + 'back to them in the morning.',
+        },
+      ],
+      inTheMoment: [
+        'First, remind yourself that your child is not suffering. The scream is coming from a '
+          + 'brain that is half asleep, not from a child who is frightened. This sounds far worse '
+          + 'than it is.',
+        'Do not try to wake your child. Waking is not dangerous, but it tends to make the '
+          + 'episode longer and leaves your child confused and upset for no reason.',
+        'Do not hold, restrain, or shake your child during a sleep terror. Being grabbed by '
+          + 'someone they do not recognize can make the thrashing and screaming escalate.',
+        'Stay in the room and keep quiet. Turn on as little light as you can. Stop asking '
+          + 'questions. Every extra input gives the half awake part of the brain more to react '
+          + 'to.',
+        'Keep your child physically safe. Move anything hard or breakable out of the way, put '
+          + 'yourself between your child and the stairs or the door, and let the episode happen '
+          + 'where it is happening.',
+        'If your child is sleepwalking, walk with them. A light hand on the shoulder and a '
+          + 'quiet, steady phrase such as you are safe, this is your bed, is usually enough to '
+          + 'turn them back toward the bedroom.',
+        'Wait it out. Most episodes are over in a few minutes, and confusional arousals '
+          + 'typically run 5 to 15 minutes. A long sleep terror can stretch further, so give it '
+          + 'time before you change your approach.',
+        'Let your child go straight back to sleep afterward. There is nothing to talk about, '
+          + 'because there is nothing your child can remember.',
+        'Tell anyone who watches your child overnight, such as a grandparent, a sitter, or a '
+          + 'camp counselor, exactly what these look like and exactly what to do, so they do not '
+          + 'panic and start shaking your child awake.',
+        'Afterward, jot down the time it started and how long it lasted. If episodes keep '
+          + 'happening, that short log is what makes scheduled awakenings possible and is the '
+          + 'most useful thing you can bring to a doctor.',
+      ],
+      safety: [
+        'This is the part that actually matters. For sleepwalking, the real risk is not the '
+          + 'episode itself, it is what your child can reach while it is happening.',
+        'Put a chime, bell, or door alarm on your child\'s bedroom door and on every door '
+          + 'that leads outside, so you hear the door before your child is out of it.',
+        'Keep all exterior doors locked at night, including the door to the garage, and '
+          + 'consider a latch mounted high on the frame where a half asleep child will not think '
+          + 'to look.',
+        'Put a gate at the top of the stairs, and consider one at the bottom as well. Falls '
+          + 'on stairs are the most common way a sleepwalking child gets hurt.',
+        'Lock windows or fit window stops or guards so a window cannot open far enough for a '
+          + 'child to fit through. Do this on every floor, not just upstairs.',
+        'Clear the floor between the bed and the door. Toys, cords, laundry baskets, and '
+          + 'floor lamps are all trip hazards for someone walking with their eyes open and their '
+          + 'brain offline.',
+        'Move sharp, hard, breakable, or heavy things off the nightstand and out of reach of '
+          + 'the bed.',
+        'Do not use a bunk bed or a loft bed for a child who sleepwalks. Put your child on '
+          + 'the bottom, or on a low bed close to the floor.',
+        'Do not add a bed rail to a child who climbs. A rail turns a roll out of bed into a '
+          + 'climb and a fall from higher up, and children have been injured getting trapped '
+          + 'against one. A low bed with a soft rug beside it is safer.',
+        'Never lock or latch your child inside their bedroom, and never use a barrier that '
+          + 'you or your child could not get through quickly. It is a fire and emergency risk, '
+          + 'and it is not worth it. Use door alarms and a secured house instead, so your child '
+          + 'can move but cannot leave.',
+        'If you are traveling or staying somewhere new, do the same sweep in the hotel room '
+          + 'or the relative\'s house before bed. Hotel doors, balconies, and unfamiliar stairs '
+          + 'are where the scary stories come from, and a new place is itself a trigger.',
+        'A camera or a monitor in your child\'s room is a reasonable way to know an episode '
+          + 'is starting without having to sleep with one ear open all night.',
+      ],
+      triggers: [
+        'Not enough sleep. This is the biggest one by far. An overtired child builds up '
+          + 'deeper, heavier deep sleep, and deeper sleep means more partial arousals out of it.',
+        'An irregular schedule. Late bedtimes on the weekend, a dropped nap, a time change, '
+          + 'or a travel day can all set off a run of episodes.',
+        'Being sick, and especially running a fever. Many parents see their child\'s very '
+          + 'first sleep terror during an illness.',
+        'A full bladder. Something has to nudge the brain partway awake, and a full bladder '
+          + 'is one of the most common nudges. A bathroom trip right before bed genuinely helps.',
+        'Noise or light in the room, a sibling coming in, a door slamming, a pet jumping on '
+          + 'the bed, or anything else that disturbs sleep during that first deep stretch.',
+        'Sleeping somewhere new, such as a hotel, a grandparent\'s house, a first sleepover, '
+          + 'or the first nights in a new home.',
+        'Stress or a big change, such as a new school, a new sibling, or a disrupted routine. '
+          + 'This is a nudge, not a cause, and it does not mean something is wrong emotionally.',
+        'Snoring, enlarged tonsils or adenoids, and sleep apnea. Breathing that keeps '
+          + 'interrupting sleep produces exactly the kind of arousals these episodes grow out of, '
+          + 'and treating it can make the episodes stop.',
+        'Some medications, including certain sedatives, some medicines for allergy or '
+          + 'attention, and some used for mood. If episodes started within a few weeks of a new '
+          + 'prescription, mention that to your doctor rather than stopping anything yourself.',
+        'Caffeine late in the day, including from soda, chocolate, and iced tea.',
+        'The single most effective prevention for most families is boring and it works, which '
+          + 'is moving bedtime 15 to 30 minutes earlier and keeping it consistent 7 days a week.',
+      ],
+      scheduled: [
+        'Scheduled awakenings, sometimes called anticipatory awakenings, is the one '
+          + 'behavioral technique with published support behind it, and it is recommended by '
+          + 'pediatric sleep centers including Nationwide Children\'s. It is worth trying when '
+          + 'episodes are frequent and predictable, meaning they happen at roughly the same time '
+          + 'most nights. It does nothing for a child who has one episode every few months, and '
+          + 'it is not something to start until you have a week of timing data.',
+        'Here is how it is actually done. For about 7 nights, keep a simple log of the clock '
+          + 'time each episode starts. Look for the pattern, and you will usually find the '
+          + 'episodes cluster within a fairly tight window. Then, for the next 7 nights, go in '
+          + 'and wake your child roughly 15 minutes before that usual start time. Wake them '
+          + 'fully, which means eyes open, sitting up, talking to you, and out of bed rather than '
+          + 'just stirred. Keep them awake for about 5 minutes, then let them settle back to '
+          + 'sleep as normal. Tell your child ahead of time that you will be coming in, so a '
+          + 'school age child is not startled by it.',
+        'What you are doing is interrupting the deep sleep cycle just before the moment it '
+          + 'tends to break down, so the arousal never gets its chance. Many families see '
+          + 'episodes drop off within that first week or two. Once the episodes have stopped for '
+          + 'several nights in a row, start fading it out, either by skipping every other night '
+          + 'or by shifting the time a little later, until you stop entirely. If episodes come '
+          + 'back, usually after an illness, a trip, or a stretch of short nights, you can run '
+          + 'the same 7 night cycle again. This is safe to try on your own, but if you are '
+          + 'running it repeatedly and the episodes keep returning, that is a good reason to '
+          + 'bring the log to your pediatrician rather than keep repeating the cycle '
+          + 'indefinitely.',
+      ],
+    },
+  },
 ];
 
 /* ------------------------------------------------------------------
