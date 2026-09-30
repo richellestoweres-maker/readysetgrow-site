@@ -3164,7 +3164,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3885,6 +3885,16 @@ function initControls() {
         willow.stick = true;
         willowAsk((live && live.ask) || 'Tell me about this.');
         return;
+      }
+    } else if (t.dataset.agenew) {
+      const ids = ageNewList(ctx().months, activeChild());
+      if (t.dataset.agenew === 'hide') ageNewDismiss(ids);
+      else {
+        /* Tapping through is also ticking it off, since she has now
+           plainly seen it. */
+        ageNewDismiss(ids);
+        const go = AGE_NEW_GO[t.dataset.id];
+        if (go) { state.view = { type: 'screen', id: go }; window.scrollTo(0, 0); }
       }
     } else if (t.dataset.fc) {
       store.fcOpen = t.dataset.fc === 'open';
@@ -6913,9 +6923,14 @@ function screenSleepFound(c) {
   const kid = activeChild();
   const months = c.months;
   const first = kid && kid.name ? kid.name.split(/\s+/)[0] : '';
+  /* Only the pages that apply to this child, so a parent of a 2 year
+     old is not offered how to swaddle. */
+  const tabs = sfTabsFor(months);
   const want = store.sfTab;
-  const tab = SF_TABS.some((t) => t.id === want) ? want : sfFirstTab(months);
-  const page = SF_TABS.filter((t) => t.id === tab)[0] || SF_TABS[0];
+  const first2 = sfFirstTab(months);
+  const tab = tabs.some((t) => t.id === want) ? want
+    : (tabs.some((t) => t.id === first2) ? first2 : tabs[0].id);
+  const page = tabs.filter((t) => t.id === tab)[0] || tabs[0];
 
   return `
   ${cornerLeaves()}
@@ -6930,7 +6945,7 @@ function screenSleepFound(c) {
       ${SF_INTRO.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
     </div>
 
-    <div style="margin-top:13px">${subTabs('sfTab', tab, SF_TABS)}</div>
+    <div style="margin-top:13px">${subTabs('sfTab', tab, tabs)}</div>
 
     ${page.sections.map((s) => `
       <div class="dsec">
@@ -6961,6 +6976,11 @@ function screenSleepFound(c) {
    ================================================================= */
 
 function screenMonitors(c) {
+  /* The sock sections come out once a child is past the age it is
+     cleared for, leaving the thermometer and battery parts, which are
+     the ones that still matter. */
+  const secs = monSectionsFor(c.months);
+  const intro = monIntroFor(c.months);
   return `
   ${cornerLeaves()}
   <div class="sc-head">
@@ -6970,10 +6990,10 @@ function screenMonitors(c) {
   </div>
   <div class="sc">
     <div class="card leafy">
-      ${MON_INTRO.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+      ${intro.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
     </div>
 
-    ${MON_SECTIONS.map((s) => `
+    ${secs.map((s) => `
       <div class="dsec">
         <h4>${esc(s.h)}</h4>
         ${(s.body || []).map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
@@ -17970,6 +17990,203 @@ function homeCycleCard(info) {
    that used to be in the drawer lives inside exactly one of them.
    ----------------------------------------------------------------- */
 
+/* =================================================================
+   WHAT BELONGS ON A PROFILE AT THIS AGE
+
+   Her rule, and it is the right one: a row should only be on a child's
+   profile if it pertains to a child that age. It should arrive when it
+   starts to matter, and it should go when it stops.
+
+   THE PROBLEM WITH HOW THIS WAS DONE BEFORE was that the rule lived in
+   21 separate places, written inline next to each row, so nothing could
+   be checked and 3 of them were plainly wrong. Signing together sat on
+   a 17 year old's profile. Phones and games arrived at 12 months.
+   Feeding still called itself Feeding for a teenager.
+
+   SO EVERY WINDOW IS IN ONE TABLE. One line per row, in months, with a
+   note saying why that number and not another. `to` is exclusive, and
+   null means it never stops mattering.
+
+   ARRIVING IS THE OTHER HALF. She asked for these to pop up when a
+   child reaches the age, so a row inside its first 45 days carries a
+   small New mark. That is how a parent finds out that potty training
+   just appeared, instead of discovering it 8 months late. */
+
+const AGE_WINDOWS = {
+  /* ---- Everyday care ---- */
+  feeding:     { from: 0,   to: null, why: 'Eating never stops mattering. The row renames itself instead of leaving.' },
+  diapers:     { from: 0,   to: 60,   why: 'Night diapers can run to 5, which is where the diaper math stops being useful.' },
+  sleepfound:  { from: 0,   to: 30,   why: 'Swaddles, sacks and wake windows. The room and the wind down outlast it, and the tabs thin out as they go.' },
+  potty:       { from: 15,  to: 96,   why: 'Reading about it starts well before doing it, and night dryness is still in range at 7.' },
+  topics:      { from: 0,   to: null, why: 'The list inside is already age filtered, so the row hides itself when that list is empty.' },
+  rhythm:      { from: 0,   to: 72,   why: 'Naps and a built day. Past 6 the rhythm is school, not this.' },
+
+  /* ---- Things to do together ---- */
+  activities:  { from: 0,   to: null, why: 'Written to 18. Hides itself if a band ever comes back empty.' },
+  jobs:        { from: 18,  to: null, why: 'Carrying a cup to the sink is the first real job.' },
+
+  /* ---- Where they are now ---- */
+  milestones:  { from: 2,   to: 66,   why: 'The CDC checkpoints run 2 to 60 months, plus a little room to finish the last one.' },
+  development: { from: 0,   to: null, why: 'Hides itself when there is nothing written for that age.' },
+
+  /* ---- How they think and learn ---- */
+  understand:  { from: 0,   to: null, why: 'Temperament and behavior are a question at every age.' },
+  learning:    { from: 18,  to: null, why: 'Where early learning guidance starts.' },
+  signing:     { from: 0,   to: 48,   why: 'Baby signing closes when speech takes over. A Deaf or hard of hearing lens overrides this and keeps it forever.' },
+
+  /* ---- Health ---- */
+  growth:      { from: 0,   to: null, why: 'The CDC charts run to 20.' },
+  vaxrecord:   { from: 0,   to: null, why: 'The schedule runs through 18, and the record is worth keeping after.' },
+  vaccines:    { from: 0,   to: null, why: 'Same.' },
+  now:         { from: 0,   to: null, why: 'Something being wrong has no age.' },
+  monitors:    { from: 0,   to: 48,   why: 'The sock is 1 to 18 months. Thermometers and button batteries carry it to 4, which is where mouthing everything stops.' },
+  growingup:   { from: 18,  to: null, why: 'Starts as the right words for body parts and nobody has to hug anybody, long before puberty.' },
+  sexed:       { from: 108, to: null, why: 'Set by the content itself.' },
+
+  /* ---- If something happens ---- */
+  safety:      { from: 0,   to: null, why: 'CPR changes with their size rather than stopping.' },
+  consent:     { from: 18,  to: null, why: 'Body safety starts as soon as they have words for it.' },
+  online:      { from: 18,  to: null, why: 'Moved up from 12. Screen guidance starts at 18 to 24 months, and a 1 year old has no phone.' },
+  support:     { from: 0,   to: null, why: 'Never not relevant.' },
+};
+
+/* Whether a row belongs on this profile today. A child with no birthday
+   sees everything, because the alternative is an empty profile while
+   somebody is still filling the form in. */
+function ageShows(id, months) {
+  const w = AGE_WINDOWS[id];
+  if (!w) return true;
+  if (typeof months !== 'number') return true;
+  if (months < w.from) return false;
+  return w.to === null || months < w.to;
+}
+
+/* HOW LONG A ROW COUNTS AS NEW.
+
+   45 days rather than 7, because a parent does not open every screen
+   every week, and the whole point is that they find out at all. */
+const AGE_NEW_DAYS = 45;
+
+function ageIsNew(id, months, kid) {
+  const w = AGE_WINDOWS[id];
+  if (!w || !w.from || typeof months !== 'number' || !kid || !kid.birthday) return false;
+  if (!ageShows(id, months)) return false;
+  /* The day they crossed into it, worked out from the birthday rather
+     than from the month count, so it does not drift. */
+  const b = new Date(kid.birthday + 'T00:00:00');
+  if (isNaN(b.getTime())) return false;
+  const crossed = new Date(b.getTime());
+  crossed.setMonth(crossed.getMonth() + w.from);
+  const days = (new Date(ciToday() + 'T00:00:00').getTime() - crossed.getTime()) / 86400000;
+  return days >= 0 && days < AGE_NEW_DAYS;
+}
+
+/* One row, gated by age, and marked when it has just arrived. Every row
+   on a child's profile goes through this, so the table above is the
+   whole truth about what shows when. */
+function ageRow(id, months, kid, ic, title, sub, attrs) {
+  if (!ageShows(id, months)) return '';
+  const fresh = ageIsNew(id, months, kid);
+  return `
+  <button class="lrow" ${attrs} style="align-items:flex-start">
+    <span class="licon">${icon(ic, 18)}</span>
+    <span class="grow">
+      <span style="display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3">${title}${fresh ? ' <span class="newpip">New</span>' : ''}</span>
+      <span class="tiny" style="display:block;margin-top:2px">${sub}</span>
+    </span>
+    <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+  </button>`;
+}
+
+/* The feeding row is the one thing here that renames rather than
+   leaving, because a calm table matters at 15 as much as at 15 months
+   and calling it Feeding for a teenager is just wrong. */
+function feedingRowTitle(months) {
+  if (typeof months !== 'number') return 'Feeding';
+  if (months < 24) return 'Feeding';
+  if (months < 132) return 'Eating together';
+  return 'Food, and eating together';
+}
+
+/* WHAT JUST ARRIVED ON THIS PROFILE.
+
+   The New marks tell her where a thing is once she is looking at it.
+   This tells her it exists at all, which is the half she actually
+   asked for: things should pop up when a child reaches the age.
+
+   Read off the same table as the rows themselves, so the card can
+   never promise something the profile does not have. Dismissible, and
+   it does not come back for that child until the next thing arrives. */
+
+const AGE_NEW_LABEL = {
+  potty: 'Potty training',
+  sleepfound: 'Sleep foundations',
+  monitors: 'Monitors and thermometers',
+  jobs: 'Jobs they can have a go at',
+  learning: 'Learning',
+  growingup: 'Growing up',
+  consent: 'Consent and body safety',
+  online: 'Phones, games and who is on the other side',
+  milestones: 'Milestones',
+  sexed: 'Sex, honestly',
+  diapers: 'How many diapers',
+  activities: 'Activities',
+};
+
+function ageNewList(months, kid) {
+  if (!kid || typeof months !== 'number') return [];
+  return Object.keys(AGE_NEW_LABEL).filter((id) => ageIsNew(id, months, kid));
+}
+
+/* Dismissed per child and per set, so ticking it off at 18 months does
+   not also silence the thing that arrives at 3. */
+function ageNewKey(ids) {
+  return ids.slice().sort().join('|');
+}
+
+function ageNewSeen(kid, ids) {
+  const p = store.parent || {};
+  const seen = p.ageNewSeen && typeof p.ageNewSeen === 'object' ? p.ageNewSeen : {};
+  return kid && seen[kid.id] === ageNewKey(ids);
+}
+
+function ageNewDismiss(ids) {
+  const kid = activeChild();
+  if (!kid) return;
+  const p = store.parent;
+  if (!p.ageNewSeen || typeof p.ageNewSeen !== 'object') p.ageNewSeen = {};
+  p.ageNewSeen[kid.id] = ageNewKey(ids);
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+}
+
+function ageNewCard(months, kid, first) {
+  const ids = ageNewList(months, kid);
+  if (!ids.length || ageNewSeen(kid, ids)) return '';
+  const names = ids.map((id) => AGE_NEW_LABEL[id]);
+  return `
+  <div class="card" style="border-left:3px solid var(--sage);position:relative">
+    <button class="wnudge-x" data-agenew="hide" aria-label="Not now">&times;</button>
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} New on ${esc(first)}'s profile</p>
+    <p class="bodytext" style="margin-top:6px">${esc(first)} is old enough for
+    ${names.length === 1 ? 'this now' : 'these now'}, so ${names.length === 1 ? 'it has' : 'they have'}
+    just appeared below.</p>
+    <div class="chips" style="gap:7px;margin-top:10px">
+      ${ids.map((id) => `<button class="chip" data-agenew="go" data-id="${esc(id)}">${esc(AGE_NEW_LABEL[id])}</button>`).join('')}
+    </div>
+    <p class="tiny" style="margin-top:9px">Nothing has been taken away. Things that stop applying at
+    ${esc(first)}'s age simply stop taking up room.</p>
+  </div>`;
+}
+
+/* Where each of these actually lives, so the chip opens the thing
+   rather than the area it is in. */
+const AGE_NEW_GO = {
+  potty: 'potty', sleepfound: 'sleepfound', monitors: 'monitors', jobs: 'chores',
+  learning: 'learning', growingup: 'growingup', consent: 'consent', online: 'online',
+  milestones: 'milestones', sexed: 'sexed', diapers: 'diaperplan', activities: 'activities',
+};
+
 function childRow(ic, title, sub, attrs) {
   return `
   <button class="lrow" ${attrs} style="align-items:flex-start">
@@ -18278,23 +18495,24 @@ function screenChild(c) {
 
     care: () => `
       ${sectHead('care', months, 'Everyday care')}
-      ${months == null ? childRow('moon', "Today's rhythm", 'Wake times, naps and bedtime, built from one answer',
+      ${months == null ? ageRow('rhythm', months, kid, 'moon', "Today's rhythm",
+        'Wake times, naps and bedtime, built from one answer',
         'data-go="screen" data-id="sleep"') : ''}
-      ${childRow('utensils', 'Feeding',
+      ${ageRow('feeding', months, kid, 'utensils', esc(feedingRowTitle(months)),
         esc(getFeedingHeadline(months) || 'Milk, starting solids, and the family table'),
         'data-go="screen" data-id="feeding"')}
-      ${showsDiaperContent(months) ? childRow('drop', esc(DIAPER_TITLE),
+      ${showsDiaperContent(months) ? ageRow('diapers', months, kid, 'drop', esc(DIAPER_TITLE),
         esc(diaperBandFor(months).perDay + ' a day at this age, and what to send to daycare'),
         'data-go="screen" data-id="diaperplan"') : ''}
-      ${sfShows(months) ? childRow('moon', esc(SF_TITLE),
+      ${ageRow('sleepfound', months, kid, 'moon', esc(SF_TITLE),
         esc(sfRowSub(months)),
-        'data-go="screen" data-id="sleepfound"') : ''}
-      ${pottyShows(months) ? childRow('check-circle', esc(POTTY_TITLE),
+        'data-go="screen" data-id="sleepfound"')}
+      ${ageRow('potty', months, kid, 'check-circle', esc(POTTY_TITLE),
         esc(pottyRowSub(months)),
-        'data-go="screen" data-id="potty"') : ''}
-      ${childRow('bulb', 'Care topics',
-        c.topics.length ? esc(c.topics.slice(0, 4).map((t) => t.label).join(', ')) : 'Practical care, picked for this age',
-        'data-go="screen" data-id="topics"')}`,
+        'data-go="screen" data-id="potty"')}
+      ${c.topics.length ? ageRow('topics', months, kid, 'bulb', 'Care topics',
+        esc(c.topics.slice(0, 4).map((t) => t.label).join(', ')),
+        'data-go="screen" data-id="topics"') : ''}`,
 
     together: () => {
       const jobs = kid ? choreJobsFor(kid.id).length : 0;
@@ -18302,10 +18520,10 @@ function screenChild(c) {
       const fresh = months == null ? [] : choresNewlyPossible(months);
       return `
       ${sectHead('together', months, 'Things to do together')}
-      ${childRow('puzzle', 'Activities',
+      ${c.activities.length ? ageRow('activities', months, kid, 'puzzle', 'Activities',
         esc(c.activities.length + ' that fit this age'),
-        'data-go="screen" data-id="activities"')}
-      ${canDo ? childRow('check', 'Jobs',
+        'data-go="screen" data-id="activities"') : ''}
+      ${canDo ? ageRow('jobs', months, kid, 'check', 'Jobs',
         esc(jobs
           ? jobs + (jobs === 1 ? ' job on the family chart' : ' jobs on the family chart')
           : (fresh.length
@@ -18316,12 +18534,12 @@ function screenChild(c) {
 
     where: () => {
       const rows = [
-        c.summary.checkpoint ? childRow('chart', 'Milestones',
+        c.summary.checkpoint ? ageRow('milestones', months, kid, 'chart', 'Milestones',
           msChangeCount()
             ? esc(msChangeCount() + ' marked but not saved yet')
             : (doneMs ? esc(doneMs + ' marked so far. Ranges, not deadlines.') : 'Ranges, not deadlines'),
           'data-go="screen" data-id="milestones"') : '',
-        c.content.length ? childRow('book', 'Development guidance',
+        c.content.length ? ageRow('development', months, kid, 'book', 'Development guidance',
           esc(c.content.length + ' written for exactly this age'),
           'data-go="screen" data-id="development"') : '',
       ].filter(Boolean).join('');
@@ -18330,16 +18548,17 @@ function screenChild(c) {
 
     mind: () => `
       ${sectHead('mind', months, 'How they think and learn')}
-      ${childRow('bulb', 'Understanding ' + esc(first),
+      ${ageRow('understand', months, kid, 'bulb', 'Understanding ' + esc(first),
         state.lenses.length
           ? esc(getLenses(state.lenses).map((l) => l.label).join(', '))
           : 'Turn on what fits them, and read what it actually means',
         'data-go="screen" data-id="understand"')}
-      ${showsLearning(months) ? childRow('book', 'Learning',
+      ${showsLearning(months) ? ageRow('learning', months, kid, 'book', 'Learning',
         esc(earlyRowSub(months)),
         'data-go="screen" data-id="learning"') : ''}
-      ${childRow('hand', signRowTitle(), signRowSub(months),
-        'data-go="screen" data-id="signs"')}
+      ${signLensOn() || ageShows('signing', months) ? ageRow('signing',
+        signLensOn() ? null : months, kid, 'hand', signRowTitle(), signRowSub(months),
+        'data-go="screen" data-id="signs"') : ''}
       ${state.lenses.length ? `
       <div class="card flat">
         <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Your active lenses</p>
@@ -18349,35 +18568,35 @@ function screenChild(c) {
 
     health: () => `
       ${sectHead('health', months, 'Health')}
-      ${childRow('chart', 'Growth', growthRowSub(kid, months),
+      ${ageRow('growth', months, kid, 'chart', 'Growth', growthRowSub(kid, months),
         'data-go="screen" data-id="growth"')}
-      ${childRow('note', 'Vaccine record', vaxRowSub(kid, months),
+      ${ageRow('vaxrecord', months, kid, 'note', 'Vaccine record', vaxRowSub(kid, months),
         'data-go="screen" data-id="vaxrecord"')}
-      ${childRow('shield', 'Vaccines',
+      ${ageRow('vaccines', months, kid, 'shield', 'Vaccines',
         'What the evidence says, what your rights are, and how to decide',
         'data-go="screen" data-id="vaccines"')}
-      ${childRow('pill', 'Something is wrong right now',
+      ${ageRow('now', months, kid, 'pill', 'Something is wrong right now',
         'Fever, rashes, crying that will not stop, and when to call',
         'data-go="screen" data-id="now"')}
-      ${months != null && months <= 36 ? childRow('note', esc(MON_TITLE),
-        'What a sock or a forehead reading can tell you, and what it cannot',
-        'data-go="screen" data-id="monitors"') : ''}
-      ${months != null && months >= 18 ? childRow('leaf', GROW_TITLE, growRowSub(months),
-        'data-go="screen" data-id="growingup"') : ''}
-      ${sexedShows(months) ? childRow('shield', SEXED_TITLE,
+      ${ageRow('monitors', months, kid, 'note', esc(MON_TITLE),
+        esc(monRowSub(months)),
+        'data-go="screen" data-id="monitors"')}
+      ${ageRow('growingup', months, kid, 'leaf', GROW_TITLE, growRowSub(months),
+        'data-go="screen" data-id="growingup"')}
+      ${sexedShows(months) ? ageRow('sexed', months, kid, 'shield', SEXED_TITLE,
         'Infections, protection and testing, and what to say if there is ever a pregnancy',
         'data-go="screen" data-id="sexed"') : ''}`,
 
     safety: () => `
       ${sectHead('safety', months, 'If something happens')}
-      ${childRow('heart', 'CPR, choking and staying safe',
+      ${ageRow('safety', months, kid, 'heart', 'CPR, choking and staying safe',
         esc('For ' + getCprForAge(months).label.toLowerCase()) + ', plus what to do when you are at the end of it',
         'data-go="screen" data-id="safety"')}
-      ${months != null && months >= 18 ? childRow('heart', CON_TITLE, conRowSub(months),
-        'data-go="screen" data-id="consent"') : ''}
-      ${months != null && months >= 12 ? childRow('note', ONLINE_TITLE, onlineRowSub(months),
-        'data-go="screen" data-id="online"') : ''}
-      ${childRow('shield', SUP_TITLE,
+      ${ageRow('consent', months, kid, 'heart', CON_TITLE, conRowSub(months),
+        'data-go="screen" data-id="consent"')}
+      ${ageRow('online', months, kid, 'note', ONLINE_TITLE, onlineRowSub(months),
+        'data-go="screen" data-id="online"')}
+      ${ageRow('support', months, kid, 'shield', SUP_TITLE,
         'A caseworker, somebody who frightens you, or somebody targeting your child',
         'data-go="screen" data-id="support"')}`,
 
@@ -18406,7 +18625,11 @@ function screenChild(c) {
   const daily = ordered.map((id) => {
     if (TILE_IDS.indexOf(id) !== -1) {
       const html = body[id] ? body[id]() : '';
-      if (html) tiles.push({ id: id, html: html });
+      /* A section always draws its heading, so the heading alone is not
+         proof there is anything behind it. Now that rows come and go
+         with age, a tile only exists if the area actually holds a row
+         for a child this age. */
+      if (html && /class="lrow"/.test(html)) tiles.push({ id: id, html: html });
       return '';
     }
     if (id === 'memories' || id === 'checkin') return '';
@@ -18417,7 +18640,7 @@ function screenChild(c) {
      (ciPopupHtml), so it does not need to sit at the top all day. */
   const ciHtml = body.checkin ? body.checkin() : '';
   tiles.sort((x, y) => TILE_IDS.indexOf(x.id) - TILE_IDS.indexOf(y.id));
-  const sections = monthTopCard(kid) + daily + (tiles.length ? `
+  const sections = ageNewCard(months, kid, first) + monthTopCard(kid) + daily + (tiles.length ? `
     <p class="sect" style="margin-top:18px">Everything about ${esc(first)}</p>
     <div class="kidtiles">${tiles.map((t) => kidTile(t.id, t.html)).join('')}</div>` : '')
     + (ciHtml ? `<p class="sect" style="margin-top:18px">How today went</p>` + ciHtml : '')
@@ -18637,9 +18860,11 @@ function kidSectionOpen(kid) {
    tile can never promise something the area does not hold. */
 function kidRowTitles(html) {
   const out = [];
-  const re = /line-height:1\.3">([^<]+)<\/span>/g;
+  const re = /line-height:1\.3">([^<]*(?:<span class="newpip">New<\/span>)?[^<]*)<\/span>/g;
   let m;
-  while ((m = re.exec(html))) out.push(m[1].replace(/&amp;/g, '&').replace(/&#39;/g, "'").trim());
+  while ((m = re.exec(html))) {
+    out.push(m[1].replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&#39;/g, "'").trim());
+  }
   return out;
 }
 

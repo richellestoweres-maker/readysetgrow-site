@@ -688,6 +688,15 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 .tip-q li{font-size:12.5px;line-height:1.45;color:var(--body);margin-bottom:4px}
 .tip-go{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
 
+/* A row that has just arrived on this profile because of a birthday.
+   Small on purpose: it is a note that something is new, not a badge
+   demanding to be tapped. */
+.newpip{
+  display:inline-block;margin-left:6px;vertical-align:1px;
+  font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
+  color:#fff;background:var(--sage);border-radius:7px;padding:1.5px 5px;
+}
+
 .timerow{display:flex;gap:6px;flex:1;min-width:0}
 .naprow{padding:11px 0 2px;border-top:1px solid rgba(0,0,0,.06);margin-top:10px}
 .naprow:first-of-type{border-top:0}
