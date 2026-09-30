@@ -971,6 +971,8 @@ function newChildRecord(name, birthday) {
        empty string for the age based template, 'custom' for a routine
        she has edited step by step, 'none' for no routine at all. */
     routineMode: '',
+    /* Which kind of day today is, if she has said. Cleared by date. */
+    dayKind: null,
     /* Steps she has switched off, used only when the mode is custom. */
     routineOff: [],
     /* What has been given, keyed series:dose to a date, plus
@@ -1154,6 +1156,8 @@ const store = {
      between visits, they just have to survive a repaint. */
   learnAllBands: false,
   hsOpen: '',
+  /* Which part of the For them tab is open. */
+  forTab: 'today',
   /* Sleep foundations, and nesting, the same idea. */
   sfTab: '',
   nestTab: 'nesting',
@@ -1347,7 +1351,7 @@ const state = {};
     tabs, and to Jobs, Growth and the vaccine record with them. The
     build now refuses to finish if a data-sub key is not here. */
  'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'sexedTab',
- 'pottyTab', 'sfTab', 'nestTab',
+ 'pottyTab', 'sfTab', 'nestTab', 'forTab',
  'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -3169,7 +3173,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3891,6 +3895,12 @@ function initControls() {
         willowAsk((live && live.ask) || 'Tell me about this.');
         return;
       }
+    } else if (t.dataset.daykind !== undefined) {
+      dayKindSet(t.dataset.daykind);
+    } else if (t.dataset.forgo) {
+      store.forTab = t.dataset.forgo;
+      state.learnTab = 'forthem';
+      window.scrollTo(0, 0);
     } else if (t.dataset.hs !== undefined) {
       store.hsOpen = t.dataset.hs || '';
     } else if (t.dataset.learnall) {
@@ -20994,6 +21004,7 @@ function childPayload(k) {
   out.napOverride = src.napOverride == null ? null : src.napOverride;
   out.routineInclude = src.routineInclude || [];
   out.routineMode = src.routineMode || '';
+  out.dayKind = src.dayKind || null;
   out.routineOff = src.routineOff || [];
   out.logs = Array.isArray(src.logs) ? src.logs : [];
   out.createdAt = src.createdAt || null;
@@ -21017,6 +21028,7 @@ function normalizeChild(k) {
     photo: k.photo || '',
     routineInclude: Array.isArray(k.routineInclude) ? k.routineInclude : [],
     routineMode: typeof k.routineMode === 'string' ? k.routineMode : '',
+    dayKind: k.dayKind && typeof k.dayKind === 'object' ? k.dayKind : null,
     routineOff: Array.isArray(k.routineOff) ? k.routineOff : [],
     logs: Array.isArray(k.logs) ? k.logs : [],
     bishop: Array.isArray(k.bishop) ? k.bishop : [],
@@ -23979,14 +23991,150 @@ function learnLensStrip(months) {
           <p class="bodytext" style="margin:3px 0 0">${esc(l.headline)}</p>
         </div>`).join('')}
     </div>
-    <button class="btn ghost sm" style="width:100%;margin-top:11px" data-sub="learnTab" data-val="forthem">
-      What that looks like, block by block</button>
+    ${/* Straight to the kind of day it is, because that is what she
+          needs at 8am, not a long read. */''}
+    <button class="btn ghost sm" style="width:100%;margin-top:11px" data-forgo="today">
+      What kind of day is it?</button>
+    <button class="chip" style="margin-top:9px" data-forgo="moments">When this happens</button>
+    <button class="chip" style="margin-top:9px" data-forgo="kit">The kit</button>
   </div>`;
 }
 
 function lensLabelOf(id) {
   const l = getLens(id);
   return l ? l.label : id;
+}
+
+/* =================================================================
+   THE FOR THEM TAB, IN 4 PARTS
+
+   It was one long page and the new material would have made it a very
+   long one. So it splits, and Today goes first, because that is the
+   one a parent opens at 8am with a child who is already not having it.
+   ================================================================= */
+
+const FOR_TABS = [
+  { id: 'today', label: 'Today' },
+  { id: 'kit', label: 'The kit' },
+  { id: 'moments', label: 'When this happens' },
+  { id: 'shape', label: 'How they learn' },
+];
+
+function forTabOf(lenses) {
+  const want = store.forTab;
+  const ok = FOR_TABS.filter((t) => t.id !== 'today' || daysAnyFor(lenses.map((l) => l.id)));
+  return ok.some((t) => t.id === want) ? want : ok[0].id;
+}
+
+/* WHICH KIND OF DAY IT IS, WHICH IS THE WHOLE POINT.
+
+   Picked, not guessed. The app has no way of knowing that last night
+   was bad, and pretending to know would be worse than asking. The
+   choice lasts the day and then clears itself, because tomorrow is a
+   different day and that is the entire idea. */
+function dayKindOf(kid) {
+  const k = kid && kid.dayKind;
+  if (!k || typeof k !== 'object' || k.day !== ciToday()) return '';
+  return k.pick || '';
+}
+
+function dayKindSet(name) {
+  const kid = activeChild();
+  if (!kid) return;
+  const cur = dayKindOf(kid);
+  kid.dayKind = { day: ciToday(), pick: cur === name ? '' : name };
+  kid.updatedAt = Date.now();
+  flushStore();
+}
+
+function forTodayTab(lenses) {
+  const kid = activeChild();
+  const first = kid && kid.name ? kid.name.split(/\s+/)[0] : 'them';
+  const picked = dayKindOf(kid);
+  return `
+  <div class="card leafy">
+    <p class="bodytext" style="margin:0">${esc(DAYS_INTRO)}</p>
+  </div>
+
+  ${lenses.map((l) => {
+    const d = daysFor(l.id);
+    if (!d) return '';
+    return `
+    <p class="sect" style="margin-top:18px">${esc(lensLabelOf(l.id))}</p>
+    ${d.days.map((k) => {
+      const on = picked === k.name;
+      return `
+      <div class="card${on ? '' : ' flat'}" style="margin-bottom:9px${on ? ';border-left:3px solid var(--sage)' : ''}">
+        <button class="daypick" data-daykind="${esc(k.name)}" aria-pressed="${on}">
+          <span class="grow">
+            <span class="daypick-t">${esc(k.name)}</span>
+            <span class="daypick-s">${esc(k.looks)}</span>
+          </span>
+          <span class="daypick-x">${on ? icon('check', 16, 'var(--sage)') : icon('chev', 16, 'var(--faint)')}</span>
+        </button>
+        ${!on ? '' : `
+        <div style="margin-top:11px">
+          ${list(k.do)}
+          <div class="card" style="background:var(--leaf3);margin:11px 0 0">
+            <p class="bodytext" style="margin:0;font-style:italic">${esc(k.say)}</p>
+          </div>
+        </div>`}
+      </div>`;
+    }).join('')}
+
+    ${/* The reassurance sits here rather than on a page of its own,
+          because the day she picks a hard one is the day she needs it
+          and not before. */''}
+    ${picked && d.reassure && d.reassure.length ? `
+    <div class="card" style="background:var(--leaf3)">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} While you are in it</p>
+      ${d.reassure.map((p) => `<p class="bodytext" style="margin:8px 0 0">${esc(p)}</p>`).join('')}
+    </div>` : ''}`;
+  }).join('')}
+
+  ${!picked ? `
+  <p class="tiny" style="margin-top:14px">Pick the one that fits this morning and it opens up. It clears
+  itself overnight, because tomorrow is a different day and that is the point.</p>` : `
+  <button class="chip" style="margin-top:12px" data-daykind="">That is not today after all</button>`}`;
+}
+
+function forKitTab(lenses) {
+  return `
+  <div class="card leafy">
+    <p class="bodytext" style="margin:0">${esc(KIT_INTRO)}</p>
+  </div>
+  ${lenses.map((l) => {
+    const d = daysFor(l.id);
+    if (!d) return '';
+    return `
+    <p class="sect" style="margin-top:18px">${esc(lensLabelOf(l.id))}</p>
+    ${dsec('Costs nothing', list(d.kit.free))}
+    ${dsec('Under about 25 dollars', list(d.kit.cheap))}
+    ${dsec('Worth real money, and who for', list(d.kit.worth_it))}`;
+  }).join('')}`;
+}
+
+function forMomentsTab(lenses) {
+  return `
+  <div class="card leafy">
+    <p class="bodytext" style="margin:0">${esc(MOMENTS_INTRO)}</p>
+  </div>
+  ${lenses.map((l) => {
+    const d = daysFor(l.id);
+    if (!d) return '';
+    return `
+    <p class="sect" style="margin-top:18px">${esc(lensLabelOf(l.id))}</p>
+    ${d.moments.map((m) => `
+      <div class="card" style="margin-bottom:10px">
+        <p style="margin:0;font-size:15px;font-weight:600;color:var(--ink);line-height:1.35">${esc(m.when)}</p>
+        <p class="bodytext" style="margin-top:8px"><strong style="color:var(--ink)">What is happening.</strong> ${esc(m.why)}</p>
+        <div style="margin-top:9px">${list(m.do)}</div>
+        <div class="card flat" style="margin:10px 0 0">
+          <p class="tiny" style="margin:0"><strong style="color:var(--ink)">The thing that makes it worse.</strong>
+          ${esc(m.avoid)}</p>
+        </div>
+      </div>`).join('')}`;
+  }).join('')}`;
 }
 
 /* The full version. Everything the lenses change about a day, written
@@ -24006,7 +24154,18 @@ function learnForThemTab(months) {
         Understanding ${esc(first)}</button>
     </div>`;
   }
+  const inner = forTabOf(lenses);
+  if (inner !== 'shape') {
+    return `
+    ${subTabs('forTab', inner, FOR_TABS)}
+    ${inner === 'today' ? forTodayTab(lenses)
+      : inner === 'kit' ? forKitTab(lenses) : forMomentsTab(lenses)}
+    ${dsec('Sources', sourceRows(DAYS_SOURCES))}
+    <p class="disclaimer">${esc(LENS_DISCLAIMER)}</p>`;
+  }
+
   return `
+  ${subTabs('forTab', inner, FOR_TABS)}
   <div class="card leafy">
     ${LL_INTRO.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
     ${lenses.length > 1 ? `<p class="tiny" style="margin:4px 0 0">${esc(LL_STACK_NOTE)}</p>` : ''}

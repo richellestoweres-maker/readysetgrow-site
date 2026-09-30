@@ -118,6 +118,7 @@ order = [
     ('bumpPlan',            SRC/'data/bumpPlan.js'),
     ('homeschool',          SRC/'data/homeschool.js'),
     ('learnLenses',         SRC/'data/learnLenses.js'),
+    ('lensDays',            SRC/'data/lensDays.js'),
     ('firebaseConfig',      SRC/'data/firebaseConfig.js'),
 ]
 
