@@ -967,6 +967,12 @@ function newChildRecord(name, birthday) {
     wakeTime: '06:30',
     napOverride: null,
     routineInclude: [],
+    /* Which of the 3 things she can do with a routine is chosen: an
+       empty string for the age based template, 'custom' for a routine
+       she has edited step by step, 'none' for no routine at all. */
+    routineMode: '',
+    /* Steps she has switched off, used only when the mode is custom. */
+    routineOff: [],
     /* What has been given, keyed series:dose to a date, plus
        season:<id> to a list of dates for the yearly ones. vaxSkip is
        the series this family has decided against, which is a settled
@@ -1140,6 +1146,9 @@ const store = {
   /* Which signing band is being looked at, when it is not simply the
      child's own. */
   signStage: '',
+
+  /* Which page of the potty screen is open. */
+  pottyTab: 'ready',
 
   vaxTab: 'visits',
   vaxVisit: '',
@@ -1326,6 +1335,7 @@ const state = {};
     tabs, and to Jobs, Growth and the vaccine record with them. The
     build now refuses to finish if a data-sub key is not here. */
  'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'sexedTab',
+ 'pottyTab',
  'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -2546,7 +2556,7 @@ function render() {
   /* Screens that only make sense inside one child. Reaching one with no
      child open sends you to the picker rather than to an empty screen. */
   const CHILD_SCOPED = ['milestones', 'activities', 'topics', 'understand', 'feeding',
-    'safety', 'plan', 'sleep', 'development', 'checkins'];
+    'safety', 'plan', 'sleep', 'development', 'checkins', 'potty'];
   if (v && v.type === 'screen' && CHILD_SCOPED.indexOf(v.id) !== -1 && !activeChild()) {
     v = null; state.view = null; state.tab = 'home';
   }
@@ -2573,6 +2583,7 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'signs') html = screenSigns(c);
   else if (v && v.type === 'screen' && v.id === 'sharing') html = screenSharing(c);
   else if (v && v.type === 'screen' && v.id === 'diaperplan') html = screenDiapers(c);
+  else if (v && v.type === 'screen' && v.id === 'potty') html = screenPotty(c);
   else if (v && v.type === 'screen' && v.id === 'privacy') html = screenPrivacy(c);
   else if (v && v.type === 'screen' && v.id === 'rules') html = screenRules(c);
   else if (v && v.type === 'screen' && v.id === 'about') html = screenAbout(c);
@@ -3142,7 +3153,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3850,7 +3861,11 @@ function initControls() {
       if (how === 'hide') tipHide(id);
       else if (how === 'read') {
         tipHide(id);
-        state.view = { type: 'screen', id: t.dataset.screen };
+        /* Some of these point at a whole screen and some at one care
+           topic, so the chip carries whichever it has. */
+        state.view = t.dataset.topic
+          ? { type: 'topic', id: t.dataset.topic }
+          : { type: 'screen', id: t.dataset.screen };
         window.scrollTo(0, 0);
       } else if (how === 'ask') {
         const live = tipLive(ctx());
@@ -3860,6 +3875,10 @@ function initControls() {
         willowAsk((live && live.ask) || 'Tell me about this.');
         return;
       }
+    } else if (t.dataset.rmode) {
+      routineModeSet(t.dataset.rmode);
+    } else if (t.dataset.rstep) {
+      routineStepToggle(t.dataset.rstep);
     } else if (t.dataset.nap === 'clear') {
       napClear();
     } else if (t.dataset.waketime === 'set') {
@@ -4358,7 +4377,21 @@ function tipHide(id) {
 }
 
 function tipSeenToday(id) {
-  return tipsHidden()[id] === ciToday();
+  /* Not literally today. Each tip carries its own cool off, because a
+     late nap belongs to the day it happened while an overdue vaccine
+     would be nagging if it spoke up every morning. */
+  const seen = tipsHidden()[id];
+  if (!seen) return false;
+  const days = TIP_COOL_OFF[id] || 1;
+  return tipDaysSince(seen) < days;
+}
+
+/* Whole days between a YYYY-MM-DD and today. */
+function tipDaysSince(day) {
+  const a = new Date(String(day) + 'T00:00:00');
+  const b = new Date(ciToday() + 'T00:00:00');
+  if (isNaN(a.getTime()) || isNaN(b.getTime())) return 999;
+  return Math.round((b.getTime() - a.getTime()) / 86400000);
 }
 
 /* A fever logged today, with the temperature if one was entered. */
@@ -4394,7 +4427,159 @@ function tipNapLate(c) {
   return real.some((n, i) => planned[i] && mins(n.start) - planned[i].start >= 45);
 }
 
-/* Which tip, if any, belongs on screen right now. */
+/* Anything logged in the last 2 days that actually says teeth. Free
+   text counts, because a parent writing "up all night, teething" in a
+   sleep note is telling us the same thing as ticking a box. */
+function tipTeethingSaid(kid) {
+  if (!kid || !Array.isArray(kid.logs)) return false;
+  for (const l of kid.logs) {
+    const day = String(l.at || '').slice(0, 10);
+    if (!day || tipDaysSince(day) > 1) continue;
+    const v = l.values || {};
+    let text = '';
+    Object.keys(v).forEach((k) => {
+      const x = v[k];
+      text += ' ' + (Array.isArray(x) ? x.join(' ') : String(x == null ? '' : x));
+    });
+    if (/teeth|teething/i.test(text)) return true;
+  }
+  return false;
+}
+
+/* Hard days out of the last 7, counted off the general check in so a
+   child with no lenses turned on still counts. */
+function tipHardDayCount(kid) {
+  if (!kid || !kid.checkins) return 0;
+  let n = 0;
+  for (let i = 0; i < 7; i++) {
+    const e = kid.checkins[ciDayBefore(ciToday(), i)];
+    if (!e || !e.answers) continue;
+    const a = e.answers;
+    const vals = Object.keys(a).map((k) => a[k]);
+    /* The general answer decides it when there is one, so a single hard
+       lens on an otherwise fine day does not read as a hard day. */
+    if (a.general ? a.general === 'hard' : vals.indexOf('hard') !== -1) n++;
+  }
+  return n;
+}
+
+/* A first period recorded this month or last. */
+function tipFirstPeriodNew(kid) {
+  const mark = pubMarks(kid).period;
+  if (!mark) return false;
+  const now = pubThisMonth();
+  const prev = (() => {
+    const p = String(now).split('-');
+    const d = new Date(Number(p[0]), Number(p[1]) - 2, 1);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  })();
+  return mark === now || mark === prev;
+}
+
+/* A dose the schedule puts more than 2 months behind, skipping any
+   series the parent has marked as not being given.
+
+   ONLY ONCE THE RECORD HAS BEEN STARTED. An empty record is a record
+   nobody has filled in, not a child who has had no vaccines, and the
+   difference matters: without this, every parent who has not touched
+   that screen gets told something is overdue on a child who is fully
+   up to date. A blank record is a reason to say nothing. */
+function tipVaccineOverdue(kid, months) {
+  if (!kid || months == null) return false;
+  const rec = vaxRecord(kid);
+  const started = Object.keys(rec).length > 0 || vaxSkipped(kid).length > 0;
+  if (!started) return false;
+  const next = vaxNextUp(months, rec, vaxSkipped(kid));
+  if (!next) return false;
+  return vaxDoseState(next.series, next.dose, months, null) === 'was due';
+}
+
+/* A weight that has come down a centile space or more between the last
+   2 readings, or one that has landed below the 2nd line. Only for a
+   reading taken in the last fortnight, because this is about the dot
+   she just added rather than a chart she is browsing. */
+function tipWeightDrop(kid) {
+  const pts = growthPoints(kid, 'weight');
+  if (pts.length < 2) return false;
+  const last = pts[pts.length - 1];
+  const prev = pts[pts.length - 2];
+  if (tipDaysSince(last.date) > 14) return false;
+  if (last.z <= -2.05) return true;
+  return (prev.z - last.z) >= CENTILE_SPACE;
+}
+
+/* 3 or more marked not yet at the checkpoint they are on.
+
+   The checkpoint rather than their exact age, because the CDC list only
+   exists at 2, 4, 6, 9, 12, 15, 18, 24, 30, 36, 48 and 60 months. Read
+   off the raw age this said nothing for a 10 month old, which is most
+   of the time. */
+function tipNotYetCount(c) {
+  const at = c.summary && c.summary.checkpoint;
+  if (at == null) return 0;
+  return getNotYetMilestones(at, state.statuses || {}).length;
+}
+
+/* ------------------------------------------------------------------
+   POTTY, FROM WHAT WAS LOGGED
+
+   3 moments worth her speaking up for: the first thing that ever
+   landed in the potty, a day with a pile of accidents, and a stretch
+   that has quietly gone well. Nothing here is a score and none of it
+   is ever framed as being behind.
+   ------------------------------------------------------------------ */
+
+function pottyLogs(kid, days) {
+  if (!kid || !Array.isArray(kid.logs)) return [];
+  return kid.logs.filter((l) => {
+    if (l.typeId !== 'potty') return false;
+    const day = String(l.at || '').slice(0, 10);
+    return day && tipDaysSince(day) <= days;
+  });
+}
+
+function pottyIsWin(l) {
+  return ['Pee', 'Poop', 'Both'].indexOf(String((l.values || {}).result)) !== -1;
+}
+
+/* The first one that ever landed, logged today. There is no history to
+   check beyond the logs themselves, so this is whether today holds a
+   success and no earlier day does. */
+function tipPottyFirst(kid) {
+  if (!kid || !Array.isArray(kid.logs)) return false;
+  const today = ciToday();
+  let todayWin = false;
+  for (const l of kid.logs) {
+    if (l.typeId !== 'potty' || !pottyIsWin(l)) continue;
+    const day = String(l.at || '').slice(0, 10);
+    if (day === today) todayWin = true;
+    else if (day && day < today) return false;
+  }
+  return todayWin;
+}
+
+/* 3 or more accidents logged today. */
+function tipPottyAccidents(kid) {
+  const today = ciToday();
+  const n = (kid && Array.isArray(kid.logs) ? kid.logs : []).filter((l) =>
+    l.typeId === 'potty' && String((l.values || {}).result) === 'Accident'
+    && String(l.at || '').slice(0, 10) === today).length;
+  return n >= 3;
+}
+
+/* A week that has gone well: a good number of trips that landed, and
+   accidents well under them. Only worth saying when there is enough
+   logged for it to mean anything. */
+function tipPottyGoing(kid) {
+  const week = pottyLogs(kid, 6);
+  if (week.length < 8) return false;
+  const wins = week.filter(pottyIsWin).length;
+  const acc = week.filter((l) => String((l.values || {}).result) === 'Accident').length;
+  return wins >= 6 && acc <= Math.max(1, Math.floor(wins / 4));
+}
+
+/* Which tip, if any, belongs on screen right now. Ordered by what
+   matters most, so a fever always wins and nothing stacks up. */
 function tipLive(c) {
   if (willow.open || !hasAccess()) return null;
   const kid = activeChild();
@@ -4415,16 +4600,54 @@ function tipLive(c) {
     };
   }
 
-  if (!tipSeenToday('napLate') && tipNapLate(c)) {
-    return {
-      id: 'napLate',
-      title: TIP_NAP_LATE.title,
-      lines: TIP_NAP_LATE.lines,
-      ask: TIP_NAP_LATE.ask,
-      link: TIP_NAP_LATE.link,
-    };
+  if (!tipSeenToday('napLate') && tipNapLate(c)) return tipFrom(TIP_NAP_LATE);
+
+  if (!tipSeenToday('teething') && c.months != null && c.months >= 3 && c.months <= 24
+    && tipTeethingSaid(kid)) return tipFrom(TIP_TEETHING);
+
+  if (!tipSeenToday('weightWorry') && tipWeightDrop(kid)) return tipFrom(TIP_WEIGHT_WORRY);
+
+  /* THE ORDER IS NOT ARBITRARY. Anything that just happened comes
+     before anything she could look up any day of the week, so a pile
+     of accidents this afternoon is never buried under a vaccine that
+     has been due for a month. */
+  if (!tipSeenToday('pottyAccidents') && tipPottyAccidents(kid)) return tipFrom(TIP_POTTY_ACCIDENTS);
+
+  if (!tipSeenToday('pottyStart') && tipPottyFirst(kid)) return tipFrom(TIP_POTTY_START);
+
+  if (!tipSeenToday('firstPeriod') && tipFirstPeriodNew(kid)) return tipFrom(TIP_FIRST_PERIOD);
+
+  if (!tipSeenToday('pottyWin') && tipPottyGoing(kid)) return tipFrom(TIP_POTTY_WIN);
+
+  if (!tipSeenToday('milestoneWorry') && tipNotYetCount(c) >= 3) return tipFrom(TIP_MILESTONE_WORRY);
+
+  if (!tipSeenToday('vaccineDue') && tipVaccineOverdue(kid, c.months)) return tipFrom(TIP_VACCINE_DUE);
+
+  if (!tipSeenToday('hardDays')) {
+    const hard = tipHardDayCount(kid);
+    if (hard >= 4) {
+      const t = tipFrom(TIP_HARD_DAYS);
+      /* Her own number rather than the one in the copy, because 6 out of
+         7 and 4 out of 7 are not the same week. */
+      t.lines = t.lines.map((l) => l.replace(/\b4 hard days out of 7\b/, hard + ' hard days out of 7')
+        .replace(/\bsay 4 out of 7\b/, 'say ' + hard + ' out of 7'));
+      t.title = hard >= 6 ? 'About this past week' : t.title;
+      return t;
+    }
   }
   return null;
+}
+
+/* The plain ones all read the same way, so there is one place that
+   turns a tip in the data file into the thing on screen. */
+function tipFrom(t) {
+  return {
+    id: t.id,
+    title: t.title,
+    lines: t.lines.slice(),
+    ask: t.ask,
+    link: t.link,
+  };
 }
 
 /* Willow's bubble for it, in her usual place in the corner. */
@@ -4443,7 +4666,8 @@ function tipBubble(c) {
       <div class="tip-go">
         <button class="chip" data-tip="ask" data-id="${esc(t.id)}">Talk to me about it</button>
         ${t.link ? `<button class="chip" data-tip="read" data-id="${esc(t.id)}"
-          data-screen="${esc(t.link.screen)}">${esc(t.link.label)}</button>` : ''}
+          data-screen="${esc(t.link.screen || '')}"
+          data-topic="${esc(t.link.topic || '')}">${esc(t.link.label)}</button>` : ''}
       </div>
     </div>
   </div>`;
@@ -4704,53 +4928,7 @@ function sleepDayHtml(c) {
 
     ${band ? `<div class="card leafy"><p class="bodytext">${esc(band.guidance)}</p></div>` : ''}
 
-    ${(() => {
-      if (!day.ok) return '';
-      const rt = buildRoutine({
-        type: 'bedtime', months: c.months,
-        endTime: formatTime(day.summary.bedtime),
-        include: state.routineInclude,
-      });
-      if (!rt.ok) return '';
-      const opts = getOptionalSteps('bedtime', c.months);
-      return `
-      <p class="sect">Bedtime routine</p>
-      <div class="card flat">
-        <p class="bodytext">Start at <strong style="color:var(--ink)">${esc(rt.startTime)}</strong> to finish by ${esc(rt.endTime)}. ${rt.totalMinutes} minutes in all.</p>
-        ${rt.note ? `<p class="tiny" style="margin-top:7px">${esc(rt.note)}</p>` : ''}
-      </div>
-      ${opts.length ? `
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:11px;align-items:center">
-        <span class="tiny" style="margin-right:2px">Also include</span>
-        ${opts.map((o) => {
-          const on = state.routineInclude.includes(o.id);
-          return `<button class="mb" data-routine="${esc(o.id)}" aria-pressed="${on}"
-            style="${on ? 'background:var(--sage);color:#fff' : ''}">${esc(o.label)}</button>`;
-        }).join('')}
-      </div>` : ''}
-      <div class="card" style="padding:6px 14px 14px">
-        ${rt.steps.map((st, i) => `
-          <div style="display:flex;gap:12px;align-items:flex-start;padding:11px 0;
-            ${i < rt.steps.length - 1 ? 'border-bottom:1px solid var(--line2)' : ''}">
-            <span style="flex:none;width:60px;font-size:12.5px;font-weight:600;color:var(--deep2);
-              padding-top:2px;font-variant-numeric:tabular-nums">${esc(st.time)}</span>
-            <span style="flex:none;width:30px;height:30px;border-radius:50%;background:var(--leaf2);display:grid;place-items:center">
-              ${icon(st.icon || 'leaf', 15)}
-            </span>
-            <span class="grow">
-              <span style="display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3">${esc(st.label)}</span>
-              <span class="tiny" style="display:block;margin-top:2px">${esc(st.why)}</span>
-            </span>
-          </div>`).join('')}
-      </div>
-      <div class="card flat">
-        <p class="eyebrow">${esc(ROUTINE_STANCE.headline)}</p>
-        <p class="bodytext" style="margin-top:5px">${esc(ROUTINE_STANCE.body)}</p>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
-          ${ROUTINE_STANCE.options.map((o) => `<span class="tag">${esc(o.label)}</span>`).join('')}
-        </div>
-      </div>`;
-    })()}
+    ${routineBlock(c, day)}
     <div class="callout">${esc(SCHEDULE_DISCLAIMER)}</div>
 
     ${c.disruptions.length ? `
@@ -4775,6 +4953,165 @@ function sleepDayHtml(c) {
       </div>`).join('')}` : ''}
     <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>
   `;
+}
+
+/* =================================================================
+   THE BEDTIME ROUTINE, AND THE 3 THINGS SHE CAN DO WITH IT
+
+   She spotted this: "Start from a template", "Build my own" and
+   "Skip routines" were drawn as labels. They looked like buttons and
+   did nothing, which is worse than not offering the choice at all.
+
+   So they are buttons, and each one does what it says.
+     Template        the age based routine, which is the default.
+     Build my own    the same list with every step switchable, so she
+                     keeps the timings and drops what her family does
+                     not do.
+     Skip routines   the block goes away for this child and nothing in
+                     the app brings it up again on its own.
+   The choice lives on the child, because 2 children in one family very
+   often need different answers.
+   ================================================================= */
+
+function routineMode(kid) {
+  const m = (kid || {}).routineMode;
+  return m === 'custom' || m === 'none' ? m : 'template';
+}
+
+function routineOffList(kid) {
+  return Array.isArray((kid || {}).routineOff) ? kid.routineOff : [];
+}
+
+function routineModeSet(mode) {
+  const kid = activeChild();
+  if (!kid) return;
+  kid.routineMode = mode === 'template' ? '' : mode;
+  kid.updatedAt = Date.now();
+  flushStore();
+}
+
+/* Switching one step off, or back on, in her own version. */
+function routineStepToggle(id) {
+  const kid = activeChild();
+  if (!kid) return;
+  const off = routineOffList(kid).slice();
+  const at = off.indexOf(id);
+  if (at === -1) off.push(id); else off.splice(at, 1);
+  kid.routineOff = off;
+  kid.routineMode = 'custom';
+  kid.updatedAt = Date.now();
+  flushStore();
+}
+
+function routineBlock(c, day) {
+  if (!day.ok) return '';
+  const kid = activeChild();
+  const mode = routineMode(kid);
+  const off = routineOffList(kid);
+
+  /* SKIPPED. One quiet card, and a way back, because a week with no
+     capacity for a routine is not a decision she should have to go
+     hunting in settings to undo. */
+  if (mode === 'none') {
+    return `
+    <p class="sect">Bedtime routine</p>
+    <div class="card flat">
+      <p class="bodytext">Turned off, so nothing here will nag you about a routine. Log things as they
+      happen and the rest of the day works exactly the same.</p>
+      <button class="btn ghost sm" style="width:100%;margin-top:11px"
+        data-rmode="template">Show the routine again</button>
+    </div>`;
+  }
+
+  const rt = buildRoutine({
+    type: 'bedtime', months: c.months,
+    endTime: formatTime(day.summary.bedtime),
+    include: state.routineInclude,
+    exclude: mode === 'custom' ? off : [],
+  });
+  const all = buildRoutine({
+    type: 'bedtime', months: c.months,
+    endTime: formatTime(day.summary.bedtime),
+    include: state.routineInclude,
+  });
+  const opts = getOptionalSteps('bedtime', c.months);
+
+  /* Every step switched off is still a choice she made, so the block
+     says so rather than vanishing. */
+  if (!rt.ok) {
+    return `
+    <p class="sect">Bedtime routine</p>
+    <div class="card flat">
+      <p class="bodytext">Every step is switched off at the moment, so there is nothing to show. Turn
+      one back on here, or skip routines altogether.</p>
+      ${all.ok ? `<div style="margin-top:11px">${all.steps.map((st) => `
+        <button class="mb" data-rstep="${esc(st.id)}" aria-pressed="false"
+          style="margin:0 5px 5px 0">${esc(st.label)}</button>`).join('')}</div>` : ''}
+      ${routineStance(mode)}
+    </div>`;
+  }
+
+  return `
+  <p class="sect">Bedtime routine</p>
+  <div class="card flat">
+    <p class="bodytext">Start at <strong style="color:var(--ink)">${esc(rt.startTime)}</strong> to finish by ${esc(rt.endTime)}. ${rt.totalMinutes} minutes in all.</p>
+    ${rt.note ? `<p class="tiny" style="margin-top:7px">${esc(rt.note)}</p>` : ''}
+  </div>
+  ${opts.length ? `
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:11px;align-items:center">
+    <span class="tiny" style="margin-right:2px">Also include</span>
+    ${opts.map((o) => {
+      const on = state.routineInclude.includes(o.id);
+      return `<button class="mb" data-routine="${esc(o.id)}" aria-pressed="${on}"
+        style="${on ? 'background:var(--sage);color:#fff' : ''}">${esc(o.label)}</button>`;
+    }).join('')}
+  </div>` : ''}
+  <div class="card" style="padding:6px 14px 14px">
+    ${rt.steps.map((st, i) => `
+      <div style="display:flex;gap:12px;align-items:flex-start;padding:11px 0;
+        ${i < rt.steps.length - 1 ? 'border-bottom:1px solid var(--line2)' : ''}">
+        <span style="flex:none;width:60px;font-size:12.5px;font-weight:600;color:var(--deep2);
+          padding-top:2px;font-variant-numeric:tabular-nums">${esc(st.time)}</span>
+        <span class="grow">
+          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3">${esc(st.label)}</span>
+          <span class="tiny" style="display:block;margin-top:2px">${esc(st.why)}</span>
+        </span>
+        ${mode === 'custom' ? `<button class="mb" data-rstep="${esc(st.id)}" aria-pressed="true"
+          style="flex:none;background:var(--sage);color:#fff">On</button>` : ''}
+      </div>`).join('')}
+  </div>
+  ${mode === 'custom' && off.length ? `
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:11px;align-items:center">
+    <span class="tiny" style="margin-right:2px">Switched off</span>
+    ${(all.ok ? all.steps : []).filter((st) => off.indexOf(st.id) !== -1).map((st) => `
+      <button class="mb" data-rstep="${esc(st.id)}" aria-pressed="false">${esc(st.label)}</button>`).join('')}
+  </div>` : ''}
+  <div class="card flat">
+    <p class="eyebrow">${esc(ROUTINE_STANCE.headline)}</p>
+    <p class="bodytext" style="margin-top:5px">${esc(ROUTINE_STANCE.body)}</p>
+    ${routineStance(mode)}
+  </div>`;
+}
+
+/* The 3 options, as buttons, with the one in use showing as chosen. */
+function routineStance(mode) {
+  return `
+  <div style="display:flex;flex-direction:column;gap:7px;margin-top:11px">
+    ${ROUTINE_STANCE.options.map((o) => {
+      const id = o.id === 'custom' ? 'custom' : (o.id === 'none' ? 'none' : 'template');
+      const on = id === mode;
+      return `
+      <button class="lrow" data-rmode="${esc(id)}" aria-pressed="${on}"
+        style="align-items:flex-start;${on ? 'border-color:var(--sage)' : ''}">
+        <span class="licon">${icon(on ? 'check' : (id === 'none' ? 'moon' : 'leaf'), 17,
+          on ? 'var(--sage)' : 'var(--deep)')}</span>
+        <span class="grow">
+          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3">${esc(o.label)}</span>
+          <span class="tiny" style="display:block;margin-top:2px">${esc(o.detail)}</span>
+        </span>
+      </button>`;
+    }).join('')}
+  </div>`;
 }
 
 function screenSleep(c) {
@@ -6416,6 +6753,103 @@ function screenAbout(c) {
     </div>
 
     ${privacyLine()}
+  </div>`;
+}
+
+/* =================================================================
+   POTTY TRAINING
+
+   Her ask, and it belongs to an age rather than to everybody, so the
+   row on a profile only exists between about 15 months and 8 years.
+
+   WRITTEN FOR THIS CHILD. Only the gender page that applies is shown,
+   the page that opens first follows their age, and the whole of it says
+   the same thing: readiness is a short list of skills, not a birthday,
+   and waiting is usually the faster route.
+   ================================================================= */
+
+/* Which page opens first, which is whichever question a parent of a
+   child this age is most likely to be holding. */
+function pottyFirstTab(months, tabs) {
+  const has = (id) => tabs.some((t) => t.id === id);
+  let want = 'ready';
+  if (typeof months === 'number') {
+    if (months >= 54) want = 'night';
+    else if (months >= 36) want = 'setbacks';
+    else if (months >= 24) want = 'how';
+  }
+  return has(want) ? want : tabs[0].id;
+}
+
+function screenPotty(c) {
+  const kid = activeChild();
+  const months = c.months;
+  const first = kid && kid.name ? kid.name.split(/\s+/)[0] : 'them';
+  const tabs = pottyTabsFor((kid || {}).sex);
+  const want = store.pottyTab;
+  const tab = tabs.some((t) => t.id === want) ? want : pottyFirstTab(months, tabs);
+  const page = tabs.filter((t) => t.id === tab)[0] || tabs[0];
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <p class="eyebrow" style="margin-top:6px">${esc(first)}${c.summary.label ? ', ' + esc(c.summary.label) : ''}</p>
+    <h1 class="title sm">${esc(POTTY_TITLE)}</h1>
+    <p class="sub">${esc(POTTY_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      ${POTTY_INTRO.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+    </div>
+
+    <div style="margin-top:13px">${subTabs('pottyTab', tab, tabs)}</div>
+
+    ${page.sections.map((s) => `
+      <div class="dsec">
+        <h4>${esc(s.h)}</h4>
+        ${(s.body || []).map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+        ${list(s.list, page.id === 'doctor')}
+      </div>`).join('')}
+
+    ${pottyLogRow(kid, months)}
+
+    ${dsec('Sources', sourceRows(POTTY_SOURCES))}
+    <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>
+  </div>`;
+}
+
+/* What has actually been logged, so the page is about their child and
+   not about children. Counts only, never a score. */
+function pottyLogRow(kid, months) {
+  if (!kid || !Array.isArray(kid.logs)) return '';
+  const week = kid.logs.filter((l) => {
+    if (l.typeId !== 'potty') return false;
+    const day = String(l.at || '').slice(0, 10);
+    return day && tipDaysSince(day) <= 6;
+  });
+  const wins = week.filter((l) => ['Pee', 'Poop', 'Both'].indexOf(String((l.values || {}).result)) !== -1).length;
+  const acc = week.filter((l) => String((l.values || {}).result) === 'Accident').length;
+  const canLog = months != null && months >= 18 && months <= 72;
+  if (!week.length) {
+    return canLog ? `
+    <div class="card flat" style="margin-top:13px">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Worth logging</p>
+      <p class="tiny" style="margin-top:4px">Logging potty trips for a week shows you the timing, which is
+      the part that actually helps. It also means you can answer the question a doctor asks first,
+      which is how often rather than how it felt.</p>
+      <button class="btn ghost sm" style="width:100%;margin-top:11px" data-go="log" data-id="potty">
+        Log a potty trip</button>
+    </div>` : '';
+  }
+  return `
+  <div class="card flat" style="margin-top:13px">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} This past week</p>
+    <p class="tiny" style="margin-top:4px">${esc(wins + (wins === 1 ? ' trip that landed' : ' trips that landed'))},
+    ${esc(acc + (acc === 1 ? ' accident' : ' accidents'))}. Both numbers go up and down week to week, and a week
+    with more accidents than the last one is ordinary rather than a step backward.</p>
+    ${canLog ? `<button class="btn ghost sm" style="width:100%;margin-top:11px" data-go="log" data-id="potty">
+      Log a potty trip</button>` : ''}
   </div>`;
 }
 
@@ -17523,6 +17957,9 @@ function screenChild(c) {
       ${showsDiaperContent(months) ? childRow('drop', esc(DIAPER_TITLE),
         esc(diaperBandFor(months).perDay + ' a day at this age, and what to send to daycare'),
         'data-go="screen" data-id="diaperplan"') : ''}
+      ${pottyShows(months) ? childRow('check-circle', esc(POTTY_TITLE),
+        esc(pottyRowSub(months)),
+        'data-go="screen" data-id="potty"') : ''}
       ${childRow('bulb', 'Care topics',
         c.topics.length ? esc(c.topics.slice(0, 4).map((t) => t.label).join(', ')) : 'Practical care, picked for this age',
         'data-go="screen" data-id="topics"')}`,
@@ -19987,6 +20424,8 @@ function childPayload(k) {
   out.wakeTime = src.wakeTime || '06:30';
   out.napOverride = src.napOverride == null ? null : src.napOverride;
   out.routineInclude = src.routineInclude || [];
+  out.routineMode = src.routineMode || '';
+  out.routineOff = src.routineOff || [];
   out.logs = Array.isArray(src.logs) ? src.logs : [];
   out.createdAt = src.createdAt || null;
   out.updatedAt = src.updatedAt || 0;
@@ -20008,6 +20447,8 @@ function normalizeChild(k) {
     arrival: Array.isArray(k.arrival) ? k.arrival : [],
     photo: k.photo || '',
     routineInclude: Array.isArray(k.routineInclude) ? k.routineInclude : [],
+    routineMode: typeof k.routineMode === 'string' ? k.routineMode : '',
+    routineOff: Array.isArray(k.routineOff) ? k.routineOff : [],
     logs: Array.isArray(k.logs) ? k.logs : [],
     bishop: Array.isArray(k.bishop) ? k.bishop : [],
     birthPrefs: k.birthPrefs && typeof k.birthPrefs === 'object' ? k.birthPrefs : {},
