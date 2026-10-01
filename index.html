@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-01 18:23">
+<meta name="rsg-build" content="2026-10-01 18:46">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -433,6 +433,10 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
   background:var(--surface2);border:1px solid var(--line2);
   display:grid;place-items:center;
 }
+/* Same reason as the week rows: the grid gets its own clean field so
+   the leaves behind the page do not read as marks on the calendar. */
+.calgridwrap{background:var(--surface);border:1px solid var(--line2);border-radius:14px;
+  padding:9px 8px 10px;margin-bottom:4px}
 .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
 .cal-w{
   font-size:10px;color:var(--muted);text-align:center;padding:2px 0 4px;
@@ -1523,70 +1527,158 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 
 .hint{font-size:12.5px;color:var(--wb-muted);text-align:center;max-width:44ch;line-height:1.5}
 
-/* THE FAMILY CALENDAR GRID.
-   6 rows always, so paging months does not move everything below it up
-   and down the screen. Squares are square via aspect-ratio rather than
-   a fixed height, so the grid fits a 390 phone and a 1900 laptop from
-   the same rule. */
-.calhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:12px 0 8px}
-.calmonth{font-size:15px;font-weight:600;color:var(--ink);letter-spacing:.01em}
-.calnav{appearance:none;border:1px solid var(--line);background:var(--cream);border-radius:11px;
-  width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+/* ==================================================================
+   THE FAMILY CALENDAR
+
+   REWRITTEN AFTER SHE SAID IT WAS UGLY, AND SHE WAS RIGHT.
+
+   The first version used the app's own language: a big rounded card
+   per entry, an icon tile, generous padding, lots of cream. That is
+   the correct language for a page somebody READS and the wrong one
+   for a calendar, which exists to be SCANNED. A week showed 3 things
+   and a lot of background. The thing that makes a family calendar on
+   a wall work is density and solid colour: you see the whole week at
+   once as blocks, and whose week is heavy is a shape.
+
+   So entries are chips now, filled with the person's colour, packed
+   tight. The page around them stays cream and calm, which is how this
+   ends up dense without ending up looking like somebody else's app.
+
+   THE WEEK CHANGES SHAPE WITH THE SCREEN. 7 columns is what a wall
+   display does and what a laptop can do. On a 390 pixel phone a
+   column is 51 pixels, which fits a coloured block and no words worth
+   reading, so below 700 the week turns into 7 rows with the chips
+   flowing across. Same information, same density, laid out for the
+   screen it is actually on.
+   ================================================================== */
+.calhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0 10px}
+.calmonth{font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.calnav{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:10px;
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
 .calnav svg{transform:rotate(180deg)}
 .calnav.next svg{transform:none}
 .calnav:hover{background:var(--leaf2)}
+
+/* ---- the chip, which is the whole design ---- */
+.calchip-e{display:flex;align-items:baseline;gap:5px;width:100%;text-align:left;
+  appearance:none;border:0;cursor:pointer;border-radius:6px;padding:4px 7px;
+  font-size:12px;line-height:1.25;font-weight:600;color:#fff;overflow:hidden}
+.calchip-e .ct{font-weight:700;opacity:.85;font-variant-numeric:tabular-nums;flex:none;font-size:11px}
+.calchip-e .cn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Something the app worked out, rather than something she promised
+   somebody she would be at. Same colour, drawn as an outline, so it
+   reads as information instead of a commitment. */
+.calchip-e.soft{background:transparent!important;border:1px solid currentColor;font-weight:500}
+.calchip-e.soft .ct{opacity:.7}
+
+/* ---- the week ---- */
+.calweek{display:grid;gap:5px;margin-top:2px}
+/* Every row sits on a solid field. The page behind this has leaves and
+   affirmation shapes drawn across it, which is right for a page you
+   read and is visual noise behind a grid you scan. The decoration
+   still frames the screen, it just stops showing through the content. */
+.calwd{display:grid;grid-template-columns:46px 1fr;gap:9px;align-items:center;
+  padding:8px 10px;border-radius:12px;min-height:46px;background:var(--surface);
+  border:1px solid var(--line2)}
+.calwd.today{background:var(--leaf2);border-color:var(--leaf)}
+.calwd-free{display:block;height:1px;border-top:1px dashed var(--line);opacity:.7;width:38px}
+.calwd-h{display:flex;flex-direction:column;align-items:center;gap:1px;padding-top:1px}
+.calwd-d{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);line-height:1}
+.calwd-n{font-size:19px;font-weight:700;color:var(--ink);line-height:1.05;font-variant-numeric:tabular-nums}
+.calwd.today .calwd-n{color:var(--deep2)}
+.calwd.today .calwd-d{color:var(--deep2)}
+.calwd-b{display:flex;flex-direction:column;gap:3px;min-width:0}
+.calwd-none{font-size:12px;color:var(--faint);padding:3px 1px}
+
+@media (min-width:700px){
+  /* A real 7 column week, the way a wall display does it. */
+  .calweek{grid-template-columns:repeat(7,1fr);gap:6px}
+  .calwd{grid-template-columns:1fr;gap:6px;padding:8px 6px;min-height:120px;
+    background:var(--surface2);border:1px solid var(--line2)}
+  .calwd.today{background:var(--leaf2);border-color:var(--leaf)}
+  .calwd-h{flex-direction:column;gap:2px}
+}
+
+/* ---- the month ---- */
+/* Same reason as the week rows: the grid gets its own clean field so
+   the leaves behind the page do not read as marks on the calendar. */
+.calgridwrap{background:var(--surface);border:1px solid var(--line2);border-radius:14px;
+  padding:9px 8px 10px;margin-bottom:4px}
 .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
-.caldow{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);
-  text-align:center;padding:2px 0 4px}
-.calcell{appearance:none;border:1px solid transparent;background:transparent;border-radius:10px;
-  aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
-  gap:2px;padding:5px 1px 3px;cursor:pointer;min-width:0}
-.calcell:hover{background:var(--leaf2)}
-.calcell .caln{font-size:13px;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
-.calcell.out .caln{color:var(--faint);opacity:.55}
+.caldow{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);
+  text-align:center;padding:2px 0 5px;font-weight:600}
+.calcell{appearance:none;border:1px solid transparent;background:var(--surface2);border-radius:9px;
+  min-height:58px;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;
+  gap:3px;padding:5px 4px 4px;cursor:pointer;min-width:0;overflow:hidden}
+.calcell:hover{border-color:var(--leaf)}
+.calcell .caln{font-size:13px;font-weight:600;color:var(--ink);line-height:1;text-align:left;
+  font-variant-numeric:tabular-nums;padding-left:1px}
+.calcell.out{background:transparent}
+.calcell.out .caln{color:var(--faint);opacity:.5;font-weight:400}
 .calcell.today{background:var(--leaf2)}
-.calcell.today .caln{font-weight:700;color:var(--deep2)}
+.calcell.today .caln{font-weight:800;color:var(--deep2)}
 .calcell.sel{border-color:var(--sage)}
-.caldots{display:flex;gap:2px;align-items:center;justify-content:center;min-height:6px;flex-wrap:nowrap}
-.caldot{width:5px;height:5px;border-radius:50%;background:var(--deep2);display:block}
-/* A thing the app worked out is drawn quieter than a thing she put in,
-   so the dots she is responsible for stand out from the ones she is
-   only being told about. */
-.caldot.soft{background:var(--sage);opacity:.5}
-.calmore{font-size:9px;color:var(--faint);line-height:1}
-@media (max-width:360px){
-  .calcell{padding:4px 0 2px}
-  .calcell .caln{font-size:12px}
-}
-/* A square cell is right on a phone, where 7 columns across 390px give
-   a square about 50px. On a laptop the reading column is twice that
-   wide, so 1:1 makes each day 93px tall, the month runs off the screen
-   and the dots drift miles from their number. Past the phone the cell
-   keeps a sensible height instead of a ratio. */
+/* Solid bars, not dots. A bar carries colour at a size you can read
+   from arm's length, which is the only distance that matters when the
+   phone is propped against the kettle. */
+.calbars{display:flex;flex-direction:column;gap:2px;min-width:0;overflow:hidden}
+/* ON A PHONE THE BAR IS A BAR AND NOTHING ELSE.
+   The title stays in the markup so the same element can grow words on
+   a wider screen, but at this size it is hidden properly rather than
+   merely squashed. Leaving it at its normal font size inside a 4 pixel
+   box does not clip it, it spills the words across the neighbouring
+   days, which is exactly what it did. font-size 0 is what actually
+   removes it from the layout. */
+.calbar{height:4px;min-height:4px;border-radius:2px;display:block;width:100%;
+  font-size:0;line-height:0;color:transparent;overflow:hidden;text-indent:-9999px}
+.calbar.soft{opacity:.45;background:currentColor!important}
+.calmore{font-size:9px;color:var(--faint);line-height:1.2;text-align:left;padding-left:1px;
+  overflow:hidden;white-space:nowrap}
 @media (min-width:620px){
-  .calcell{aspect-ratio:auto;min-height:48px;justify-content:center;gap:4px}
-  .calgrid{gap:4px}
+  .calcell{min-height:86px;padding:6px 5px 5px}
+  .calcell .caln{font-size:14px}
+  /* Wide enough for words, so the bars become chips with the name on. */
+  .calbar{height:auto;min-height:0;border-radius:4px;padding:1px 5px;font-size:10.5px;
+    font-weight:600;color:#fff;line-height:1.55;text-indent:0;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .calbar.soft{background:transparent!important;border:1px solid currentColor;opacity:1;
+    font-weight:500}
 }
-/* The week's shape, as 7 little bars. Reading height is far faster than
-   reading 7 numbers, which is the whole reason this view exists. */
-.calweekbar{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;align-items:end;
-  margin:4px 0 2px;padding:6px 0 0}
-.calwb{appearance:none;border:1px solid transparent;background:transparent;border-radius:10px;
-  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;
-  padding:4px 1px 5px;cursor:pointer;min-width:0}
-.calwb:hover{background:var(--leaf2)}
-.calwb.today{background:var(--leaf2)}
-.calwb.sel{border-color:var(--sage)}
-.calwb-bar{width:60%;max-width:22px;border-radius:3px 3px 0 0;background:var(--sage);display:block;
-  min-height:0}
-.calwb-d{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);line-height:1}
-.calwb-n{font-size:12px;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
-.calwb.today .calwb-n{font-weight:700;color:var(--deep2)}
-/* A colour chip carries its own dot, so the filter row reads as a key
-   as well as a set of buttons. */
+
+/* ---- the agenda rows, tightened ---- */
+.calrow{display:grid;grid-template-columns:4px 54px 1fr;gap:9px;align-items:center;
+  width:100%;text-align:left;appearance:none;border:0;background:var(--surface);
+  border-radius:10px;padding:9px 11px 9px 0;margin-bottom:4px;cursor:pointer;overflow:hidden}
+.calrow:hover{background:var(--leaf3)}
+.calrow-c{width:4px;height:100%;min-height:34px;border-radius:0 3px 3px 0}
+.calrow-t{font-size:12px;font-weight:700;color:var(--deep2);font-variant-numeric:tabular-nums;
+  text-align:right;line-height:1.3}
+.calrow-t.none{color:var(--faint);font-weight:500}
+.calrow-m{min-width:0}
+.calrow-n{display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.calrow-s{display:block;font-size:11.5px;color:var(--body);opacity:.75;line-height:1.35;margin-top:1px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.caldayhead{display:flex;align-items:baseline;gap:8px;margin:14px 0 6px}
+.caldayhead-d{font-size:14px;font-weight:700;color:var(--ink)}
+.caldayhead-n{font-size:11.5px;color:var(--faint)}
+
+/* ---- the header row: views, a round add, both on one line ---- */
+.sc-head.tight{padding-bottom:4px}
+.calbar{display:flex;align-items:center;gap:8px;margin:6px 0 7px}
+.calscroll{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;
+  padding:2px 0;flex:1;min-width:0}
+.calscroll::-webkit-scrollbar{display:none}
+.calscroll .chip{flex:none}
+.calkey{margin-bottom:4px}
+.caladd{appearance:none;border:0;background:var(--sage);color:#fff;width:38px;height:38px;flex:none;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 2px 8px rgba(74,103,65,.25)}
+.caladd:hover{background:var(--sage-press)}
+
+/* ---- the filter row doubles as the colour key ---- */
 .calchip{display:inline-flex;align-items:center;gap:6px}
-.calchip .caldot{width:7px;height:7px;flex:none}
-.calrow{padding-left:11px}
+.calchip .caldot{width:8px;height:8px;border-radius:50%;flex:none;display:block}
 
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
@@ -1889,7 +1981,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-01 18:23';
+const BUILD_STAMP = '2026-10-01 18:46';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -63516,6 +63608,22 @@ function calHomeStrip() {
     <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
   </button>`;
 }
+function calChipEl(e) {
+    const col = calColorOf(e.who);
+    const reading = e.from === 'app';
+    const attrs = reading
+        ? (e.go ? `data-calgo="${esc(JSON.stringify(e.go))}"` : 'disabled')
+        : `data-calopen="${esc(e.id)}"`;
+    const style = reading
+        ? `color:${esc(col.ink)}`
+        : `background:${esc(col.dot)}`;
+    return `
+  <button class="calchip-e${reading ? ' soft' : ''}" ${attrs} style="${style}"
+    title="${esc(e.title)}">
+    ${e.time ? `<span class="ct">${esc(calTimeLabel(e.time))}</span>` : ''}
+    <span class="cn">${esc(e.title)}</span>
+  </button>`;
+}
 function calRow(e, today) {
     const reading = e.from === 'app';
     const k = reading ? null : calKind(e.kind);
@@ -63524,22 +63632,15 @@ function calRow(e, today) {
         ? (e.go ? `data-calgo="${esc(JSON.stringify(e.go))}"` : '')
         : `data-calopen="${esc(e.id)}"`;
     const col = calColorOf(e.who);
+    const sub = [e.sub || (k ? k.label : ''), e.where || '', who].filter(Boolean).join(' · ');
     return `
-  <button class="lrow calrow" ${attrs}
-    style="align-items:flex-start;border-left:3px solid ${esc(col.dot)}${reading ? ';opacity:.92' : ''}">
-    <span class="licon" style="background:${esc(col.soft)}">
-      ${icon(reading ? (e.icon || 'calendar') : k.icon, 17, col.ink)}
+  <button class="calrow" ${attrs}>
+    <span class="calrow-c" style="background:${esc(col.dot)}${reading ? ';opacity:.5' : ''}"></span>
+    <span class="calrow-t${e.time ? '' : ' none'}">${e.time ? esc(calTimeLabel(e.time)) : 'All day'}</span>
+    <span class="calrow-m">
+      <span class="calrow-n">${esc(e.title)}</span>
+      ${sub ? `<span class="calrow-s">${esc(sub)}</span>` : ''}
     </span>
-    <span class="grow">
-      <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">
-        ${e.time ? `<span style="color:var(--deep2)">${esc(calTimeLabel(e.time))}</span> ` : ''}${esc(e.title)}
-      </span>
-      <span class="tiny" style="display:block;margin-top:2px">
-        ${esc([e.sub || (k ? k.label : ''), e.where || '', who].filter(Boolean).join(', '))}
-      </span>
-    </span>
-    ${reading ? (e.go ? `<span class="chev">${icon('chev', 16, 'var(--faint)')}</span>` : '')
-        : `<span class="chev">${icon('chev', 16, 'var(--faint)')}</span>`}
   </button>`;
 }
 function calWeekBlock(who) {
@@ -63554,7 +63655,6 @@ function calWeekBlock(who) {
             byDay[e.date] = [];
         byDay[e.date].push(e);
     });
-    const busiest = Math.max(1, ...days.map((d) => (byDay[d] || []).length));
     return `
   <div class="calhead">
     <button class="calnav" data-calweek="-1" aria-label="Previous week">${icon('chev', 15, 'var(--deep)')}</button>
@@ -63562,35 +63662,34 @@ function calWeekBlock(who) {
     <button class="calnav next" data-calweek="1" aria-label="Next week">${icon('chev', 15, 'var(--deep)')}</button>
   </div>
   ${Number(store.calWeekShift) ? `
-    <button class="chip" style="margin:0 auto 8px;display:block" data-calweek="0">Back to this week</button>` : ''}
-  ${''}
-  <div class="calweekbar">
+    <button class="chip" style="margin:0 auto 9px;display:block" data-calweek="0">Back to this week</button>` : ''}
+  <div class="calweek">
     ${days.map((d) => {
-        const n = (byDay[d] || []).length;
-        const h = Math.round((n / busiest) * 22);
-        return `
-      <button class="calwb${d === today ? ' today' : ''}${d === (store.calDay || today) ? ' sel' : ''}"
-        data-calday="${esc(d)}" aria-label="${esc(calDayLabel(d, today))}, ${n} ${n === 1 ? 'thing' : 'things'}">
-        <span class="calwb-bar" style="height:${n ? Math.max(3, h) : 0}px"></span>
-        <span class="calwb-d">${esc(CAL_DOW[calParse(d).getDay()].slice(0, 1))}</span>
-        <span class="calwb-n">${calParse(d).getDate()}</span>
-      </button>`;
-    }).join('')}
-  </div>
-  ${days.map((d) => {
         const list = byDay[d] || [];
+        const p = calParse(d);
         return `
-    <p class="sect" style="margin-top:14px">${esc(calDayLabel(d, today))}</p>
-    ${list.length ? list.map((e) => calRow(e, today)).join('')
-            : `<p class="tiny" style="padding:2px 2px 6px">${esc(CAL_EMPTY_DAY)}</p>`}`;
-    }).join('')}`;
+      <div class="calwd${d === today ? ' today' : ''}">
+        <span class="calwd-h">
+          <span class="calwd-d">${esc(CAL_DOW[p.getDay()])}</span>
+          <span class="calwd-n">${p.getDate()}</span>
+        </span>
+        <span class="calwd-b">
+          ${''}
+          ${list.length ? list.map(calChipEl).join('') : '<span class="calwd-free"></span>'}
+        </span>
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 function calDayBlock(date, today, who) {
     const list = calOnDay(date, who);
     return `
-  <p class="sect" style="margin-top:14px">${esc(calDayLabel(date, today))}</p>
+  <div class="caldayhead">
+    <span class="caldayhead-d">${esc(calDayLabel(date, today))}</span>
+    ${list.length ? `<span class="caldayhead-n">${list.length} ${list.length === 1 ? 'thing' : 'things'}</span>` : ''}
+  </div>
   ${list.length ? list.map((e) => calRow(e, today)).join('')
-        : `<p class="tiny" style="padding:2px 2px 6px">${esc(CAL_EMPTY_DAY)}</p>`}`;
+        : `<p class="calwd-none">${esc(CAL_EMPTY_DAY)}</p>`}`;
 }
 function calGrid(who) {
     const today = calToday();
@@ -63615,6 +63714,7 @@ function calGrid(who) {
     <button class="calnav next" data-calshift="1" aria-label="Next month">${icon('chev', 15, 'var(--deep)')}</button>
   </div>
   ${Number(store.calShift) ? `<button class="chip" style="margin:0 auto 8px;display:block" data-calshift="0">Back to this month</button>` : ''}
+  <div class="calgridwrap">
   <div class="calgrid">
     ${CAL_DOW.map((d) => `<span class="caldow">${esc(d)}</span>`).join('')}
     ${cells.map((cell) => {
@@ -63625,16 +63725,19 @@ function calGrid(who) {
       <button class="calcell${cell.inMonth ? '' : ' out'}${isToday ? ' today' : ''}${isSel ? ' sel' : ''}"
         data-calday="${esc(cell.date)}" aria-label="${esc(calDayLabel(cell.date, today))}">
         <span class="caln">${calParse(cell.date).getDate()}</span>
-        <span class="caldots">
+        <span class="calbars">
           ${list.slice(0, 3).map((e) => {
             const col = calColorOf(e.who);
-            return `<span class="caldot${e.from === 'app' ? ' soft' : ''}"
-              style="background:${esc(col.dot)}"></span>`;
+            const reading = e.from === 'app';
+            return `<span class="calbar${reading ? ' soft' : ''}"
+              style="${reading ? 'color:' + esc(col.ink) : 'background:' + esc(col.dot)}"
+              >${esc(e.title)}</span>`;
         }).join('')}
-          ${list.length > 3 ? '<span class="calmore">+</span>' : ''}
+          ${list.length > 3 ? `<span class="calmore">+${list.length - 3} more</span>` : ''}
         </span>
       </button>`;
     }).join('')}
+  </div>
   </div>`;
 }
 function calDraft() {
@@ -63834,10 +63937,34 @@ function screenCalendar(c) {
     const tab = store.calTab || 'next';
     const sel = store.calDay || today;
     const editing = !!store.calEdit;
-    const mine = calEvents().length;
-    const whoChips = `
-    <div class="chips" style="margin:0 0 4px">
-      <button class="chip${who === 'all' ? ' on' : ''}" data-calfilter="all"
+    if (editing) {
+        return `
+    ${cornerLeaves()}
+    <div class="sc-head tight">
+      <button class="back" data-calcancel="1">${icon('back', 15, 'var(--deep)')} Back</button>
+      <h1 class="title sm">${esc(calEvents().some((e) => e.id === store.calEdit.id)
+            ? 'Edit this' : 'Something coming up')}</h1>
+    </div>
+    <div class="sc">${calEditor()}</div>`;
+    }
+    return `
+  ${cornerLeaves()}
+  <div class="sc-head tight">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+  </div>
+  <div class="sc">
+    <div class="calbar">
+      <div class="calscroll">
+        ${[{ id: 'next', label: 'Coming up' }, { id: 'week', label: 'Week' },
+        { id: 'month', label: 'Month' }, { id: 'past', label: 'Past' }].map((t) => `
+          <button class="chip${tab === t.id ? ' on' : ''}" data-sub="calTab" data-val="${esc(t.id)}"
+            aria-pressed="${tab === t.id}">${esc(t.label)}</button>`).join('')}
+      </div>
+      <button class="caladd" data-caladd="1" aria-label="Add something">
+        ${icon('plus', 18, '#fff')}</button>
+    </div>
+    <div class="calscroll calkey">
+      <button class="chip calchip${who === 'all' ? ' on' : ''}" data-calfilter="all"
         aria-pressed="${who === 'all'}">${esc(CAL_WHO_ALL)}</button>
       ${calWhoOptions().map((o) => {
         const col = calColorOf(o.id);
@@ -63846,57 +63973,40 @@ function screenCalendar(c) {
           aria-pressed="${who === o.id}">
           <span class="caldot" style="background:${esc(col.dot)}"></span>${esc(o.label)}</button>`;
     }).join('')}
-    </div>`;
-    const next30 = calAllIn(today, calAddDays(today, 45), who);
-    const days = [];
-    next30.forEach((e) => { if (days.indexOf(e.date) === -1)
-        days.push(e.date); });
-    return `
-  ${cornerLeaves()}
-  <div class="sc-head">
-    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
-    <h1 class="title sm">${esc(CAL_TITLE)}</h1>
-    <p class="sub">${esc(CAL_SUB)}</p>
-  </div>
-  <div class="sc">
-    ${editing ? calEditor() : `
-    <button class="btn" style="width:100%" data-caladd="1">
-      ${icon('plus', 15, '#fff')} Add something</button>`}
-    ${editing ? '' : `
-    <div style="margin-top:13px">${subTabs('calTab', tab, [
-        { id: 'next', label: 'Coming up' },
-        { id: 'week', label: 'This week' },
-        { id: 'month', label: 'The month' },
-        { id: 'past', label: 'Already happened' },
-    ])}</div>
-    ${whoChips}
+    </div>
     ${tab === 'week' ? calWeekBlock(who)
         : tab === 'month' ? `
       ${calGrid(who)}
       ${calDayBlock(sel, today, who)}
     ` : tab === 'past' ? `
-      <p class="tiny" style="margin:6px 0 2px">${esc(CAL_PAST_NOTE)}</p>
+      <p class="tiny" style="margin:10px 0 2px">${esc(CAL_PAST_NOTE)}</p>
       ${(() => {
             const past = calAllIn(calAddDays(today, -400), calAddDays(today, -1), who).reverse();
             if (!past.length)
-                return `<p class="tiny" style="padding:8px 2px">Nothing yet.</p>`;
-            return past.slice(0, 60).map((e) => `
-          <p class="sect" style="margin-top:12px">${esc(calDayLabel(e.date, today))}</p>
-          ${calRow(e, today)}`).join('');
+                return `<p class="calwd-none">Nothing yet.</p>`;
+            const days = [];
+            past.forEach((e) => { if (days.indexOf(e.date) === -1)
+                days.push(e.date); });
+            return days.slice(0, 40).map((d) => calDayBlock(d, today, who)).join('');
         })()}
-    ` : `
-      ${days.length ? days.map((d) => calDayBlock(d, today, who)).join('') : `
-      <div class="card flat" style="margin-top:12px">
-        <p class="eyebrow">${esc(CAL_EMPTY_ALL.title)}</p>
-        <p class="bodytext" style="margin-top:6px">${esc(CAL_EMPTY_ALL.body)}</p>
-      </div>`}
-    `}
+    ` : (() => {
+            const next = calAllIn(today, calAddDays(today, 45), who);
+            const days = [];
+            next.forEach((e) => { if (days.indexOf(e.date) === -1)
+                days.push(e.date); });
+            if (!days.length) {
+                return `
+        <div class="card flat" style="margin-top:12px">
+          <p class="eyebrow">${esc(CAL_EMPTY_ALL.title)}</p>
+          <p class="bodytext" style="margin-top:6px">${esc(CAL_EMPTY_ALL.body)}</p>
+        </div>`;
+            }
+            return days.map((d) => calDayBlock(d, today, who)).join('');
+        })()}
     ${calFeedsBlock()}
     ${calSubscribeBlock()}
-    ${mine ? '' : ''}
     <p class="disclaimer">Nothing on this calendar is shared outside your house, and nothing here
       ever goes to the community.</p>
-    `}
   </div>`;
 }
 function screenHome(c) {
@@ -64968,11 +65078,14 @@ function screenChild(c) {
     ${kid && !editing ? `
     <button class="bigface facebtn" data-edit="${esc(kid.id)}" aria-label="Edit ${esc(first)}'s details">
       ${faceHTML(v.photo, 84, c.growth ? c.growth.order : 2)}
-    </button>
-    <p class="tapedit">Tap to edit details</p>` : `
+    </button>` : `
     <div class="bigface">${faceHTML(v.photo, 84, c.growth ? c.growth.order : 2)}</div>`}
     <h1 class="title" style="margin-top:8px">${esc(name)}</h1>
     <p class="sub">${esc(c.summary.label || 'Add a birthday')}${c.stage ? ' &middot; ' + esc(c.stage.label) : ''}</p>
+    ${''}
+    ${kid && !editing ? `
+    <button class="btn ghost sm" style="margin:10px auto 0;display:flex"
+      data-edit="${esc(kid.id)}">${icon('star', 14, 'var(--deep)')} Edit ${esc(first)}</button>` : ''}
   </div>
   <div class="sc">
     ${kid ? `
