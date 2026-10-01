@@ -129,37 +129,134 @@ export const BLOCK_NOTE =
  * which rules cannot do.
  * ------------------------------------------------------------------ */
 
-const RE_EMAIL = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i;
-/* Ten digits with anything or nothing between the groups, which catches
-   555-123-4567, 555.123.4567, (555) 123 4567 and 5551234567. */
-const RE_PHONE = /[0-9]{3}[^a-zA-Z0-9]?[0-9]{3}[^a-zA-Z0-9]?[0-9]{4}/;
-/* A number next to a unit. Deliberately not matching "2 doses" or
-   "10 minutes", only the units a medicine is measured in. */
-const RE_DOSE = /[0-9]\s?(mg|mcg|ml|cc)\b/i;
+/* THE SHORT LIST. Chlorine dioxide sold as a cure, homemade infant
+   formula, and raw milk for a baby. The FDA and the CDC are explicit
+   about all 3 and children have been hospitalized by all 3. */
+const RE_MMS = /\b(mms|miracle mineral|chlorine dioxide|cd protocol)\b/i;
+const RE_HOMEMADE_FORMULA = /\b(homemade|home made|diy|make your own)\s+(infant\s+)?formula\b|\bformula\s+recipe\b|\bgoat milk formula\b/i;
+const RE_RAW_MILK = /\braw (cow'?s? )?milk\b|\bunpasteuri[sz]ed milk\b/i;
 
+/* Unsafe sleep and skipping newborn care. HELD, not removed. */
+const RE_UNSAFE_SLEEP = /\b(stomach sleep|sleep on (their|his|her) (stomach|tummy|front)|tummy sleep|crib bumper|inclined sleeper|rock ?n ?play|weighted (sleep ?sack|swaddle|blanket)|loose blanket in the crib)\b/i;
+/* The verb and the treatment within a sentence of each other. The verb
+   endings matter: declined, refusing and skipping are how people
+   actually write this, and \b after the stem missed all 3. */
+const RE_SKIP_NEWBORN = /\b(skip(ped|ping)?|declin(e|ed|ing)|refus(e|ed|ing)|say(ing)? no to|turn(ed)? down|do(?:n'?t| not| not ever) (?:get|do|let them|allow))\b[^.!?]{0,60}\b(vitamin k|vit k|eye ointment|erythromycin|newborn screen|heel prick|hep ?b|hepatitis b)\b/i;
+
+/* A dose or a regimen aimed at somebody else's child. */
+const RE_DOSE = /[0-9]\s?(mg|mcg|ml|cc)\b/i;
+const RE_ADULT_MED = /\b(benadryl|melatonin|nyquil|ibuprofen|motrin|tylenol|acetaminophen|essential oils?)\b[^.!?]{0,40}\b(baby|infant|newborn|toddler|month old)\b/i;
+
+/* Crisis and struggle. SUPPORT, never removed and never hidden. */
+/* DELIBERATELY GENEROUS. A false positive here shows a support card on
+   a post that stays exactly where it is, which costs almost nothing. A
+   miss costs somebody being met at the worst moment of their life, so
+   this leans hard toward catching it. Written out long rather than
+   clever, because every contraction and every "do not" spelling is a
+   real way somebody types this at 3am. */
+const RE_CRISIS = new RegExp([
+  'want(ing)? to die',
+  '(do ?n.t|do not|dont) want to (be here|wake up|do this)',
+  "(don'?t|do not|dont) want to be here",
+  'not want(ing)? to be here',
+  'end it all',
+  'better off without me',
+  '(they|everyone|my (kids|family)) would be better off',
+  'kill(ing)? myself',
+  '(can.?t|cannot|can not) (do|keep doing) this an?y ?more',
+  '(can.?t|cannot|can not) go on',
+  'no reason to (be here|keep going)',
+  'disappear and never come back',
+  'give up on everything',
+].join('|'), 'i');
+const RE_STRUGGLE = /\b(postpartum depression|post ?partum anxiety|ppd\b|ppa\b|intrusive thoughts|scared of what i might|afraid of (myself|my own anger|what i)|shaking (him|her|them)|resent (my|the) baby|do(?:n'?t| not) feel anything for)\b/i;
+const RE_ABUSE = /\b(hits? (him|her|them|my (son|daughter|kid))|hurting (him|her|them)|is not safe at home|beats? (him|her|them)|cps\b|child protective)\b/i;
+
+/* Contact details, people named, and selling. */
+const RE_EMAIL = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i;
+const RE_PHONE = /[0-9]{3}[^a-zA-Z0-9]?[0-9]{3}[^a-zA-Z0-9]?[0-9]{4}/;
+const RE_ADDRESS = /\b\d{1,5}\s+[A-Z][a-z]+\s+(street|st|road|rd|avenue|ave|lane|ln|drive|dr|court|ct|way)\b/;
+const RE_SELLING = /\b(dm me|message me to (buy|order)|my shop|use my code|discount code|affiliate|link in bio|join my team|\$\d+ ?(a|per) (month|session))\b/i;
+const RE_SPAM = /(https?:\/\/[^\s]+){3,}/i;
+const RE_HARASS = /\b(you are a (terrible|awful|bad|disgusting) (mother|mom|parent)|shut up|nobody asked|kill yourself|you deserve)\b/i;
+
+/* THE ORDER MATTERS AND IT IS NOT THE ORDER OF THE LIST.
+
+   Crisis and struggle are checked BEFORE anything that could remove or
+   hide a post, so a parent writing "I have intrusive thoughts about
+   shaking him and I am terrified" is met rather than filtered. That
+   sentence trips the abuse pattern too. Checking support first is what
+   makes the difference between help and punishment. */
 export function filterVerdict(body) {
   const b = String(body || '');
-  if (RE_DOSE.test(b)) return 'dose';
-  if (RE_EMAIL.test(b) || RE_PHONE.test(b)) return 'contact';
+
+  if (RE_CRISIS.test(b)) return 'crisisLanguage';
+  if (RE_STRUGGLE.test(b)) return 'postpartumStruggle';
+  if (RE_ABUSE.test(b)) return 'abuseDisclosure';
+
+  if (RE_MMS.test(b) || RE_HOMEMADE_FORMULA.test(b) || RE_RAW_MILK.test(b)) return 'lethalAdvice';
+  if (RE_HARASS.test(b)) return 'targetedHarassment';
+  if (RE_SPAM.test(b)) return 'spamAndScams';
+
+  if (RE_UNSAFE_SLEEP.test(b)) return 'unsafeSleepAdvice';
+  if (RE_SKIP_NEWBORN.test(b)) return 'skippingNewbornCare';
+  if (RE_DOSE.test(b) || RE_ADULT_MED.test(b)) return 'dosingAndSubstances';
+  if (RE_EMAIL.test(b) || RE_PHONE.test(b) || RE_ADDRESS.test(b)) return 'personalDetails';
+  if (RE_SELLING.test(b)) return 'sellingSomething';
   return '';
+}
+
+/* What a verdict actually does. Unknown verdicts hold rather than
+   remove, so a rule added carelessly later cannot start deleting
+   people's posts. */
+export function filterAction(verdict) {
+  if (!verdict) return 'live';
+  const f = FILTER_FLAGS.list.filter((x) => x.id === verdict)[0];
+  return f ? f.action : 'hold';
+}
+
+/* Filled in at boot so this file does not have to import across itself.
+   See communityRules.js for the list it points at. A plain object
+   rather than a let, because the build strips module syntax and an
+   exported binding that gets reassigned does not survive that. */
+export const FILTER_FLAGS = { list: [] };
+export function setFilterFlags(list) {
+  FILTER_FLAGS.list = Array.isArray(list) ? list : [];
+}
+
+/* The short, specific phrase shown back to somebody in a notice, so it
+   says what tripped rather than only which rule. */
+export function filterTrigger(verdict) {
+  const map = {
+    lethalAdvice: 'advice that has hospitalized babies, such as chlorine dioxide, homemade formula or raw milk',
+    unsafeSleepAdvice: 'a sleep setup that is not considered safe for a baby',
+    skippingNewbornCare: 'telling another parent to decline a newborn treatment',
+    dosingAndSubstances: 'a dose or a medicine aimed at somebody else\'s child',
+    personalDetails: 'contact details, such as a phone number, an email address or a street address',
+    targetedHarassment: 'language aimed at another member',
+    spamAndScams: 'repeated links',
+    sellingSomething: 'something being sold or promoted',
+    childPhoto: 'a photo that may include a child who is not yours',
+    possibleMinor: 'something suggesting the account may not belong to an adult',
+    namingAnAbuser: 'a named person described as having hurt somebody',
+  };
+  return map[verdict] || '';
 }
 
 export function filterReason(verdict) {
-  if (verdict === 'dose') {
-    return 'This mentions a dose, so it gets read by a person before it goes up. That usually '
-      + 'takes a day and most of them go up exactly as written.';
-  }
-  if (verdict === 'contact') {
-    return 'This looks like it has a phone number or an email address in it, so it gets read by '
-      + 'a person before it goes up. Sharing contact details in an open room rarely ends well.';
-  }
-  return '';
+  const f = FILTER_FLAGS.list.filter((x) => x.id === verdict)[0];
+  return f ? f.why : '';
 }
 
 /* Which status a new post should carry. The rules check this again on
-   arrival, so an app that lied about it would simply be refused. */
+   arrival, so an app that lied about it would simply be refused.
+
+   A support verdict goes LIVE. That is the whole point of it. */
 export function statusFor(body) {
-  return filterVerdict(body) ? FEED_STATUS.held : FEED_STATUS.live;
+  const a = filterAction(filterVerdict(body));
+  if (a === 'remove') return FEED_STATUS.removed;
+  if (a === 'hold') return FEED_STATUS.held;
+  return FEED_STATUS.live;
 }
 
 /* ------------------------------------------------------------------
