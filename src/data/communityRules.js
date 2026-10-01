@@ -182,6 +182,16 @@ export const CR_RULES = [
    than one gets the most serious answer rather than the first match. */
 export const CR_FLAGS = [
   {
+    id: 'vaccineDebate',
+    action: 'hold',
+    what: 'The post argues for or against vaccines, posts studies at somebody, or tells another '
+      + 'parent what to do about their own child\'s shots. Saying what happened at your own '
+      + 'appointment, asking what to expect, or saying you are nervous is not this.',
+    why: 'The argument never changes anybody\'s mind and it reliably ends the room for everybody '
+      + 'else. Held rather than removed, because the line between asking and arguing is a judgment '
+      + 'a person should make.',
+  },
+  {
     id: 'lethalAdvice',
     action: 'remove',
     what: 'The post gives another person instructions involving Miracle Mineral Solution, MMS, '
@@ -554,8 +564,90 @@ export const CR_SOURCES = [
     url: 'https://childhelphotline.org/' },
 ];
 
+/* ==================================================================
+   VACCINES, AND THE ONE DIAL SHE MAY WANT TO TURN
+
+   Her words: "also no talk about vaccinations and stuff like that.
+   They can talk to their provider about that but that's a huge topic
+   that causes arguements etc."
+
+   She is right about the arguments. A vaccine thread in a parenting
+   forum is the single most reliable way to lose a room, and no parent
+   has ever been persuaded of anything by one.
+
+   BUT A FLAT BAN CATCHES THE WRONG POSTS TOO. "Did anyone else's baby
+   run a fever after the 2 month shots" is not an argument, it is a
+   frightened parent at 11pm. So is "which pharmacy does them", and so
+   is "we are behind because we moved, is anyone else". Removing those
+   reads as arbitrary and is the kind of thing that makes people stop
+   posting at all.
+
+   SO THE DEFAULT IS 'debate': the arguing goes, the ordinary parent
+   talk stays, and everything vaccine shaped points at the app's own
+   sourced vaccine pages and at their provider.
+
+   If she wants the flat ban instead, this is the only line to change.
+   Set it to 'all' and anything mentioning vaccines at all is held. */
+export const CR_VACCINE_MODE = 'debate';   // 'debate' or 'all'
+
+export const CR_VACCINE_RULE = {
+  id: 'vaccineTalk',
+  title: 'Ask about the appointment, not the argument',
+  body: 'The practical side is welcome and always will be. A fever afterward, a sore leg, what to '
+    + 'expect, when to call, catching up after a move, being nervous about tomorrow. What does not '
+    + 'happen here is the argument. No making the case for or against, no posting studies at each '
+    + 'other, and no telling another parent what to do with their child.',
+  why: 'The argument has ended more parenting groups than every other topic combined and has never '
+    + 'once changed somebody\'s mind. The practical questions are the opposite: they are how a '
+    + 'parent finds out that the thing they half remember about Tylenol is the wrong way round.',
+};
+
+/* THE REASON THE PRACTICAL HALF STAYS.
+
+   She made the case for this herself and she was right, even though
+   the example she reached for has the rule backwards, which is rather
+   the point. A great many parents believe you must not give Tylenol
+   AFTER shots. The real caution is about giving it BEFORE, to head off
+   a fever that has not happened. So a parent holding the common
+   version leaves a miserable baby untreated all night for no reason,
+   and the only place that gets corrected is a room where the question
+   is allowed to be asked. See VAX_AFTER_TYLENOL in vaccines.js. */
+export const CR_VACCINE_WELCOME = [
+  'A fever, a sore leg, or a fussy evening afterward, and what helped yours.',
+  'What to expect at an appointment, or that you are dreading it.',
+  'Being behind on the schedule, and how other people caught up.',
+  'What a reaction looked like for your own child.',
+  'Asking when something is worth a phone call.',
+];
+
+export const CR_VACCINE_ALL_BODY =
+  'Vaccines do not get discussed here at all, in either direction. It is not that the question does '
+  + 'not matter, it is that it matters too much to be settled by strangers. Your provider can see '
+  + 'your child and we cannot, and the app has its own pages on what the evidence says.';
+
+/* Where a held vaccine post is pointed instead of simply being stopped. */
+export const CR_VACCINE_SEND = {
+  label: 'What the evidence says',
+  screen: 'vaccines',
+  line: 'The app has its own pages on this, with the sources attached, and your pediatrician can '
+    + 'answer for your actual child in a way a forum never can.',
+};
+
+export function crVaccineRule() {
+  return CR_VACCINE_MODE === 'all'
+    ? Object.assign({}, CR_VACCINE_RULE, { body: CR_VACCINE_ALL_BODY })
+    : CR_VACCINE_RULE;
+}
+
 export function crRule(id) {
+  if (id === 'vaccineTalk') return crVaccineRule();
   return CR_RULES.filter((r) => r.id === id)[0] || null;
+}
+
+/* The rules as shown, with the vaccine one in place. Kept out of the
+   array itself so its wording can follow the dial above. */
+export function crRulesAll() {
+  return CR_RULES.concat([crVaccineRule()]);
 }
 
 export function crFlag(id) {

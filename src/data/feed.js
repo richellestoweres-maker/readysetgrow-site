@@ -172,6 +172,93 @@ const RE_CRISIS = new RegExp([
 const RE_STRUGGLE = /\b(postpartum depression|post ?partum anxiety|ppd\b|ppa\b|intrusive thoughts|scared of what i might|afraid of (myself|my own anger|what i)|shaking (him|her|them)|resent (my|the) baby|do(?:n'?t| not) feel anything for)\b/i;
 const RE_ABUSE = /\b(hits? (him|her|them|my (son|daughter|kid))|hurting (him|her|them)|is not safe at home|beats? (him|her|them)|cps\b|child protective)\b/i;
 
+/* VACCINES.
+
+   Which half of this fires depends on CR_VACCINE_MODE in
+   communityRules.js. In 'debate', which is the default, the mention on
+   its own is fine and only the arguing is caught. In 'all', any
+   mention is held.
+
+   The argument patterns are what an argument actually looks like in a
+   parenting forum: a claim about what shots cause, a verb aimed at
+   another parent, a study being waved, or one of the words that only
+   ever appears when a fight is already underway. */
+/* "jab" is the other word people use, and it turns up far more often
+   in the argument than in a question about a sore leg. */
+const RE_VAX_MENTION = new RegExp([
+  'jabs?\\b',
+  'vaccin\\w*',
+  'immuni[sz]\\w*',
+  'mmr\\b', 'dtap\\b', 'hep ?b\\b', 'rotavirus', 'varicella', 'tdap\\b',
+  'flu shot', 'covid (shot|vax|vaccine)', 'booster',
+  /* "shots" on its own only counts when it is clearly the medical kind,
+     so a post about shots of espresso is left alone. */
+  '\\bshots?\\b[^.!?]{0,30}\\b(baby|babies|infant|toddler|appointment|pediatrician|well ?(child|baby)|month)',
+  '\\b(baby|babies|infant|toddler|appointment|pediatrician|well ?(child|baby)|\\d+ month)\\b[^.!?]{0,30}\\bshots?\\b',
+].join('|'), 'i');
+/* WHAT IS NOT AN ARGUMENT, checked first and allowed through.
+
+   The practical half of this topic is explicitly welcome, so a post
+   that is plainly about aftercare is never read as a fight even if it
+   contains a word the fight patterns watch for. A sore leg is a sore
+   leg. */
+const RE_VAX_AFTERCARE = new RegExp([
+  '(fever|sore|swollen|swelling|fussy|crying|rash|lump|red|warm)[^.!?]{0,60}\\b(shot|shots|jab|vaccin\\w*|mmr|dtap|appointment)',
+  '\\b(shot|shots|jab|vaccin\\w*|mmr|dtap|appointment)[^.!?]{0,60}(fever|sore|swollen|swelling|fussy|crying|rash|lump|limp|not eating)',
+  '(what|how) (should i|do i|long|many)[^.!?]{0,60}(shot|shots|jab|vaccin\\w*)',
+  'how many (shots|jabs)',
+  /* Being frightened of the appointment is a practical feeling, not a
+     position, so it is read as the practical half in any word order. */
+  '(nervous|dreading|anxious|worried|scared)[^.!?]{0,40}(shot|shots|jab|vaccin\\w*|appointment)',
+  '(shot|shots|jab|vaccin\\w*|appointment)[^.!?]{0,40}(nervous|dreading|anxious|worried|scared)',
+  'behind on (the )?(schedule|shots|vaccin\\w*)',
+  'catch(ing)? up on[^.!?]{0,40}(shots|jabs|vaccin\\w*|schedule|appointments?)',
+  'missed[^.!?]{0,30}(appointments?|shots|jabs|vaccin\\w*)',
+].join('|'), 'i');
+
+/* THE ARGUMENT, IN BOTH DIRECTIONS.
+
+   Worth saying out loud: the patterns here are deliberately symmetric.
+   A post telling a parent they are a danger to other children for not
+   vaccinating is the same fight as a post telling them the shots are
+   poison, and it comes down the same way. The room is not taking a
+   side, it is declining to host the fight. */
+const RE_VAX_FIGHT = new RegExp([
+  'vaccines? (cause|caused|causing|lead to|give|gave)',
+  '(autism|sids|infertility|shedding|myocarditis)[^.!?]{0,40}(vaccin|shot|jab)',
+  '(vaccin|shot|jab)[^.!?]{0,40}(autism|aluminum|mercury|thimerosal|graphene|spike protein)',
+  '(you|parents|moms?) (should|need to|have to|must) (not )?(get|vaccinate|delay|space)',
+  "do(?:n'?t| not)?( let them| let anyone| let him| let her)? "
+    + "(vaccinate|get the shots?|get the jabs?|give (her|him|them|my \\w+) the (shot|jab))",
+  "(never|refus\\w+|wont|will not) (let|letting|have|having|get|getting|be)"
+    + "[^.!?]{0,30}(vaccinat\\w*|jabbed|the jab|the shots?)",
+  '(jab|shot)s? (cause|caused|causing|are poison|are dangerous|are unnecessary)',
+  '(un ?vaxx?ed|anti ?vax|pro ?vax|vax(x)?ed)',
+  '(sheep|brainwashed|do your research|wake up|big pharma)',
+  '(study|studies|paper|data|research) (shows?|proves?|prov(ing|ed)|found)[^.!?]{0,40}(vaccin|shot|jab)',
+  '(jab|jabs|vaccin\\w*|shots?)[^.!?]{0,30}(are|is) (unnecessary|useless|poison|poisonous|dangerous|harmful|a scam)',
+  '(poison(?! control)|toxin|toxic|unnecessary|useless)[^.!?]{0,30}(jab|jabs|vaccin\\w*|shots?)',
+  /* And the same thing aimed the other way, at the parent who said no. */
+  "(anyone|anybody|people|parents|moms?|those) who (do(es)? not|do ?n'?t|refuse\\w*|wont|will not|choose not)"
+    + '[^.!?]{0,50}(vaccinat\\w*|jab|shots?|immuni)',
+  '(danger|selfish|negligent|child abuse|should be reported|should not be allowed|keep them home)'
+    + '[^.!?]{0,40}(un ?vaxx?ed|not vaccinat\\w*|no shots)',
+].join('|'), 'i');
+
+/* THE SOFTER END, WHICH ONLY COUNTS WHEN THE POST IS NOT PRACTICAL.
+
+   This is what the aftercare check is actually FOR. A parent writing
+   "we spaced hers out and she still ran a fever after her shots" is
+   asking about a fever. A parent writing "spacing them out is safer,
+   here is why" is making the case. Same words, different post, and the
+   only thing that separates them is whether the practical half of the
+   sentence is there. */
+const RE_VAX_LEAN = new RegExp([
+  'delay(ed|ing)? schedule|alternative schedule|spacing them out|spread them out',
+  'informed consent[^.!?]{0,30}(vaccin|shot|jab)',
+  '(selective|split) (vaccin\\w*|schedule)',
+].join('|'), 'i');
+
 /* Contact details, people named, and selling. */
 const RE_EMAIL = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i;
 const RE_PHONE = /[0-9]{3}[^a-zA-Z0-9]?[0-9]{3}[^a-zA-Z0-9]?[0-9]{4}/;
@@ -197,6 +284,21 @@ export function filterVerdict(body) {
   if (RE_MMS.test(b) || RE_HOMEMADE_FORMULA.test(b) || RE_RAW_MILK.test(b)) return 'lethalAdvice';
   if (RE_HARASS.test(b)) return 'targetedHarassment';
   if (RE_SPAM.test(b)) return 'spamAndScams';
+
+  /* THE VACCINE TOPIC, WHICH IS HALF OPEN ON PURPOSE.
+
+     'debate' is the setting the room runs on. The argument is held in
+     either direction, the practical side is welcome and stays up.
+     'all' is the panic switch, and it closes the topic completely,
+     practical questions included. It exists so the whole thing can be
+     shut in 1 line if the room is ever flooded, and it is off.
+
+     The fight patterns are checked ahead of the other holds, because a
+     vaccine argument that also happens to mention a dose should read
+     as the argument it is. */
+  if (FILTER_MODE.vaccine === 'all' && RE_VAX_MENTION.test(b)) return 'vaccineDebate';
+  if (RE_VAX_FIGHT.test(b)) return 'vaccineDebate';
+  if (!RE_VAX_AFTERCARE.test(b) && RE_VAX_LEAN.test(b)) return 'vaccineDebate';
 
   if (RE_UNSAFE_SLEEP.test(b)) return 'unsafeSleepAdvice';
   if (RE_SKIP_NEWBORN.test(b)) return 'skippingNewbornCare';
@@ -224,6 +326,13 @@ export function setFilterFlags(list) {
   FILTER_FLAGS.list = Array.isArray(list) ? list : [];
 }
 
+/* How wide the vaccine net is. Set at boot from CR_VACCINE_MODE so
+   there is still only 1 line to change. */
+export const FILTER_MODE = { vaccine: 'debate' };
+export function setFilterMode(vaccine) {
+  FILTER_MODE.vaccine = vaccine === 'all' ? 'all' : 'debate';
+}
+
 /* The short, specific phrase shown back to somebody in a notice, so it
    says what tripped rather than only which rule. */
 export function filterTrigger(verdict) {
@@ -239,6 +348,7 @@ export function filterTrigger(verdict) {
     childPhoto: 'a photo that may include a child who is not yours',
     possibleMinor: 'something suggesting the account may not belong to an adult',
     namingAnAbuser: 'a named person described as having hurt somebody',
+    vaccineDebate: 'the vaccine argument, which this room does not host in either direction',
   };
   return map[verdict] || '';
 }

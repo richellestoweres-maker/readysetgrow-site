@@ -308,3 +308,110 @@ export function getAllVaccineSources() {
 }
 
 export default COMMON_QUESTIONS;
+
+/* ==================================================================
+   AFTER THE SHOTS
+
+   She asked for this, and the reason she gave is the reason it needed
+   checking rather than writing: "if a child does have a fever after
+   they're not supposed to give tylenol etc."
+
+   That is the widely held version and it is the wrong way round, which
+   is exactly why it belongs in the app in plain words.
+
+   WHAT THE EVIDENCE ACTUALLY SAYS. The caution is about giving a pain
+   reliever BEFORE or at the time of the appointment to head off a
+   fever that has not happened. Prymula and colleagues, in the Lancet
+   in 2009, found lower antibody responses in children given
+   paracetamol prophylactically, though most of those children still
+   had levels inside the protective range. The CDC removed its
+   recommendation for routine antipyretics before vaccination on the
+   back of that work.
+
+   TREATING A FEVER THAT HAS ALREADY ARRIVED IS A DIFFERENT THING, and
+   the CDC's own after the shots page tells parents to ask their
+   child's doctor about a non aspirin pain reliever. So a baby who is
+   genuinely uncomfortable at 9pm does not have to be left that way.
+
+   THE HARM OF GETTING THIS BACKWARD IS REAL. A parent who believes no
+   Tylenol after shots will leave a miserable baby untreated all night
+   for no benefit. That is why this is here and why the forum is
+   allowed to talk about it.
+   ================================================================== */
+
+export const VAX_AFTER_TITLE = 'After the shots';
+
+export const VAX_AFTER_SUB =
+  'What is ordinary, what helps, and the thing about Tylenol that nearly everybody has the wrong '
+  + 'way round.';
+
+export const VAX_AFTER_NORMAL = {
+  title: 'What is ordinary in the first day or 2',
+  items: [
+    'A sore, red or slightly swollen leg or arm where the shot went in.',
+    'A low fever.',
+    'Being fussier than usual, sleeping more than usual, or both in the same evening.',
+    'Eating less for about 24 hours. Plenty of children do and it passes.',
+    'With some vaccines, such as MMR and varicella, a fever or a mild rash can turn up a week or 2 '
+      + 'later instead of the same day, which catches people out.',
+  ],
+};
+
+export const VAX_AFTER_HELPS = {
+  title: 'What actually helps',
+  items: [
+    'A cool, damp cloth on the spot where the shot was given, for the soreness and the swelling.',
+    'A lukewarm sponge bath for a fever, which is the CDC\'s own suggestion.',
+    'Offering liquids more often than usual.',
+    'Moving the leg or arm gently, such as during a diaper change, rather than leaving it still.',
+    'Extra holding. Nobody has ever been spoiled by being held after being stuck with a needle.',
+  ],
+};
+
+/* The one that is worth reading twice. */
+export const VAX_AFTER_TYLENOL = {
+  title: 'The Tylenol question, which is the wrong way round almost everywhere',
+  body: [
+    'The thing people half remember is real, and it is about BEFORE rather than after. Giving a pain '
+      + 'reliever ahead of the appointment to prevent a fever that has not happened is no longer '
+      + 'recommended. A 2009 trial found that children given paracetamol that way had lower antibody '
+      + 'responses to several of the vaccine antigens, although most of them still ended up inside '
+      + 'the protective range. The CDC dropped its recommendation for routine use beforehand on the '
+      + 'strength of that.',
+    'Treating a fever or real discomfort that has actually arrived is a different question, and the '
+      + 'CDC\'s own page on caring for a child after shots tells parents to ask their doctor about a '
+      + 'non aspirin pain reliever. So a baby who is genuinely miserable at 9pm does not have to be '
+      + 'left that way out of a half remembered rule.',
+    'The practical version: do not pre medicate to prevent something, do ask your pediatrician what '
+      + 'to give and how much if your child is actually uncomfortable, and never aspirin for a child.',
+  ],
+};
+
+export const VAX_AFTER_CALL = {
+  title: 'When to call rather than wait it out',
+  items: [
+    'Any fever at all in a baby under 3 months, which is always a call whatever caused it.',
+    'A fever above 104 F.',
+    'A fever that starts more than 2 days after the appointment, or one that lasts more than 3 days, '
+      + 'because that is more likely to be something they caught than something they were given.',
+    'Crying that will not stop for more than about 3 hours.',
+    'Floppiness, unusual sleepiness you cannot rouse them from, or a seizure.',
+    'Swelling that keeps spreading, or a spot that is hot, hard and getting worse after 48 hours.',
+    'Any trouble breathing, swelling of the face or mouth, hives, or a child who looks very unwell. '
+      + 'That is 911 rather than a call.',
+  ],
+};
+
+export const VAX_AFTER_SOURCES = [
+  { org: 'CDC',
+    label: 'Before, during and after shots, including the cool damp cloth, the lukewarm sponge '
+      + 'bath, extra fluids, and asking your doctor about a non aspirin pain reliever',
+    url: 'https://www.cdc.gov/vaccines-children/before-during-after-shots/index.html' },
+  { org: 'AAP, HealthyChildren',
+    label: 'Vaccine side effects, including a fever above 104 F as a reason to call',
+    url: 'https://www.healthychildren.org/English/safety-prevention/immunizations/Pages/Vaccine-Side-Effects.aspx' },
+  { org: 'Contemporary Pediatrics',
+    label: 'On the CDC no longer recommending antipyretics before or at the time of vaccination, '
+      + 'and on the Prymula 2009 Lancet trial behind it',
+    url: 'https://www.contemporarypediatrics.com/view/no-more-antipyretics-vaccines' },
+];

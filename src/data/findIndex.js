@@ -64,6 +64,10 @@ export const FIND_INDEX = [
     words: 'feeding breastfeeding formula bottle bottles latch weight gain solids starting solids allergens baby led weaning milk' },
   { title: 'Diapers, how many you need', where: 'Child profile', go: { screen: 'diaperplan' },
     words: 'diapers nappies how many diapers sizes wet diapers' },
+  { title: 'After the shots', where: 'Child profile, Health', go: { screen: 'vaxafter' },
+    words: 'after shots after vaccines fever after shots sore leg after jab tylenol after shots '
+      + 'motrin after vaccines can i give tylenol before shots fussy after vaccines swelling lump '
+      + 'red leg jab reaction what to expect after immunizations' },
   { title: 'Sound machines and night lights', where: 'Child profile, Everyday care', go: { screen: 'nightlight' },
     words: 'hatch sound machine white noise night light nightlight ok to wake okay to wake toddler '
       + 'clock green means get up color changing afraid of the dark scared of the dark fear of the '
