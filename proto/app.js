@@ -3173,7 +3173,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3895,6 +3895,8 @@ function initControls() {
         willowAsk((live && live.ask) || 'Tell me about this.');
         return;
       }
+    } else if (t.dataset.hardtalk) {
+      hardTodayTalk();
     } else if (t.dataset.daykind !== undefined) {
       dayKindSet(t.dataset.daykind);
     } else if (t.dataset.forgo) {
@@ -4622,6 +4624,135 @@ function tipPottyGoing(kid) {
   return wins >= 6 && acc <= Math.max(1, Math.floor(wins / 4));
 }
 
+/* =================================================================
+   THE NIGHT A DAY WAS HARD
+
+   She filled in the check in for her son, said it had been a bad day,
+   and nothing came out to meet her. This is the fix.
+
+   It is deliberately not the same thing as the hardDays tip, which
+   notices a heavy WEEK and is about patterns and appointments. This
+   one is about tonight, it arrives the moment she saves, and it opens
+   with a question rather than with advice, because advice is the wrong
+   order at 8pm.
+   ================================================================= */
+
+/* Today's check in, if there is one, and whether any row was hard. */
+function hardTodayOf(kid) {
+  if (!kid || !kid.checkins) return null;
+  const entry = kid.checkins[ciToday()];
+  if (!entry || !entry.answers) return null;
+  const hit = hardDayFor(entry.answers);
+  if (!hit) return null;
+  return { hit: hit, note: String(entry.note || '').trim(), row: hardRowLabel(kid, hit.id) };
+}
+
+/* What the row she marked is actually called, taken from the check in
+   itself so the 2 can never drift apart. */
+function hardRowLabel(kid, rowId) {
+  const rows = checkinRows(getLenses((kid || {}).lenses || []));
+  const row = rows.filter((r) => r.id === rowId)[0];
+  if (!row) return '';
+  return row.id === 'general' ? '' : String(row.label || '').toLowerCase();
+}
+
+/* Willow's corner card for it. Written rather than generated, so it is
+   instant, and so it says the same thing whether or not the model is
+   reachable tonight. */
+function tipHardToday(c) {
+  const kid = activeChild();
+  const h = hardTodayOf(kid);
+  if (!h) return null;
+  const first = kid && kid.name ? kid.name.split(/\s+/)[0] : 'them';
+
+  /* TONIGHT COMES FIRST, BUT THE WEEK IS NOT THROWN AWAY.
+
+     She has just told the app the day was hard, so answering that is
+     the job. If it is also the 4th or 5th such day in a week, that is
+     worth her knowing, and it belongs on this card rather than as a
+     second card queued up behind it. The number is the real count, and
+     the sentence is careful: a run of hard days says something about
+     the week, not about the child. */
+  const run = tipHardDayCount(kid);
+  const runLine = run >= 4
+    ? 'That is ' + run + ' of the last 7, which is a heavy week and worth being able to say out loud '
+      + 'at the next appointment. It says something about the week rather than about ' + first + '.'
+    : '';
+
+  return {
+    id: 'hardToday',
+    title: h.row ? 'About ' + first + ' today' : HARD_DAY_TITLE,
+    lines: runLine ? [h.hit.card, runLine] : [h.hit.card],
+    ask: '',              /* she is asked a question rather than asking one */
+    talk: h.hit.opening,
+    link: { label: HARD_DAY_MORE, screen: 'checkins' },
+  };
+}
+
+/* Opening the conversation. Willow speaks first, which is the whole
+   point: she is the one checking in, so the parent is not made to
+   compose an opening line at the end of a day that went badly.
+
+   Nothing is sent to the model here. Her opening is written, the
+   thread is opened, and the parent types whatever they want to type. */
+function hardTodayTalk() {
+  const kid = activeChild();
+  const h = hardTodayOf(kid);
+  if (!h) return;
+  const key = willowThreadKey();
+  willowSay('willow', h.hit.opening, [], '', key);
+  /* Her note goes in as context so Willow is not asking about
+     something the parent has already written down. It is shown as
+     theirs, because it is. */
+  if (h.note) willowSay('you', h.note, [], '', key);
+  willow.open = true;
+  willow.stick = true;
+  tipHide('hardToday');
+}
+
+/* THE OTHER DOOR.
+
+   Some parents filling this in at the end of a bad day are not having
+   a hard parenting day. Offered quietly, at the bottom, once, and
+   worded so a merely tired parent is not treated as a case. */
+function crisisDoor() {
+  return `
+  <div class="card flat" style="margin-top:13px">
+    <p class="bodytext" style="margin:0">${esc(CRISIS_DOOR.line)}</p>
+    <ul class="dlist" style="margin-top:9px">${CRISIS_DOOR.when.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+    <button class="btn ghost sm" style="width:100%;margin-top:11px" data-go="screen" data-id="momnow">
+      Where to start</button>
+  </div>`;
+}
+
+/* What the check in screen shows underneath a day she marked hard.
+   The same material as the corner card, with the part the corner is
+   too small to hold. */
+function hardDayBlock(kid) {
+  const h = hardTodayOf(kid);
+  if (!h) return '';
+  const hit = h.hit;
+  return `
+  <p class="sect" style="margin-top:18px">${esc(HARD_DAY_MORE)}</p>
+  <div class="card leafy">
+    <p class="bodytext" style="margin:0">${esc(hit.card)}</p>
+  </div>
+  ${dsec('What is often going on', list(hit.likely))}
+  ${dsec('For the rest of tonight', list(hit.tonight))}
+  ${dsec('One thing for tomorrow', list(hit.tomorrow))}
+  <div class="dsec">
+    <h4>Worth knowing</h4>
+    ${/* The teaching moment she asked for by name. Given a surface of
+          its own because it is the part worth reading twice. */''}
+    <div class="card" style="background:var(--leaf3)">
+      <p class="bodytext" style="margin:0">${esc(hit.teaching)}</p>
+    </div>
+  </div>
+  <button class="btn ghost sm" style="width:100%" data-hardtalk="1">${esc(HARD_DAY_TALK)}</button>
+  ${crisisDoor()}
+  ${dsec('Sources', sourceRows(HARD_DAY_SOURCES))}`;
+}
+
 /* Which tip, if any, belongs on screen right now. Ordered by what
    matters most, so a fever always wins and nothing stacks up. */
 function tipLive(c) {
@@ -4642,6 +4773,14 @@ function tipLive(c) {
       link: TIP_FEVER.link,
       urgent: band ? band.urgency === 'emergency' || band.urgency === 'callNow' : false,
     };
+  }
+
+  /* Right after she says the day was hard. Above almost everything
+     else, because she has just told the app something and the app
+     answering an hour later is the same as not answering. */
+  if (!tipSeenToday('hardToday')) {
+    const ht = tipHardToday(c);
+    if (ht) return ht;
   }
 
   if (!tipSeenToday('napLate') && tipNapLate(c)) return tipFrom(TIP_NAP_LATE);
@@ -4707,8 +4846,11 @@ function tipBubble(c) {
       ${/* Short in the corner on purpose. The depth is one tap away,
             either in the chat or on the page it points at. */''}
       <p class="tip-l">${esc(t.lines[0])}</p>
+      ${t.lines[1] ? `<p class="tip-l" style="margin-top:7px">${esc(t.lines[1])}</p>` : ''}
       <div class="tip-go">
-        <button class="chip" data-tip="ask" data-id="${esc(t.id)}">Talk to me about it</button>
+        ${t.talk
+          ? `<button class="chip" data-hardtalk="1">${esc(HARD_DAY_TALK)}</button>`
+          : `<button class="chip" data-tip="ask" data-id="${esc(t.id)}">Talk to me about it</button>`}
         ${t.link ? `<button class="chip" data-tip="read" data-id="${esc(t.id)}"
           data-screen="${esc(t.link.screen || '')}"
           data-topic="${esc(t.link.topic || '')}">${esc(t.link.label)}</button>` : ''}
@@ -16630,6 +16772,10 @@ function screenCheckins(c) {
       : 'Nothing recorded yet'}</p>
   </div>
   <div class="sc">
+
+    ${/* Tonight comes before the history. She opened this screen from a
+          hard evening, so the month can wait. */''}
+    ${hardDayBlock(k)}
 
     ${!days.length ? `
     <p class="tiny" style="text-align:center;padding:6px 0">Check in from Home once and this fills in.</p>

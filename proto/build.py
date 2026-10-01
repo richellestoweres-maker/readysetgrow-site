@@ -119,6 +119,7 @@ order = [
     ('homeschool',          SRC/'data/homeschool.js'),
     ('learnLenses',         SRC/'data/learnLenses.js'),
     ('lensDays',            SRC/'data/lensDays.js'),
+    ('hardDay',             SRC/'data/hardDay.js'),
     ('firebaseConfig',      SRC/'data/firebaseConfig.js'),
 ]
 
