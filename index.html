@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-01 02:32">
+<meta name="rsg-build" content="2026-10-01 03:21">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1823,7 +1823,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-01 02:32';
+const BUILD_STAMP = '2026-10-01 03:21';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -16229,6 +16229,74 @@ function getAllVaccineSources() {
     });
     return out;
 }
+const VAX_AFTER_TITLE = 'After the shots';
+const VAX_AFTER_SUB = 'What is ordinary, what helps, and the thing about Tylenol that nearly everybody has the wrong '
+    + 'way round.';
+const VAX_AFTER_NORMAL = {
+    title: 'What is ordinary in the first day or 2',
+    items: [
+        'A sore, red or slightly swollen leg or arm where the shot went in.',
+        'A low fever.',
+        'Being fussier than usual, sleeping more than usual, or both in the same evening.',
+        'Eating less for about 24 hours. Plenty of children do and it passes.',
+        'With some vaccines, such as MMR and varicella, a fever or a mild rash can turn up a week or 2 '
+            + 'later instead of the same day, which catches people out.',
+    ],
+};
+const VAX_AFTER_HELPS = {
+    title: 'What actually helps',
+    items: [
+        'A cool, damp cloth on the spot where the shot was given, for the soreness and the swelling.',
+        'A lukewarm sponge bath for a fever, which is the CDC\'s own suggestion.',
+        'Offering liquids more often than usual.',
+        'Moving the leg or arm gently, such as during a diaper change, rather than leaving it still.',
+        'Extra holding. Nobody has ever been spoiled by being held after being stuck with a needle.',
+    ],
+};
+const VAX_AFTER_TYLENOL = {
+    title: 'The Tylenol question, which is the wrong way round almost everywhere',
+    body: [
+        'The thing people half remember is real, and it is about BEFORE rather than after. Giving a pain '
+            + 'reliever ahead of the appointment to prevent a fever that has not happened is no longer '
+            + 'recommended. A 2009 trial found that children given paracetamol that way had lower antibody '
+            + 'responses to several of the vaccine antigens, although most of them still ended up inside '
+            + 'the protective range. The CDC dropped its recommendation for routine use beforehand on the '
+            + 'strength of that.',
+        'Treating a fever or real discomfort that has actually arrived is a different question, and the '
+            + 'CDC\'s own page on caring for a child after shots tells parents to ask their doctor about a '
+            + 'non aspirin pain reliever. So a baby who is genuinely miserable at 9pm does not have to be '
+            + 'left that way out of a half remembered rule.',
+        'The practical version: do not pre medicate to prevent something, do ask your pediatrician what '
+            + 'to give and how much if your child is actually uncomfortable, and never aspirin for a child.',
+    ],
+};
+const VAX_AFTER_CALL = {
+    title: 'When to call rather than wait it out',
+    items: [
+        'Any fever at all in a baby under 3 months, which is always a call whatever caused it.',
+        'A fever above 104 F.',
+        'A fever that starts more than 2 days after the appointment, or one that lasts more than 3 days, '
+            + 'because that is more likely to be something they caught than something they were given.',
+        'Crying that will not stop for more than about 3 hours.',
+        'Floppiness, unusual sleepiness you cannot rouse them from, or a seizure.',
+        'Swelling that keeps spreading, or a spot that is hot, hard and getting worse after 48 hours.',
+        'Any trouble breathing, swelling of the face or mouth, hives, or a child who looks very unwell. '
+            + 'That is 911 rather than a call.',
+    ],
+};
+const VAX_AFTER_SOURCES = [
+    { org: 'CDC',
+        label: 'Before, during and after shots, including the cool damp cloth, the lukewarm sponge '
+            + 'bath, extra fluids, and asking your doctor about a non aspirin pain reliever',
+        url: 'https://www.cdc.gov/vaccines-children/before-during-after-shots/index.html' },
+    { org: 'AAP, HealthyChildren',
+        label: 'Vaccine side effects, including a fever above 104 F as a reason to call',
+        url: 'https://www.healthychildren.org/English/safety-prevention/immunizations/Pages/Vaccine-Side-Effects.aspx' },
+    { org: 'Contemporary Pediatrics',
+        label: 'On the CDC no longer recommending antipyretics before or at the time of vaccination, '
+            + 'and on the Prymula 2009 Lancet trial behind it',
+        url: 'https://www.contemporarypediatrics.com/view/no-more-antipyretics-vaccines' },
+];
 const CHECKIN_SCALE = [
     { id: 'hard', label: 'Hard', color: '#B5705C', tint: '#F7EDEA' },
     { id: 'mixed', label: 'Mixed', color: '#B0873F', tint: '#F7EFE2' },
@@ -18877,6 +18945,51 @@ const RE_CRISIS = new RegExp([
 ].join('|'), 'i');
 const RE_STRUGGLE = /\b(postpartum depression|post ?partum anxiety|ppd\b|ppa\b|intrusive thoughts|scared of what i might|afraid of (myself|my own anger|what i)|shaking (him|her|them)|resent (my|the) baby|do(?:n'?t| not) feel anything for)\b/i;
 const RE_ABUSE = /\b(hits? (him|her|them|my (son|daughter|kid))|hurting (him|her|them)|is not safe at home|beats? (him|her|them)|cps\b|child protective)\b/i;
+const RE_VAX_MENTION = new RegExp([
+    'jabs?\\b',
+    'vaccin\\w*',
+    'immuni[sz]\\w*',
+    'mmr\\b', 'dtap\\b', 'hep ?b\\b', 'rotavirus', 'varicella', 'tdap\\b',
+    'flu shot', 'covid (shot|vax|vaccine)', 'booster',
+    '\\bshots?\\b[^.!?]{0,30}\\b(baby|babies|infant|toddler|appointment|pediatrician|well ?(child|baby)|month)',
+    '\\b(baby|babies|infant|toddler|appointment|pediatrician|well ?(child|baby)|\\d+ month)\\b[^.!?]{0,30}\\bshots?\\b',
+].join('|'), 'i');
+const RE_VAX_AFTERCARE = new RegExp([
+    '(fever|sore|swollen|swelling|fussy|crying|rash|lump|red|warm)[^.!?]{0,60}\\b(shot|shots|jab|vaccin\\w*|mmr|dtap|appointment)',
+    '\\b(shot|shots|jab|vaccin\\w*|mmr|dtap|appointment)[^.!?]{0,60}(fever|sore|swollen|swelling|fussy|crying|rash|lump|limp|not eating)',
+    '(what|how) (should i|do i|long|many)[^.!?]{0,60}(shot|shots|jab|vaccin\\w*)',
+    'how many (shots|jabs)',
+    '(nervous|dreading|anxious|worried|scared)[^.!?]{0,40}(shot|shots|jab|vaccin\\w*|appointment)',
+    '(shot|shots|jab|vaccin\\w*|appointment)[^.!?]{0,40}(nervous|dreading|anxious|worried|scared)',
+    'behind on (the )?(schedule|shots|vaccin\\w*)',
+    'catch(ing)? up on[^.!?]{0,40}(shots|jabs|vaccin\\w*|schedule|appointments?)',
+    'missed[^.!?]{0,30}(appointments?|shots|jabs|vaccin\\w*)',
+].join('|'), 'i');
+const RE_VAX_FIGHT = new RegExp([
+    'vaccines? (cause|caused|causing|lead to|give|gave)',
+    '(autism|sids|infertility|shedding|myocarditis)[^.!?]{0,40}(vaccin|shot|jab)',
+    '(vaccin|shot|jab)[^.!?]{0,40}(autism|aluminum|mercury|thimerosal|graphene|spike protein)',
+    '(you|parents|moms?) (should|need to|have to|must) (not )?(get|vaccinate|delay|space)',
+    "do(?:n'?t| not)?( let them| let anyone| let him| let her)? "
+        + "(vaccinate|get the shots?|get the jabs?|give (her|him|them|my \\w+) the (shot|jab))",
+    "(never|refus\\w+|wont|will not) (let|letting|have|having|get|getting|be)"
+        + "[^.!?]{0,30}(vaccinat\\w*|jabbed|the jab|the shots?)",
+    '(jab|shot)s? (cause|caused|causing|are poison|are dangerous|are unnecessary)',
+    '(un ?vaxx?ed|anti ?vax|pro ?vax|vax(x)?ed)',
+    '(sheep|brainwashed|do your research|wake up|big pharma)',
+    '(study|studies|paper|data|research) (shows?|proves?|prov(ing|ed)|found)[^.!?]{0,40}(vaccin|shot|jab)',
+    '(jab|jabs|vaccin\\w*|shots?)[^.!?]{0,30}(are|is) (unnecessary|useless|poison|poisonous|dangerous|harmful|a scam)',
+    '(poison(?! control)|toxin|toxic|unnecessary|useless)[^.!?]{0,30}(jab|jabs|vaccin\\w*|shots?)',
+    "(anyone|anybody|people|parents|moms?|those) who (do(es)? not|do ?n'?t|refuse\\w*|wont|will not|choose not)"
+        + '[^.!?]{0,50}(vaccinat\\w*|jab|shots?|immuni)',
+    '(danger|selfish|negligent|child abuse|should be reported|should not be allowed|keep them home)'
+        + '[^.!?]{0,40}(un ?vaxx?ed|not vaccinat\\w*|no shots)',
+].join('|'), 'i');
+const RE_VAX_LEAN = new RegExp([
+    'delay(ed|ing)? schedule|alternative schedule|spacing them out|spread them out',
+    'informed consent[^.!?]{0,30}(vaccin|shot|jab)',
+    '(selective|split) (vaccin\\w*|schedule)',
+].join('|'), 'i');
 const RE_EMAIL = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i;
 const RE_PHONE = /[0-9]{3}[^a-zA-Z0-9]?[0-9]{3}[^a-zA-Z0-9]?[0-9]{4}/;
 const RE_ADDRESS = /\b\d{1,5}\s+[A-Z][a-z]+\s+(street|st|road|rd|avenue|ave|lane|ln|drive|dr|court|ct|way)\b/;
@@ -18897,6 +19010,12 @@ function filterVerdict(body) {
         return 'targetedHarassment';
     if (RE_SPAM.test(b))
         return 'spamAndScams';
+    if (FILTER_MODE.vaccine === 'all' && RE_VAX_MENTION.test(b))
+        return 'vaccineDebate';
+    if (RE_VAX_FIGHT.test(b))
+        return 'vaccineDebate';
+    if (!RE_VAX_AFTERCARE.test(b) && RE_VAX_LEAN.test(b))
+        return 'vaccineDebate';
     if (RE_UNSAFE_SLEEP.test(b))
         return 'unsafeSleepAdvice';
     if (RE_SKIP_NEWBORN.test(b))
@@ -18919,6 +19038,10 @@ const FILTER_FLAGS = { list: [] };
 function setFilterFlags(list) {
     FILTER_FLAGS.list = Array.isArray(list) ? list : [];
 }
+const FILTER_MODE = { vaccine: 'debate' };
+function setFilterMode(vaccine) {
+    FILTER_MODE.vaccine = vaccine === 'all' ? 'all' : 'debate';
+}
 function filterTrigger(verdict) {
     const map = {
         lethalAdvice: 'advice that has hospitalized babies, such as chlorine dioxide, homemade formula or raw milk',
@@ -18932,6 +19055,7 @@ function filterTrigger(verdict) {
         childPhoto: 'a photo that may include a child who is not yours',
         possibleMinor: 'something suggesting the account may not belong to an adult',
         namingAnAbuser: 'a named person described as having hurt somebody',
+        vaccineDebate: 'the vaccine argument, which this room does not host in either direction',
     };
     return map[verdict] || '';
 }
@@ -29860,6 +29984,10 @@ const FIND_INDEX = [
         words: 'feeding breastfeeding formula bottle bottles latch weight gain solids starting solids allergens baby led weaning milk' },
     { title: 'Diapers, how many you need', where: 'Child profile', go: { screen: 'diaperplan' },
         words: 'diapers nappies how many diapers sizes wet diapers' },
+    { title: 'After the shots', where: 'Child profile, Health', go: { screen: 'vaxafter' },
+        words: 'after shots after vaccines fever after shots sore leg after jab tylenol after shots '
+            + 'motrin after vaccines can i give tylenol before shots fussy after vaccines swelling lump '
+            + 'red leg jab reaction what to expect after immunizations' },
     { title: 'Sound machines and night lights', where: 'Child profile, Everyday care', go: { screen: 'nightlight' },
         words: 'hatch sound machine white noise night light nightlight ok to wake okay to wake toddler '
             + 'clock green means get up color changing afraid of the dark scared of the dark fear of the '
@@ -47086,6 +47214,16 @@ const CR_RULES = [
 ];
 const CR_FLAGS = [
     {
+        id: 'vaccineDebate',
+        action: 'hold',
+        what: 'The post argues for or against vaccines, posts studies at somebody, or tells another '
+            + 'parent what to do about their own child\'s shots. Saying what happened at your own '
+            + 'appointment, asking what to expect, or saying you are nervous is not this.',
+        why: 'The argument never changes anybody\'s mind and it reliably ends the room for everybody '
+            + 'else. Held rather than removed, because the line between asking and arguing is a judgment '
+            + 'a person should make.',
+    },
+    {
         id: 'lethalAdvice',
         action: 'remove',
         what: 'The post gives another person instructions involving Miracle Mineral Solution, MMS, '
@@ -47449,8 +47587,46 @@ const CR_SOURCES = [
             + 'only mandated reporters',
         url: 'https://childhelphotline.org/' },
 ];
+const CR_VACCINE_MODE = 'debate';
+const CR_VACCINE_RULE = {
+    id: 'vaccineTalk',
+    title: 'Ask about the appointment, not the argument',
+    body: 'The practical side is welcome and always will be. A fever afterward, a sore leg, what to '
+        + 'expect, when to call, catching up after a move, being nervous about tomorrow. What does not '
+        + 'happen here is the argument. No making the case for or against, no posting studies at each '
+        + 'other, and no telling another parent what to do with their child.',
+    why: 'The argument has ended more parenting groups than every other topic combined and has never '
+        + 'once changed somebody\'s mind. The practical questions are the opposite: they are how a '
+        + 'parent finds out that the thing they half remember about Tylenol is the wrong way round.',
+};
+const CR_VACCINE_WELCOME = [
+    'A fever, a sore leg, or a fussy evening afterward, and what helped yours.',
+    'What to expect at an appointment, or that you are dreading it.',
+    'Being behind on the schedule, and how other people caught up.',
+    'What a reaction looked like for your own child.',
+    'Asking when something is worth a phone call.',
+];
+const CR_VACCINE_ALL_BODY = 'Vaccines do not get discussed here at all, in either direction. It is not that the question does '
+    + 'not matter, it is that it matters too much to be settled by strangers. Your provider can see '
+    + 'your child and we cannot, and the app has its own pages on what the evidence says.';
+const CR_VACCINE_SEND = {
+    label: 'What the evidence says',
+    screen: 'vaccines',
+    line: 'The app has its own pages on this, with the sources attached, and your pediatrician can '
+        + 'answer for your actual child in a way a forum never can.',
+};
+function crVaccineRule() {
+    return CR_VACCINE_MODE === 'all'
+        ? Object.assign({}, CR_VACCINE_RULE, { body: CR_VACCINE_ALL_BODY })
+        : CR_VACCINE_RULE;
+}
 function crRule(id) {
+    if (id === 'vaccineTalk')
+        return crVaccineRule();
     return CR_RULES.filter((r) => r.id === id)[0] || null;
+}
+function crRulesAll() {
+    return CR_RULES.concat([crVaccineRule()]);
 }
 function crFlag(id) {
     return CR_FLAGS.filter((f) => f.id === id)[0] || null;
@@ -49402,6 +49578,8 @@ function render() {
         html = screenNightLight(c);
     else if (v && v.type === 'screen' && v.id === 'commrules')
         html = screenCommRules(c);
+    else if (v && v.type === 'screen' && v.id === 'vaxafter')
+        html = screenVaxAfter(c);
     else if (v && v.type === 'screen' && v.id === 'nesting')
         html = screenNesting(c);
     else if (v && v.type === 'screen' && v.id === 'bumplabor')
@@ -49992,7 +50170,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -51022,6 +51200,12 @@ function initControls() {
                 willowAsk((live && live.ask) || 'Tell me about this.');
                 return;
             }
+        }
+        else if (t.dataset.roomask) {
+            store.fbFrom = 'roomrequest';
+            fb.kind = 'idea';
+            state.view = { type: 'screen', id: 'feedback' };
+            window.scrollTo(0, 0);
         }
         else if (t.dataset.commdismiss) {
             store.commNotice = null;
@@ -58749,7 +58933,18 @@ async function feedShare(post) {
         const ref = await fs.addDoc(fs.collection(cloud.db, 'feed'), doc);
         post.sharedId = ref.id;
         post.sharedStatus = doc.status;
-        const v = commVerdictFor(doc.body, groupLabel(doc.group || ''));
+        const v = await commCheckAll(doc.body, groupLabel(doc.group || ''));
+        if (v && v.action !== 'live') {
+            const want = v.action === 'remove' ? FEED_STATUS.removed
+                : v.action === 'hold' ? FEED_STATUS.held : doc.status;
+            if (want !== doc.status) {
+                try {
+                    await fs.updateDoc(fs.doc(cloud.db, 'feed', ref.id), { status: want });
+                    post.sharedStatus = want;
+                }
+                catch (e) { }
+            }
+        }
         if (v && v.action !== 'live') {
             store.commNotice = v;
             store.feedError = v.action === 'support' ? '' : (v.notice ? v.notice.title : '');
@@ -58966,6 +59161,8 @@ function feedCard(p, opts) {
 function commWireFilter() {
     if (typeof setFilterFlags === 'function')
         setFilterFlags(CR_FLAGS);
+    if (typeof setFilterMode === 'function')
+        setFilterMode(CR_VACCINE_MODE);
 }
 function commVerdictFor(body, forumName) {
     const verdict = filterVerdict(body);
@@ -58998,6 +59195,7 @@ const COMM_RULE_OF = {
     childPhoto: 'otherPeoplesKids',
     possibleMinor: 'adultsOnly',
     namingAnAbuser: 'noTargeting',
+    vaccineDebate: 'vaccineTalk',
     crisisLanguage: 'emergencies',
     postpartumStruggle: 'beKind',
     abuseDisclosure: 'emergencies',
@@ -59037,10 +59235,18 @@ function commNoticeCard(v) {
     if (!v || !v.notice || v.action === 'support')
         return '';
     const bad = v.action === 'remove';
+    const vax = v.verdict === 'vaccineDebate';
     return `
   <div class="card" style="border-left:3px solid ${bad ? '#B5705C' : 'var(--attention)'}">
     <p class="eyebrow" style="${bad ? 'color:#A85A44' : ''}">${esc(v.notice.title)}</p>
     <p class="bodytext" style="margin-top:8px">${esc(v.notice.body)}</p>
+    ${''}
+    ${vax ? `
+    <p class="bodytext" style="margin-top:9px">${esc(CR_VACCINE_SEND.line)}</p>
+    <div class="chips" style="gap:7px;margin-top:9px">
+      <button class="chip" data-go="screen" data-id="vaxafter">${esc(VAX_AFTER_TITLE)}</button>
+      <button class="chip" data-go="screen" data-id="${esc(CR_VACCINE_SEND.screen)}">${esc(CR_VACCINE_SEND.label)}</button>
+    </div>` : ''}
     <p class="tiny" style="margin-top:9px">${esc(v.notice.appeal)}</p>
     <div class="chips" style="gap:7px;margin-top:11px">
       <button class="chip" data-commappeal="${esc(v.verdict)}">Ask a person to look</button>
@@ -59048,6 +59254,139 @@ function commNoticeCard(v) {
       <button class="chip" data-commdismiss="1">Close</button>
     </div>
   </div>`;
+}
+const MOD_SYSTEM = [
+    'You are a content check for a parenting app community. You classify one post and nothing else.',
+    '',
+    'Answer with ONE line in exactly this format and no other text:',
+    'VERDICT|QUOTE',
+    '',
+    'VERDICT is exactly one of these words:',
+    '  clean            nothing here needs anything',
+    '  lethalAdvice     telling a parent to give a baby chlorine dioxide or MMS, homemade or DIY',
+    '                   infant formula, or raw unpasteurized milk. These 3 only.',
+    '  unsafeSleep      telling another parent an unsafe sleep setup is fine, such as stomach',
+    '                   sleeping for an infant, crib bumpers, inclined sleepers, or weighted',
+    '                   sleep products',
+    '  skipNewborn      urging another parent to decline vitamin K, the eye ointment, the newborn',
+    '                   screen or the hepatitis B dose',
+    '  dosing           giving a dose or a medicine regimen for somebody else\'s child',
+    '  vaccineDebate    arguing for or against vaccines, posting studies at somebody, or telling',
+    '                   another parent what to do about their child\'s shots. Asking what to',
+    '                   expect, saying what happened at their own appointment, or saying they',
+    '                   are nervous is NOT this and must be clean.',
+    '  harassment       aimed at a specific member with insults or contempt',
+    '  selling          promoting their own shop, service, coaching or discount code',
+    '',
+    'QUOTE is the exact words from the post that made you choose, copied character for character.',
+    'If the verdict is clean, QUOTE is empty.',
+    'If you cannot quote actual words from the post, answer clean.',
+    '',
+    'WHAT YOU NEVER FLAG, no matter how it is worded:',
+    'A parent describing their own feelings, their own depression or anxiety,',
+    'their own intrusive thoughts, their own exhaustion, or being frightened of themselves.',
+    'That is somebody asking for help and it is always clean.',
+    'A parent describing something that happened to their own child.',
+    'A parent asking a question.',
+    'Grief, loss, anger at a partner, or swearing.',
+    'A feeding choice, a birth choice, or a parenting choice of any kind.',
+    '',
+    'When unsure, answer clean. A missed post costs far less than a wrongly flagged one.',
+].join('\n');
+const MOD_VERDICTS = {
+    lethalAdvice: 'lethalAdvice',
+    unsafeSleep: 'unsafeSleepAdvice',
+    skipNewborn: 'skippingNewbornCare',
+    dosing: 'dosingAndSubstances',
+    vaccineDebate: 'vaccineDebate',
+    harassment: 'targetedHarassment',
+    selling: 'sellingSomething',
+};
+const modAI = { model: null, loading: null };
+async function modLoad() {
+    if (modAI.model)
+        return modAI.model;
+    if (modAI.loading)
+        return modAI.loading;
+    modAI.loading = (async () => {
+        const v = FIREBASE_SDK_VERSION;
+        const { app } = await loadFirebase();
+        const aiMod = await import(`https://www.gstatic.com/firebasejs/${v}/firebase-ai.js`);
+        const ai = aiMod.getAI(app, { backend: new aiMod.GoogleAIBackend() });
+        modAI.model = aiMod.getGenerativeModel(ai, {
+            model: WILLOW_MODEL,
+            systemInstruction: MOD_SYSTEM,
+        });
+        return modAI.model;
+    })().catch((err) => { modAI.loading = null; throw err; });
+    return modAI.loading;
+}
+async function modCheck(body) {
+    const text = String(body || '').trim();
+    if (!text || text.length < 12)
+        return null;
+    if (!hasAccess() || liftOutOfQuota())
+        return null;
+    try {
+        const model = await modLoad();
+        const res = await model.generateContent('POST:\n' + text.slice(0, 4000));
+        const raw = res && res.response && typeof res.response.text === 'function'
+            ? String(res.response.text()).trim() : '';
+        if (!raw)
+            return null;
+        const line = raw.split('\n')[0];
+        const bar = line.indexOf('|');
+        const word = (bar === -1 ? line : line.slice(0, bar)).trim();
+        const quote = bar === -1 ? '' : line.slice(bar + 1).trim();
+        if (!word || word === 'clean')
+            return null;
+        const flagId = MOD_VERDICTS[word];
+        if (!flagId)
+            return null;
+        const clean = (s) => String(s).toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+        const quoted = quote && clean(text).indexOf(clean(quote)) !== -1;
+        return { flagId: flagId, quote: quoted ? quote : '', sure: !!quoted };
+    }
+    catch (err) {
+        liftNoteQuota(err);
+        return null;
+    }
+}
+function modApply(aiResult) {
+    if (!aiResult)
+        return null;
+    const action = filterAction(aiResult.flagId);
+    if (action === 'remove' && !aiResult.sure) {
+        return { verdict: aiResult.flagId, action: 'hold', quote: '', fromAI: true };
+    }
+    return { verdict: aiResult.flagId, action: action, quote: aiResult.quote, fromAI: true };
+}
+async function commCheckAll(body, forumName) {
+    const first = commVerdictFor(body, forumName);
+    if (first && (first.action === 'remove' || first.action === 'support'))
+        return first;
+    const ai = modApply(await modCheck(body));
+    if (!ai)
+        return first;
+    const rank = { live: 0, warn: 1, hold: 2, remove: 3 };
+    if (first && rank[first.action] >= rank[ai.action])
+        return first;
+    const rule = crRule(commRuleFor(ai.verdict));
+    return {
+        verdict: ai.verdict,
+        action: ai.action,
+        flag: crFlag(ai.verdict),
+        fromAI: true,
+        quote: ai.quote,
+        ruleTitle: rule ? rule.title : '',
+        notice: crNotice(commNoticeKind(ai.action), {
+            forumName: forumName || 'the community',
+            ruleTitle: rule ? rule.title : '',
+            triggerDetail: ai.quote
+                ? 'this part of it, "' + ai.quote.slice(0, 120) + '"'
+                : filterTrigger(ai.verdict),
+        }),
+    };
 }
 function screenCommRules(c) {
     const tab = store.crTab || 'rules';
@@ -59069,10 +59408,15 @@ function screenCommRules(c) {
       ${CR_INTRO.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
     </div>
     <div style="margin-top:13px">${subTabs('crTab', tab, tabs)}</div>
-    ${tab !== 'rules' ? '' : CR_RULES.map((r, i) => `
+    ${tab !== 'rules' ? '' : crRulesAll().map((r, i) => `
       <div class="card" style="margin-bottom:9px">
         <p style="margin:0;font-size:15px;font-weight:600;color:var(--ink)">${esc(String(i + 1) + '. ' + r.title)}</p>
         <p class="bodytext" style="margin-top:7px">${esc(r.body)}</p>
+        ${''}
+        ${r.id === 'vaccineTalk' && CR_VACCINE_MODE !== 'all' ? `
+        <p class="tiny" style="margin-top:9px;font-weight:600;color:var(--deep2)">All of this is welcome</p>
+        ${list(CR_VACCINE_WELCOME)}
+        <button class="chip" style="margin-top:9px" data-go="screen" data-id="vaxafter">${esc(VAX_AFTER_TITLE)}</button>` : ''}
         <p class="tiny" style="margin-top:7px"><strong style="color:var(--ink)">Why.</strong> ${esc(r.why)}</p>
       </div>`).join('')}
     ${tab !== 'how' ? '' : `
@@ -59137,9 +59481,9 @@ function screenCommunity(c) {
     }
     const tab = feed.view === 'queue' && feed.isMod ? 'queue'
         : feed.view === 'mine' ? 'mine'
-            : feed.view === 'flies' ? 'flies'
+            : feed.view === 'feed' ? 'feed'
                 : feed.view === 'rooms' ? 'rooms'
-                    : feed.view === 'foryou' ? 'foryou' : 'feed';
+                    : feed.view === 'foryou' ? 'foryou' : 'flies';
     if (tab === 'flies' && signedIn && !fly.stop)
         setTimeout(() => fliesWatch(), 0);
     return `
@@ -59219,6 +59563,18 @@ function screenCommunity(c) {
           </span>
           <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
         </button>`).join('')}
+      ${''}
+      <div class="card flat" style="margin-top:13px">
+        <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Somewhere missing</p>
+        <p class="tiny" style="margin-top:4px">If there is no room for the thing you are in the
+        middle of, say so. Rooms get made when the same one is asked for a few times, which keeps
+        them busy enough to be worth opening.</p>
+        <button class="btn ghost sm" style="width:100%;margin-top:11px" data-roomask="1">
+          Ask for a room</button>
+      </div>
+      ${dsec('How this room works', `
+        <p class="bodytext" style="margin:0 0 9px">${esc(CR_SAFETY.notAdvice)}</p>
+        <button class="chip" data-go="screen" data-id="commrules">The rules</button>`)}
     ` : tab === 'mine' ? `
       <p class="sect">What you have shared</p>
       ${(feed.mine || []).length
@@ -63199,6 +63555,7 @@ const AGE_WINDOWS = {
     growth: { from: 0, to: null, why: 'The CDC charts run to 20.' },
     vaxrecord: { from: 0, to: null, why: 'The schedule runs through 18, and the record is worth keeping after.' },
     vaccines: { from: 0, to: null, why: 'Same.' },
+    vaxafter: { from: 0, to: 216, why: 'Shots carry on through 18, and the evening after one is the same evening at every age.' },
     now: { from: 0, to: null, why: 'Something being wrong has no age.' },
     monitors: { from: 0, to: 48, why: 'The sock is 1 to 18 months. Thermometers and button batteries carry it to 4, which is where mouthing everything stops.' },
     growingup: { from: 18, to: null, why: 'Starts as the right words for body parts and nobody has to hug anybody, long before puberty.' },
@@ -63586,6 +63943,7 @@ function screenChild(c) {
       ${sectHead('health', months, 'Health')}
       ${ageRow('growth', months, kid, 'chart', 'Growth', growthRowSub(kid, months), 'data-go="screen" data-id="growth"')}
       ${ageRow('vaxrecord', months, kid, 'note', 'Vaccine record', vaxRowSub(kid, months), 'data-go="screen" data-id="vaxrecord"')}
+      ${ageRow('vaxafter', months, kid, 'heart', esc(VAX_AFTER_TITLE), 'A fever, a sore leg, and the Tylenol rule nearly everybody has backward', 'data-go="screen" data-id="vaxafter"')}
       ${ageRow('vaccines', months, kid, 'shield', 'Vaccines', 'What the evidence says, what your rights are, and how to decide', 'data-go="screen" data-id="vaccines"')}
       ${ageRow('now', months, kid, 'pill', 'Something is wrong right now', 'Fever, rashes, crying that will not stop, and when to call', 'data-go="screen" data-id="now"')}
       ${ageRow('monitors', months, kid, 'note', esc(MON_TITLE), esc(monRowSub(months)), 'data-go="screen" data-id="monitors"')}
@@ -67012,6 +67370,43 @@ function vaxRemoveSeasonal(kid, seriesId, date) {
     kid.vax[key] = cur.filter((d) => d !== date);
     kid.updatedAt = Date.now();
     saveStore();
+}
+function screenVaxAfter(c) {
+    const kid = activeChild();
+    const first = kid && kid.name ? kid.name.split(/\s+/)[0] : '';
+    return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    ${first ? `<p class="eyebrow" style="margin-top:6px">${esc(first)}${c.summary.label ? ', ' + esc(c.summary.label) : ''}</p>` : ''}
+    <h1 class="title sm">${esc(VAX_AFTER_TITLE)}</h1>
+    <p class="sub">${esc(VAX_AFTER_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${dsec(VAX_AFTER_NORMAL.title, list(VAX_AFTER_NORMAL.items))}
+    ${dsec(VAX_AFTER_HELPS.title, list(VAX_AFTER_HELPS.items))}
+    ${''}
+    <div class="dsec">
+      <h4>${esc(VAX_AFTER_TYLENOL.title)}</h4>
+      <div class="card" style="background:var(--leaf3)">
+        ${VAX_AFTER_TYLENOL.body.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+      </div>
+    </div>
+    <div class="card" style="border:1.5px solid #E4C9BF;background:#FCF4F1">
+      <p class="eyebrow" style="color:#A85A44">${esc(VAX_AFTER_CALL.title)}</p>
+      <ul class="dlist warn" style="margin-top:7px">
+        ${VAX_AFTER_CALL.items.map((x) => `<li>${esc(x)}</li>`).join('')}
+      </ul>
+    </div>
+    <div class="card flat">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Also here</p>
+      <button class="chip" style="margin-top:9px" data-go="screen" data-id="vaxrecord">The record</button>
+      <button class="chip" style="margin-top:9px" data-go="screen" data-id="vaccines">What the evidence says</button>
+      <button class="chip" style="margin-top:9px" data-go="screen" data-id="now">Something is wrong right now</button>
+    </div>
+    ${dsec('Sources', sourceRows(VAX_AFTER_SOURCES))}
+    <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>
+  </div>`;
 }
 function screenVaxRecord(c) {
     const kid = activeChild();
