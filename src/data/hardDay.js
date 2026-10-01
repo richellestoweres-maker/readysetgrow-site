@@ -4,7 +4,7 @@
  * Her ask, and she described the exact moment it was missing:
  *
  *   "when people fill in the how today ends, like I just filled in
- *   Stetson's talking about how he had a bad day essentially, and I
+ *   Her son's talking about how he had a bad day essentially, and I
  *   would have liked for Willow to pop up in the corner maybe seeing
  *   if I wanted to talk about it. Maybe ask what happened and give
  *   reassurance and guidance and a teaching moment for mom."

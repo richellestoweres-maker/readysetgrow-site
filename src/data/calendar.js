@@ -1,0 +1,403 @@
+/**
+ * Ready Set Grow: the family calendar
+ * ------------------------------------------------------------------
+ * WHY THIS EXISTS AT ALL
+ * The app had a notification setting called "Something is coming up"
+ * and nowhere in the entire product to put something that was coming
+ * up. The reminder was real and had nothing to remind anybody about.
+ * This is the thing it was always supposed to be reading.
+ *
+ * WHOSE CALENDAR IT IS
+ * The house's. That is the exception to the rule that runs everywhere
+ * else in this app, which is that her things live on her profile and a
+ * child's things live on theirs. A calendar is the one object a family
+ * genuinely shares: the dentist on Thursday is not the child's fact or
+ * the parent's fact, it is the week's fact, and splitting it across 3
+ * profiles would mean nobody could ever see Thursday.
+ *
+ * So the entry belongs to the house and CARRIES who it is about. One
+ * list, filterable by person, rather than a list per person.
+ *
+ * IT MUST NOT OPEN EMPTY
+ * A calendar that asks you to type before it shows you anything is a
+ * calendar nobody fills in. The app already knows a great deal with
+ * dates attached: which vaccine doses are coming due, which well child
+ * check this age falls in, every birthday, the chore chart, a cycle
+ * prediction, a due date. None of it had anywhere to appear. The feeds
+ * in app.js pour all of that in, so the first time she opens this it
+ * is already describing her actual month. She adds appointments to a
+ * calendar that is already useful, which is the only way anybody ever
+ * keeps one up.
+ *
+ * THE DIFFERENCE BETWEEN AN ENTRY AND A READING
+ * Entries are hers. She typed them, she can edit or delete them, they
+ * sync, they can carry a reminder. Readings are the app's: worked out
+ * fresh every time from a birthday or a record, never stored, never
+ * editable, and gone the moment the thing behind them changes. A
+ * reading has `from` set to the feed that produced it. Anything that
+ * can be edited checks that field first, because letting somebody drag
+ * their own child's birthday to a different day would be a lie the
+ * calendar then has to keep telling.
+ */
+
+export const CAL_TITLE = 'What is coming up';
+
+export const CAL_SUB =
+  'Appointments, the chart, birthdays and anything the app already knows is due, on one calendar '
+  + 'for the whole house.';
+
+export const CAL_INTRO = [
+  'Everything with a date on it, in one place. Add an appointment and say who it is about, and it '
+    + 'sits alongside the things the app worked out for itself, such as a vaccine dose coming due or '
+    + 'a check that belongs to this age.',
+  'Nothing here is shared outside your house, and nothing on this calendar goes to the community.',
+];
+
+/* ------------------------------------------------------------------
+   WHAT KIND OF THING IT IS
+
+   Kept short on purpose. A list of 20 kinds is a list nobody reads,
+   and the kind only has to do 3 jobs: pick an icon, decide whether a
+   reminder makes sense by default, and let her filter later. Anything
+   that does not fit is just Something else, which is a real answer
+   rather than a shrug.
+   ------------------------------------------------------------------ */
+export const CAL_KINDS = [
+  { id: 'doctor', label: 'Doctor or dentist', icon: 'heart',
+    hint: 'A check up, a sick visit, a dentist, a specialist', remind: '1d' },
+  { id: 'therapy', label: 'Therapy or an evaluation', icon: 'heart',
+    hint: 'Speech, occupational, physical, behavioural, or an assessment', remind: '1d' },
+  { id: 'school', label: 'School or childcare', icon: 'note',
+    hint: 'A meeting, a conference, a first day, a deadline on a form', remind: '1d' },
+  { id: 'activity', label: 'An activity', icon: 'star',
+    hint: 'Practice, a lesson, a game, a class', remind: '2h' },
+  { id: 'family', label: 'Family and friends', icon: 'people',
+    hint: 'A party, a visit, somebody arriving or leaving', remind: '1d' },
+  { id: 'reminder', label: 'A reminder to yourself', icon: 'leaf',
+    hint: 'Refill a prescription, send the form back, pay for the thing', remind: 'same9' },
+  { id: 'other', label: 'Something else', icon: 'calendar',
+    hint: 'Anything that does not fit above', remind: 'none' },
+];
+
+export function calKind(id) {
+  const k = CAL_KINDS.filter((x) => x.id === id)[0];
+  return k || CAL_KINDS[CAL_KINDS.length - 1];
+}
+
+/* ------------------------------------------------------------------
+   WHEN TO BE TOLD
+
+   minutesBefore is what the server does the arithmetic with, and the
+   one marked dayBefore9 is deliberately not a number of minutes: "the
+   evening before" is a useful reminder and "1440 minutes before a
+   07:30 appointment" is a buzz at half past 7 at night, which is
+   nearly the same thing and reads as an accident.
+
+   Everything here still obeys quiet hours. A reminder that lands at
+   2am is how an app gets deleted, and the server drops those rather
+   than queueing them.
+   ------------------------------------------------------------------ */
+export const CAL_REMIND = [
+  { id: 'none', label: 'No reminder', minutesBefore: null },
+  { id: '30m', label: '30 minutes before', minutesBefore: 30 },
+  { id: '2h', label: '2 hours before', minutesBefore: 120 },
+  { id: 'same9', label: 'That morning', atHour: 9 },
+  { id: '1d', label: 'The evening before', atHour: 18, daysBefore: 1 },
+  { id: '2d', label: '2 days before', atHour: 18, daysBefore: 2 },
+  { id: '1w', label: 'A week before', atHour: 18, daysBefore: 7 },
+];
+
+export function calRemind(id) {
+  const r = CAL_REMIND.filter((x) => x.id === id)[0];
+  return r || CAL_REMIND[0];
+}
+
+export const CAL_REPEAT = [
+  { id: '', label: 'Just once' },
+  { id: 'weekly', label: 'Every week' },
+  { id: 'fortnightly', label: 'Every 2 weeks' },
+  { id: 'monthly', label: 'Every month on this date' },
+  { id: 'yearly', label: 'Every year' },
+];
+
+/* ==================================================================
+   DATES
+
+   All dates in this app are plain 'YYYY-MM-DD' strings and all times
+   are 'HH:MM', both in the family's own local time, with no timezone
+   written down anywhere.
+
+   That is a decision rather than an oversight. A calendar entry is not
+   an instant, it is a thing on a day: the dentist at 09:00 is at 09:00
+   whether or not the family drove 2 states over that week, and storing
+   it as a UTC instant would quietly move it. Local wall clock time is
+   what a paper calendar means and it is what people mean.
+   ================================================================== */
+
+function two(n) { return (n < 10 ? '0' : '') + n; }
+
+export function calDateString(d) {
+  const x = d instanceof Date ? d : new Date(d);
+  return x.getFullYear() + '-' + two(x.getMonth() + 1) + '-' + two(x.getDate());
+}
+
+export function calToday() { return calDateString(new Date()); }
+
+/* Midday rather than midnight, every time a date string becomes a
+   Date. An hour of daylight saving either way moves midnight onto the
+   day before and takes the whole calendar with it. Nothing here cares
+   about the time of day, so the middle of the day is the safe place to
+   stand. */
+export function calParse(s) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ''));
+  if (!m) return null;
+  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12, 0, 0, 0);
+}
+
+export function calAddDays(s, n) {
+  const d = calParse(s);
+  if (!d) return s;
+  d.setDate(d.getDate() + n);
+  return calDateString(d);
+}
+
+export function calAddMonths(s, n) {
+  const d = calParse(s);
+  if (!d) return s;
+  const day = d.getDate();
+  d.setDate(1);
+  d.setMonth(d.getMonth() + n);
+  /* 31 January plus a month is not 31 February. Clamp to the end of
+     the month the way every calendar people already use does. */
+  const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  d.setDate(Math.min(day, last));
+  return calDateString(d);
+}
+
+export function calDaysBetween(a, b) {
+  const x = calParse(a); const y = calParse(b);
+  if (!x || !y) return 0;
+  return Math.round((y.getTime() - x.getTime()) / 86400000);
+}
+
+export const CAL_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'];
+
+export const CAL_DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+export const CAL_DOW_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday',
+  'Thursday', 'Friday', 'Saturday'];
+
+/* "Thursday 9 October", or "Today" and "Tomorrow", because a parent
+   reading a list at 6am wants to know whether this is the thing
+   happening in 2 hours. */
+export function calDayLabel(date, today) {
+  const d = calParse(date);
+  if (!d) return '';
+  const t = today || calToday();
+  const diff = calDaysBetween(t, date);
+  if (diff === 0) return 'Today';
+  if (diff === 1) return 'Tomorrow';
+  if (diff === -1) return 'Yesterday';
+  const base = CAL_DOW_FULL[d.getDay()] + ' ' + d.getDate() + ' ' + CAL_MONTHS[d.getMonth()];
+  const sameYear = d.getFullYear() === new Date().getFullYear();
+  return sameYear ? base : base + ' ' + d.getFullYear();
+}
+
+export function calShortLabel(date) {
+  const d = calParse(date);
+  if (!d) return '';
+  return CAL_DOW[d.getDay()] + ' ' + d.getDate() + ' ' + CAL_MONTHS[d.getMonth()].slice(0, 3);
+}
+
+/* 24 hour in, 12 hour out, because the inputs are easier to get right
+   with the first and every American parent reads the second. */
+export function calTimeLabel(t) {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(String(t || ''));
+  if (!m) return '';
+  let h = Number(m[1]);
+  const suffix = h >= 12 ? 'pm' : 'am';
+  if (h === 0) h = 12; else if (h > 12) h -= 12;
+  return h + (m[2] === '00' ? '' : ':' + m[2]) + suffix;
+}
+
+/* ------------------------------------------------------------------
+   THE MONTH GRID
+   6 rows of 7 always, rather than 5 rows some months and 6 in others,
+   so the grid does not change height as she pages through it and move
+   everything underneath up and down the screen.
+   ------------------------------------------------------------------ */
+export function calMonthGrid(year, month) {
+  const first = new Date(year, month, 1, 12);
+  const start = new Date(year, month, 1 - first.getDay(), 12);
+  const out = [];
+  for (let i = 0; i < 42; i += 1) {
+    const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i, 12);
+    out.push({ date: calDateString(d), inMonth: d.getMonth() === month, dow: d.getDay() });
+  }
+  return out;
+}
+
+/* ==================================================================
+   REPEATS
+
+   Deliberately the small version. No "third Tuesday", no "every
+   weekday except holidays", no end date. Those belong to a calendar
+   people run their working lives on, and this is a calendar for a
+   house. Weekly swimming, a monthly appointment and a yearly birthday
+   cover nearly everything a family actually repeats, and each of them
+   is 1 line of arithmetic rather than a rules engine nobody can debug.
+
+   Occurrences are worked out on the way past rather than written down,
+   so a weekly swimming lesson is 1 record forever instead of 500 rows
+   that have to be cleaned up when it stops.
+   ================================================================== */
+export function calOccursOn(ev, date) {
+  if (!ev || !ev.date) return false;
+  if (ev.date === date) return true;
+  if (!ev.repeat) return false;
+  const diff = calDaysBetween(ev.date, date);
+  if (diff <= 0) return false;
+  if (ev.repeat === 'weekly') return diff % 7 === 0;
+  if (ev.repeat === 'fortnightly') return diff % 14 === 0;
+  const a = calParse(ev.date); const b = calParse(date);
+  if (!a || !b) return false;
+  if (ev.repeat === 'monthly') {
+    if (a.getDate() === b.getDate()) return true;
+    /* A monthly entry on the 31st still has to land in February, so it
+       falls on the last day of any month too short to hold it. */
+    const last = new Date(b.getFullYear(), b.getMonth() + 1, 0).getDate();
+    return a.getDate() > last && b.getDate() === last;
+  }
+  if (ev.repeat === 'yearly') return a.getDate() === b.getDate() && a.getMonth() === b.getMonth();
+  return false;
+}
+
+/* ==================================================================
+   SORTING
+
+   DATE FIRST. That is not obvious enough: this started out sorting on
+   time alone, because it was written to order the entries inside a
+   single day, and then got used across a whole month as well. The list
+   came out with Saturday above Tomorrow, which looks like a broken
+   calendar and is really a comparison missing its first term.
+
+   Then timed things ahead of all day things, in clock order. An
+   appointment at 09:00 matters more to the shape of a Tuesday than
+   "library books due", and a day that opens with the untimed list
+   reads as though nothing is happening.
+   ================================================================== */
+export function calSort(list) {
+  return (list || []).slice().sort((a, b) => {
+    const ad = a.date || ''; const bd = b.date || '';
+    if (ad !== bd) return ad < bd ? -1 : 1;
+    const at = a.time || ''; const bt = b.time || '';
+    if (at && !bt) return -1;
+    if (!at && bt) return 1;
+    if (at !== bt) return at < bt ? -1 : 1;
+    return String(a.title || '').localeCompare(String(b.title || ''));
+  });
+}
+
+/* ==================================================================
+   WHAT THE SERVER NEEDS
+
+   The one piece of arithmetic that has to agree exactly between the
+   app and functions/index.js, which is why it is written once here and
+   the server imports the same shape rather than reimplementing it. A
+   reminder the phone thinks is at 6pm and the server thinks is at 6am
+   is the worst kind of bug, because it looks like it works.
+
+   Returns 'YYYY-MM-DDTHH:MM' in the family's own local time, or null
+   when the entry has no reminder on it.
+   ================================================================== */
+export function calRemindAt(ev) {
+  if (!ev || !ev.date) return null;
+  const r = calRemind(ev.remind);
+  if (!r || r.id === 'none') return null;
+  if (r.minutesBefore != null) {
+    /* Relative to the appointment, so it needs one. An entry with no
+       time cannot have a 30 minutes before. */
+    if (!ev.time) return null;
+    const d = calParse(ev.date);
+    const m = /^(\d{1,2}):(\d{2})$/.exec(ev.time);
+    if (!d || !m) return null;
+    d.setHours(Number(m[1]), Number(m[2]), 0, 0);
+    d.setMinutes(d.getMinutes() - r.minutesBefore);
+    return calDateString(d) + 'T' + two(d.getHours()) + ':' + two(d.getMinutes());
+  }
+  const day = calAddDays(ev.date, -(r.daysBefore || 0));
+  return day + 'T' + two(r.atHour || 9) + ':00';
+}
+
+/* ==================================================================
+   MIRRORING IT INTO THE PHONE'S OWN CALENDAR
+
+   Her choice, and the right one. A family calendar that only exists
+   inside one app is a second calendar to check, and a second calendar
+   to check is a calendar that goes stale in about 3 weeks.
+
+   Subscribing rather than sending a copy is what makes it stay true.
+   A copy is wrong the moment anything changes. A subscription is a
+   link the phone re-reads on its own, so moving the dentist here moves
+   it on her phone without her doing anything, and her husband can
+   subscribe to the same link on his.
+
+   What it does NOT do is read the other way. Nothing she puts in her
+   phone calendar appears here. Two way sync means asking for
+   permission to read every appointment in her life, including work,
+   and this app has no business holding that.
+   ================================================================== */
+export const CAL_SUBSCRIBE = {
+  title: 'Put this on your phone calendar',
+  body: [
+    'Subscribe once and every appointment on this calendar turns up in the calendar app you already '
+      + 'use, next to everything else in your life, with your phone\'s own alerts. Change something '
+      + 'here and it changes there on its own. You do not have to do this again.',
+    'It only goes one way. Nothing from your phone calendar comes into Ready Set Grow, because that '
+      + 'would mean handing this app every appointment you have, work included, and it has no '
+      + 'business holding that.',
+  ],
+  steps: [
+    { who: 'iPhone and iPad',
+      how: 'Copy the link, then Settings, Calendar, Accounts, Add Account, Other, Add Subscribed '
+        + 'Calendar, and paste it.' },
+    { who: 'Android',
+      how: 'Open calendar.google.com in a browser, then Other calendars, the plus, From URL, and '
+        + 'paste it. It arrives on the phone within the hour.' },
+    { who: 'Outlook',
+      how: 'Add calendar, Subscribe from web, and paste it.' },
+  ],
+  warn: 'Treat the link like a key. Anybody who has it can read this calendar, so share it with the '
+    + 'people in your house and nobody else. You can replace it at any time, which turns the old one '
+    + 'off for good.',
+};
+
+/* ==================================================================
+   EMPTY STATES
+
+   There are 2, and they are not the same thing. A day with nothing on
+   it is good news and should read as good news. A calendar with
+   nothing in it at all is a thing somebody has not set up yet.
+   ================================================================== */
+export const CAL_EMPTY_DAY = 'Nothing on this day.';
+
+export const CAL_EMPTY_ALL = {
+  title: 'Nothing on the calendar yet',
+  body: 'Add the next appointment you already know about, such as a check up or a dentist. Birthdays '
+    + 'and anything the app can work out for itself turn up here on their own.',
+};
+
+export const CAL_PAST_NOTE =
+  'Everything before today, newest first. Kept so you can answer the question every new doctor asks, '
+  + 'which is when they were last seen.';
+
+/* Filters across the top. 'all' first, because the thing a parent
+   opens a family calendar for is the week, not one person's week. */
+export const CAL_WHO_ALL = 'Everybody';
+export const CAL_WHO_HOUSE = 'The whole house';
+export const CAL_WHO_HOUSE_ID = 'house';
+
+export const CAL_ADD_HELP =
+  'Who it is about decides whose profile it shows up on, and nothing more. It stays on this '
+  + 'calendar either way.';

@@ -320,7 +320,7 @@ export const OUT_BAGS = [
   /* THE BAND THAT WAS MISSING.
 
      The list used to run toddler to 48 months and then straight to
-     school age, so Stetson at four years five months was handed the
+     school age, so a 4 year 5 month old was handed the
      twelve year old's list. Four and five are their own thing: out of
      diapers mostly, still needing a spare pair of pants, and old
      enough to carry something. */

@@ -28,7 +28,7 @@
  * joining proves nothing except that they were given it.
  *
  * PER CHILD, NOT PER ACCOUNT
- * Stetson's dad can be given Stetson without being given Hartlee. This
+ * One child's dad can be given that child without being given the other. This
  * matters more than it sounds. Blended families, separated parents,
  * grandparents who look after one of them on Thursdays. An all or
  * nothing switch would make this feature unusable for most of the

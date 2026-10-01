@@ -150,6 +150,10 @@ export const FIND_INDEX = [
     words: 'for me self care burnout rage guilt parenting style' },
   { title: 'Privacy', where: 'Menu, Privacy', go: { screen: 'privacy' },
     words: 'privacy data delete account who can see' },
+  { title: 'What is coming up',
+    words: 'calendar appointment appointments schedule diary dentist doctor visit booking '
+      + 'reminder remind due date birthday week month plan agenda event what is coming up',
+    go: { screen: 'calendar' } },
 ];
 
 function findNorm(s) {

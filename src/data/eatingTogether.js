@@ -1,7 +1,7 @@
 /**
  * Ready Set Grow: Eating, Once The Milk Question Is Over
  * ------------------------------------------------------------------
- * She spotted this one: Stetson is four and his Feeding screen was
+ * She spotted this one: her son is four and his Feeding screen was
  * still leading with formula and breastfeeding. Her instruction was to
  * end that at two, with a way to keep it for anybody still nursing or
  * pumping.
