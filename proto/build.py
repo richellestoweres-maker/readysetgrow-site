@@ -368,6 +368,53 @@ def check_dupe_functions(text, label):
 
 
 check_dupe_functions(app, 'proto/app.js')
+def check_css_dupes(shell_text, label):
+    """No class may be defined twice as a plain top level rule.
+
+    CSS has no error for this. The later rule simply wins, which is
+    fine when you meant it and a quiet disaster when you did not. The
+    family calendar took .calhead, .calmonth, .calnav and .calgrid,
+    all 4 of which the cycle calendar already owned, and restyled her
+    period tracker as a side effect. Before that, a .calbar meant to be
+    a header row inherited height 4px from the month grid's coloured
+    bar and collapsed, spilling its buttons across the screen.
+
+    Overrides inside a media query are the normal way to do this and
+    are not counted. A modifier such as .x.on is a different selector
+    and is not counted either. What is caught is the same bare class
+    opened twice at the top level, which is almost always 2 features
+    reaching for the same obvious name."""
+    css = shell_text[shell_text.index('<style'):]
+    css = re.sub(r'/\*.*?\*/', ' ', css, flags=re.S)
+    flat, i = [], 0
+    while i < len(css):
+        m = re.compile(r'@media[^{]*\{').search(css, i)
+        if not m:
+            flat.append(css[i:])
+            break
+        flat.append(css[i:m.start()])
+        j, depth = m.end(), 1
+        while j < len(css) and depth:
+            if css[j] == '{':
+                depth += 1
+            elif css[j] == '}':
+                depth -= 1
+            j += 1
+        i = j
+    names = re.findall(r'(?:^|\})\s*(\.[A-Za-z][\w-]*)\s*\{', ''.join(flat))
+    seen = {}
+    for n in names:
+        seen[n] = seen.get(n, 0) + 1
+    bad = sorted([n for n, c in seen.items() if c > 1])
+    if bad:
+        print('CSS CLASS DEFINED TWICE in ' + label + ':')
+        for n in bad:
+            print('  ' + n + ' (' + str(seen[n]) + ' top level rules, the last one wins)')
+        raise SystemExit(1)
+
+
+check_css_dupes(shell, 'proto/shell.html')
+
 check_proxy_dupes(app, 'proto/app.js')
 sub_tab_keys = check_sub_tabs(app, 'proto/app.js')
 

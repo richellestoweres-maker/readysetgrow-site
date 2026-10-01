@@ -1147,7 +1147,7 @@ const store = {
   calShift: 0,
   calWho: 'all',
   calDay: null,
-  calTab: 'next',
+  calTab: 'day',
   calEdit: null,
   calOpen: '',
   calSubOpen: false,
@@ -3279,7 +3279,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calfeed],[data-calsetcolor],[data-calweek]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3699,6 +3699,10 @@ function initControls() {
       store.calShift = v === '0' ? 0 : (Number(store.calShift) || 0) + Number(v);
       if (store.calShift < -24) store.calShift = -24;
       if (store.calShift > 24) store.calShift = 24;
+    } else if (t.dataset.calstep) {
+      store.calDay = t.dataset.calstep === 'today'
+        ? calToday()
+        : calAddDays(store.calDay || calToday(), Number(t.dataset.calstep));
     } else if (t.dataset.calweek != null && t.hasAttribute('data-calweek')) {
       const v = t.dataset.calweek;
       store.calWeekShift = v === '0' ? 0 : (Number(store.calWeekShift) || 0) + Number(v);
@@ -3706,6 +3710,8 @@ function initControls() {
       if (store.calWeekShift > 104) store.calWeekShift = 104;
     } else if (t.dataset.calday) {
       store.calDay = t.dataset.calday;
+    } else if (t.dataset.callen) {
+      calDraft().mins = Number(t.dataset.callen) || CAL_DEFAULT_MINS;
     } else if (t.dataset.calsetcolor) {
       const whoFor = t.dataset.calwhofor;
       if (whoFor === 'me') {
@@ -18326,7 +18332,7 @@ function calChipEl(e) {
     ? `color:${esc(col.ink)}`
     : `background:${esc(col.dot)}`;
   return `
-  <button class="calchip-e${reading ? ' soft' : ''}" ${attrs} style="${style}"
+  <button class="fcchip-e${reading ? ' soft' : ''}" ${attrs} style="${style}"
     title="${esc(e.title)}">
     ${e.time ? `<span class="ct">${esc(calTimeLabel(e.time))}</span>` : ''}
     <span class="cn">${esc(e.title)}</span>
@@ -18346,12 +18352,12 @@ function calRow(e, today) {
   const col = calColorOf(e.who);
   const sub = [e.sub || (k ? k.label : ''), e.where || '', who].filter(Boolean).join(' · ');
   return `
-  <button class="calrow" ${attrs}>
-    <span class="calrow-c" style="background:${esc(col.dot)}${reading ? ';opacity:.5' : ''}"></span>
-    <span class="calrow-t${e.time ? '' : ' none'}">${e.time ? esc(calTimeLabel(e.time)) : 'All day'}</span>
-    <span class="calrow-m">
-      <span class="calrow-n">${esc(e.title)}</span>
-      ${sub ? `<span class="calrow-s">${esc(sub)}</span>` : ''}
+  <button class="fcrow" ${attrs}>
+    <span class="fcrow-c" style="background:${esc(col.dot)}${reading ? ';opacity:.5' : ''}"></span>
+    <span class="fcrow-t${e.time ? '' : ' none'}">${e.time ? esc(calTimeLabel(e.time)) : 'All day'}</span>
+    <span class="fcrow-m">
+      <span class="fcrow-n">${esc(e.title)}</span>
+      ${sub ? `<span class="fcrow-s">${esc(sub)}</span>` : ''}
     </span>
   </button>`;
 }
@@ -18369,6 +18375,188 @@ function calRow(e, today) {
    390 pixel phone gives each one 52 pixels, which fits a dot and
    nothing a person can read. Stacked, every entry keeps its words.
    ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------
+   THE TIMELINE, WHICH IS THE CALENDAR
+
+   Hours down the side, an entry as a block at the hour it starts,
+   sized by how long it lasts. Everything else in this screen is a way
+   of getting to this.
+
+   One day on a phone, the whole week side by side above 760 pixels.
+   A 7 column time grid on a 390 pixel phone gives each day 45 pixels,
+   which is a colour and no words, so the phone gets 1 day at a time
+   with a week strip across the top to move between them. Same grid,
+   same code, different number of columns.
+   ------------------------------------------------------------------ */
+function calTimeGrid(who) {
+  const today = calToday();
+  const sel = store.calDay || today;
+  /* WEEK MEANS WEEK, ON EVERY SCREEN.
+
+     This used to decide by window width, so a phone asking for the
+     week got a second copy of the day view, which is just confusing.
+     7 columns at 390 pixels is 45 pixels each, too narrow to read, so
+     the week scrolls sideways instead: about 4 and a half days visible
+     and a swipe for the rest. That is what every phone calendar does
+     and it still reads unmistakably as a week. */
+  const wide = (store.calTab || 'day') === 'week';
+  const days = wide ? calWeekOf(sel) : [sel];
+  /* Land on today rather than on last Sunday. Done after the paint,
+     because the element has to exist and have a width first. */
+  if (wide) {
+    setTimeout(() => {
+      const box = document.getElementById('calscroller');
+      if (!box) return;
+      const idx = days.indexOf(sel);
+      if (idx < 0) return;
+      const colW = (box.scrollWidth - 46) / days.length;
+      box.scrollLeft = Math.max(0, (idx * colW) - colW);
+    }, 0);
+  }
+
+  const byDay = {};
+  calAllIn(days[0], days[days.length - 1], who).forEach((e) => {
+    if (!byDay[e.date]) byDay[e.date] = [];
+    byDay[e.date].push(e);
+  });
+
+  /* One range across every column on screen, or the rows would not
+     line up with the hours written beside them. */
+  let all = [];
+  days.forEach((d) => { all = all.concat(byDay[d] || []); });
+  const range = calHourRange(all);
+  const hours = [];
+  for (let h = range.from; h <= range.to; h += 1) hours.push(h);
+  const px = 46;
+  const height = (range.to - range.from) * px;
+
+  const allDayOf = (d) => (byDay[d] || []).filter((e) => !calSpan(e));
+
+  /* MOVING THROUGH TIME.
+
+     The week strip only covers the week you are on, so without this
+     there is no way out of it. The arrows step by a day in the day
+     view and by a week in the week view, which is what the arrows next
+     to a date mean everywhere else. */
+  const step = wide ? 7 : 1;
+  return `
+  <div class="fchead">
+    <button class="fcnav" data-calstep="${-step}"
+      aria-label="${wide ? 'Previous week' : 'Previous day'}">${icon('chev', 15, 'var(--deep)')}</button>
+    <span class="fcmonth">${esc(wide ? calWeekLabel(days) : calDayLabel(sel, today))}</span>
+    <button class="fcnav next" data-calstep="${step}"
+      aria-label="${wide ? 'Next week' : 'Next day'}">${icon('chev', 15, 'var(--deep)')}</button>
+  </div>
+  ${sel !== today ? `
+    <button class="chip" style="margin:0 auto 8px;display:block" data-calstep="today">Back to today</button>` : ''}
+  ${calDayStrip(days, sel, today, byDay, who)}
+
+  <div class="fctl${wide ? ' wide' : ''}">
+    ${/* ONE SCROLLER, NOT TWO.
+
+          The day headings and the hour grid were separate scrolling
+          boxes, which looks fine until you swipe: the names slide and
+          the columns do not, and you are reading Tuesday's events
+          under Thursday's heading. They live in the same scroller now,
+          with the hour gutter stuck to the left inside it. */''}
+    <div class="fctl-scroll"${wide ? ' id="calscroller"' : ''}>
+    <div class="fctl-h">
+      <span class="fctl-gut"></span>
+      ${days.map((d) => {
+        const p = calParse(d);
+        const ad = allDayOf(d);
+        return `
+        <div class="fctl-col${d === today ? ' today' : ''}">
+          ${wide ? `
+            <button class="fctl-dh${d === sel ? ' sel' : ''}" data-calday="${esc(d)}">
+              <span class="fctl-dw">${esc(CAL_DOW[p.getDay()])}</span>
+              <span class="fctl-dn">${p.getDate()}</span>
+            </button>` : ''}
+          ${ad.length ? `<div class="fctl-ad">${ad.map(calChipEl).join('')}</div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div class="fctl-b" style="height:${height}px">
+      <div class="fctl-gut">
+        ${hours.map((h, i) => `
+          <span class="fctl-hr" style="top:${i * px}px">${esc(calHourLabel(h))}</span>`).join('')}
+      </div>
+      ${days.map((d) => `
+        <div class="fctl-col${d === today ? ' today' : ''}">
+          ${hours.map((h, i) => `<span class="fctl-line" style="top:${i * px}px"></span>`).join('')}
+          ${d === today ? calNowLine(range, px) : ''}
+          ${calLayout(byDay[d] || []).map((item) => {
+            const e = item.ev;
+            const col = calColorOf(e.who);
+            const reading = e.from === 'app';
+            const top = ((item.start / 60) - range.from) * px;
+            const h = Math.max(18, ((item.end - item.start) / 60) * px - 2);
+            const w = 100 / item.cols;
+            const attrs = reading
+              ? (e.go ? `data-calgo="${esc(JSON.stringify(e.go))}"` : 'disabled')
+              : `data-calopen="${esc(e.id)}"`;
+            return `
+            <button class="fctl-ev${reading ? ' soft' : ''}" ${attrs}
+              style="top:${top}px;height:${h}px;left:${item.col * w}%;width:calc(${w}% - 3px);
+                ${reading ? 'color:' + esc(col.ink) + ';border-color:' + esc(col.dot)
+                          : 'background:' + esc(col.dot)}">
+              <span class="fctl-t">${esc(calTimeLabel(e.time))}</span>
+              <span class="fctl-n">${esc(e.title)}</span>
+            </button>`;
+          }).join('')}
+        </div>`).join('')}
+    </div>
+    </div>
+  </div>`;
+}
+
+/* WHERE WE ARE IN THE DAY.
+   A thin line across today at the current time. It is the single
+   cheapest thing that makes a grid feel alive rather than printed, and
+   it answers "have I missed it" without any reading. */
+function calNowLine(range, px) {
+  const n = new Date();
+  const mins = n.getHours() * 60 + n.getMinutes();
+  const top = ((mins / 60) - range.from) * px;
+  if (top < 0 || top > (range.to - range.from) * px) return '';
+  return `<span class="fctl-now" style="top:${Math.round(top)}px"></span>`;
+}
+
+/* The week across the top, which is how you move between days on a
+   phone and how you see which days are busy without leaving this one.
+   The dots under each date are that day's entries, in their colours. */
+function calDayStrip(shown, sel, today, byDay, who) {
+  const week = calWeekOf(sel);
+  const need = week.filter((d) => !byDay[d]);
+  if (need.length) {
+    calAllIn(week[0], week[6], who).forEach((e) => {
+      if (!byDay[e.date]) byDay[e.date] = [];
+      if (byDay[e.date].indexOf(e) === -1 && week.indexOf(e.date) !== -1) byDay[e.date].push(e);
+    });
+  }
+  return `
+  <div class="fcstrip">
+    ${week.map((d) => {
+      const p = calParse(d);
+      const list = byDay[d] || [];
+      return `
+      <button class="fcsd${d === sel ? ' sel' : ''}${d === today ? ' today' : ''}"
+        data-calday="${esc(d)}" aria-label="${esc(calDayLabel(d, today))}">
+        <span class="fcsd-w">${esc(CAL_DOW[p.getDay()].slice(0, 1))}</span>
+        <span class="fcsd-n">${p.getDate()}</span>
+        <span class="fcsd-dots">
+          ${list.slice(0, 3).map((e) => {
+            const col = calColorOf(e.who);
+            return `<span class="fcsd-dot" style="background:${esc(col.dot)}"></span>`;
+          }).join('')}
+        </span>
+      </button>`;
+    }).join('')}
+  </div>`;
+}
+
 function calWeekBlock(who) {
   const today = calToday();
   const anchor = store.calDay || today;
@@ -18385,31 +18573,31 @@ function calWeekBlock(who) {
   });
 
   return `
-  <div class="calhead">
-    <button class="calnav" data-calweek="-1" aria-label="Previous week">${icon('chev', 15, 'var(--deep)')}</button>
-    <span class="calmonth">${esc(calWeekLabel(days))}</span>
-    <button class="calnav next" data-calweek="1" aria-label="Next week">${icon('chev', 15, 'var(--deep)')}</button>
+  <div class="fchead">
+    <button class="fcnav" data-calweek="-1" aria-label="Previous week">${icon('chev', 15, 'var(--deep)')}</button>
+    <span class="fcmonth">${esc(calWeekLabel(days))}</span>
+    <button class="fcnav next" data-calweek="1" aria-label="Next week">${icon('chev', 15, 'var(--deep)')}</button>
   </div>
   ${Number(store.calWeekShift) ? `
     <button class="chip" style="margin:0 auto 9px;display:block" data-calweek="0">Back to this week</button>` : ''}
 
-  <div class="calweek">
+  <div class="fcweek">
     ${days.map((d) => {
       const list = byDay[d] || [];
       const p = calParse(d);
       return `
-      <div class="calwd${d === today ? ' today' : ''}">
-        <span class="calwd-h">
-          <span class="calwd-d">${esc(CAL_DOW[p.getDay()])}</span>
-          <span class="calwd-n">${p.getDate()}</span>
+      <div class="fcwd${d === today ? ' today' : ''}">
+        <span class="fcwd-h">
+          <span class="fcwd-d">${esc(CAL_DOW[p.getDay()])}</span>
+          <span class="fcwd-n">${p.getDate()}</span>
         </span>
-        <span class="calwd-b">
+        <span class="fcwd-b">
           ${/* AN EMPTY DAY SAYS NOTHING AT ALL.
                 "Nothing on this day" written down a whole week is 5
                 lines of grey competing with the 2 lines that matter.
                 A free day should read as space, which is also what it
                 feels like. */''}
-          ${list.length ? list.map(calChipEl).join('') : '<span class="calwd-free"></span>'}
+          ${list.length ? list.map(calChipEl).join('') : '<span class="fcwd-free"></span>'}
         </span>
       </div>`;
     }).join('')}
@@ -18419,12 +18607,12 @@ function calWeekBlock(who) {
 function calDayBlock(date, today, who) {
   const list = calOnDay(date, who);
   return `
-  <div class="caldayhead">
-    <span class="caldayhead-d">${esc(calDayLabel(date, today))}</span>
-    ${list.length ? `<span class="caldayhead-n">${list.length} ${list.length === 1 ? 'thing' : 'things'}</span>` : ''}
+  <div class="fcdayhead">
+    <span class="fcdayhead-d">${esc(calDayLabel(date, today))}</span>
+    ${list.length ? `<span class="fcdayhead-n">${list.length} ${list.length === 1 ? 'thing' : 'things'}</span>` : ''}
   </div>
   ${list.length ? list.map((e) => calRow(e, today)).join('')
-    : `<p class="calwd-none">${esc(CAL_EMPTY_DAY)}</p>`}`;
+    : `<p class="fcwd-none">${esc(CAL_EMPTY_DAY)}</p>`}`;
 }
 
 /* ------------------------------------------------------------------
@@ -18454,24 +18642,24 @@ function calGrid(who) {
 
   const sel = store.calDay || today;
   return `
-  <div class="calhead">
-    <button class="calnav" data-calshift="-1" aria-label="Previous month">${icon('chev', 15, 'var(--deep)')}</button>
-    <span class="calmonth">${esc(CAL_MONTHS[month])} ${year}</span>
-    <button class="calnav next" data-calshift="1" aria-label="Next month">${icon('chev', 15, 'var(--deep)')}</button>
+  <div class="fchead">
+    <button class="fcnav" data-calshift="-1" aria-label="Previous month">${icon('chev', 15, 'var(--deep)')}</button>
+    <span class="fcmonth">${esc(CAL_MONTHS[month])} ${year}</span>
+    <button class="fcnav next" data-calshift="1" aria-label="Next month">${icon('chev', 15, 'var(--deep)')}</button>
   </div>
   ${Number(store.calShift) ? `<button class="chip" style="margin:0 auto 8px;display:block" data-calshift="0">Back to this month</button>` : ''}
-  <div class="calgridwrap">
-  <div class="calgrid">
-    ${CAL_DOW.map((d) => `<span class="caldow">${esc(d)}</span>`).join('')}
+  <div class="fcgridwrap">
+  <div class="fcgrid">
+    ${CAL_DOW.map((d) => `<span class="fcdow">${esc(d)}</span>`).join('')}
     ${cells.map((cell) => {
       const list = byDay[cell.date] || [];
       const isToday = cell.date === today;
       const isSel = cell.date === sel;
       return `
-      <button class="calcell${cell.inMonth ? '' : ' out'}${isToday ? ' today' : ''}${isSel ? ' sel' : ''}"
+      <button class="fccell${cell.inMonth ? '' : ' out'}${isToday ? ' today' : ''}${isSel ? ' sel' : ''}"
         data-calday="${esc(cell.date)}" aria-label="${esc(calDayLabel(cell.date, today))}">
-        <span class="caln">${calParse(cell.date).getDate()}</span>
-        <span class="calbars">
+        <span class="fcn">${calParse(cell.date).getDate()}</span>
+        <span class="fcbars">
           ${list.slice(0, 3).map((e) => {
             const col = calColorOf(e.who);
             const reading = e.from === 'app';
@@ -18479,11 +18667,11 @@ function calGrid(who) {
                cell is wide enough to hold a word. Below that the same
                element is a 4 pixel bar and the text is clipped away by
                the height, which keeps 1 piece of markup for both. */
-            return `<span class="calbar${reading ? ' soft' : ''}"
+            return `<span class="fcbar${reading ? ' soft' : ''}"
               style="${reading ? 'color:' + esc(col.ink) : 'background:' + esc(col.dot)}"
               >${esc(e.title)}</span>`;
           }).join('')}
-          ${list.length > 3 ? `<span class="calmore">+${list.length - 3} more</span>` : ''}
+          ${list.length > 3 ? `<span class="fcmore">+${list.length - 3} more</span>` : ''}
         </span>
       </button>`;
     }).join('')}
@@ -18544,10 +18732,10 @@ function calEditor() {
       <div class="chips" style="margin:7px 0 2px">
         ${CAL_COLORS.map((col) => {
           const cur = calColorOf(d.who);
-          return `<button class="chip calchip${cur.id === col.id ? ' on' : ''}"
+          return `<button class="chip fcchip${cur.id === col.id ? ' on' : ''}"
             data-calsetcolor="${esc(col.id)}" data-calwhofor="${esc(d.who)}"
             aria-pressed="${cur.id === col.id}">
-            <span class="caldot" style="background:${esc(col.dot)}"></span>${esc(col.label)}</button>`;
+            <span class="fcdot" style="background:${esc(col.dot)}"></span>${esc(col.label)}</button>`;
         }).join('')}
       </div>
       <p class="tiny" style="margin:0 0 10px">${esc(CAL_COLOR_HELP)}</p>` : ''}
@@ -18566,6 +18754,17 @@ function calEditor() {
       </div>
       ${timed ? '' : '<p class="tiny" style="margin-top:6px">Leave it empty for something that is just on the day.</p>'}
     </div>
+
+    ${d.time ? `
+    <p class="eyebrow" style="margin-top:10px">How long</p>
+    <div class="chips" style="margin:7px 0 2px">
+      ${CAL_LENGTHS.map((L) => `
+        <button class="chip${(Number(d.mins) || CAL_DEFAULT_MINS) === L.id ? ' on' : ''}"
+          data-callen="${L.id}"
+          aria-pressed="${(Number(d.mins) || CAL_DEFAULT_MINS) === L.id}">${esc(L.label)}</button>`).join('')}
+    </div>
+    <p class="tiny" style="margin:0 0 10px">${esc(calTimeLabel(d.time))} to ${esc(calEndLabel(d))}.
+      ${esc(CAL_LENGTH_HELP)}</p>` : ''}
 
     <div class="card flat" style="margin-bottom:8px">
       <p class="eyebrow">Where, if it helps</p>
@@ -18661,6 +18860,7 @@ function calSave() {
     title: title,
     date: d.date || calToday(),
     time: String(d.time || ''),
+    mins: Number(d.mins) || CAL_DEFAULT_MINS,
     who: d.who || CAL_WHO_HOUSE_ID,
     kind: d.kind || 'other',
     where: String(d.where || '').trim(),
@@ -18716,7 +18916,12 @@ function calSubscribeBlock() {
 function screenCalendar(c) {
   const today = calToday();
   const who = store.calWho || 'all';
-  const tab = store.calTab || 'next';
+  /* THE TAB OPENS ON THE GRID, NOT ON A LIST.
+
+     Part of why this did not read as a calendar is that the first
+     thing it showed was an agenda. A calendar app that opens on a list
+     is a list app. */
+  const tab = store.calTab || 'day';
   const sel = store.calDay || today;
   const editing = !!store.calEdit;
 
@@ -18751,30 +18956,31 @@ function screenCalendar(c) {
   </div>
   <div class="sc">
 
-    <div class="calbar">
-      <div class="calscroll">
-        ${[{ id: 'next', label: 'Coming up' }, { id: 'week', label: 'Week' },
-           { id: 'month', label: 'Month' }, { id: 'past', label: 'Past' }].map((t) => `
+    <div class="fcviewbar">
+      <div class="fcscroll">
+        ${[{ id: 'day', label: 'Day' }, { id: 'week', label: 'Week' },
+           { id: 'month', label: 'Month' }, { id: 'next', label: 'List' },
+           { id: 'past', label: 'Past' }].map((t) => `
           <button class="chip${tab === t.id ? ' on' : ''}" data-sub="calTab" data-val="${esc(t.id)}"
             aria-pressed="${tab === t.id}">${esc(t.label)}</button>`).join('')}
       </div>
-      <button class="caladd" data-caladd="1" aria-label="Add something">
+      <button class="fcadd" data-caladd="1" aria-label="Add something">
         ${icon('plus', 18, '#fff')}</button>
     </div>
 
-    <div class="calscroll calkey">
-      <button class="chip calchip${who === 'all' ? ' on' : ''}" data-calfilter="all"
+    <div class="fcscroll fckey">
+      <button class="chip fcchip${who === 'all' ? ' on' : ''}" data-calfilter="all"
         aria-pressed="${who === 'all'}">${esc(CAL_WHO_ALL)}</button>
       ${calWhoOptions().map((o) => {
         const col = calColorOf(o.id);
         return `
-        <button class="chip calchip${who === o.id ? ' on' : ''}" data-calfilter="${esc(o.id)}"
+        <button class="chip fcchip${who === o.id ? ' on' : ''}" data-calfilter="${esc(o.id)}"
           aria-pressed="${who === o.id}">
-          <span class="caldot" style="background:${esc(col.dot)}"></span>${esc(o.label)}</button>`;
+          <span class="fcdot" style="background:${esc(col.dot)}"></span>${esc(o.label)}</button>`;
       }).join('')}
     </div>
 
-    ${tab === 'week' ? calWeekBlock(who)
+    ${tab === 'day' || tab === 'week' ? calTimeGrid(who)
     : tab === 'month' ? `
       ${calGrid(who)}
       ${calDayBlock(sel, today, who)}
@@ -18782,7 +18988,7 @@ function screenCalendar(c) {
       <p class="tiny" style="margin:10px 0 2px">${esc(CAL_PAST_NOTE)}</p>
       ${(() => {
         const past = calAllIn(calAddDays(today, -400), calAddDays(today, -1), who).reverse();
-        if (!past.length) return `<p class="calwd-none">Nothing yet.</p>`;
+        if (!past.length) return `<p class="fcwd-none">Nothing yet.</p>`;
         const days = [];
         past.forEach((e) => { if (days.indexOf(e.date) === -1) days.push(e.date); });
         return days.slice(0, 40).map((d) => calDayBlock(d, today, who)).join('');
@@ -25326,6 +25532,7 @@ function calNewEvent() {
     kind: 'doctor',
     where: '',
     notes: '',
+    mins: CAL_DEFAULT_MINS,
     remind: '1d',
     repeat: '',
     createdAt: new Date().toISOString(),

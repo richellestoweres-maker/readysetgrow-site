@@ -510,10 +510,6 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
   background:var(--surface2);border:1px solid var(--line2);
   display:grid;place-items:center;
 }
-/* Same reason as the week rows: the grid gets its own clean field so
-   the leaves behind the page do not read as marks on the calendar. */
-.calgridwrap{background:var(--surface);border:1px solid var(--line2);border-radius:14px;
-  padding:9px 8px 10px;margin-bottom:4px}
 .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
 .cal-w{
   font-size:10px;color:var(--muted);text-align:center;padding:2px 0 4px;
@@ -1242,6 +1238,7 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 }
 @keyframes bdayin{from{opacity:0}to{opacity:1}}
 .bdaycard{
+  position:relative;z-index:2;
   width:100%;max-width:330px;max-height:100%;overflow-y:auto;
   background:var(--card,#fff);border-radius:20px;padding:22px 20px 18px;
   box-shadow:0 18px 46px rgba(45,62,40,.34);text-align:center;
@@ -1249,7 +1246,6 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 }
 @keyframes bdayup{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
 .bdayfetti{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
-.bdaycard{position:relative;z-index:2}
 .bdayone{padding:2px 0}
 .bdayleaf{
   width:54px;height:54px;border-radius:50%;background:var(--deep);
@@ -1628,77 +1624,77 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
    flowing across. Same information, same density, laid out for the
    screen it is actually on.
    ================================================================== */
-.calhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0 10px}
-.calmonth{font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
-.calnav{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:10px;
+.fchead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0 10px}
+.fcmonth{font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.fcnav{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:10px;
   width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
-.calnav svg{transform:rotate(180deg)}
-.calnav.next svg{transform:none}
-.calnav:hover{background:var(--leaf2)}
+.fcnav svg{transform:rotate(180deg)}
+.fcnav.next svg{transform:none}
+.fcnav:hover{background:var(--leaf2)}
 
 /* ---- the chip, which is the whole design ---- */
-.calchip-e{display:flex;align-items:baseline;gap:5px;width:100%;text-align:left;
+.fcchip-e{display:flex;align-items:baseline;gap:5px;width:100%;text-align:left;
   appearance:none;border:0;cursor:pointer;border-radius:6px;padding:4px 7px;
   font-size:12px;line-height:1.25;font-weight:600;color:#fff;overflow:hidden}
-.calchip-e .ct{font-weight:700;opacity:.85;font-variant-numeric:tabular-nums;flex:none;font-size:11px}
-.calchip-e .cn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fcchip-e .ct{font-weight:700;opacity:.85;font-variant-numeric:tabular-nums;flex:none;font-size:11px}
+.fcchip-e .cn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* Something the app worked out, rather than something she promised
    somebody she would be at. Same colour, drawn as an outline, so it
    reads as information instead of a commitment. */
-.calchip-e.soft{background:transparent!important;border:1px solid currentColor;font-weight:500}
-.calchip-e.soft .ct{opacity:.7}
+.fcchip-e.soft{background:transparent!important;border:1px solid currentColor;font-weight:500}
+.fcchip-e.soft .ct{opacity:.7}
 
 /* ---- the week ---- */
-.calweek{display:grid;gap:5px;margin-top:2px}
+.fcweek{display:grid;gap:5px;margin-top:2px}
 /* Every row sits on a solid field. The page behind this has leaves and
    affirmation shapes drawn across it, which is right for a page you
    read and is visual noise behind a grid you scan. The decoration
    still frames the screen, it just stops showing through the content. */
-.calwd{display:grid;grid-template-columns:46px 1fr;gap:9px;align-items:center;
+.fcwd{display:grid;grid-template-columns:46px 1fr;gap:9px;align-items:center;
   padding:8px 10px;border-radius:12px;min-height:46px;background:var(--surface);
   border:1px solid var(--line2)}
-.calwd.today{background:var(--leaf2);border-color:var(--leaf)}
-.calwd-free{display:block;height:1px;border-top:1px dashed var(--line);opacity:.7;width:38px}
-.calwd-h{display:flex;flex-direction:column;align-items:center;gap:1px;padding-top:1px}
-.calwd-d{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);line-height:1}
-.calwd-n{font-size:19px;font-weight:700;color:var(--ink);line-height:1.05;font-variant-numeric:tabular-nums}
-.calwd.today .calwd-n{color:var(--deep2)}
-.calwd.today .calwd-d{color:var(--deep2)}
-.calwd-b{display:flex;flex-direction:column;gap:3px;min-width:0}
-.calwd-none{font-size:12px;color:var(--faint);padding:3px 1px}
+.fcwd.today{background:var(--leaf2);border-color:var(--leaf)}
+.fcwd-free{display:block;height:1px;border-top:1px dashed var(--line);opacity:.7;width:38px}
+.fcwd-h{display:flex;flex-direction:column;align-items:center;gap:1px;padding-top:1px}
+.fcwd-d{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);line-height:1}
+.fcwd-n{font-size:19px;font-weight:700;color:var(--ink);line-height:1.05;font-variant-numeric:tabular-nums}
+.fcwd.today .fcwd-n{color:var(--deep2)}
+.fcwd.today .fcwd-d{color:var(--deep2)}
+.fcwd-b{display:flex;flex-direction:column;gap:3px;min-width:0}
+.fcwd-none{font-size:12px;color:var(--faint);padding:3px 1px}
 
 @media (min-width:700px){
   /* A real 7 column week, the way a wall display does it. */
-  .calweek{grid-template-columns:repeat(7,1fr);gap:6px}
-  .calwd{grid-template-columns:1fr;gap:6px;padding:8px 6px;min-height:120px;
+  .fcweek{grid-template-columns:repeat(7,1fr);gap:6px}
+  .fcwd{grid-template-columns:1fr;gap:6px;padding:8px 6px;min-height:120px;
     background:var(--surface2);border:1px solid var(--line2)}
-  .calwd.today{background:var(--leaf2);border-color:var(--leaf)}
-  .calwd-h{flex-direction:column;gap:2px}
+  .fcwd.today{background:var(--leaf2);border-color:var(--leaf)}
+  .fcwd-h{flex-direction:column;gap:2px}
 }
 
 /* ---- the month ---- */
 /* Same reason as the week rows: the grid gets its own clean field so
    the leaves behind the page do not read as marks on the calendar. */
-.calgridwrap{background:var(--surface);border:1px solid var(--line2);border-radius:14px;
+.fcgridwrap{background:var(--surface);border:1px solid var(--line2);border-radius:14px;
   padding:9px 8px 10px;margin-bottom:4px}
-.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
-.caldow{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);
+.fcgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.fcdow{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);
   text-align:center;padding:2px 0 5px;font-weight:600}
-.calcell{appearance:none;border:1px solid transparent;background:var(--surface2);border-radius:9px;
+.fccell{appearance:none;border:1px solid transparent;background:var(--surface2);border-radius:9px;
   min-height:58px;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;
   gap:3px;padding:5px 4px 4px;cursor:pointer;min-width:0;overflow:hidden}
-.calcell:hover{border-color:var(--leaf)}
-.calcell .caln{font-size:13px;font-weight:600;color:var(--ink);line-height:1;text-align:left;
+.fccell:hover{border-color:var(--leaf)}
+.fccell .fcn{font-size:13px;font-weight:600;color:var(--ink);line-height:1;text-align:left;
   font-variant-numeric:tabular-nums;padding-left:1px}
-.calcell.out{background:transparent}
-.calcell.out .caln{color:var(--faint);opacity:.5;font-weight:400}
-.calcell.today{background:var(--leaf2)}
-.calcell.today .caln{font-weight:800;color:var(--deep2)}
-.calcell.sel{border-color:var(--sage)}
+.fccell.out{background:transparent}
+.fccell.out .fcn{color:var(--faint);opacity:.5;font-weight:400}
+.fccell.today{background:var(--leaf2)}
+.fccell.today .fcn{font-weight:800;color:var(--deep2)}
+.fccell.sel{border-color:var(--sage)}
 /* Solid bars, not dots. A bar carries colour at a size you can read
    from arm's length, which is the only distance that matters when the
    phone is propped against the kettle. */
-.calbars{display:flex;flex-direction:column;gap:2px;min-width:0;overflow:hidden}
+.fcbars{display:flex;flex-direction:column;gap:2px;min-width:0;overflow:hidden}
 /* ON A PHONE THE BAR IS A BAR AND NOTHING ELSE.
    The title stays in the markup so the same element can grow words on
    a wider screen, but at this size it is hidden properly rather than
@@ -1706,56 +1702,125 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
    box does not clip it, it spills the words across the neighbouring
    days, which is exactly what it did. font-size 0 is what actually
    removes it from the layout. */
-.calbar{height:4px;min-height:4px;border-radius:2px;display:block;width:100%;
+.fcbar{height:4px;min-height:4px;border-radius:2px;display:block;width:100%;
   font-size:0;line-height:0;color:transparent;overflow:hidden;text-indent:-9999px}
-.calbar.soft{opacity:.45;background:currentColor!important}
-.calmore{font-size:9px;color:var(--faint);line-height:1.2;text-align:left;padding-left:1px;
+.fcbar.soft{opacity:.45;background:currentColor!important}
+.fcmore{font-size:9px;color:var(--faint);line-height:1.2;text-align:left;padding-left:1px;
   overflow:hidden;white-space:nowrap}
 @media (min-width:620px){
-  .calcell{min-height:86px;padding:6px 5px 5px}
-  .calcell .caln{font-size:14px}
+  .fccell{min-height:86px;padding:6px 5px 5px}
+  .fccell .fcn{font-size:14px}
   /* Wide enough for words, so the bars become chips with the name on. */
-  .calbar{height:auto;min-height:0;border-radius:4px;padding:1px 5px;font-size:10.5px;
+  .fcbar{height:auto;min-height:0;border-radius:4px;padding:1px 5px;font-size:10.5px;
     font-weight:600;color:#fff;line-height:1.55;text-indent:0;
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .calbar.soft{background:transparent!important;border:1px solid currentColor;opacity:1;
+  .fcbar.soft{background:transparent!important;border:1px solid currentColor;opacity:1;
     font-weight:500}
 }
 
 /* ---- the agenda rows, tightened ---- */
-.calrow{display:grid;grid-template-columns:4px 54px 1fr;gap:9px;align-items:center;
+.fcrow{display:grid;grid-template-columns:4px 54px 1fr;gap:9px;align-items:center;
   width:100%;text-align:left;appearance:none;border:0;background:var(--surface);
   border-radius:10px;padding:9px 11px 9px 0;margin-bottom:4px;cursor:pointer;overflow:hidden}
-.calrow:hover{background:var(--leaf3)}
-.calrow-c{width:4px;height:100%;min-height:34px;border-radius:0 3px 3px 0}
-.calrow-t{font-size:12px;font-weight:700;color:var(--deep2);font-variant-numeric:tabular-nums;
+.fcrow:hover{background:var(--leaf3)}
+.fcrow-c{width:4px;height:100%;min-height:34px;border-radius:0 3px 3px 0}
+.fcrow-t{font-size:12px;font-weight:700;color:var(--deep2);font-variant-numeric:tabular-nums;
   text-align:right;line-height:1.3}
-.calrow-t.none{color:var(--faint);font-weight:500}
-.calrow-m{min-width:0}
-.calrow-n{display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3;
+.fcrow-t.none{color:var(--faint);font-weight:500}
+.fcrow-m{min-width:0}
+.fcrow-n{display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.calrow-s{display:block;font-size:11.5px;color:var(--body);opacity:.75;line-height:1.35;margin-top:1px;
+.fcrow-s{display:block;font-size:11.5px;color:var(--body);opacity:.75;line-height:1.35;margin-top:1px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.caldayhead{display:flex;align-items:baseline;gap:8px;margin:14px 0 6px}
-.caldayhead-d{font-size:14px;font-weight:700;color:var(--ink)}
-.caldayhead-n{font-size:11.5px;color:var(--faint)}
+.fcdayhead{display:flex;align-items:baseline;gap:8px;margin:14px 0 6px}
+.fcdayhead-d{font-size:14px;font-weight:700;color:var(--ink)}
+.fcdayhead-n{font-size:11.5px;color:var(--faint)}
+
+/* ==================================================================
+   THE TIMELINE
+
+   Hours down the left in a fixed gutter, 1 or 7 day columns beside it,
+   entries absolutely positioned inside their column. 46 pixels an hour
+   is the smallest that still lets a 30 minute block hold a time and a
+   word, which is the real constraint here.
+   ================================================================== */
+.fctl{background:var(--surface);border:1px solid var(--line2);border-radius:14px;
+  overflow:hidden;margin-bottom:4px}
+/* The week scrolls sideways on a narrow screen. The hour gutter is
+   sticky inside that scroll, so the times stay beside the columns
+   instead of sliding away with them. */
+.fctl-scroll{overflow-x:hidden}
+.fctl.wide .fctl-scroll{overflow-x:auto;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.fctl.wide .fctl-h, .fctl.wide .fctl-b{min-width:max-content}
+.fctl.wide .fctl-col{min-width:74px}
+.fctl.wide .fctl-gut{position:sticky;left:0;z-index:4;background:var(--surface)}
+.fctl.wide .fctl-h .fctl-gut{background:var(--surface2);z-index:5}
+@media (min-width:780px){
+  .fctl.wide .fctl-scroll{overflow-x:visible}
+  .fctl.wide .fctl-h, .fctl.wide .fctl-b{min-width:0}
+  .fctl.wide .fctl-col{min-width:0}
+}
+.fctl-h{display:flex;border-bottom:1px solid var(--line2);background:var(--surface2)}
+.fctl-b{display:flex;position:relative}
+.fctl-gut{width:46px;min-width:46px;flex:none;position:relative}
+.fctl-b .fctl-gut{border-right:1px solid var(--line2)}
+.fctl-hr{position:absolute;right:6px;transform:translateY(-50%);font-size:10px;color:var(--faint);
+  line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.fctl-col{flex:1;min-width:0;position:relative;border-left:1px solid var(--line2)}
+.fctl-h .fctl-col{border-left:0;padding:0}
+.fctl-col.today{background:rgba(234,239,226,.5)}
+.fctl-line{position:absolute;left:0;right:0;height:1px;background:var(--line2);opacity:.75}
+/* Now, across today only. */
+.fctl-now{position:absolute;left:0;right:0;height:2px;background:#A85A44;z-index:3;border-radius:2px}
+.fctl-now::before{content:"";position:absolute;left:-3px;top:-3px;width:8px;height:8px;
+  border-radius:50%;background:#A85A44}
+/* An entry. */
+.fctl-ev{position:absolute;z-index:2;appearance:none;border:0;border-radius:6px;padding:3px 6px;
+  text-align:left;overflow:hidden;cursor:pointer;color:#fff;display:flex;flex-direction:column;
+  gap:0;line-height:1.2;box-shadow:0 1px 2px rgba(60,84,53,.15)}
+.fctl-ev .fctl-t{font-size:10px;font-weight:700;opacity:.85;font-variant-numeric:tabular-nums}
+.fctl-ev .fctl-n{font-size:11.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.fctl-ev.soft{background:var(--surface)!important;border:1px solid currentColor;box-shadow:none}
+.fctl-ev.soft .fctl-t{opacity:.7}
+/* The all day strip, above the hours where it belongs. */
+.fctl-ad{display:flex;flex-direction:column;gap:3px;padding:5px 5px 6px}
+.fctl-h .fctl-gut{border-right:1px solid var(--line2)}
+.fctl-dh{appearance:none;border:0;background:transparent;width:100%;display:flex;
+  flex-direction:column;align-items:center;gap:1px;padding:7px 2px 5px;cursor:pointer}
+.fctl-dw{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);line-height:1}
+.fctl-dn{font-size:16px;font-weight:700;color:var(--ink);line-height:1.1;font-variant-numeric:tabular-nums}
+.fctl-col.today .fctl-dn{color:var(--deep2)}
+.fctl-dh.sel .fctl-dn{color:var(--deep2)}
+
+/* ---- the week strip, which is how you change day ---- */
+.fcstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin:2px 0 9px}
+.fcsd{appearance:none;border:1px solid transparent;background:transparent;border-radius:11px;
+  display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 1px 5px;cursor:pointer}
+.fcsd:hover{background:var(--leaf3)}
+.fcsd-w{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);line-height:1}
+.fcsd-n{font-size:16px;font-weight:600;color:var(--ink);line-height:1.15;font-variant-numeric:tabular-nums}
+.fcsd.today{background:var(--leaf2)}
+.fcsd.today .fcsd-n{font-weight:800;color:var(--deep2)}
+.fcsd.sel{border-color:var(--sage);background:var(--surface)}
+.fcsd-dots{display:flex;gap:2px;min-height:5px;align-items:center}
+.fcsd-dot{width:4px;height:4px;border-radius:50%;display:block}
 
 /* ---- the header row: views, a round add, both on one line ---- */
 .sc-head.tight{padding-bottom:4px}
-.calbar{display:flex;align-items:center;gap:8px;margin:6px 0 7px}
-.calscroll{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;
+.fcviewbar{display:flex;align-items:center;gap:8px;margin:12px 0 8px}
+.fcscroll{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;
   padding:2px 0;flex:1;min-width:0}
-.calscroll::-webkit-scrollbar{display:none}
-.calscroll .chip{flex:none}
-.calkey{margin-bottom:4px}
-.caladd{appearance:none;border:0;background:var(--sage);color:#fff;width:38px;height:38px;flex:none;
+.fcscroll::-webkit-scrollbar{display:none}
+.fcscroll .chip{flex:none}
+.fckey{margin-bottom:4px}
+.fcadd{appearance:none;border:0;background:var(--sage);color:#fff;width:38px;height:38px;flex:none;
   border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;
   box-shadow:0 2px 8px rgba(74,103,65,.25)}
-.caladd:hover{background:var(--sage-press)}
+.fcadd:hover{background:var(--sage-press)}
 
 /* ---- the filter row doubles as the colour key ---- */
-.calchip{display:inline-flex;align-items:center;gap:6px}
-.calchip .caldot{width:8px;height:8px;border-radius:50%;flex:none;display:block}
+.fcchip{display:inline-flex;align-items:center;gap:6px}
+.fcchip .fcdot{width:8px;height:8px;border-radius:50%;flex:none;display:block}
 
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
