@@ -20441,16 +20441,32 @@ function obWhoToggle(id) {
   flushStore();
 }
 
-/* A big tappable answer, which is most of what these slides are. */
-function obPick(on, label, help, attrs) {
+/* A big tappable answer, which is most of what these slides are.
+
+   `multi` decides what it looks like, and that is not cosmetic. A
+   checkbox on the left means tick as many as you like. No box means
+   pick one. Getting that wrong is what made the where are you slide
+   look like it only took one answer when it always took as many as
+   were true. */
+function obPick(on, label, help, attrs, multi) {
   return `
-  <button class="obpick${on ? ' on' : ''}" ${attrs}>
+  <button class="obpick${on ? ' on' : ''}" ${attrs}
+    role="${multi ? 'checkbox' : 'radio'}" aria-checked="${on}">
+    ${multi ? `<span class="obbox${on ? ' on' : ''}">${on ? icon('check', 13, '#fff') : ''}</span>` : ''}
     <span class="grow">
       <span class="obpick-t">${esc(label)}</span>
       ${help ? `<span class="obpick-s">${esc(help)}</span>` : ''}
     </span>
-    <span class="obpick-x">${on ? icon('check', 16, 'var(--sage)') : ''}</span>
+    ${multi ? '' : `<span class="obpick-x">${on ? icon('check', 16, 'var(--sage)') : ''}</span>`}
   </button>`;
+}
+
+/* How many are ticked, said out loud, because a count moving from 1 to
+   2 is the clearest possible proof that more than 1 is allowed. */
+function obCountLine(n) {
+  if (!n) return '';
+  return `<p class="tiny" style="margin:2px 0 10px;color:var(--deep2);font-weight:600">
+    ${esc(n + (n === 1 ? ' selected' : ' selected'))}</p>`;
 }
 
 function obSlide(step, kidIndex) {
@@ -20488,13 +20504,24 @@ function obSlide(step, kidIndex) {
   }
 
   if (name === 'who') {
+    const picked = ONBOARD_WHO.filter(obWhoOn).length;
+    /* 2 halves, because where you are and who you are to them are
+       different kinds of answer and 11 in one column reads as a menu
+       to choose from rather than a list to tick. */
+    const group = (gid) => ONBOARD_WHO.filter((o) => o.kind === gid
+      || (gid === 'stage' && o.kind === 'flag'));
     return `
     ${onboardSays(ONBOARD_LINES.who)}
-    <div style="margin-top:12px">
-      ${ONBOARD_WHO.map((o) => obPick(obWhoOn(o), o.label, '',
-        `data-obwho="${esc(o.id)}"`)).join('')}
-    </div>
-    <p class="tiny" style="margin-top:10px">${esc(ONBOARD_WHO_NOTE)}</p>`;
+    <p class="sect" style="margin-top:14px">${esc(ONBOARD_WHO_ALL)}</p>
+    ${obCountLine(picked)}
+    ${ONBOARD_WHO_GROUPS.map((g, i) => `
+      ${i ? `<p class="eyebrow" style="margin:16px 0 8px">${esc(g.label)}</p>` : ''}
+      <div role="group" aria-label="${esc(g.label)}">
+        ${group(g.id).map((o) => obPick(obWhoOn(o), o.label, '',
+          `data-obwho="${esc(o.id)}"`, true)).join('')}
+      </div>`).join('')}
+    <p class="tiny" style="margin-top:10px">${esc(ONBOARD_WHO_SWAP)}</p>
+    <p class="tiny" style="margin-top:7px">${esc(ONBOARD_WHO_NOTE)}</p>`;
   }
 
   if (name === 'calledby') {
@@ -20582,10 +20609,12 @@ function obSlide(step, kidIndex) {
     ${onboardSays(kidName
       ? 'Last one for ' + kidName + ', and it is the one that changes the most.'
       : ONBOARD_LINES.kidneeds)}
-    <div style="margin-top:12px">
-      ${obPick(!on.length, ONBOARD_NEEDS_NONE, '', `data-obneed="" data-obkid="${kidIndex}"`)}
+    <p class="sect" style="margin-top:14px">${esc(ONBOARD_WHO_ALL)}</p>
+    ${obCountLine(on.length)}
+    <div style="margin-top:2px">
+      ${obPick(!on.length, ONBOARD_NEEDS_NONE, '', `data-obneed="" data-obkid="${kidIndex}"`, true)}
       ${shown.map((l) => obPick(on.indexOf(l.id) !== -1, l.label, l.tagline || '',
-        `data-obneed="${esc(l.id)}" data-obkid="${kidIndex}"`)).join('')}
+        `data-obneed="${esc(l.id)}" data-obkid="${kidIndex}"`, true)).join('')}
     </div>
     <button class="chip" style="margin-top:10px" data-obneedsall="${all ? '0' : '1'}">
       ${all ? 'Show the common ones' : 'See all ' + SUPPORT_LENSES.length}</button>
