@@ -207,6 +207,10 @@ export const TIP_MILESTONE_WORRY = {
  * to speak up again.
  */
 export const TIP_COOL_OFF = {
+  /* Once on the evening she says so, and not again until she says so
+     again. This one is a reply to something she just did, so it is
+     allowed to come every time, unlike the rest. */
+  hardToday: 1,
   fever: 1,
   napLate: 1,
   teething: 2,
