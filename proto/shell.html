@@ -1822,6 +1822,28 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 .fcchip{display:inline-flex;align-items:center;gap:6px}
 .fcchip .fcdot{width:8px;height:8px;border-radius:50%;flex:none;display:block}
 
+/* ==================================================================
+   LISTS
+
+   A ticked thing goes grey and sinks, it does not disappear. Half the
+   use of a shopping list is seeing what is already in the trolley.
+   ================================================================== */
+.listadd{display:flex;gap:8px;align-items:center;margin:4px 0 12px}
+.listadd .inp{flex:1;min-width:0}
+.listbox{background:var(--surface);border:1px solid var(--line2);border-radius:14px;overflow:hidden}
+.listrow{display:flex;align-items:center;gap:11px;width:100%;text-align:left;appearance:none;
+  border:0;background:transparent;padding:11px 12px;cursor:pointer;font-size:14.5px;
+  color:var(--ink);border-bottom:1px solid var(--line2);line-height:1.35}
+.listrow:last-child{border-bottom:0}
+.listrow:hover{background:var(--leaf3)}
+.listrow.done{color:var(--faint)}
+.listrow.done .grow{text-decoration:line-through}
+.listbox-t{width:21px;height:21px;min-width:21px;border-radius:7px;border:2px solid var(--line);
+  display:grid;place-items:center;flex:none;transition:background .12s}
+.listrow.done .listbox-t{background:var(--sage);border-color:var(--sage)}
+.listdel{font-size:19px;line-height:1;color:var(--faint);padding:0 2px;flex:none;opacity:.55}
+.listdel:hover{opacity:1;color:#A85A44}
+
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 

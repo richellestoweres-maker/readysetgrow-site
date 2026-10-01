@@ -1156,6 +1156,17 @@ const store = {
      level, because it is one calendar. */
   calFeeds: {},
   calWeekShift: 0,
+
+  /* SHARED LISTS. Household level, same as the chart and the calendar:
+     a shopping list only one adult can see is not a shopping list. */
+  lists: [],
+  deletedListIds: [],
+  listOpen: '',
+  listNewOpen: false,
+  listDraftName: '',
+  listDraftWho: '',
+  listDraftItem: '',
+  listAskDel: '',
   choreTab: 'today',
   choreDay: null,
   chorePick: null,
@@ -1397,7 +1408,7 @@ const state = {};
     build now refuses to finish if a data-sub key is not here. */
  'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'sexedTab',
  'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab', 'crTab', 'calTab',
- 'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift',
+ 'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift', 'lists', 'deletedListIds', 'listOpen',
  'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -1465,6 +1476,8 @@ function flushStore() {
       events: store.events,
       deletedEventIds: store.deletedEventIds,
       calFeeds: store.calFeeds,
+      lists: store.lists,
+      deletedListIds: store.deletedListIds,
       notDuplicates: store.notDuplicates,
       parentUpdatedAt: store.parentUpdatedAt,
     }));
@@ -1540,6 +1553,8 @@ function loadStore() {
     store.deletedChildIds = Array.isArray(saved.deletedChildIds) ? saved.deletedChildIds : [];
     store.events = Array.isArray(saved.events) ? saved.events : [];
     store.calFeeds = (saved.calFeeds && typeof saved.calFeeds === 'object') ? saved.calFeeds : {};
+    store.lists = Array.isArray(saved.lists) ? saved.lists : [];
+    store.deletedListIds = Array.isArray(saved.deletedListIds) ? saved.deletedListIds : [];
     store.deletedEventIds = Array.isArray(saved.deletedEventIds) ? saved.deletedEventIds : [];
     store.notDuplicates = Array.isArray(saved.notDuplicates) ? saved.notDuplicates : [];
     store.parentUpdatedAt = Number(saved.parentUpdatedAt) || 0;
@@ -2686,6 +2701,7 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'about') html = screenAbout(c);
   else if (v && v.type === 'screen' && v.id === 'install') html = screenInstall();
   else if (v && v.type === 'screen' && v.id === 'calendar') html = screenCalendar(c);
+  else if (v && v.type === 'screen' && v.id === 'lists') html = screenLists(c);
   else if (v && v.type === 'screen' && v.id === 'chores') html = screenChores();
   else if (v && v.type === 'screen' && v.id === 'learning') html = screenLearning(c);
   else if (v && v.type === 'screen' && v.id === 'growth') html = screenGrowth(c);
@@ -3033,6 +3049,15 @@ function initControls() {
       if (store.profileEdit && store.profileEdit.who === 'me') store.profileEdit.values[f] = e.target.value;
       else { store.parent[f] = e.target.value; flushStore(); }
     }
+    else if (e.target.matches('[data-listfield]')) {
+      store['listDraft' + e.target.dataset.listfield.charAt(0).toUpperCase()
+        + e.target.dataset.listfield.slice(1)] = e.target.value;
+    }
+    else if (e.target.matches('[data-listadd]')) {
+      /* No repaint while she types, same as every other box in this
+         app, or the caret jumps to the front on each letter. */
+      store.listDraftItem = e.target.value;
+    }
     else if (e.target.matches('[data-calfield]')) {
       /* Straight onto the draft and NO repaint. The caret jumps to
          position zero on every keystroke otherwise, which is the bug
@@ -3240,6 +3265,14 @@ function initControls() {
       if (auth.mode === 'signup') doSignUp(); else doSignIn();
       return;
     }
+    /* Enter adds the item and leaves the box ready for the next one.
+       9 things on a shopping list is 9 presses of Enter and never a
+       reach for a button. */
+    if (e.target.id === 'list_item' && e.key === 'Enter') {
+      e.preventDefault();
+      listPush(e.target.dataset.listadd);
+      return;
+    }
     if (e.target.id === 'findQ' && e.key === 'Enter') {
       e.preventDefault();
       if ((state.findQ || '').trim()) {
@@ -3279,7 +3312,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3699,6 +3732,79 @@ function initControls() {
       store.calShift = v === '0' ? 0 : (Number(store.calShift) || 0) + Number(v);
       if (store.calShift < -24) store.calShift = -24;
       if (store.calShift > 24) store.calShift = 24;
+    } else if (t.dataset.listnew) {
+      store.listNewOpen = true;
+      store.listDraftName = '';
+      store.listDraftWho = CAL_WHO_HOUSE_ID;
+    } else if (t.dataset.listcancel) {
+      store.listNewOpen = false;
+      store.listDraftName = '';
+    } else if (t.dataset.listwho) {
+      store.listDraftWho = t.dataset.listwho;
+    } else if (t.dataset.listmake) {
+      const name = String(store.listDraftName || '').trim();
+      if (!name) return;
+      const made = listNew(name, store.listDraftWho || CAL_WHO_HOUSE_ID, []);
+      store.lists = listsAll().concat([made]);
+      store.listNewOpen = false;
+      store.listDraftName = '';
+      store.listOpen = made.id;
+      listsSave();
+      return;
+    } else if (t.dataset.liststart) {
+      const st = LIST_STARTERS.filter((x) => x.id === t.dataset.liststart)[0];
+      if (!st) return;
+      const made = listNew(st.name, CAL_WHO_HOUSE_ID, st.items);
+      store.lists = listsAll().concat([made]);
+      store.listOpen = made.id;
+      listsSave();
+      return;
+    } else if (t.dataset.listopen) {
+      store.listOpen = t.dataset.listopen;
+      store.listDraftItem = '';
+      window.scrollTo(0, 0);
+    } else if (t.dataset.listclose) {
+      store.listOpen = '';
+      store.listAskDel = '';
+    } else if (t.dataset.listpush) {
+      listPush(t.dataset.listpush);
+      return;
+    } else if (t.dataset.listdelitem) {
+      const l = listById(t.dataset.listdelitem);
+      if (!l) return;
+      l.items = (l.items || []).filter((x) => x.id !== t.dataset.item);
+      l.updatedAt = Date.now();
+      listsSave();
+      return;
+    } else if (t.dataset.listtick) {
+      const l = listById(t.dataset.listtick);
+      if (!l) return;
+      const it = (l.items || []).filter((x) => x.id === t.dataset.item)[0];
+      if (!it) return;
+      it.done = !it.done;
+      l.updatedAt = Date.now();
+      listsSave();
+      return;
+    } else if (t.dataset.listclear) {
+      const l = listById(t.dataset.listclear);
+      if (!l) return;
+      l.items = (l.items || []).filter((x) => !x.done);
+      l.updatedAt = Date.now();
+      listsSave();
+      return;
+    } else if (t.dataset.listaskdel) {
+      store.listAskDel = t.dataset.listaskdel;
+    } else if (t.dataset.listnodel) {
+      store.listAskDel = '';
+    } else if (t.dataset.listdel) {
+      const id = t.dataset.listdel;
+      store.lists = listsAll().filter((x) => x.id !== id);
+      if (!Array.isArray(store.deletedListIds)) store.deletedListIds = [];
+      if (store.deletedListIds.indexOf(id) === -1) store.deletedListIds.push(id);
+      store.listOpen = '';
+      store.listAskDel = '';
+      listsSave();
+      return;
     } else if (t.dataset.calstep) {
       store.calDay = t.dataset.calstep === 'today'
         ? calToday()
@@ -18913,6 +19019,208 @@ function calSubscribeBlock() {
   </div>`;
 }
 
+
+/* ==================================================================
+   LISTS
+
+   Why these are shared while memories are private, and why a list is
+   deliberately not a task manager, is in src/data/lists.js.
+   ================================================================== */
+
+function listsAll() {
+  return Array.isArray(store.lists) ? store.lists : [];
+}
+
+function listById(id) {
+  return listsAll().filter((l) => l.id === id)[0] || null;
+}
+
+function listNew(name, who, items) {
+  return {
+    id: 'l' + Date.now() + Math.floor(Math.random() * 1000),
+    name: String(name || '').trim() || 'List',
+    who: who || CAL_WHO_HOUSE_ID,
+    items: (items || []).map((t, i) => ({
+      id: 'i' + Date.now() + i + Math.floor(Math.random() * 1000),
+      text: String(t), done: false, at: Date.now() + i,
+    })),
+    createdAt: new Date().toISOString(),
+    updatedAt: Date.now(),
+  };
+}
+
+/* Add whatever is in the box. Used by the button and by the Enter
+   key, because adding 9 things to a shopping list means pressing
+   Enter 9 times and never reaching for a button. */
+function listPush(id) {
+  const l = listById(id);
+  const text = String(store.listDraftItem || '').trim();
+  if (!l || !text) return;
+  l.items = (l.items || []).concat([{
+    id: 'i' + Date.now() + Math.floor(Math.random() * 1000),
+    text: text, done: false, at: Date.now(),
+  }]);
+  l.updatedAt = Date.now();
+  store.listDraftItem = '';
+  listsSave();
+  /* Straight back in the box, so the next thing can just be typed. */
+  setTimeout(() => {
+    const box = document.getElementById('list_item');
+    if (box) box.focus();
+  }, 0);
+}
+
+function listsSave() {
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+/* ------------------------------------------------------------------
+   THE SCREEN
+
+   Two states: the shelf of lists, and one list open. Kept as 1 screen
+   rather than 2 because a list is a small thing and bouncing through a
+   router to tick milk off is silly.
+   ------------------------------------------------------------------ */
+function screenLists(c) {
+  const open = store.listOpen ? listById(store.listOpen) : null;
+  if (open) return listsOneScreen(open);
+
+  const all = listsAll();
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head tight">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(LISTS_TITLE)}</h1>
+    <p class="sub">${esc(LISTS_SUB)}</p>
+  </div>
+  <div class="sc">
+
+    ${store.listNewOpen ? `
+    <div class="card" style="margin-bottom:10px">
+      <p class="eyebrow">${esc(LIST_NEW_NAME)}</p>
+      <input class="inp" type="text" id="list_name" data-listfield="name"
+        value="${esc(store.listDraftName || '')}" placeholder="${esc(LIST_NEW_PLACEHOLDER)}"
+        autocomplete="off" style="margin-top:7px;width:100%" />
+      <p class="eyebrow" style="margin-top:11px">Who is it about</p>
+      <div class="chips" style="margin:7px 0 2px">
+        ${calWhoOptions().map((o) => {
+          const col = calColorOf(o.id);
+          const on = (store.listDraftWho || CAL_WHO_HOUSE_ID) === o.id;
+          return `<button class="chip fcchip${on ? ' on' : ''}" data-listwho="${esc(o.id)}"
+            aria-pressed="${on}">
+            <span class="fcdot" style="background:${esc(col.dot)}"></span>${esc(o.label)}</button>`;
+        }).join('')}
+      </div>
+      <div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn" style="flex:1 1 120px" data-listmake="1">
+          ${icon('check', 15, '#fff')} Make it</button>
+        <button class="btn ghost" style="flex:1 1 90px" data-listcancel="1">Cancel</button>
+      </div>
+    </div>` : `
+    <button class="btn" style="width:100%" data-listnew="1">
+      ${icon('plus', 15, '#fff')} New list</button>`}
+
+    ${all.length ? all.map((l) => {
+      const col = calColorOf(l.who);
+      return `
+      <button class="lrow" data-listopen="${esc(l.id)}" style="align-items:center;margin-top:8px">
+        <span class="licon" style="background:${esc(col.soft)}">${icon('note', 17, col.ink)}</span>
+        <span class="grow">
+          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(l.name)}</span>
+          <span class="tiny" style="display:block;margin-top:2px">${esc(listCountLine(l.items))}
+            ${l.who && l.who !== CAL_WHO_HOUSE_ID ? ' &middot; ' + esc(calWhoName(l.who)) : ''}</span>
+        </span>
+        <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+      </button>`;
+    }).join('') : `
+    <div class="card flat" style="margin-top:12px">
+      <p class="eyebrow">${esc(LISTS_EMPTY.title)}</p>
+      <p class="bodytext" style="margin-top:6px">${esc(LISTS_EMPTY.body)}</p>
+    </div>`}
+
+    ${/* The starters only while there is room for them. Once a family
+          has their own lists, a block of suggestions is clutter. */''}
+    ${all.length < 3 ? `
+    <p class="sect" style="margin-top:18px">Ready made</p>
+    <p class="tiny" style="margin:0 0 8px">${esc(LISTS_START_HELP)}</p>
+    ${LIST_STARTERS.filter((st) => !all.some((l) => l.name === st.name)).map((st) => `
+      <button class="lrow" data-liststart="${esc(st.id)}" style="align-items:flex-start;margin-top:7px">
+        <span class="licon">${icon(st.icon, 17)}</span>
+        <span class="grow">
+          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(st.name)}</span>
+          <span class="tiny" style="display:block;margin-top:2px">${esc(st.hint)}</span>
+        </span>
+        <span class="chev">${icon('plus', 15, 'var(--sage)')}</span>
+      </button>`).join('')}` : ''}
+
+    <p class="disclaimer">${esc(LISTS_PRIVACY)}</p>
+  </div>`;
+}
+
+function listsOneScreen(l) {
+  const col = calColorOf(l.who);
+  const items = listSort(l.items);
+  const doneCount = (l.items || []).filter((x) => x.done).length;
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head tight">
+    <button class="back" data-listclose="1">${icon('back', 15, 'var(--deep)')} All lists</button>
+    <h1 class="title sm">${esc(l.name)}</h1>
+    ${/* Whose list it is, as a colour, on the heading. The tick boxes
+          carry the colour too, but an empty list has none of those and
+          would otherwise be the one screen where the colour coding
+          silently disappears. */''}
+    <p class="sub">
+      <span class="fcdot" style="background:${esc(col.dot)};display:inline-block;
+        width:9px;height:9px;border-radius:50%;margin-right:6px"></span>${esc(listCountLine(l.items))}${l.who && l.who !== CAL_WHO_HOUSE_ID
+      ? ', ' + esc(calWhoName(l.who)) : ''}</p>
+  </div>
+  <div class="sc">
+
+    ${/* The add box is at the TOP and stays there. A list you add to
+          from the bottom means scrolling past 40 ticked items every
+          time you think of something in the shop. */''}
+    <div class="listadd">
+      <input class="inp" type="text" id="list_item" data-listadd="${esc(l.id)}"
+        value="${esc(store.listDraftItem || '')}" placeholder="${esc(LIST_ADD_PLACEHOLDER)}"
+        autocomplete="off" />
+      <button class="caladd fcadd" data-listpush="${esc(l.id)}" aria-label="Add to the list">
+        ${icon('plus', 18, '#fff')}</button>
+    </div>
+
+    ${items.length ? `<div class="listbox">${items.map((it) => `
+      <button class="listrow${it.done ? ' done' : ''}" data-listtick="${esc(l.id)}"
+        data-item="${esc(it.id)}">
+        <span class="listbox-t" style="${it.done ? '' : 'border-color:' + esc(col.dot)}">
+          ${it.done ? icon('check', 12, '#fff') : ''}</span>
+        <span class="grow">${esc(it.text)}</span>
+        <span class="listdel" data-listdelitem="${esc(l.id)}" data-item="${esc(it.id)}"
+          aria-label="Remove">&times;</span>
+      </button>`).join('')}</div>` : `
+      <p class="fcwd-none" style="padding:10px 2px">${esc(LISTS_EMPTY_ONE)}</p>`}
+
+    ${doneCount ? `
+      <p class="tiny" style="margin-top:10px">${esc(LIST_TICKED_NOTE)}</p>
+      <button class="btn ghost sm" style="width:100%;margin-top:8px" data-listclear="${esc(l.id)}">
+        ${esc(LIST_CLEAR)} (${doneCount})</button>` : ''}
+
+    ${store.listAskDel === l.id ? `
+    <div class="card" style="border-color:var(--attention);margin-top:14px">
+      <p class="eyebrow" style="color:#A85A44">Delete ${esc(l.name)}</p>
+      <p class="bodytext" style="margin-top:6px">${esc(LIST_DELETE_ASK)}</p>
+      <div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap">
+        <button class="btn ghost sm" style="flex:1 1 110px" data-listnodel="1">Keep it</button>
+        <button class="btn sm" style="flex:1 1 110px;background:#A85A44;border-color:#A85A44"
+          data-listdel="${esc(l.id)}">Delete for good</button>
+      </div>
+    </div>` : `
+    <button class="btn ghost sm" style="width:100%;margin-top:16px;color:#A85A44"
+      data-listaskdel="${esc(l.id)}">Delete this list</button>`}
+  </div>`;
+}
+
 function screenCalendar(c) {
   const today = calToday();
   const who = store.calWho || 'all';
@@ -19005,6 +19313,22 @@ function screenCalendar(c) {
         </div>`;
       }
       return days.map((d) => calDayBlock(d, today, who)).join('');
+    })()}
+
+    ${(() => {
+      const n = listsAll().length;
+      const left = listsAll().reduce((a, l) => a + (l.items || []).filter((x) => !x.done).length, 0);
+      return `
+      <button class="lrow" data-go="screen" data-id="lists" style="align-items:center;margin-top:14px">
+        <span class="licon">${icon('note', 17)}</span>
+        <span class="grow">
+          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(LISTS_TITLE)}</span>
+          <span class="tiny" style="display:block;margin-top:2px">${n
+            ? esc(n + (n === 1 ? ' list, ' : ' lists, ') + left + ' thing' + (left === 1 ? '' : 's') + ' to get')
+            : 'Groceries, what to pack, what to ask at the appointment'}</span>
+        </span>
+        <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+      </button>`;
     })()}
 
     ${calFeedsBlock()}
@@ -23174,6 +23498,8 @@ function parentPayload() {
     events: store.events || [],
     deletedEventIds: store.deletedEventIds || [],
     calFeeds: store.calFeeds || {},
+    lists: store.lists || [],
+    deletedListIds: store.deletedListIds || [],
     notDuplicates: store.notDuplicates || [],
     updatedAt: store.parentUpdatedAt || 0,
   }));
@@ -23480,6 +23806,19 @@ async function cloudFirstSync() {
     if (remoteUser.calFeeds && typeof remoteUser.calFeeds === 'object') {
       store.calFeeds = Object.assign({}, remoteUser.calFeeds, store.calFeeds || {});
     }
+
+    /* Lists merge by id the same way calendar entries do, and for the
+       same reason: 2 people adding to the shopping list at once must
+       end with both lots of shopping, not whichever synced last. */
+    store.deletedListIds = mergeDeletedIds(
+      store.deletedListIds,
+      Array.isArray(remoteUser.deletedListIds) ? remoteUser.deletedListIds : []
+    );
+    store.lists = mergeEvents(
+      store.lists,
+      Array.isArray(remoteUser.lists) ? remoteUser.lists : [],
+      store.deletedListIds
+    );
   }
 
   remoteKids.forEach((k) => { cloud.known[k.id] = contentKey(k); });
