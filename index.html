@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-01 00:04">
+<meta name="rsg-build" content="2026-10-01 01:55">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -610,6 +610,18 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 .tip-q{margin:8px 0 0;padding-left:16px}
 .tip-q li{font-size:12.5px;line-height:1.45;color:var(--body);margin-bottom:4px}
 .tip-go{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+
+/* A big tappable answer on a signup slide. Sized for a thumb, because
+   this is somebody's first minute in the app and usually one handed. */
+.obpick{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  background:var(--surface);border:1.5px solid var(--line2);border-radius:16px;
+  padding:14px 15px;margin-bottom:8px;font:inherit;cursor:pointer;min-height:54px;
+}
+.obpick.on{border-color:var(--sage);background:var(--leaf3)}
+.obpick-t{display:block;font-size:15px;font-weight:600;color:var(--ink);line-height:1.3}
+.obpick-s{display:block;font-size:12.5px;line-height:1.45;color:var(--muted);margin-top:3px}
+.obpick-x{flex:none}
 
 /* Picking what kind of day it is. A whole row is the target, because
    this gets tapped at 8am by somebody holding a child. */
@@ -1803,7 +1815,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-01 00:04';
+const BUILD_STAMP = '2026-10-01 01:55';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -18340,7 +18352,38 @@ const MEMORY_KEEP_NOTE = 'Kept until you delete it. Nothing here expires, tidies
     + 'or drops the oldest when the list gets long.';
 const MEMORY_EMPTY_CHILD = 'The things you will forget otherwise. What they said, how they '
     + 'said it, the face they pulled. A year from now this comes back to you.';
-const ONBOARD_STEPS = ['hello', 'you', 'where', 'child', 'ready'];
+const ONBOARD_STEPS = ['hello', 'name', 'bday', 'who', 'calledby', 'due',
+    'kids', 'kidname', 'kidbday', 'kidsex', 'kidneeds', 'ready'];
+const ONBOARD_KID_STEPS = ['kidname', 'kidbday', 'kidsex', 'kidneeds'];
+const ONBOARD_WHO = [
+    { id: 'trying', kind: 'stage', label: 'Trying to conceive' },
+    { id: 'expecting', kind: 'stage', label: 'Pregnant right now' },
+    { id: 'postpartum', kind: 'stage', label: 'In the first year after a birth' },
+    { id: 'haskids', kind: 'flag', label: 'I have children already' },
+    { id: 'birth', kind: 'role', label: 'I gave birth to them' },
+    { id: 'partner', kind: 'role', label: 'My partner gave birth' },
+    { id: 'adoptive', kind: 'role', label: 'Adoptive parent' },
+    { id: 'foster', kind: 'role', label: 'Foster parent' },
+    { id: 'step', kind: 'role', label: 'Step parent' },
+    { id: 'kinship', kind: 'role', label: 'Grandparent, or family raising them' },
+    { id: 'guardian', kind: 'role', label: 'Guardian' },
+];
+const ONBOARD_WHO_NOTE = 'Tick anything that is true. It moves those parts of the app to the front and puts the rest '
+    + 'away, and none of it is ever shown to anybody else.';
+const ONBOARD_COUNTS = [1, 2, 3, 4, 5, 6];
+const ONBOARD_COUNT_MORE = 'More than 6';
+const ONBOARD_COUNT_NONE = 'None yet';
+const ONBOARD_SEX = [
+    { id: 'f', label: 'Girl' },
+    { id: 'm', label: 'Boy' },
+    { id: '', label: 'Rather not say' },
+];
+const ONBOARD_SEX_NOTE = 'Only used for growth charts, which are drawn differently, and for the parts about puberty. '
+    + 'Nothing else in the app changes, and you can change it or clear it whenever you like.';
+const ONBOARD_NEEDS_NOTE = 'If something about how they learn or how their day goes has a name, or you think it might, '
+    + 'turning it on here reshapes the whole app around them rather than adding a page about it. '
+    + 'Nothing here is a diagnosis and nothing is shared.';
+const ONBOARD_NEEDS_NONE = 'Nothing yet, or still working it out';
 const ONBOARD_HELLO = [
     'I am here to help you with whatever this stage of parenting is throwing at you. '
         + 'I am not a doctor or a therapist, but I can talk things through with you, help you '
@@ -18385,6 +18428,18 @@ const ONBOARD_WHAT = [
             + 'becomes public unless you deliberately share it.' },
 ];
 const ONBOARD_LINES = {
+    name: 'First, what should I call you? This is just so I am not talking to a stranger.',
+    bday: 'And your birthday. This is only so the app knows when to wish you a happy one, and '
+        + 'so the parts about your own body know roughly where you are.',
+    who: 'Now the one that does the most work. Tick anything that is true for you today.',
+    calledby: 'What do they call you? It changes how I write to you, which sounds small and is not.',
+    due: 'When are they due? An estimate is fine, and you can change it whenever the estimate does.',
+    kids: 'How many children are we looking after here? Each one gets their own everything, kept '
+        + 'separate from the others.',
+    kidname: 'Who are we growing?',
+    kidbday: 'And their birthday. Almost everything in the app follows from this one answer.',
+    kidsex: 'One more, and it is optional.',
+    kidneeds: 'Last one, and it is the one that changes the most.',
     you: 'First, what should I call you? This is just so I am not talking to a stranger.',
     where: 'Now the part that does the most work. Tick anything that is true for you today, '
         + 'and I will bring those parts of the app forward and put the rest away. Nothing here '
@@ -18396,6 +18451,16 @@ const ONBOARD_LINES = {
 };
 const ONBOARD_TITLES = {
     hello: 'Hi, I am Willow',
+    name: 'What is your name?',
+    bday: 'When is your birthday?',
+    who: 'Where are you right now?',
+    calledby: 'What do they call you?',
+    due: 'When are they due?',
+    kids: 'How many children?',
+    kidname: 'What is their name?',
+    kidbday: 'When were they born?',
+    kidsex: 'Boy or girl?',
+    kidneeds: 'Anything worth knowing?',
     you: 'What should I call you?',
     where: 'Where are you right now?',
     child: 'Who are we growing?',
@@ -18459,21 +18524,48 @@ function onboardSituationLine(sit, stageLabels, roleLabels) {
 function onboardShouldOpen(ob) {
     return !!(ob && ob.open && !ob.done);
 }
-function onboardNext(step) {
-    const i = ONBOARD_STEPS.indexOf(step);
-    if (i === -1 || i === ONBOARD_STEPS.length - 1)
-        return null;
-    return ONBOARD_STEPS[i + 1];
+function onboardSteps(ctx) {
+    const c = ctx || {};
+    const out = ['hello', 'name', 'bday', 'who'];
+    if (c.expecting)
+        out.push('due');
+    if (c.hasKids)
+        out.push('calledby');
+    out.push('kids');
+    const n = Math.max(0, Math.min(6, Number(c.kidCount) || 0));
+    for (let i = 0; i < n; i++) {
+        ONBOARD_KID_STEPS.forEach((s) => out.push(s + ':' + i));
+    }
+    out.push('ready');
+    return out;
 }
-function onboardBack(step) {
-    const i = ONBOARD_STEPS.indexOf(step);
+function onboardStepName(step) {
+    return String(step || '').split(':')[0];
+}
+function onboardStepKid(step) {
+    const parts = String(step || '').split(':');
+    return parts.length > 1 ? Number(parts[1]) : -1;
+}
+function onboardNext(step, ctx) {
+    const steps = onboardSteps(ctx);
+    const i = steps.indexOf(step);
+    if (i === -1 || i === steps.length - 1)
+        return null;
+    return steps[i + 1];
+}
+function onboardBack(step, ctx) {
+    const steps = onboardSteps(ctx);
+    const i = steps.indexOf(step);
     if (i <= 0)
         return null;
-    return ONBOARD_STEPS[i - 1];
+    return steps[i - 1];
 }
-function onboardIndex(step) {
-    const i = ONBOARD_STEPS.indexOf(step);
+function onboardIndex(step, ctx) {
+    const i = onboardSteps(ctx).indexOf(step);
     return i === -1 ? 0 : i;
+}
+function onboardCount(ctx) {
+    return onboardSteps(ctx).length;
 }
 const NUDGE_QUIET_MINUTES = 200;
 const NUDGE_DAILY_MAX = 3;
@@ -29684,6 +29776,10 @@ const FIND_INDEX = [
         words: 'feeding breastfeeding formula bottle bottles latch weight gain solids starting solids allergens baby led weaning milk' },
     { title: 'Diapers, how many you need', where: 'Child profile', go: { screen: 'diaperplan' },
         words: 'diapers nappies how many diapers sizes wet diapers' },
+    { title: 'Sound machines and night lights', where: 'Child profile, Everyday care', go: { screen: 'nightlight' },
+        words: 'hatch sound machine white noise night light nightlight ok to wake okay to wake toddler '
+            + 'clock green means get up color changing afraid of the dark scared of the dark fear of the '
+            + 'dark red light volume too loud decibels coming out of their room early waking' },
     { title: 'Sleep foundations', where: 'Child profile, Everyday care', go: { screen: 'sleepfound' },
         words: 'swaddle swaddling how to swaddle stop swaddling sleep sack sleeping bag tog zipadee '
             + 'merlin magic sleepsuit blackout curtains white noise sound machine shusher wake windows '
@@ -46285,6 +46381,497 @@ function hardDayFor(answers) {
         return null;
     return { id: pick, ...HARD_DAY[pick], alsoHard: hard.length - 1 };
 }
+const NL_TITLE = 'Sound machine and night light';
+const NL_SUB = 'One small device in a toddler\'s room can do three jobs, and the one most parents do not '
+    + 'know about is the color that tells a child it is morning.';
+const NL_INTRO = [
+    'This is a category, not a product. The thing most parents end up with is a single device '
+        + 'that sits on a dresser and combines three functions: a sound machine that plays white '
+        + 'noise or a lullaby, a dim night light you can set to a specific color and a specific '
+        + 'brightness, and a color change on a schedule that acts as a signal to your child. Most of '
+        + 'them are controlled from an app on your phone, which matters more than it sounds, because '
+        + 'it means you can turn the volume down from the hallway at 2 in the morning instead of '
+        + 'walking into the room and waking everybody up. The best known example is the Hatch, and '
+        + 'you will see it on a lot of baby registries, but the category is wide and the cheap end of '
+        + 'it works.',
+    'What makes it worth a page of its own is that the three jobs land at completely different '
+        + 'ages. The sound machine is useful from the first week. The dim light becomes useful when '
+        + 'your child is old enough to be scared of the dark, which is usually somewhere around 3. '
+        + 'And the scheduled color change, the part that quietly fixes 6 a.m. wakeups, only starts '
+        + 'working once your child can learn a rule, which is later still. So if you buy one of these '
+        + 'at a baby shower, understand that you are buying a sound machine now and a morning signal '
+        + 'in about 3 years. That is fine. Just know what you are getting, and know that a $15 sound '
+        + 'machine plus a $12 color changing smart bulb on a timer does most of the same job if the '
+        + 'budget matters.',
+];
+const NL_OKWAKE = [
+    {
+        h: 'What an ok to wake system actually is',
+        body: [
+            'You set the light to turn a particular color at a particular time in the morning. '
+                + 'Before that color appears, the rule is stay in your room. Once the color appears, the '
+                + 'rule is you may come out. That is the whole thing. Red or amber at night, green or '
+                + 'blue in the morning, and a child who cannot read a number learns the rule in about a '
+                + 'week.',
+            'Parents usually arrive at this because of one specific problem: a child who wakes at '
+                + '5:40 and comes to find you, every single day. You cannot reason with a 3 year old '
+                + 'about what time it is, because time is abstract and they have nothing to hang it on. A '
+                + 'color is not abstract. It is right there on the dresser.',
+        ],
+    },
+    {
+        h: 'Why a color works when a clock does not',
+        body: [
+            'Most children do not reliably tell time on an analog or digital clock until somewhere '
+                + 'around 6 or 7. Before that, 6:45 and 7:30 are the same information, which is to say no '
+                + 'information. But matching a color to a rule is something toddlers are already good at, '
+                + 'well before they can count, read, or sequence. It is the same skill as a red light and '
+                + 'a green light.',
+            'This is also why the signal should be a color and not a sound. A sound wakes a child '
+                + 'who is still asleep. A color sits there patiently and is only noticed by a child who '
+                + 'is already awake and wondering whether they are allowed out.',
+        ],
+    },
+    {
+        h: 'How to set it up',
+        body: [
+            'Do this part before you ever mention it to your child. The setup is boring, and the '
+                + 'teaching is the part that matters.',
+        ],
+        list: [
+            'Pick 2 clearly different colors. Red or amber for night, green or blue for morning. '
+                + 'Avoid pairs a young child might confuse.',
+            'Set the night color to come on at bedtime and stay on all night, dim.',
+            'Set the morning color for your child\'s current natural wake time, or even 5 minutes '
+                + 'after it. Not the time you wish they woke up. You want them to succeed on day 1.',
+            'Once they are reliably waiting for the color, move the morning time later by about 10 '
+                + 'or 15 minutes every few days until you get where you want to be.',
+            'Turn off any chime, alarm, or sound on the morning change, at least at first.',
+            'If the device has a nap setting, use the same 2 colors for naps so the rule stays the '
+                + 'same rule.',
+        ],
+    },
+    {
+        h: 'Teaching it in the first week',
+        body: [
+            'Teach it in the daytime, awake, as a game. Nobody learns a new rule at 5:40 a.m.',
+        ],
+        list: [
+            'Day 1, in the daylight: show them the light, change the colors by hand, and name them. '
+                + 'Red means my room. Green means come find you.',
+            'Practice it like pretend play. Have them lie in bed, flip the light to green, and let '
+                + 'them run out and be delighted. Do it 3 or 4 times.',
+            'Say the rule the same way every night at bedtime, in the same words. Repetition is '
+                + 'doing the work here, not explanation.',
+            'The first morning, make a genuinely big deal of it when they wait. Enthusiasm is the '
+                + 'whole reward system at this age.',
+            'If they want something to do while waiting, leave a couple of books or quiet toys '
+                + 'within reach. A rule that asks a child to lie still and do nothing is a harder rule.',
+        ],
+    },
+    {
+        h: 'When they come out anyway',
+        body: [
+            'They will come out anyway. Plan for it so you are not inventing a response while half '
+                + 'asleep.',
+            'Walk them back with almost no talking. Point at the light. Say the one sentence you '
+                + 'always say. Leave. The less interesting you are at 5:40, the faster this resolves. You '
+                + 'may do this 8 times in one morning, and that is a normal first week, not a failure.',
+            'If it keeps failing, the usual culprit is the time rather than the child. A morning '
+                + 'target that is 40 minutes past their body\'s actual wake time is asking for something '
+                + 'they cannot do yet. Move it back toward their natural wake time and climb again more '
+                + 'slowly.',
+        ],
+    },
+    {
+        h: 'What age it starts working',
+        body: [
+            'Honest answer: it varies, and there is no real research on this. There are no trials '
+                + 'on ok to wake clocks. What you have instead is the developmental picture plus a lot of '
+                + 'consistent practitioner experience, and both point to roughly 2.5 to 3 years as the '
+                + 'earliest it tends to stick, with 3 and up being much more reliable.',
+            'What you are actually waiting on is not age, it is 3 abilities: your child can '
+                + 'distinguish the 2 colors, they can follow a simple rule without you in the room, and '
+                + 'they can tolerate a short wait. Some 2 year olds have all 3. Plenty of 3 year olds do '
+                + 'not yet. If you try it and it flatly does not land, it is not a discipline problem and '
+                + 'it is not a failure on your part. Put it away, keep using the device as a night light, '
+                + 'and try again in 2 or 3 months.',
+        ],
+    },
+];
+const NL_SETTINGS = [
+    {
+        h: 'Read this before you copy any number',
+        body: [
+            'Everything below is a starting point to adjust, not a correct answer. Rooms differ, '
+                + 'children differ enormously in what they tolerate, and the only real test is whether '
+                + 'your child settles and stays asleep. Change one thing at a time and give it 3 or 4 '
+                + 'nights before you judge it.',
+        ],
+    },
+    {
+        h: 'A real example from a parent',
+        body: [
+            'This is what one mom actually runs for her 4 year old, who is afraid of the dark. It '
+                + 'is included because it is a real working configuration rather than a theoretical one.',
+        ],
+        list: [
+            'Light: red, about 32 percent brightness',
+            'Sound: about 30 percent volume',
+            'On at 7:30 p.m., which is roughly his bedtime',
+            'Changes to blue at 7:30 a.m., which means he is welcome to come into his parents\' '
+                + 'room',
+        ],
+    },
+    {
+        h: 'Volume',
+        body: [
+            'Start near the bottom of the dial, around 20 to 30 percent on most devices, and only '
+                + 'go up if you have a specific noise you are trying to cover. Louder is not better and '
+                + 'the ceiling on these devices is higher than anything your child needs.',
+            'A free decibel meter app on your phone is a genuinely useful 2 minute check. Measure '
+                + 'at your child\'s head, not at the device. The figures in the sound section below tell '
+                + 'you what you are aiming under.',
+        ],
+    },
+    {
+        h: 'Brightness',
+        body: [
+            'Start dim and go dimmer than feels right. Somewhere in the 10 to 35 percent range is '
+                + 'where most families land for an all night light. The test is simple: stand in the '
+                + 'doorway after your eyes adjust for a minute. You should be able to see the shape of '
+                + 'furniture and not much else. If you could read a book by it, it is too bright.',
+            'Point it at a wall or the floor rather than at the bed, and keep it out of your '
+                + 'child\'s direct line of sight from the pillow.',
+        ],
+    },
+    {
+        h: 'Timing',
+        body: [
+            'Have the night setting come on 20 to 30 minutes before lights out so it becomes part '
+                + 'of the wind down rather than an event.',
+        ],
+        list: [
+            'Night color on: 20 to 30 minutes before bedtime',
+            'Morning color: set it to your child\'s current natural wake time first, then move it '
+                + 'later by 10 to 15 minutes every few days',
+            'A realistic morning target for most toddlers and preschoolers is somewhere in the 6:30 '
+                + 'to 7:30 range, but your child\'s body clock gets a vote',
+            'If you use a nap color, keep it the same 2 colors as nighttime',
+            'Weekends: keep it the same. The whole system runs on the rule not changing',
+        ],
+    },
+];
+const NL_SOUND = [
+    {
+        h: 'The number that matters',
+        body: [
+            'A 2014 study published in Pediatrics tested 14 infant sleep machines at maximum volume '
+                + 'and measured them at 30 cm, 100 cm, and 200 cm, which is about 1 foot, 3 feet, and 6.5 '
+                + 'feet. At 30 cm, every single one of the 14 exceeded 50 dBA, and 3 of them exceeded 85 '
+                + 'dBA. At 100 cm all of them still exceeded 50 dBA, and even at 200 cm, 13 of the 14 '
+                + 'did.',
+            '50 dBA matters because it is the recommended hourly noise limit for hospital nurseries '
+                + 'and NICUs. 85 dBA matters because that is the level at which adults in workplaces are '
+                + 'told to wear hearing protection. Three of these devices, sitting where a crib rail is, '
+                + 'hit that. The authors\' advice was direct: put the machine as far from the baby as you '
+                + 'can, never in or on the crib, turn the volume down, and do not run it at maximum all '
+                + 'night.',
+        ],
+        warn: true,
+    },
+    {
+        h: 'What the AAP says',
+        body: [
+            'The American Academy of Pediatrics does not ban these devices. Its 2023 policy on '
+                + 'noise exposure acknowledges potential benefits and tells pediatricians to counsel '
+                + 'families on safe use, while noting that this study raised real concern about the '
+                + 'levels these machines can reach.',
+            'The AAP\'s general position is that sound above 70 decibels over a prolonged period '
+                + 'may begin to damage hearing, and that the occupational 85 decibel standard should not '
+                + 'be assumed safe for children. It also makes the point that dose matters as much as '
+                + 'volume, meaning how long the exposure lasts, not just how loud it is at one moment. '
+                + 'Its plainest rule of thumb: if an environment sounds too loud to an adult, it is '
+                + 'probably too loud for a child.',
+        ],
+    },
+    {
+        h: 'The practical rules',
+        body: [
+            'None of this means do not use a sound machine. It means use it the way the research '
+                + 'points to.',
+        ],
+        list: [
+            'Across the room. As far from your child\'s head as the room allows, and at minimum '
+                + 'several feet.',
+            'Never in the crib, on the crib rail, attached to the crib, or under the mattress. Safe '
+                + 'sleep rules do not have an exception for this device. The sleep space stays bare, with '
+                + 'a fitted sheet and nothing else.',
+            'No louder than needed. The job is masking household noise, not drowning it out. If you '
+                + 'are raising your voice to talk over it, it is too loud.',
+            'Check it once with a phone decibel app, measured at your child\'s head, and aim to '
+                + 'stay comfortably under 50 dBA.',
+            'A timer that shuts it off, or turning it down once your child is asleep, reduces total '
+                + 'exposure. An app that lets you do this from the hallway makes it actually happen.',
+            'Keep the volume honest as the device moves. A machine that was fine on a dresser is '
+                + 'not fine when it gets relocated to a bedside table.',
+        ],
+        warn: true,
+    },
+];
+const NL_DARK = [
+    {
+        h: 'It is extremely common and it is not a backward step',
+        body: [
+            'Fear of the dark shows up in a huge number of children somewhere between about 3 and '
+                + '6, and it is developmentally ordinary. It arrives at the same time as imagination. A 3 '
+                + 'year old who can now invent a story is a 3 year old who can now invent something in '
+                + 'the closet, and that is cognitive progress wearing a frightening costume. Nightmares '
+                + 'follow a similar curve and are most common between roughly 3 and 12.',
+            'Your child was not scared of the dark at 18 months and now is. That is not something '
+                + 'going wrong. That is a brain that got better at imagining things.',
+        ],
+    },
+    {
+        h: 'A dim light is a legitimate accommodation',
+        body: [
+            'You will be told that a night light is a crutch and that you are making a rod for your '
+                + 'own back. You can set that aside. The AAP\'s own guidance on nighttime fears says to '
+                + 'let a frightened child keep a light on if it helps them feel better. It is a comfort '
+                + 'measure for a real fear, and comforting a real fear is not the same as reinforcing it.',
+            'What a dim light buys you is a child who can open their eyes at 2 a.m., see that the '
+                + 'room is the room, and go back to sleep without needing you. That is the opposite of '
+                + 'dependence. Most children let go of the light on their own eventually, usually '
+                + 'sometime in the school years, without anyone running a program.',
+        ],
+    },
+    {
+        h: 'How dim is dim enough',
+        body: [
+            'Dim enough to orient, not bright enough to read by. That is the standard.',
+        ],
+        list: [
+            'Lowest setting that your child actually accepts. Ask them. A 4 year old can tell you.',
+            'Red or amber rather than white or blue, for the reason in the evidence section below.',
+            'Aimed at a wall or the floor, out of direct line of sight from the pillow.',
+            'If you can see color in the room clearly, or make out text, turn it down.',
+            'One light, not several. Hallway light under the door plus a night light plus a glowing '
+                + 'tablet adds up.',
+        ],
+    },
+    {
+        h: 'When to mention it to your pediatrician',
+        body: [
+            'Most of the time you do not need to. This is a phase that resolves. Bring it up at a '
+                + 'regular visit, with no urgency, if the fear is spilling out of bedtime and into the '
+                + 'daytime, if your child is losing real amounts of sleep night after night for weeks, if '
+                + 'they will not be alone in any room at all, if the fear appeared suddenly after '
+                + 'something specific happened, or if it is severe enough that it is wearing the whole '
+                + 'family down.',
+            'This is education, not diagnosis. Your pediatrician knows your child and can tell you '
+                + 'whether what you are seeing is the usual version or something worth a closer look. '
+                + 'Asking is never an overreaction.',
+        ],
+    },
+];
+const NL_AGES = [
+    { band: 'Newborn',
+        what: 'Mostly just the sound machine, and honestly that is the whole value at this stage. '
+            + 'Steady white noise can help mask household noise such as a sibling, a dog, or a TV. No '
+            + 'light is needed for your baby, though a dim setting can help you see during night feeds '
+            + 'without fully waking either of you. The device goes on a dresser or shelf across the '
+            + 'room, never in or attached to the crib, and the sleep space itself stays bare.' },
+    { band: 'Roughly 4 to 12 months',
+        what: 'Still mostly the sound machine. This is the stretch where it becomes part of the '
+            + 'routine, and that routine cue is probably doing as much work as the noise itself. Keep '
+            + 'the volume low and the device far from the crib. Skip the light at bedtime if you can, '
+            + 'since there is no benefit to your baby from it. A dim amber or red setting for diaper '
+            + 'changes at 3 a.m. is a reasonable use of it.' },
+    { band: '1 to 3',
+        what: 'The transition years. The sound machine keeps doing its job, and toward the back end of '
+            + 'this band the morning signal starts to become possible, usually closer to 3 than to 2. '
+            + 'If your child has moved to a toddler bed and is now free to roam at 5:45, this is the '
+            + 'moment the color change earns the price of the device. Introduce it as a game in the '
+            + 'daytime, not as a rule at bedtime.' },
+    { band: '3 to 5',
+        what: 'Peak usefulness, and the stage where all 3 functions are live at once. The morning color '
+            + 'is a working boundary. The night color becomes a real accommodation for fear of the '
+            + 'dark, which shows up hard in this band. The sound machine is often still running. This '
+            + 'is also where a nap or quiet time color can help, since many children drop the nap in '
+            + 'here but still need the room time.' },
+    { band: 'School age',
+        what: 'It shifts from a sleep signal to a clock. Many of these devices turn into an actual '
+            + 'alarm, and a lot of kids are proud of getting themselves up. Night lights often fade out '
+            + 'on their own somewhere in here, though not always and not on a schedule. Some kids keep '
+            + 'white noise for years, especially in a shared room or a noisy house, and there is '
+            + 'nothing wrong with that.' },
+];
+const NL_HONEST = [
+    {
+        h: 'Is red light really better for sleep',
+        body: [
+            'Partly supported, and oversold. The mechanism is real. The cells in the eye that tell '
+                + 'your brain what time it is are most sensitive to short wavelength blue light and least '
+                + 'sensitive to long wavelength red. A 2026 paper in npj Biological Timing and Sleep '
+                + 'measured 25 popular night lights across 79 settings and found red hued ones '
+                + 'consistently had the lowest theoretical biological potency, and the authors recommend '
+                + 'red or amber at the dimmest settings.',
+            'Here is the honest limit. That paper measured light, not children\'s sleep. It is a '
+                + 'very good argument that red is the lower risk choice. It is not a trial showing that '
+                + 'children fall asleep faster or sleep longer under red light than under dim amber or '
+                + 'dim white, and that trial in young children largely does not exist. The same paper '
+                + 'found only 3 of the 25 products stayed reliably under the brightness threshold it '
+                + 'used, which points at the thing the marketing underplays: brightness matters more than '
+                + 'color. A bright red light is worse than a very dim warm white one. If you remember one '
+                + 'thing, remember dim, then worry about the color.',
+        ],
+    },
+    {
+        h: 'Does white noise help babies sleep',
+        body: [
+            'Plausible, widely used, and genuinely weakly evidenced. A systematic review of noise '
+                + 'as a sleep aid found mixed results and concluded that the quality of the existing '
+                + 'evidence does not support broadly recommending white noise as a sleep aid, and that '
+                + 'more research is needed. Some studies found benefit. Some found none. In some cases '
+                + 'noise disturbed sleep instead.',
+            'Researchers also do not agree on why it would work. The most mundane explanation is '
+                + 'the most likely: it masks other noises, such as a door, a sibling, a dog. If you live '
+                + 'somewhere loud, that is a real benefit regardless of what brain wave theory turns out '
+                + 'to be true. If you live somewhere quiet, you may be solving a problem you do not have.',
+            'Practically: many families find it helps, nobody can promise it will help yours, and '
+                + 'the main thing to get right is the volume rather than whether to use it.',
+        ],
+    },
+    {
+        h: 'The dependence worry',
+        body: [
+            'This is the warning parents hear most and it is mostly overstated. The underlying idea '
+                + 'is a real thing called a sleep onset association, where a child learns to need a '
+                + 'specific condition to fall asleep. It is true that a child who has always slept with '
+                + 'white noise may notice when it is gone.',
+            'But weigh that honestly. The practical cost is that you pack a travel sound machine, '
+                + 'or use a phone, or the first night in a hotel is rough. That is a small cost. There is '
+                + 'no evidence that using a sound machine or a dim light harms children, and no evidence '
+                + 'that it causes lasting sleep problems. Compare that to the cost of not sleeping now.',
+            'The real difference is between a condition your child can have all night without you, '
+                + 'such as a light that stays on or noise that keeps playing, and one that requires you '
+                + 'to come back and recreate it. The first kind is barely a dependence at all. The second '
+                + 'kind is the one worth thinking about. A night light and a sound machine are the first '
+                + 'kind.',
+        ],
+    },
+    {
+        h: 'It is an internet connected device in your child\'s bedroom',
+        body: [
+            'No camera, no microphone on most of these, and that puts them at the low risk end of '
+                + 'nursery tech. But an app controlled device is a device with an account, a cloud '
+                + 'connection, and a company behind it, and that is worth 5 minutes of thought.',
+            'What it knows is small but not nothing: your child\'s bedtime, their wake time, when '
+                + 'they woke in the night, which room the device is in, and your email address. That is a '
+                + 'behavioral record of a young child\'s schedule. Products aimed at children in the US '
+                + 'are covered by COPPA, which requires verifiable parental consent before collecting '
+                + 'personal information from children under 13, and the FTC has enforced this against '
+                + 'connected devices. That is a real protection and it is also not a guarantee of good '
+                + 'behavior.',
+            'The sensible middle ground: use a strong unique password, turn off anything you do not '
+                + 'need such as voice assistant integration, keep the firmware updated, and glance at '
+                + 'what the privacy policy says about sharing data with third parties. If any of that is '
+                + 'more than you want to deal with, note that the fully offline version of this category '
+                + 'exists. A plug in sound machine with a physical knob and a color changing bulb on a '
+                + 'mechanical timer connects to nothing, costs far less, and does the same 3 jobs with '
+                + 'less convenience.',
+        ],
+    },
+    {
+        h: 'What is simply marketing',
+        body: [
+            'Any specific sleep promise. Sound profiles tuned for a particular age or temperament '
+                + 'are a reasonable convenience and not a clinical finding. Claims that one brand\'s red '
+                + 'is physiologically special are not supported, since red is red. The real value of '
+                + 'these devices is unglamorous: consistency, scheduling, and a color your child can read '
+                + 'before they can read a clock. The night light part and the sound part can be replaced '
+                + 'for about $25 total. The scheduled color signal is the part worth paying for, and only '
+                + 'once your child is old enough to use it.',
+        ],
+    },
+];
+const NL_GIFT = [
+    'It is a good baby shower gift and a good new baby gift, mainly because it is something '
+        + 'parents genuinely use for years rather than for 6 weeks. The sound machine works from the '
+        + 'first week and the morning signal is still being used at 5.',
+    'Be clear eyed about price. This is a $50 to $100 category, and a basic sound machine that '
+        + 'does the main job for a newborn costs $15 to $25. If you are buying for someone on a tight '
+        + 'registry, a cheap sound machine plus something they actually need is the better gift, and '
+        + 'nobody should feel they are missing out.',
+    'It also makes a strong group gift or a gift from a grandparent, since it is in the price '
+        + 'range where splitting it makes sense and most parents will not buy it for themselves early '
+        + 'on.',
+    'If you are the one registering, put it on the list and say so out loud. Most people buying '
+        + 'for a baby shower would rather get the one useful thing than guess at another outfit in '
+        + 'the wrong size.',
+];
+const NL_SOURCES = [
+    { org: 'NPR Shots',
+        label: 'Coverage of the 2014 Pediatrics study on infant sleep machine sound levels, with '
+            + 'measured distances and decibel findings',
+        url: 'https://www.npr.org/sections/health-shots/2014/03/03/283972897/noise-machines-to-help-babies-sleep-can-raise-quite-a-din' },
+    { org: 'ENTtoday',
+        label: 'Detailed reporting of the Hugh et al. 2014 Pediatrics study, Infant Sleep Machines and '
+            + 'Hazardous Sound Pressure Levels',
+        url: 'https://www.enttoday.org/article/sleep-machines-may-damage-infant-hearing/' },
+    { org: 'American Academy of Pediatrics, HealthyChildren.org',
+        label: 'AAP Sounds Alarm on Excessive Noise Risks to Children, summarizing the 2023 policy '
+            + 'statement including infant sleep machines',
+        url: 'https://www.healthychildren.org/English/news/Pages/sounds-the-alarm-on-excessive-noise-and-risks-to-children.aspx' },
+    { org: 'American Academy of Pediatrics, HealthyChildren.org',
+        label: 'Nightmares, Night Terrors and Sleepwalking in Children, including ages of peak '
+            + 'nightmares and keeping a light on',
+        url: 'https://www.healthychildren.org/English/ages-stages/preschool/Pages/Nightmares-and-Night-Terrors.aspx' },
+    { org: 'American Academy of Pediatrics, HealthyChildren.org',
+        label: 'A Parent\'s Guide to Safe Sleep, on keeping the sleep space bare with nothing in the crib',
+        url: 'https://www.healthychildren.org/English/ages-stages/baby/sleep/Pages/A-Parents-Guide-to-Safe-Sleep.aspx' },
+    { org: 'National Institute on Deafness and Other Communication Disorders, NIH',
+        label: 'How Loud Is Too Loud, on safe and harmful decibel levels and exposure duration',
+        url: 'https://www.nidcd.nih.gov/health/how-loud-too-loud' },
+    { org: 'npj Biological Timing and Sleep, Nature Portfolio',
+        label: 'Quantifying the biological impacts of nightlights: implications for sleep and circadian '
+            + 'health in children, 2026, measuring 25 night light products',
+        url: 'https://www.nature.com/articles/s44323-026-00072-6' },
+    { org: 'Sleep Foundation',
+        label: 'White Noise and Sleep, summarizing the 2021 systematic review of noise as a sleep aid '
+            + 'and its conclusions on evidence quality',
+        url: 'https://www.sleepfoundation.org/noise-and-sleep/white-noise' },
+    { org: 'Children\'s National Hospital',
+        label: 'The truth about baby sound machines and hearing loss, on volume and distance from the crib',
+        url: 'https://riseandshine.childrensnational.org/baby-sound-machines-and-hearing-loss/' },
+    { org: 'US Federal Trade Commission',
+        label: 'Children\'s Privacy, on COPPA, verifiable parental consent, and enforcement involving '
+            + 'connected devices',
+        url: 'https://www.ftc.gov/business-guidance/privacy-security/childrens-privacy' },
+];
+function nlShows(months) {
+    return typeof months !== 'number' || months <= 120;
+}
+function nlRowSub(months) {
+    if (typeof months !== 'number')
+        return 'Sound, light, and the color that means come out';
+    if (months < 12)
+        return 'Safe volume, how far away, and what it is actually for yet';
+    if (months < 30)
+        return 'The sound machine now, and the morning signal coming';
+    if (months < 72)
+        return 'The color that means they can come out, and fear of the dark';
+    return 'The morning signal, the dark, and when it becomes an alarm clock';
+}
+function nlFirstTab(months) {
+    if (typeof months !== 'number')
+        return 'okwake';
+    if (months < 18)
+        return 'sound';
+    if (months < 30)
+        return 'settings';
+    return 'okwake';
+}
 const FIREBASE_CONFIG = {
     apiKey: 'AIzaSyCVYO0N_rO8o4GzjDiOwla0FfY4d_7yRG8',
     authDomain: 'ready-set-grow-4ccf7.firebaseapp.com',
@@ -47092,7 +47679,7 @@ function newChildRecord(name, birthday) {
     };
 }
 const store = {
-    parent: { name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '',
+    parent: { name: '', lastName: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '',
         photo: '',
         calledBy: '', calledByOther: '', refersTo: '',
         bodyCare: '',
@@ -47130,9 +47717,12 @@ const store = {
     pottyTab: 'ready',
     learnAllBands: false,
     hsOpen: '',
+    obKidDraft: '',
+    obNeedsAll: false,
     forTab: 'today',
     sfTab: '',
     nestTab: 'nesting',
+    nlTab: '',
     fcOpen: false,
     vaxTab: 'visits',
     vaxVisit: '',
@@ -47230,7 +47820,7 @@ const state = {};
     'pumpProblem', 'flangeMm', 'ppTab', 'ppStage', 'askQuery', 'askAsked',
     'tab', 'view', 'undGroup', 'lensBand', 'feedTab', 'outTab', 'safetyTab',
     'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'sexedTab',
-    'pottyTab', 'sfTab', 'nestTab', 'forTab',
+    'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab',
     'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
     Object.defineProperty(state, key, {
         enumerable: true,
@@ -48206,6 +48796,8 @@ function render() {
         html = screenSleepFound(c);
     else if (v && v.type === 'screen' && v.id === 'monitors')
         html = screenMonitors(c);
+    else if (v && v.type === 'screen' && v.id === 'nightlight')
+        html = screenNightLight(c);
     else if (v && v.type === 'screen' && v.id === 'nesting')
         html = screenNesting(c);
     else if (v && v.type === 'screen' && v.id === 'bumplabor')
@@ -48576,6 +49168,17 @@ function initControls() {
                 saveBtn.disabled = !postHasContent();
             saveStore();
         }
+        else if (e.target.matches('[data-obkidname]')) {
+            const i = Number(e.target.dataset.obkidname);
+            const v = e.target.value;
+            store.obKidDraft = v;
+            if (String(v).trim()) {
+                const kid = obKidEnsure(i, v);
+                kid.name = v;
+                kid.updatedAt = Date.now();
+                saveStore();
+            }
+        }
         else if (e.target.matches('[data-obfield]')) {
             const f = e.target.dataset.obfield;
             const v = e.target.value;
@@ -48785,7 +49388,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -49074,6 +49677,50 @@ function initControls() {
                 nudgeDismiss();
             return;
         }
+        else if (t.dataset.obwho) {
+            obWhoToggle(t.dataset.obwho);
+        }
+        else if (t.dataset.obcalled) {
+            store.parent.calledBy = store.parent.calledBy === t.dataset.obcalled ? '' : t.dataset.obcalled;
+            store.parentUpdatedAt = Date.now();
+            flushStore();
+        }
+        else if (t.dataset.obcount !== undefined) {
+            const ob = onboard();
+            ob.kidCount = Number(t.dataset.obcount) || 0;
+            ob.hasKids = ob.kidCount > 0;
+            flushStore();
+        }
+        else if (t.dataset.obsex !== undefined) {
+            const kid = obKidAt(Number(t.dataset.obkid));
+            if (kid) {
+                kid.sex = t.dataset.obsex;
+                kid.updatedAt = Date.now();
+                flushStore();
+            }
+        }
+        else if (t.dataset.obneed !== undefined) {
+            const kid = obKidAt(Number(t.dataset.obkid));
+            if (kid) {
+                const id = t.dataset.obneed;
+                if (!Array.isArray(kid.lenses))
+                    kid.lenses = [];
+                if (!id)
+                    kid.lenses = [];
+                else {
+                    const at = kid.lenses.indexOf(id);
+                    if (at === -1)
+                        kid.lenses.push(id);
+                    else
+                        kid.lenses.splice(at, 1);
+                }
+                kid.updatedAt = Date.now();
+                flushStore();
+            }
+        }
+        else if (t.dataset.obneedsall) {
+            store.obNeedsAll = t.dataset.obneedsall === '1';
+        }
         else if (t.dataset.ob) {
             const a = t.dataset.ob;
             if (a === 'restart') {
@@ -49081,9 +49728,9 @@ function initControls() {
                 render();
             }
             else if (a === 'next')
-                onboardGo(onboardNext(onboard().step));
+                onboardGo(onboardNext(onboard().step, obCtx()));
             else if (a === 'back')
-                onboardGo(onboardBack(onboard().step));
+                onboardGo(onboardBack(onboard().step, obCtx()));
             else if (a === 'skip')
                 onboardSkip();
             else if (a === 'done')
@@ -52507,6 +53154,89 @@ function screenSleepFound(c) {
     ${dsec('Sources', sourceRows(SF_SOURCES))}
     <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>
   </div>`;
+}
+const NL_TABS = [
+    { id: 'okwake', label: 'The morning signal' },
+    { id: 'settings', label: 'What to set it to' },
+    { id: 'sound', label: 'Volume and safety' },
+    { id: 'dark', label: 'Afraid of the dark' },
+    { id: 'honest', label: 'What is actually true' },
+];
+function screenNightLight(c) {
+    const kid = activeChild();
+    const months = c.months;
+    const first = kid && kid.name ? kid.name.split(/\s+/)[0] : '';
+    const want = store.nlTab;
+    const tab = NL_TABS.some((t) => t.id === want) ? want : nlFirstTab(months);
+    const body = tab === 'okwake' ? nlSections(NL_OKWAKE)
+        : tab === 'settings' ? nlSettingsTab()
+            : tab === 'sound' ? nlSections(NL_SOUND, true)
+                : tab === 'dark' ? nlSections(NL_DARK)
+                    : nlHonestTab();
+    return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    ${first ? `<p class="eyebrow" style="margin-top:6px">${esc(first)}${c.summary.label ? ', ' + esc(c.summary.label) : ''}</p>` : ''}
+    <h1 class="title sm">${esc(NL_TITLE)}</h1>
+    <p class="sub">${esc(NL_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      ${NL_INTRO.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+    </div>
+    <div style="margin-top:13px">${subTabs('nlTab', tab, NL_TABS)}</div>
+    ${body}
+    ${tab !== 'okwake' ? '' : `
+    <p class="sect" style="margin-top:18px">What it is for at each stage</p>
+    ${NL_AGES.map((a) => `
+      <div class="card flat" style="margin-bottom:8px">
+        <p style="margin:0;font-size:14px;font-weight:600;color:var(--ink)">${esc(a.band)}</p>
+        <p class="bodytext" style="margin-top:5px">${esc(a.what)}</p>
+      </div>`).join('')}
+    <div class="card flat">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} As a gift</p>
+      <ul class="dlist" style="margin-top:8px">${NL_GIFT.map((g) => `<li>${esc(g)}</li>`).join('')}</ul>
+      <button class="chip" style="margin-top:10px" data-go="screen" data-id="nesting">The shower basket</button>
+    </div>`}
+    ${dsec('Sources', sourceRows(NL_SOURCES))}
+    <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>`;
+}
+function nlSections(list, warn) {
+    return list.map((s) => `
+    <div class="dsec">
+      <h4>${esc(s.h)}</h4>
+      ${(s.body || []).map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+      ${list2(s.list, !!s.warn || !!warn)}
+    </div>`).join('');
+}
+function list2(items, warn) {
+    return list(items, warn);
+}
+function nlSettingsTab() {
+    return `
+  ${nlSections(NL_SETTINGS)}
+  <div class="card" style="background:var(--leaf3)">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} One real setup, for a 4 year old</p>
+    <p class="bodytext" style="margin-top:8px">Red light at about 32 percent, sound at about 30
+    percent, on at 7:30pm. At 7:30am it turns blue, and blue means he is welcome to come out and
+    get into our bed. The color is doing the work a clock cannot do yet.</p>
+    <p class="tiny" style="margin-top:8px">Somebody's actual numbers rather than a recommendation.
+    Start near them and move them until your house is quieter.</p>
+  </div>`;
+}
+function nlHonestTab() {
+    return `
+  <div class="card flat">
+    <p class="bodytext" style="margin:0">Most of this category is sold harder than the research
+    supports. None of that means it does not work in your house. Both of those are true and the
+    rest of this page says which is which.</p>
+  </div>
+  ${NL_HONEST.map((h) => `
+    <div class="dsec">
+      <h4>${esc(h.h)}</h4>
+      ${h.body.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+    </div>`).join('')}`;
 }
 function screenMonitors(c) {
     const secs = monSectionsFor(c.months);
@@ -61676,6 +62406,7 @@ const AGE_WINDOWS = {
     diapers: { from: 0, to: 60, why: 'Night diapers can run to 5, which is where the diaper math stops being useful.' },
     sleepfound: { from: 0, to: 30, why: 'Swaddles, sacks and wake windows. The room and the wind down outlast it, and the tabs thin out as they go.' },
     potty: { from: 15, to: 96, why: 'Reading about it starts well before doing it, and night dryness is still in range at 7.' },
+    nightlight: { from: 0, to: 120, why: 'The volume warning matters on day 1. The morning signal becomes an alarm clock, and fear of the dark does not finish at school age.' },
     topics: { from: 0, to: null, why: 'The list inside is already age filtered, so the row hides itself when that list is empty.' },
     rhythm: { from: 0, to: 72, why: 'Naps and a built day. Past 6 the rhythm is school, not this.' },
     activities: { from: 0, to: null, why: 'Written to 18. Hides itself if a band ever comes back empty.' },
@@ -62033,6 +62764,7 @@ function screenChild(c) {
       ${ageRow('feeding', months, kid, 'utensils', esc(feedingRowTitle(months)), esc(getFeedingHeadline(months) || 'Milk, starting solids, and the family table'), 'data-go="screen" data-id="feeding"')}
       ${showsDiaperContent(months) ? ageRow('diapers', months, kid, 'drop', esc(DIAPER_TITLE), esc(diaperBandFor(months).perDay + ' a day at this age, and what to send to daycare'), 'data-go="screen" data-id="diaperplan"') : ''}
       ${ageRow('sleepfound', months, kid, 'moon', esc(SF_TITLE), esc(sfRowSub(months)), 'data-go="screen" data-id="sleepfound"')}
+      ${ageRow('nightlight', months, kid, 'sun', esc(NL_TITLE), esc(nlRowSub(months)), 'data-go="screen" data-id="nightlight"')}
       ${ageRow('potty', months, kid, 'check-circle', esc(POTTY_TITLE), esc(pottyRowSub(months)), 'data-go="screen" data-id="potty"')}
       ${c.topics.length ? ageRow('topics', months, kid, 'bulb', 'Care topics', esc(c.topics.slice(0, 4).map((t) => t.label).join(', ')), 'data-go="screen" data-id="topics"') : ''}`,
         together: () => {
@@ -63134,7 +63866,7 @@ function onboard() {
         store.onboard = { open: false, done: false, step: 'hello', line: '', lineFrom: '' };
     }
     const ob = store.onboard;
-    if (ONBOARD_STEPS.indexOf(ob.step) === -1)
+    if (ONBOARD_STEPS.indexOf(onboardStepName(ob.step)) === -1)
         ob.step = 'hello';
     return ob;
 }
@@ -63147,7 +63879,7 @@ function onboardGo(step) {
     if (!step)
         return;
     ob.step = step;
-    if (step === 'ready')
+    if (onboardStepName(step) === 'ready')
         onboardLine();
     flushStore();
     render();
@@ -63198,11 +63930,29 @@ function onboardFirstChild() {
     return real.length ? real[real.length - 1] : null;
 }
 function onboardDots(step) {
-    const here = onboardIndex(step);
+    const here = onboardIndex(step, obCtx());
+    const steps = onboardSteps(obCtx());
     return `
   <div class="obdots" aria-hidden="true">
-    ${ONBOARD_STEPS.map((_, i) => `<span class="obdot${i === here ? ' on' : ''}${i < here ? ' done' : ''}"></span>`).join('')}
+    ${steps.map((_, i) => `<span class="obdot${i === here ? ' on' : ''}${i < here ? ' done' : ''}"></span>`).join('')}
   </div>`;
+}
+function obTitle(step, kidIndex) {
+    const name = onboardStepName(step);
+    const base = ONBOARD_TITLES[name] || '';
+    if (kidIndex < 0)
+        return base;
+    const kid = obKidAt(kidIndex);
+    const first = kid && kid.name ? kid.name.split(/\s+/)[0] : '';
+    if (!first)
+        return base;
+    if (name === 'kidbday')
+        return 'When was ' + first + ' born?';
+    if (name === 'kidsex')
+        return 'About ' + first;
+    if (name === 'kidneeds')
+        return 'Anything about ' + first + '?';
+    return base;
 }
 function onboardSays(text) {
     return `
@@ -63249,15 +63999,223 @@ function screenWillowWelcome() {
     </div>
   </div>`;
 }
+function obCtx() {
+    const sit = situation();
+    const ob = onboard();
+    return {
+        expecting: hasStage(sit, 'expecting'),
+        hasKids: !!ob.hasKids,
+        kidCount: Number(ob.kidCount) || 0,
+    };
+}
+function obKidAt(i) {
+    const ob = onboard();
+    const ids = Array.isArray(ob.kidIds) ? ob.kidIds : [];
+    const id = ids[i];
+    return id ? store.children.filter((k) => k.id === id)[0] || null : null;
+}
+function obKidEnsure(i, name) {
+    const ob = onboard();
+    if (!Array.isArray(ob.kidIds))
+        ob.kidIds = [];
+    let kid = obKidAt(i);
+    if (!kid) {
+        kid = newChildRecord(String(name || '').trim(), null);
+        store.children.push(kid);
+        ob.kidIds[i] = kid.id;
+        selectChild(kid.id);
+    }
+    return kid;
+}
+function obBumpEnsure() {
+    const ob = onboard();
+    let bump = ob.bumpId ? store.children.filter((k) => k.id === ob.bumpId)[0] : null;
+    if (!bump)
+        bump = store.children.filter((k) => isExpecting(k))[0] || null;
+    if (!bump) {
+        bump = newChildRecord('Bean', null);
+        bump.expecting = true;
+        store.children.push(bump);
+        ob.bumpId = bump.id;
+        selectChild(bump.id);
+        flushStore();
+    }
+    return bump;
+}
+function obWhoOn(opt) {
+    const sit = situation();
+    if (opt.kind === 'stage')
+        return hasStage(sit, opt.id);
+    if (opt.kind === 'role')
+        return (sit.roles || []).indexOf(opt.id) !== -1;
+    return !!onboard().hasKids;
+}
+function obWhoToggle(id) {
+    const opt = ONBOARD_WHO.filter((o) => o.id === id)[0];
+    if (!opt)
+        return;
+    if (opt.kind === 'flag') {
+        const ob = onboard();
+        ob.hasKids = !ob.hasKids;
+        if (ob.hasKids && !ob.kidCount)
+            ob.kidCount = 1;
+        if (!ob.hasKids)
+            ob.kidCount = 0;
+    }
+    else if (opt.kind === 'stage') {
+        sitToggle('stages', id);
+    }
+    else {
+        sitToggle('roles', id);
+    }
+    flushStore();
+}
+function obPick(on, label, help, attrs) {
+    return `
+  <button class="obpick${on ? ' on' : ''}" ${attrs}>
+    <span class="grow">
+      <span class="obpick-t">${esc(label)}</span>
+      ${help ? `<span class="obpick-s">${esc(help)}</span>` : ''}
+    </span>
+    <span class="obpick-x">${on ? icon('check', 16, 'var(--sage)') : ''}</span>
+  </button>`;
+}
+function obSlide(step, kidIndex) {
+    const name = onboardStepName(step);
+    const kid = kidIndex >= 0 ? obKidAt(kidIndex) : null;
+    const kidName = kid && kid.name ? kid.name.split(/\s+/)[0] : '';
+    const ob = onboard();
+    if (name === 'name') {
+        return `
+    ${onboardSays(ONBOARD_LINES.name)}
+    <div class="card" style="margin-top:12px">
+      <p class="eyebrow">First name</p>
+      <input class="inp" type="text" id="obName" data-obfield="name"
+        value="${esc(store.parent.name || '')}" placeholder="Your first name"
+        autocomplete="given-name" style="margin-top:8px;width:100%" />
+      <p class="eyebrow" style="margin-top:14px">Last name</p>
+      <input class="inp" type="text" id="obLast" data-obfield="lastName"
+        value="${esc(store.parent.lastName || '')}" placeholder="Optional"
+        autocomplete="family-name" style="margin-top:8px;width:100%" />
+      <p class="eyebrow" style="margin-top:14px">A username</p>
+      <input class="inp" type="text" id="obUser" data-obfield="username"
+        value="${esc(store.parent.username || '')}" placeholder="Optional"
+        autocomplete="off" style="margin-top:8px;width:100%" />
+      <p class="tiny" style="margin-top:9px">${esc(ONBOARD_NAME_NOTE)}</p>
+    </div>`;
+    }
+    if (name === 'bday') {
+        return `
+    ${onboardSays(ONBOARD_LINES.bday)}
+    <div class="card" style="margin-top:12px">
+      ${dateSelects('parent:birthday', store.parent.birthday || '', 90, 13)}
+    </div>`;
+    }
+    if (name === 'who') {
+        return `
+    ${onboardSays(ONBOARD_LINES.who)}
+    <div style="margin-top:12px">
+      ${ONBOARD_WHO.map((o) => obPick(obWhoOn(o), o.label, '', `data-obwho="${esc(o.id)}"`)).join('')}
+    </div>
+    <p class="tiny" style="margin-top:10px">${esc(ONBOARD_WHO_NOTE)}</p>`;
+    }
+    if (name === 'calledby') {
+        const cur = store.parent.calledBy || '';
+        return `
+    ${onboardSays(ONBOARD_LINES.calledby)}
+    <div class="chips" style="gap:7px;margin-top:12px">
+      ${CALLED_BY.map((c) => `
+        <button class="chip" data-obcalled="${esc(c.id)}"
+          aria-pressed="${cur === c.id}">${esc(c.label)}</button>`).join('')}
+    </div>`;
+    }
+    if (name === 'due') {
+        const bump = obBumpEnsure();
+        return `
+    ${onboardSays(ONBOARD_LINES.due)}
+    <div class="card" style="margin-top:12px">
+      ${dateSelects('due:' + bump.id, bump.dueDate || '', 1, 1)}
+      <p class="tiny" style="margin-top:9px">The weekly writing starts from here, and so does the
+      size of them. An estimate is completely fine.</p>
+    </div>`;
+    }
+    if (name === 'kids') {
+        const n = Number(ob.kidCount) || 0;
+        return `
+    ${onboardSays(ONBOARD_LINES.kids)}
+    <div class="chips" style="gap:7px;margin-top:12px">
+      <button class="chip" data-obcount="0" aria-pressed="${n === 0}">${esc(ONBOARD_COUNT_NONE)}</button>
+      ${ONBOARD_COUNTS.map((c) => `
+        <button class="chip" data-obcount="${c}" aria-pressed="${n === c}">${c}</button>`).join('')}
+    </div>
+    <p class="tiny" style="margin-top:10px">${esc(ONBOARD_CHILD_SKIP)}</p>`;
+    }
+    if (name === 'kidname') {
+        const draft = kid ? (kid.name || '') : (store.obKidDraft || '');
+        return `
+    ${onboardSays(kidIndex > 0
+            ? 'And the next one. Same 3 questions.'
+            : ONBOARD_LINES.kidname)}
+    <div class="card" style="margin-top:12px">
+      <p class="eyebrow">Their name or nickname</p>
+      <input class="inp" type="text" id="obKidName" data-obkidname="${kidIndex}"
+        value="${esc(draft)}" placeholder="What you call them"
+        autocomplete="off" style="margin-top:8px;width:100%" />
+      <p class="tiny" style="margin-top:9px">A nickname is fine. Expecting? Put what you are calling
+      them for now and the app follows the pregnancy instead.</p>
+    </div>`;
+    }
+    if (name === 'kidbday') {
+        return `
+    ${onboardSays(kidName
+            ? 'When was ' + kidName + ' born? Almost everything in the app follows from this one answer.'
+            : ONBOARD_LINES.kidbday)}
+    <div class="card" style="margin-top:12px">
+      ${dateSelects('child:' + (kid ? kid.id : ''), (kid && kid.birthday) || '', 25, 0)}
+      ${kid && kid.birthday ? `
+        <p class="tiny" style="margin-top:9px">${icon('check', 11, 'var(--sage)')}
+        That makes them ${esc((getAgeSummary({ name: kid.name, birthday: kid.birthday }) || {}).label || '')}.</p>` : ''}
+    </div>`;
+    }
+    if (name === 'kidsex') {
+        const cur = kid ? (kid.sex || '') : '';
+        const set = kid ? (kid.sex !== undefined && kid.sex !== null) : false;
+        return `
+    ${onboardSays(ONBOARD_LINES.kidsex)}
+    <div style="margin-top:12px">
+      ${ONBOARD_SEX.map((o) => obPick(set && cur === o.id, o.label, '', `data-obsex="${esc(o.id)}" data-obkid="${kidIndex}"`)).join('')}
+    </div>
+    <p class="tiny" style="margin-top:10px">${esc(ONBOARD_SEX_NOTE)}</p>`;
+    }
+    if (name === 'kidneeds') {
+        const on = kid ? (kid.lenses || []) : [];
+        const all = !!store.obNeedsAll;
+        const shown = all ? SUPPORT_LENSES : COMMON_LENSES.map((id) => getLens(id)).filter(Boolean);
+        return `
+    ${onboardSays(kidName
+            ? 'Last one for ' + kidName + ', and it is the one that changes the most.'
+            : ONBOARD_LINES.kidneeds)}
+    <div style="margin-top:12px">
+      ${obPick(!on.length, ONBOARD_NEEDS_NONE, '', `data-obneed="" data-obkid="${kidIndex}"`)}
+      ${shown.map((l) => obPick(on.indexOf(l.id) !== -1, l.label, l.tagline || '', `data-obneed="${esc(l.id)}" data-obkid="${kidIndex}"`)).join('')}
+    </div>
+    <button class="chip" style="margin-top:10px" data-obneedsall="${all ? '0' : '1'}">
+      ${all ? 'Show the common ones' : 'See all ' + SUPPORT_LENSES.length}</button>
+    <p class="tiny" style="margin-top:10px">${esc(ONBOARD_NEEDS_NOTE)}</p>`;
+    }
+    return '';
+}
 function screenOnboard() {
     const ob = onboard();
     const step = ob.step;
-    if (step === 'hello')
+    if (onboardStepName(step) === 'hello')
         return screenWillowWelcome();
-    const next = onboardNext(step);
-    const back = onboardBack(step);
-    let body = '';
-    if (step === 'hello') {
+    const ctx = obCtx();
+    const next = onboardNext(step, ctx);
+    const back = onboardBack(step, ctx);
+    const kidIndex = onboardStepKid(step);
+    let body = obSlide(step, kidIndex);
+    if (!body && step === 'hello') {
         body = `
     ${onboardSays(ONBOARD_HELLO)}
     <div class="card" style="margin-top:12px">
@@ -63271,7 +64229,7 @@ function screenOnboard() {
       </div>`).join('')}
     </div>`;
     }
-    if (step === 'you') {
+    if (!body && step === 'you') {
         body = `
     ${onboardSays(ONBOARD_LINES.you)}
     <div class="card" style="margin-top:12px">
@@ -63286,7 +64244,7 @@ function screenOnboard() {
       <p class="tiny" style="margin-top:9px">${esc(ONBOARD_NAME_NOTE)}</p>
     </div>`;
     }
-    if (step === 'where') {
+    if (!body && step === 'where') {
         const sit = situation();
         body = `
     ${onboardSays(ONBOARD_LINES.where)}
@@ -63300,7 +64258,7 @@ function screenOnboard() {
     <div style="margin-top:14px">${caretakerBlock()}</div>
     <p class="tiny" style="margin-top:10px">${esc(SITUATION_PRIVACY)}</p>`;
     }
-    if (step === 'child') {
+    if (!body && step === 'child') {
         const kid = onboardFirstChild();
         body = `
     ${onboardSays(ONBOARD_LINES.child)}
@@ -63330,7 +64288,7 @@ function screenOnboard() {
     </div>
     <p class="tiny" style="margin-top:10px">${esc(ONBOARD_CHILD_SKIP)}</p>`}`;
     }
-    if (step === 'ready') {
+    if (!body && step === 'ready') {
         body = `
     ${onboardSays(onboardLine())}
     <p class="sect" style="margin-top:14px">3 things worth doing first</p>
@@ -63358,13 +64316,13 @@ function screenOnboard() {
       <button class="chip" data-ob="skip">${esc(ONBOARD_SKIP)}</button>
     </div>
     ${onboardDots(step)}
-    <h1 class="title" style="margin-top:8px">${esc(ONBOARD_TITLES[step] || '')}</h1>
+    <h1 class="title" style="margin-top:8px">${esc(obTitle(step, kidIndex))}</h1>
   </div>
   <div class="sc">
     ${body}
     ${next ? `
     <button class="btn" data-ob="next" style="margin-top:16px;width:100%">
-      ${step === 'hello' ? 'Show me' : 'Next'} ${icon('chev', 15, '#fff')}
+      ${onboardStepName(step) === 'hello' ? 'Show me' : 'Next'} ${icon('chev', 15, '#fff')}
     </button>` : `
     <button class="btn" data-ob="done" style="margin-top:16px;width:100%">
       Take me in ${icon('chev', 15, '#fff')}
