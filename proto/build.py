@@ -73,6 +73,7 @@ order = [
     ('onboarding',          SRC/'data/onboarding.js'),
     ('nudges',              SRC/'data/nudges.js'),
     ('planFraming',         SRC/'data/planFraming.js'),
+    ('calendar',            SRC/'data/calendar.js'),
     ('feed',                SRC/'data/feed.js'),
     ('fireflies',           SRC/'data/fireflies.js'),
     ('groups',              SRC/'data/groups.js'),
@@ -315,6 +316,31 @@ def check_sub_tabs(text, label):
         raise SystemExit(1)
     return len(used)
 
+def check_proxy_dupes(text, label):
+    """No name may appear twice in a state proxy key list.
+
+    Object.defineProperty throws on a redefinition, so a duplicated key
+    kills the whole script at that line. Every function below it still
+    exists, because declarations hoist, and every const below it does
+    not. The app then half works in a way that looks like a bug in
+    whatever feature you happened to be testing.
+
+    That cost an evening. The check is 6 lines."""
+    bare = re.sub(r'/\*.*?\*/', ' ', text, flags=re.S)
+    bad = []
+    for m in re.finditer(r"\[([^\[\]]*?)\]\.forEach\(\(key\)", bare, re.S):
+        keys = re.findall(r"'([A-Za-z0-9_]+)'", m.group(1))
+        for k in sorted(set(keys)):
+            if keys.count(k) > 1:
+                bad.append(k)
+    if bad:
+        print('DUPLICATE STATE PROXY KEYS in ' + label + ':')
+        for k in bad:
+            print('  ' + k + ' is listed more than once')
+        raise SystemExit(1)
+
+
+check_proxy_dupes(app, 'proto/app.js')
 sub_tab_keys = check_sub_tabs(app, 'proto/app.js')
 
 def assemble(shell_html):

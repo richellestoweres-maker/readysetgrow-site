@@ -1120,6 +1120,34 @@ const store = {
   choreDone: {},
   choreAdults: [],
   choreStarsOn: true,
+
+  /* THE FAMILY CALENDAR, WHICH IS THE HOUSE'S AND NOT ANYBODY'S.
+
+     The one place the rule about her things on her profile and a
+     child's on theirs does not apply, because Thursday belongs to the
+     week rather than to a person. Each entry carries who it is about
+     instead. See src/data/calendar.js for the whole argument.
+
+     deletedEventIds is a tombstone list for the same reason the
+     children have one: a delete that only removes the local copy gets
+     undone by the next device that syncs an older list back. */
+  events: [],
+  deletedEventIds: [],
+  /* calShift, not calMonth. The cycle calendar already owns calMonth,
+     and the 2 of them sharing a name cost an evening: defineProperty
+     refuses to define the same key twice, so the duplicate threw
+     during load and every line of this file below it never ran. The
+     app still half worked, because function declarations hoist, which
+     is what made it look like a calendar bug rather than a dead
+     script. There is a build check for this now. */
+  calShift: 0,
+  calWho: 'all',
+  calDay: null,
+  calTab: 'next',
+  calEdit: null,
+  calOpen: '',
+  calSubOpen: false,
+  calNote: '',
   choreTab: 'today',
   choreDay: null,
   chorePick: null,
@@ -1360,7 +1388,8 @@ const state = {};
     tabs, and to Jobs, Growth and the vaccine record with them. The
     build now refuses to finish if a data-sub key is not here. */
  'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'sexedTab',
- 'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab', 'crTab',
+ 'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab', 'crTab', 'calTab',
+ 'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen',
  'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -1419,12 +1448,14 @@ function flushStore() {
       ciEdit: store.ciEdit,
       /* Persisted, same as the other two drafts. It used to be memory
          only, which meant a photo she had picked but not yet saved
-         disappeared the moment anything reloaded. That is how Stetson's
+         disappeared the moment anything reloaded. That is how her son's
          photo went missing while hers stayed. */
       profileEdit: store.profileEdit,
       hadSession: store.hadSession,
       guest: store.guest,
       deletedChildIds: store.deletedChildIds,
+      events: store.events,
+      deletedEventIds: store.deletedEventIds,
       notDuplicates: store.notDuplicates,
       parentUpdatedAt: store.parentUpdatedAt,
     }));
@@ -1498,6 +1529,8 @@ function loadStore() {
     store.hadSession = !!saved.hadSession;
     store.guest = !!saved.guest;
     store.deletedChildIds = Array.isArray(saved.deletedChildIds) ? saved.deletedChildIds : [];
+    store.events = Array.isArray(saved.events) ? saved.events : [];
+    store.deletedEventIds = Array.isArray(saved.deletedEventIds) ? saved.deletedEventIds : [];
     store.notDuplicates = Array.isArray(saved.notDuplicates) ? saved.notDuplicates : [];
     store.parentUpdatedAt = Number(saved.parentUpdatedAt) || 0;
     store.birthdaySeen = (saved.birthdaySeen && typeof saved.birthdaySeen === 'object')
@@ -1585,9 +1618,21 @@ function loadStore() {
     return true;
   }
 
-  // Nothing saved. Seed the example child so the demo and the workbench
-  // open on something rather than on an empty state.
-  const seed = newChildRecord('Stetson', '2022-06-09');
+  /* Nothing saved. Seed the example child so the demo and the workbench
+     open on something rather than on an empty state.
+
+     THE NAME IS NOT A REAL CHILD'S AND MUST NOT BECOME ONE.
+     This used to be seeded with the founder's own son's name and his
+     real birthday, which meant every stranger who opened the app was
+     handed somebody else's four year old. Sprout is deliberately not a
+     name anybody would mistake for their own child, which is the whole
+     point of an example.
+
+     The birthday is worked out from today rather than written down, so
+     the example child does not quietly age. A hardcoded date would have
+     this toddler starting high school in 2039 while the screens around
+     it still talked about naps. */
+  const seed = newChildRecord('Sprout', exampleBirthday());
   /* Marked as the app's own invention, so signing in can tell it apart
      from a child a parent actually added. */
   seed.seeded = true;
@@ -1598,6 +1643,15 @@ function loadStore() {
   store.activeChildId = seed.id;
   return false;
 }
+/* Roughly 18 months before today, which is the age with the most
+   written for it, so a first look lands somewhere full. */
+function exampleBirthday() {
+  const d = new Date();
+  d.setMonth(d.getMonth() - 18);
+  const two = (n) => (n < 10 ? '0' : '') + n;
+  return d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate());
+}
+
 const esc = (s) => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -2620,6 +2674,7 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'rules') html = screenRules(c);
   else if (v && v.type === 'screen' && v.id === 'about') html = screenAbout(c);
   else if (v && v.type === 'screen' && v.id === 'install') html = screenInstall();
+  else if (v && v.type === 'screen' && v.id === 'calendar') html = screenCalendar(c);
   else if (v && v.type === 'screen' && v.id === 'chores') html = screenChores();
   else if (v && v.type === 'screen' && v.id === 'learning') html = screenLearning(c);
   else if (v && v.type === 'screen' && v.id === 'growth') html = screenGrowth(c);
@@ -2966,6 +3021,12 @@ function initControls() {
       if (store.profileEdit && store.profileEdit.who === 'me') store.profileEdit.values[f] = e.target.value;
       else { store.parent[f] = e.target.value; flushStore(); }
     }
+    else if (e.target.matches('[data-calfield]')) {
+      /* Straight onto the draft and NO repaint. The caret jumps to
+         position zero on every keystroke otherwise, which is the bug
+         she hit in the Willow box and in the post composer. */
+      calDraft()[e.target.dataset.calfield] = e.target.value;
+    }
     else if (e.target.matches('[data-editname]')) {
       if (store.profileEdit) store.profileEdit.values.name = e.target.value;
     }
@@ -3135,6 +3196,12 @@ function initControls() {
       // under the person typing. Wait until they stop.
       if (bdayTimer) clearTimeout(bdayTimer);
       bdayTimer = setTimeout(render, 600);
+    } else if (e.target.matches && e.target.matches('[data-calfield]')) {
+      /* A time input reports through change as well as input depending
+         on whether it was typed or picked from the wheel. Both land
+         here so a time chosen from the picker is not silently lost. */
+      calDraft()[e.target.dataset.calfield] = e.target.value;
+      render();
     } else if (e.target.id === 'newChildBday') {
       store.draftChildBday = e.target.value;
     } else if (e.target.matches && e.target.matches('[data-logfield]')) {
@@ -3200,7 +3267,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3576,8 +3643,75 @@ function initControls() {
         state.tab = 'profile';
         flushStore();
       }
+    } else if (t.dataset.caladd) {
+      store.calEdit = calNewEvent();
+      window.scrollTo(0, 0);
+    } else if (t.dataset.calopen) {
+      const found = calEvents().filter((e) => e.id === t.dataset.calopen)[0];
+      if (found) store.calEdit = JSON.parse(JSON.stringify(found));
+      window.scrollTo(0, 0);
+    } else if (t.dataset.calcancel) {
+      store.calEdit = null;
+    } else if (t.dataset.calkind) {
+      const d = calDraft();
+      d.kind = t.dataset.calkind;
+      /* The kind carries a sensible default lead time, but only while
+         she has not chosen one herself. Overwriting her answer because
+         she corrected the category is the kind of small rudeness that
+         makes a form feel like it is arguing. */
+      if (!d.remindTouched) d.remind = calKind(d.kind).remind;
+    } else if (t.dataset.calwho) {
+      calDraft().who = t.dataset.calwho;
+    } else if (t.dataset.calremind) {
+      const d = calDraft();
+      d.remind = t.dataset.calremind;
+      d.remindTouched = true;
+    } else if (t.dataset.calrepeat != null && t.hasAttribute('data-calrepeat')) {
+      calDraft().repeat = t.dataset.calrepeat || '';
+    } else if (t.dataset.calclear) {
+      calDraft().time = '';
+      /* A reminder counted back from a time cannot survive the time
+         being taken away, so it falls back to the morning of. */
+      const d = calDraft();
+      if (calRemind(d.remind).minutesBefore != null) d.remind = 'same9';
+    } else if (t.dataset.calsave) {
+      calSave();
+      return;
+    } else if (t.dataset.caldelete) {
+      calDelete(t.dataset.caldelete);
+      return;
+    } else if (t.dataset.calfilter) {
+      store.calWho = t.dataset.calfilter;
+    } else if (t.dataset.calshift != null && t.hasAttribute('data-calshift')) {
+      const v = t.dataset.calshift;
+      store.calShift = v === '0' ? 0 : (Number(store.calShift) || 0) + Number(v);
+      if (store.calShift < -24) store.calShift = -24;
+      if (store.calShift > 24) store.calShift = 24;
+    } else if (t.dataset.calday) {
+      store.calDay = t.dataset.calday;
+    } else if (t.dataset.calsub) {
+      store.calSubOpen = t.dataset.calsub === 'open';
+    } else if (t.dataset.calgo) {
+      let go = null;
+      try { go = JSON.parse(t.dataset.calgo); } catch (err) { go = null; }
+      if (go && go.child) { selectChild(go.child); store.profileWho = go.child; }
+      if (go && go.screen === 'profile') { state.tab = 'profile'; state.view = null; }
+      else if (go && go.screen) state.view = { type: 'screen', id: go.screen };
+      window.scrollTo(0, 0);
+    } else if (t.dataset.removecancel) {
+      removeAsk = '';
     } else if (t.dataset.removechild) {
       const id = t.dataset.removechild;
+      /* TWO TAPS, WHEREVER IT IS PRESSED FROM.
+
+         This used to delete a child on a single tap, with no question
+         asked, from a button sitting beside Open their profile. Years
+         of logs, photos, milestones and first dates, gone on a thumb
+         that landed a centimetre low. The first tap now only arms it,
+         and the second one has to be a different button saying what is
+         about to happen and whose it is. */
+      if (removeAsk !== id) { removeAsk = id; render(); return; }
+      removeAsk = '';
       store.children = store.children.filter((k) => k.id !== id);
       if (!store.deletedChildIds) store.deletedChildIds = [];
       if (store.deletedChildIds.indexOf(id) === -1) store.deletedChildIds.push(id);
@@ -4061,7 +4195,7 @@ function initControls() {
       // rather than inheriting whichever band was last looked at.
       if (t.dataset.go === 'lens') state.lensBand = null;
       /* store.logWho persists, so without this, looking at her own logs
-         and then opening Stetson's would show hers with his name on the
+         and then opening her son's would show hers with his name on the
          button that got you there. */
       if (t.dataset.go === 'screen' && t.dataset.id === 'childlogs') {
         store.logWho = store.profileWho || store.activeChildId || 'me';
@@ -5575,7 +5709,7 @@ function screenWelcome(c) {
 
     <div class="card" style="margin-top:20px">
       <p class="eyebrow">Their name or nickname</p>
-      <p style="font-size:17px;color:var(--ink);margin:6px 0 0">${esc(c.child.name || 'Stetson')}</p>
+      <p style="font-size:17px;color:var(--ink);margin:6px 0 0">${esc(c.child.name || 'Your child')}</p>
     </div>
     <div class="card">
       <p class="eyebrow">Birthday</p>
@@ -5809,7 +5943,7 @@ function screenFeeding(c) {
 
   /* THE MILK HALF HAS AN END DATE.
 
-     Stetson is four and this screen was still opening on formula and
+     Her son is four and this screen was still opening on formula and
      breastfeeding. Past two that is history for most families, and
      still the live question for anybody nursing or pumping, so the opt
      in is not another switch to hunt for: it is the breastfeeding and
@@ -14506,10 +14640,11 @@ function childLensLine(k) {
 /* THE EXAMPLE CHILD HAS TO LOOK LIKE ONE.
 
    The app seeds a demo child so a first visit opens on something rather
-   than on an empty state, and that child is called Stetson. If the
-   parent's own son is also called Stetson, a phone that quietly failed
-   to sign in looks exactly like a phone that synced perfectly, and she
-   has no way to tell. That is not a hypothetical, it happened.
+   than on an empty state. It used to be seeded with the founder's own
+   son's name, which meant a phone that quietly failed to sign in looked
+   exactly like a phone that synced perfectly, and she had no way to
+   tell. That is not a hypothetical, it happened. The example is called
+   Sprout now, for that reason as much as for privacy.
 
    So anything the app invented says so, in the chip, on the card and on
    the Today screen, until the moment it belongs to a real account. */
@@ -14654,6 +14789,8 @@ function applyDateField(target, iso) {
     k.updatedAt = Date.now();
   } else if (parts[0] === 'draft') {
     store.draftChildBday = iso;
+  } else if (parts[0] === 'calev') {
+    calDraft().date = iso;
   } else if (parts[0] === 'memory') {
     /* When the memory HAPPENED, which is not the same as when she got
        round to typing it, and is the date it comes back on. */
@@ -14736,8 +14873,28 @@ function cycleCard(passed) {
    and which copy of the app this device is running.
    ----------------------------------------------------------------- */
 
+/* The confirm, drawn the same wherever it is reached from, because a
+   delete that looks different in 2 places is a delete somebody learns
+   to click past in one of them. */
+function removeConfirm(k) {
+  const name = (k && k.name) ? k.name : 'this child';
+  return `
+  <div class="card" style="border-color:var(--attention);margin-bottom:8px">
+    <p class="eyebrow" style="color:#A85A44">Remove ${esc(name)}</p>
+    <p class="bodytext" style="margin-top:6px">Everything kept for ${esc(name)} goes with them. Logs,
+    milestones and the dates they were reached, photos, memories, check ins and their routine. It
+    cannot be undone and it happens on every device you are signed in on.</p>
+    <div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap">
+      <button class="btn ghost sm" data-removecancel="1" style="flex:1 1 120px">Keep ${esc(name)}</button>
+      <button class="btn sm" data-removechild="${esc(k.id)}"
+        style="flex:1 1 120px;background:#A85A44;border-color:#A85A44">Remove for good</button>
+    </div>
+  </div>`;
+}
+
 function settingsChildRow(k) {
   const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+  if (removeAsk === k.id) return removeConfirm(k);
   return `
   <div class="card" style="margin-bottom:8px">
     <div style="display:flex;align-items:center;gap:11px">
@@ -14803,8 +14960,8 @@ function screenSettings() {
     ${editing ? `
       ${facePicker('me', v.photo)}
       ${editUnsavedNote()}
-      ${textField('Your name', 'name', 'text', 'Richelle', '')}
-      ${textField('Username', 'username', 'text', 'richelle_s', 'This is what other parents see in the community, not your real name.')}
+      ${textField('Your name', 'name', 'text', 'Your first name', '')}
+      ${textField('Username', 'username', 'text', 'morningbird22', 'This is what other parents see in the community, not your real name.')}
       ${textField('Email', 'email', 'email', 'you@example.com', '')}
       ${dateField('Your birthday', 'birthday',
         'So the app can say it back to you on the day, the same as it does for the children.', 100, 0)}
@@ -15405,7 +15562,7 @@ function screenAuth() {
       <div class="card flat" style="margin-bottom:8px">
         <p class="eyebrow">Your name</p>
         <input class="inp" id="authName" type="text" value="${esc(f.name)}"
-          placeholder="Richelle" autocomplete="name" style="margin-top:7px;width:100%" />
+          placeholder="Your first name" autocomplete="name" style="margin-top:7px;width:100%" />
       </div>` : ''}
 
     <div class="card flat" style="margin-bottom:8px">
@@ -15539,7 +15696,7 @@ function chipGrowthOrder(k) {
    anywhere in the app, including from the middle of a child's profile,
    which is the thing the old chip row never quite did. */
 /* Whoever is open, shown in the corner. She asked for this: open
-   Stetson and the corner says Stetson, so there is never a moment of
+   a child and the corner says that child, so there is never a moment of
    wondering whose screen you are looking at. */
 function whoIsOpen() {
   const who = store.profileWho || 'me';
@@ -16221,7 +16378,7 @@ function postHasContent() {
    inside the part of the page that gets rebuilt on every repaint does
    not survive a phone backgrounding the app while the camera roll is
    open, and the file comes back to an element that no longer exists.
-   That is how Stetson's photo went missing the first time. */
+   That is how her son's photo went missing the first time. */
 let postInput = null;
 let postKind = 'photo';
 
@@ -17645,6 +17802,14 @@ function homeCalm() {
 /* Which summaries somebody has opened this visit. Deliberately not
    saved: the next visit opens on the short version again, and anybody
    who always wants everything has a setting for that. */
+/* WHICH CHILD IS ONE MORE TAP FROM BEING DELETED.
+
+   Deliberately not in the store and deliberately not synced. An armed
+   delete must not survive a reload, must not travel to her other phone,
+   and must not still be armed tomorrow. It lives for as long as the
+   screen does and no longer. */
+let removeAsk = '';
+
 const shortOpen = {};
 
 function readFull() { return !!(store.parent && store.parent.readFull); }
@@ -18079,6 +18244,406 @@ function screenHomeCalm(c) {
   </div>`;
 }
 
+
+/* ------------------------------------------------------------------
+   THE STRIP ON HOME
+
+   Deliberately not a month grid. Home is read standing up with a child
+   on one hip, and the question it has to answer is "is there anything
+   today or tomorrow that I have forgotten", which is 3 lines, not 42
+   squares. The grid is one tap away for anybody who wants to plan.
+
+   It shows nothing at all when the next 10 days are empty. An empty
+   card saying "nothing coming up" is the filler she already told me
+   not to render.
+   ------------------------------------------------------------------ */
+function calHomeStrip() {
+  const today = calToday();
+  const soon = calAllIn(today, calAddDays(today, 10), 'all');
+  if (!soon.length) return '';
+  const shown = soon.slice(0, 3);
+  return `
+  <button class="lrow" data-go="screen" data-id="calendar" style="align-items:flex-start">
+    <span class="licon" style="background:var(--leaf2)">${icon('calendar', 18)}</span>
+    <span class="grow">
+      <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(CAL_TITLE)}</span>
+      ${shown.map((e) => `
+        <span class="tiny" style="display:block;margin-top:3px">
+          <strong style="color:var(--deep2)">${esc(calDayLabel(e.date, today))}</strong>${e.time
+            ? ' ' + esc(calTimeLabel(e.time)) : ''}, ${esc(e.title)}
+        </span>`).join('')}
+      ${soon.length > shown.length ? `
+        <span class="tiny" style="display:block;margin-top:3px;color:var(--faint)">
+          and ${soon.length - shown.length} more in the next 10 days</span>` : ''}
+    </span>
+    <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+  </button>`;
+}
+
+/* One entry, as a row. Readings are drawn flatter than entries on
+   purpose: a thing the app worked out should not look like a thing she
+   promised somebody she would be at. */
+function calRow(e, today) {
+  const reading = e.from === 'app';
+  const k = reading ? null : calKind(e.kind);
+  const who = calWhoName(e.who);
+  const attrs = reading
+    ? (e.go ? `data-calgo="${esc(JSON.stringify(e.go))}"` : '')
+    : `data-calopen="${esc(e.id)}"`;
+  return `
+  <button class="lrow" ${attrs} style="align-items:flex-start;${reading ? 'opacity:.92' : ''}">
+    <span class="licon" style="background:${reading ? 'var(--cream2, #F0EDE4)' : 'var(--leaf2)'}">
+      ${icon(reading ? (e.icon || 'calendar') : k.icon, 17)}
+    </span>
+    <span class="grow">
+      <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">
+        ${e.time ? `<span style="color:var(--deep2)">${esc(calTimeLabel(e.time))}</span> ` : ''}${esc(e.title)}
+      </span>
+      <span class="tiny" style="display:block;margin-top:2px">
+        ${esc([e.sub || (k ? k.label : ''), e.where || '', who].filter(Boolean).join(', '))}
+      </span>
+    </span>
+    ${reading ? (e.go ? `<span class="chev">${icon('chev', 16, 'var(--faint)')}</span>` : '')
+      : `<span class="chev">${icon('chev', 16, 'var(--faint)')}</span>`}
+  </button>`;
+}
+
+function calDayBlock(date, today, who) {
+  const list = calOnDay(date, who);
+  return `
+  <p class="sect" style="margin-top:14px">${esc(calDayLabel(date, today))}</p>
+  ${list.length ? list.map((e) => calRow(e, today)).join('')
+    : `<p class="tiny" style="padding:2px 2px 6px">${esc(CAL_EMPTY_DAY)}</p>`}`;
+}
+
+/* ------------------------------------------------------------------
+   THE MONTH GRID
+
+   A dot per entry, up to 3, then a plus. Counting past 3 on a square
+   7 millimetres wide is not reading, it is squinting, and the day
+   opens underneath anyway.
+   ------------------------------------------------------------------ */
+function calGrid(who) {
+  const today = calToday();
+  const base = calParse(today);
+  const shown = new Date(base.getFullYear(), base.getMonth() + (Number(store.calShift) || 0), 1, 12);
+  const year = shown.getFullYear();
+  const month = shown.getMonth();
+  const cells = calMonthGrid(year, month);
+  const from = cells[0].date;
+  const to = cells[cells.length - 1].date;
+
+  /* One pass over the window rather than a call per square. 42 calls
+     each expanding every repeat was the slow version. */
+  const byDay = {};
+  calAllIn(from, to, who).forEach((e) => {
+    if (!byDay[e.date]) byDay[e.date] = [];
+    byDay[e.date].push(e);
+  });
+
+  const sel = store.calDay || today;
+  return `
+  <div class="calhead">
+    <button class="calnav" data-calshift="-1" aria-label="Previous month">${icon('chev', 15, 'var(--deep)')}</button>
+    <span class="calmonth">${esc(CAL_MONTHS[month])} ${year}</span>
+    <button class="calnav next" data-calshift="1" aria-label="Next month">${icon('chev', 15, 'var(--deep)')}</button>
+  </div>
+  ${Number(store.calShift) ? `<button class="chip" style="margin:0 auto 8px;display:block" data-calshift="0">Back to this month</button>` : ''}
+  <div class="calgrid">
+    ${CAL_DOW.map((d) => `<span class="caldow">${esc(d)}</span>`).join('')}
+    ${cells.map((cell) => {
+      const list = byDay[cell.date] || [];
+      const isToday = cell.date === today;
+      const isSel = cell.date === sel;
+      return `
+      <button class="calcell${cell.inMonth ? '' : ' out'}${isToday ? ' today' : ''}${isSel ? ' sel' : ''}"
+        data-calday="${esc(cell.date)}" aria-label="${esc(calDayLabel(cell.date, today))}">
+        <span class="caln">${calParse(cell.date).getDate()}</span>
+        <span class="caldots">
+          ${list.slice(0, 3).map((e) => `<span class="caldot${e.from === 'app' ? ' soft' : ''}"></span>`).join('')}
+          ${list.length > 3 ? '<span class="calmore">+</span>' : ''}
+        </span>
+      </button>`;
+    }).join('')}
+  </div>`;
+}
+
+/* ------------------------------------------------------------------
+   ADD AND EDIT
+
+   One draft at a time on store.calEdit, saved only on Save, same as
+   every other edit in this app since she said auto saving made her
+   nervous about what had actually been kept.
+   ------------------------------------------------------------------ */
+function calDraft() {
+  if (!store.calEdit) store.calEdit = calNewEvent();
+  return store.calEdit;
+}
+
+function calEditor() {
+  const d = calDraft();
+  const isNew = !calEvents().some((e) => e.id === d.id);
+  const k = calKind(d.kind);
+  const timed = !!d.time;
+  return `
+  <div class="card" style="margin-bottom:10px">
+    <p class="eyebrow">${isNew ? 'Something coming up' : 'Edit this'}</p>
+
+    <div class="card flat" style="margin-top:9px;margin-bottom:8px">
+      <p class="eyebrow">What is it</p>
+      <input class="inp" type="text" id="cal_title" data-calfield="title" value="${esc(d.title)}"
+        placeholder="Dentist, parent evening, swimming" autocomplete="off"
+        style="margin-top:7px;width:100%" />
+    </div>
+
+    <p class="eyebrow" style="margin-top:10px">What kind of thing</p>
+    <div class="chips" style="margin:7px 0 2px">
+      ${CAL_KINDS.map((x) => `
+        <button class="chip${x.id === d.kind ? ' on' : ''}" data-calkind="${esc(x.id)}"
+          aria-pressed="${x.id === d.kind}">${esc(x.label)}</button>`).join('')}
+    </div>
+    <p class="tiny" style="margin:0 0 10px">${esc(k.hint)}</p>
+
+    <p class="eyebrow">Who is it about</p>
+    <div class="chips" style="margin:7px 0 2px">
+      ${calWhoOptions().map((o) => `
+        <button class="chip${o.id === d.who ? ' on' : ''}" data-calwho="${esc(o.id)}"
+          aria-pressed="${o.id === d.who}">${esc(o.label)}</button>`).join('')}
+    </div>
+    <p class="tiny" style="margin:0 0 10px">${esc(CAL_ADD_HELP)}</p>
+
+    <div class="card flat" style="margin-bottom:8px">
+      <p class="eyebrow">When</p>
+      <div style="margin-top:7px">${dateSelects('calev', d.date || calToday(), 2, 3)}</div>
+    </div>
+
+    <div class="card flat" style="margin-bottom:8px">
+      <p class="eyebrow">Time</p>
+      <div style="display:flex;gap:7px;align-items:center;margin-top:7px;flex-wrap:wrap">
+        <input class="inp" type="time" id="cal_time" data-calfield="time" value="${esc(d.time || '')}"
+          style="flex:1 1 130px" />
+        ${timed ? `<button class="chip" data-calfield="time" data-calclear="1">All day</button>` : ''}
+      </div>
+      ${timed ? '' : '<p class="tiny" style="margin-top:6px">Leave it empty for something that is just on the day.</p>'}
+    </div>
+
+    <div class="card flat" style="margin-bottom:8px">
+      <p class="eyebrow">Where, if it helps</p>
+      <input class="inp" type="text" id="cal_where" data-calfield="where" value="${esc(d.where || '')}"
+        placeholder="Optional" autocomplete="off" style="margin-top:7px;width:100%" />
+    </div>
+
+    <p class="eyebrow" style="margin-top:10px">Remind you</p>
+    <div class="chips" style="margin:7px 0 2px">
+      ${CAL_REMIND.map((r) => {
+        /* A reminder measured against the appointment cannot be
+           offered when there is no appointment time to measure from. */
+        const needsTime = r.minutesBefore != null;
+        if (needsTime && !timed) return '';
+        return `<button class="chip${r.id === d.remind ? ' on' : ''}" data-calremind="${esc(r.id)}"
+          aria-pressed="${r.id === d.remind}">${esc(r.label)}</button>`;
+      }).join('')}
+    </div>
+    ${d.remind && d.remind !== 'none' ? `
+      <p class="tiny" style="margin:0 0 10px">${esc(calRemindLine(d))}</p>` : `
+      <p class="tiny" style="margin:0 0 10px">It will still be on the calendar, it just will not buzz.</p>`}
+
+    <p class="eyebrow">Does it come round again</p>
+    <div class="chips" style="margin:7px 0 10px">
+      ${CAL_REPEAT.map((r) => `
+        <button class="chip${(r.id || '') === (d.repeat || '') ? ' on' : ''}" data-calrepeat="${esc(r.id)}"
+          aria-pressed="${(r.id || '') === (d.repeat || '')}">${esc(r.label)}</button>`).join('')}
+    </div>
+
+    <div class="card flat" style="margin-bottom:10px">
+      <p class="eyebrow">Anything to remember</p>
+      <textarea class="inp" id="cal_notes" data-calfield="notes" rows="2"
+        placeholder="Bring the form, fasting from midnight, ask about the referral"
+        style="margin-top:7px;width:100%">${esc(d.notes || '')}</textarea>
+    </div>
+
+    ${store.calNote ? `<p class="tiny" style="color:#A85A44;margin-bottom:8px">${esc(store.calNote)}</p>` : ''}
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      <button class="btn" style="flex:1 1 130px" data-calsave="1">
+        ${icon('check', 15, '#fff')} ${isNew ? 'Add it' : 'Save'}</button>
+      <button class="btn ghost" style="flex:1 1 90px" data-calcancel="1">Cancel</button>
+      ${isNew ? '' : `<button class="btn ghost" style="flex:1 1 90px;color:#A85A44"
+        data-caldelete="${esc(d.id)}">Delete</button>`}
+    </div>
+  </div>`;
+}
+
+/* Said back in words, because "the evening before" means nothing until
+   you know which evening, and a reminder people cannot predict is a
+   reminder people switch off. */
+function calRemindLine(ev) {
+  const at = calRemindAt(ev);
+  if (!at) return 'No reminder on this one.';
+  const parts = at.split('T');
+  const base = 'You will be told on ' + calDayLabel(parts[0]).toLowerCase()
+    + ' at ' + calTimeLabel(parts[1]) + '.';
+
+  /* If that lands inside the quiet hours she set, say so here rather
+     than letting her find out by not being told. The server drops a
+     reminder in that window rather than queueing it, which is the
+     right behaviour and a terrible surprise. */
+  let quiet = null;
+  try { quiet = pushPrefs(); } catch (err) { quiet = null; }
+  if (!quiet) return base;
+  const hour = Number(String(parts[1]).split(':')[0]);
+  const from = Number(quiet.quietFrom);
+  const to = Number(quiet.quietTo);
+  const inQuiet = from === to ? false
+    : (from > to ? (hour >= from || hour < to) : (hour >= from && hour < to));
+  if (!inQuiet) return base;
+  return base + ' That is inside your quiet hours, so it will not buzz. Change the quiet hours in '
+    + 'notifications, or pick a different reminder.';
+}
+
+
+/* ------------------------------------------------------------------
+   SAVING, DELETING AND THE SUBSCRIBE CARD
+   ------------------------------------------------------------------ */
+function calSave() {
+  const d = store.calEdit;
+  if (!d) return;
+  const title = String(d.title || '').trim();
+  if (!title) {
+    /* Nothing without a name. A row reading "(no title)" at 7am tells
+       a parent nothing and cannot be acted on. */
+    store.calNote = 'Give it a name first, even a short one.';
+    render();
+    return;
+  }
+  store.calNote = '';
+  const clean = {
+    id: d.id,
+    title: title,
+    date: d.date || calToday(),
+    time: String(d.time || ''),
+    who: d.who || CAL_WHO_HOUSE_ID,
+    kind: d.kind || 'other',
+    where: String(d.where || '').trim(),
+    notes: String(d.notes || '').trim(),
+    remind: d.remind || 'none',
+    repeat: d.repeat || '',
+    createdAt: d.createdAt || new Date().toISOString(),
+    updatedAt: Date.now(),
+  };
+  const list = calEvents().slice();
+  const at = list.findIndex((e) => e.id === clean.id);
+  if (at === -1) list.push(clean); else list[at] = clean;
+  store.events = list;
+  store.calEdit = null;
+  store.calDay = clean.date;
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+function calDelete(id) {
+  store.events = calEvents().filter((e) => e.id !== id);
+  if (!Array.isArray(store.deletedEventIds)) store.deletedEventIds = [];
+  if (store.deletedEventIds.indexOf(id) === -1) store.deletedEventIds.push(id);
+  store.calEdit = null;
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  render();
+}
+
+/* The phone mirror. The link itself is not built yet, because it needs
+   a server function that is in the next deploy, so this says what it
+   will do and does not pretend to hand over something that does not
+   work. A dead Copy button is worse than an honest "not yet". */
+function calSubscribeBlock() {
+  const open = !!store.calSubOpen;
+  return `
+  <div class="card flat" style="margin-top:14px">
+    <p class="eyebrow">${icon('calendar', 11, 'var(--sage)')} ${esc(CAL_SUBSCRIBE.title)}</p>
+    ${CAL_SUBSCRIBE.body.map((x) => `<p class="tiny" style="margin-top:6px">${esc(x)}</p>`).join('')}
+    <button class="btn ghost sm" style="width:100%;margin-top:10px" data-calsub="${open ? 'close' : 'open'}">
+      ${open ? 'Hide the steps' : 'How it works'}</button>
+    ${open ? `
+      ${CAL_SUBSCRIBE.steps.map((s) => `
+        <p class="tiny" style="margin-top:8px"><strong style="color:var(--ink)">${esc(s.who)}.</strong>
+        ${esc(s.how)}</p>`).join('')}
+      <p class="tiny" style="margin-top:8px;color:#A85A44">${esc(CAL_SUBSCRIBE.warn)}</p>
+      <p class="tiny" style="margin-top:8px">Your link is being set up. It arrives with the next
+      update, and this is where it will be.</p>` : ''}
+  </div>`;
+}
+
+function screenCalendar(c) {
+  const today = calToday();
+  const who = store.calWho || 'all';
+  const tab = store.calTab || 'next';
+  const sel = store.calDay || today;
+  const editing = !!store.calEdit;
+  const mine = calEvents().length;
+
+  const whoChips = `
+    <div class="chips" style="margin:0 0 4px">
+      <button class="chip${who === 'all' ? ' on' : ''}" data-calfilter="all"
+        aria-pressed="${who === 'all'}">${esc(CAL_WHO_ALL)}</button>
+      ${calWhoOptions().map((o) => `
+        <button class="chip${who === o.id ? ' on' : ''}" data-calfilter="${esc(o.id)}"
+          aria-pressed="${who === o.id}">${esc(o.label)}</button>`).join('')}
+    </div>`;
+
+  const next30 = calAllIn(today, calAddDays(today, 45), who);
+  const days = [];
+  next30.forEach((e) => { if (days.indexOf(e.date) === -1) days.push(e.date); });
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(CAL_TITLE)}</h1>
+    <p class="sub">${esc(CAL_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${editing ? calEditor() : `
+    <button class="btn" style="width:100%" data-caladd="1">
+      ${icon('plus', 15, '#fff')} Add something</button>`}
+
+    ${editing ? '' : `
+    <div style="margin-top:13px">${subTabs('calTab', tab, [
+      { id: 'next', label: 'Coming up' },
+      { id: 'month', label: 'The month' },
+      { id: 'past', label: 'Already happened' },
+    ])}</div>
+
+    ${whoChips}
+
+    ${tab === 'month' ? `
+      ${calGrid(who)}
+      ${calDayBlock(sel, today, who)}
+    ` : tab === 'past' ? `
+      <p class="tiny" style="margin:6px 0 2px">${esc(CAL_PAST_NOTE)}</p>
+      ${(() => {
+        const past = calAllIn(calAddDays(today, -400), calAddDays(today, -1), who).reverse();
+        if (!past.length) return `<p class="tiny" style="padding:8px 2px">Nothing yet.</p>`;
+        return past.slice(0, 60).map((e) => `
+          <p class="sect" style="margin-top:12px">${esc(calDayLabel(e.date, today))}</p>
+          ${calRow(e, today)}`).join('');
+      })()}
+    ` : `
+      ${days.length ? days.map((d) => calDayBlock(d, today, who)).join('') : `
+      <div class="card flat" style="margin-top:12px">
+        <p class="eyebrow">${esc(CAL_EMPTY_ALL.title)}</p>
+        <p class="bodytext" style="margin-top:6px">${esc(CAL_EMPTY_ALL.body)}</p>
+      </div>`}
+    `}
+
+    ${calSubscribeBlock()}
+
+    ${mine ? '' : ''}
+    <p class="disclaimer">Nothing on this calendar is shared outside your house, and nothing here
+      ever goes to the community.</p>
+    `}
+  </div>`;
+}
+
 function screenHome(c) {
   if (homeCalm()) return screenHomeCalm(c);
   const hour = new Date().getHours();
@@ -18101,6 +18666,7 @@ function screenHome(c) {
     ${calmSwitchChip()}
     ${findBar()}
     ${installBanner()}
+    ${calHomeStrip()}
     ${choreCard()}
 
     <div class="kidrow home">
@@ -19515,6 +20081,26 @@ function screenChild(c) {
         <p class="eyebrow">Their birthday, or a due date if you are expecting</p>
         <div style="margin-top:7px">${dateSelects('child:' + kid.id, v.birthday || '', 25, 1)}</div>
       </div>
+
+      ${/* REMOVING A CHILD BELONGS HERE, NOT ONLY IN SETTINGS.
+
+            It lived in Settings alone, and the word remove did not
+            appear anywhere on a child's own page. Somebody who wanted
+            to get rid of a profile went to that profile, found nothing,
+            and concluded the app would not let them. That is exactly
+            what happened.
+
+            It sits inside Edit rather than on the page itself, so it is
+            where you go when you are already changing this child, and
+            it is not something a thumb meets while reading. */''}
+      ${removeAsk === kid.id ? removeConfirm(kid) : `
+      <div class="card flat" style="margin-bottom:8px">
+        <p class="eyebrow">Remove this profile</p>
+        <p class="tiny" style="margin-top:5px">Takes everything kept for
+        ${esc(v.name || kid.name || 'them')} with it. You will be asked once more first.</p>
+        <button class="btn ghost sm" style="width:100%;margin-top:10px"
+          data-removechild="${esc(kid.id)}">Remove ${esc(v.name || kid.name || 'this child')}</button>
+      </div>`}
     ` : ''}` : ''}
 
     ${c.days != null && c.days < 56 && getDiaperDay(c.days) ? `
@@ -21515,7 +22101,7 @@ function logWhoStrip(who) {
    at the top, a Back button to their profile, and no person strip,
    because she did not come here to browse everybody.
 
-   She hit the difference the hard way. "Everything logged for Stetson"
+   She hit the difference the hard way. "Everything logged for one child"
    used to jump to the tab, which dropped the back stack and left the
    bottom bar as the only way out, so pressing anything sent her Home. */
 function screenLogsHub(c, opts) {
@@ -22196,6 +22782,12 @@ function parentPayload() {
     onboardDone: !!(store.onboard && store.onboard.done),
     blocked: store.blocked || [],
     deletedChildIds: store.deletedChildIds || [],
+    /* THE CALENDAR SYNCS AT THE HOUSEHOLD LEVEL, same as the chore
+       chart and for the same reason. Two parents who cannot see the
+       same Thursday do not have a shared calendar, they have 2
+       calendars that disagree. */
+    events: store.events || [],
+    deletedEventIds: store.deletedEventIds || [],
     notDuplicates: store.notDuplicates || [],
     updatedAt: store.parentUpdatedAt || 0,
   }));
@@ -22211,7 +22803,7 @@ function contentKey(payload) {
 }
 
 /* The example child the app seeds so a first visit opens on something
-   rather than on an empty state. Putting a fictional Stetson
+   rather than on an empty state. Putting a fictional Sprout
    permanently on somebody's real account would be worse than useless,
    so an untouched one is dropped rather than synced.
 
@@ -22250,6 +22842,26 @@ function mergeMemories(local, remote, deletedIds) {
   take(local);
   take(remote);
   return sortMemories(out);
+}
+
+/* Same shape as mergeMemories, with one difference that matters: a
+   memory is written once and never touched again, but an appointment
+   gets moved. So where both sides hold the same id, the one edited
+   last wins rather than whichever was reached first. */
+function mergeEvents(local, remote, deletedIds) {
+  const dead = {};
+  (deletedIds || []).forEach((id) => { dead[id] = true; });
+  const byId = {};
+  const take = (list) => {
+    (list || []).forEach((e) => {
+      if (!e || !e.id || dead[e.id]) return;
+      const have = byId[e.id];
+      if (!have || (Number(e.updatedAt) || 0) > (Number(have.updatedAt) || 0)) byId[e.id] = e;
+    });
+  };
+  take(local);
+  take(remote);
+  return Object.keys(byId).map((k) => byId[k]);
 }
 
 /* Both devices' tombstones, joined, so a delete on either one holds. */
@@ -22460,6 +23072,24 @@ async function cloudFirstSync() {
       store.memories,
       Array.isArray(remoteUser.memories) ? remoteUser.memories : [],
       store.deletedMemoryIds
+    );
+
+    /* CALENDAR ENTRIES MERGE RATHER THAN LATER STAMP WINS.
+
+       A whole calendar is not one object with one timestamp. Her
+       husband adding football on his phone while she adds the dentist
+       on hers must end with both on the calendar, and a later stamp
+       rule would throw one of them away. So entries are merged by id,
+       the newer copy of the same entry wins, and a delete on either
+       device holds because of the tombstones. */
+    store.deletedEventIds = mergeDeletedIds(
+      store.deletedEventIds,
+      Array.isArray(remoteUser.deletedEventIds) ? remoteUser.deletedEventIds : []
+    );
+    store.events = mergeEvents(
+      store.events,
+      Array.isArray(remoteUser.events) ? remoteUser.events : [],
+      store.deletedEventIds
     );
   }
 
@@ -24480,6 +25110,245 @@ function choreLiveJobs() {
   return choreJobs().filter((j) => ids[j.personId] && choreById(j.choreId));
 }
 
+
+/* ==================================================================
+   THE CALENDAR
+
+   Everything about why this is the house's rather than a person's, and
+   why a reading is not an entry, is in src/data/calendar.js. This is
+   the part that reads her actual data.
+   ================================================================== */
+
+function calEvents() {
+  return Array.isArray(store.events) ? store.events : [];
+}
+
+function calNewEvent() {
+  return {
+    id: 'e' + Date.now() + Math.floor(Math.random() * 1000),
+    title: '',
+    date: store.calDay || calToday(),
+    time: '',
+    who: CAL_WHO_HOUSE_ID,
+    kind: 'doctor',
+    where: '',
+    notes: '',
+    remind: '1d',
+    repeat: '',
+    createdAt: new Date().toISOString(),
+    updatedAt: Date.now(),
+  };
+}
+
+/* ------------------------------------------------------------------
+   THE FEEDS
+
+   Worked out fresh on every read, never stored. That is the whole
+   trick: correct a birthday and every birthday reading moves with it,
+   tick a vaccine dose off and the reading for it disappears, and
+   nothing has to be migrated or cleaned up, ever.
+
+   Each one carries `from`, which is what stops the editor offering to
+   let her change a date the app is only reporting.
+   ------------------------------------------------------------------ */
+
+function calReading(id, date, title, sub, who, icon, go) {
+  return { id: id, date: date, title: title, sub: sub, who: who,
+    icon: icon || 'calendar', from: 'app', go: go || null, time: '' };
+}
+
+/* A birthday, every year, for her and for each child. The first one is
+   the only date in this app that a parent already knows by heart, and
+   a calendar that does not show it reads as a calendar that does not
+   know the family. */
+function calFeedBirthdays(fromDate, toDate) {
+  const out = [];
+  const add = (who, name, bday, isParent) => {
+    if (!bday) return;
+    const b = calParse(bday);
+    if (!b) return;
+    let y = calParse(fromDate).getFullYear();
+    for (; y <= calParse(toDate).getFullYear(); y += 1) {
+      const when = y + '-' + (b.getMonth() + 1 < 10 ? '0' : '') + (b.getMonth() + 1)
+        + '-' + (b.getDate() < 10 ? '0' : '') + b.getDate();
+      if (when < fromDate || when > toDate) continue;
+      const turning = y - b.getFullYear();
+      out.push(calReading('bday:' + who + ':' + y, when,
+        name + "'s birthday",
+        turning > 0 ? ('Turning ' + turning) : '',
+        who, 'star', isParent ? null : { screen: 'profile', child: who }));
+    }
+  };
+  const p = store.parent || {};
+  if (p.birthday) add('me', p.name || 'You', p.birthday, true);
+  (store.children || []).forEach((k) => {
+    if (k.birthday && !isExpecting(k)) add(k.id, k.name || 'Your child', k.birthday, false);
+  });
+  return out;
+}
+
+/* A due date is the one reading that is a guess and has to say so.
+   Putting "Due date" on a square with no hedge is how an app ends up
+   being quoted back at somebody in a delivery room. */
+function calFeedDue(fromDate, toDate) {
+  const out = [];
+  (store.children || []).forEach((k) => {
+    if (!isExpecting(k) || !k.dueDate) return;
+    const d = String(k.dueDate).slice(0, 10);
+    if (d < fromDate || d > toDate) return;
+    out.push(calReading('due:' + k.id, d,
+      (k.name || 'Baby') + "'s due date",
+      'An estimate. Most babies arrive in the 2 weeks either side of it',
+      k.id, 'heart', { screen: 'profile', child: k.id }));
+  });
+  return out;
+}
+
+/* The next vaccine dose that is actually outstanding, shown on the day
+   the window opens rather than as a date it was never really given.
+   One per child, because a list of 9 overdue doses on one square is a
+   telling off rather than a reminder. */
+function calFeedVaccines(fromDate, toDate) {
+  const out = [];
+  (store.children || []).forEach((k) => {
+    if (isExpecting(k) || !k.birthday) return;
+    const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+    const months = sum && sum.age ? sum.age.totalMonths : null;
+    if (months === null) return;
+    const next = vaxNextUp(months, vaxRecord(k), vaxSkipped(k));
+    if (!next) return;
+    /* The date the dose becomes due, counted from their birthday,
+       which is the only honest way to place it on a square. */
+    const due = calAddDays(String(k.birthday).slice(0, 10), Math.round(next.dose.at * 30.44));
+    const today = calToday();
+
+    /* A DOSE THAT WAS DUE A WHILE AGO MOVES TO TODAY.
+
+       Left on its real date it falls off the back of the calendar and
+       the parent never sees the one thing on here worth seeing. So it
+       is shown on today, and the wording follows the rule the vaccine
+       record already set: nothing is ever missed, it was due a while
+       ago. No red, no badge, no count of how late. A parent who has
+       been in survival mode for 4 months does not need the app to
+       keep score, they need to know what to ask for. */
+    const overdue = due < today;
+    const when = overdue ? today : due;
+    if (when < fromDate || when > toDate) return;
+    out.push(calReading('vax:' + k.id + ':' + next.series.id + ':' + next.dose.n, when,
+      next.series.label + ' for ' + (k.name || 'them'),
+      overdue
+        ? 'Was due a while ago. Worth asking about at the next visit'
+        : 'Due around now. Worth booking if it is not already',
+      k.id, 'shield', { screen: 'vaxrecord', child: k.id }));
+  });
+  return out;
+}
+
+/* The chore chart, which already knows which jobs fall on which day of
+   the week. Collapsed to one line per person per day rather than a
+   row per job, because 6 squares saying "Tidy up" is a wall. */
+function calFeedChores(fromDate, toDate) {
+  const out = [];
+  const jobs = (typeof choreLiveJobs === 'function') ? choreLiveJobs() : [];
+  if (!jobs.length) return out;
+  let d = fromDate;
+  let guard = 0;
+  while (d <= toDate && guard < 420) {
+    guard += 1;
+    const dow = calParse(d).getDay();
+    const onDay = jobs.filter((j) => (j.days || []).indexOf(dow) !== -1);
+    if (onDay.length) {
+      const byPerson = {};
+      onDay.forEach((j) => { byPerson[j.personId] = (byPerson[j.personId] || 0) + 1; });
+      Object.keys(byPerson).forEach((pid) => {
+        const person = chorePerson(pid);
+        out.push(calReading('chore:' + pid + ':' + d, d,
+          (person ? person.name : 'Somebody') + ', ' + byPerson[pid]
+            + (byPerson[pid] === 1 ? ' job' : ' jobs'),
+          'On the chart', pid === CHORE_ME ? 'me' : pid, 'leaf', { screen: 'chores' }));
+      });
+    }
+    d = calAddDays(d, 1);
+  }
+  return out;
+}
+
+/* Hers, and only ever an estimate. Worth having on the calendar for
+   the same reason the app has a cycle screen at all, which is that
+   knowing roughly when changes what you agree to do that week. */
+function calFeedCycle(fromDate, toDate) {
+  const out = [];
+  const p = store.parent || {};
+  if (!p.lastPeriod) return out;
+  const info = cycleInfo(p.lastPeriod, null, cycleLen());
+  if (!info) return out;
+  const len = Number(info.cycleLength) || 28;
+  for (let i = 0; i < 14; i += 1) {
+    const when = calAddDays(info.nextPeriod, len * i);
+    if (when > toDate) break;
+    if (when < fromDate) continue;
+    out.push(calReading('cyc:' + when, when, 'Period due', 'Estimated from your own average',
+      'me', 'heart', { screen: 'mycycle' }));
+  }
+  return out;
+}
+
+/* Everything the app knows, for a window of days. Kept behind one
+   function so a screen never has to remember which feeds exist. */
+function calFeedAll(fromDate, toDate) {
+  let out = [];
+  try { out = out.concat(calFeedBirthdays(fromDate, toDate)); } catch (err) {}
+  try { out = out.concat(calFeedDue(fromDate, toDate)); } catch (err) {}
+  try { out = out.concat(calFeedVaccines(fromDate, toDate)); } catch (err) {}
+  try { out = out.concat(calFeedChores(fromDate, toDate)); } catch (err) {}
+  try { out = out.concat(calFeedCycle(fromDate, toDate)); } catch (err) {}
+  return out;
+}
+
+/* Her own entries, expanded across repeats, for the same window. */
+function calEntriesIn(fromDate, toDate) {
+  const out = [];
+  calEvents().forEach((e) => {
+    if (!e || !e.date) return;
+    if (!e.repeat) {
+      if (e.date >= fromDate && e.date <= toDate) out.push(e);
+      return;
+    }
+    let d = fromDate < e.date ? e.date : fromDate;
+    let guard = 0;
+    while (d <= toDate && guard < 420) {
+      guard += 1;
+      if (calOccursOn(e, d)) out.push(Object.assign({}, e, { date: d, occurrence: d }));
+      d = calAddDays(d, 1);
+    }
+  });
+  return out;
+}
+
+/* THE ONE FUNCTION EVERY CALENDAR SCREEN ACTUALLY CALLS. */
+function calAllIn(fromDate, toDate, who) {
+  const all = calEntriesIn(fromDate, toDate).concat(calFeedAll(fromDate, toDate));
+  const filtered = (!who || who === 'all') ? all : all.filter((e) => e.who === who);
+  return calSort(filtered);
+}
+
+function calOnDay(date, who) { return calAllIn(date, date, who); }
+
+/* Who an entry is about, as a name rather than an id. */
+function calWhoName(who) {
+  if (!who || who === CAL_WHO_HOUSE_ID) return CAL_WHO_HOUSE;
+  if (who === 'me') return (store.parent && store.parent.name) || 'You';
+  const k = (store.children || []).filter((x) => x.id === who)[0];
+  return k ? (k.name || 'Your child') : CAL_WHO_HOUSE;
+}
+
+function calWhoOptions() {
+  const out = [{ id: CAL_WHO_HOUSE_ID, label: CAL_WHO_HOUSE }];
+  out.push({ id: 'me', label: (store.parent && store.parent.name) || 'You' });
+  (store.children || []).forEach((k) => out.push({ id: k.id, label: k.name || 'Your child' }));
+  return out;
+}
+
 function choreJobsFor(personId, day) {
   return choreLiveJobs().filter((j) => j.personId === personId
     && (day === undefined || day === null || (j.days || []).indexOf(day) !== -1));
@@ -25881,7 +26750,7 @@ function updateBar() {
 
    The first time sync is turned on, two devices that were each used on
    their own can be holding their own separate record for the same
-   child. Nothing can know that the Stetson on the phone and the Stetson
+   child. Nothing can know that the child on the phone and the child
    on the laptop are the same boy, so the merge does the only honest
    thing and keeps both, and the parent opens the app to two of
    everybody.
@@ -25982,7 +26851,7 @@ function duplicateCard() {
 
    This started as a "keep this one" button, on the assumption that one
    copy would be the real child and the other would be empty. Real data
-   said otherwise the first time it ran: one Stetson had the ADHD lens
+   said otherwise the first time it ran: one copy had the ADHD lens
    on, the other had two routine choices, and neither contained the
    other. Whichever you kept, you lost something, and the app would not
    have mentioned it.
@@ -26127,7 +26996,7 @@ const willow = {
    Everything else in here is scoped to the active child, and a single
    shared thread meant switching from one kid to another carried the
    first one's turns into the second one's questions: ask about
-   Hartlee's bedtime, switch to Stetson, ask "what about at naps", and
+   one child's bedtime, switch to the other, ask "what about at naps", and
    the model is still thinking about a twelve year old. The threads are
    deliberately memory only. A conversation is a thing you are in the
    middle of, not a record to keep, and the questions people ask her

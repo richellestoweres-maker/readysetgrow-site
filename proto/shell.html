@@ -1599,6 +1599,51 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 .mebtn.on .face.plain{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35)}
 
 .hint{font-size:12.5px;color:var(--wb-muted);text-align:center;max-width:44ch;line-height:1.5}
+
+/* THE FAMILY CALENDAR GRID.
+   6 rows always, so paging months does not move everything below it up
+   and down the screen. Squares are square via aspect-ratio rather than
+   a fixed height, so the grid fits a 390 phone and a 1900 laptop from
+   the same rule. */
+.calhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:12px 0 8px}
+.calmonth{font-size:15px;font-weight:600;color:var(--ink);letter-spacing:.01em}
+.calnav{appearance:none;border:1px solid var(--line);background:var(--cream);border-radius:11px;
+  width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.calnav svg{transform:rotate(180deg)}
+.calnav.next svg{transform:none}
+.calnav:hover{background:var(--leaf2)}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.caldow{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);
+  text-align:center;padding:2px 0 4px}
+.calcell{appearance:none;border:1px solid transparent;background:transparent;border-radius:10px;
+  aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  gap:2px;padding:5px 1px 3px;cursor:pointer;min-width:0}
+.calcell:hover{background:var(--leaf2)}
+.calcell .caln{font-size:13px;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
+.calcell.out .caln{color:var(--faint);opacity:.55}
+.calcell.today{background:var(--leaf2)}
+.calcell.today .caln{font-weight:700;color:var(--deep2)}
+.calcell.sel{border-color:var(--sage)}
+.caldots{display:flex;gap:2px;align-items:center;justify-content:center;min-height:6px;flex-wrap:nowrap}
+.caldot{width:5px;height:5px;border-radius:50%;background:var(--deep2);display:block}
+/* A thing the app worked out is drawn quieter than a thing she put in,
+   so the dots she is responsible for stand out from the ones she is
+   only being told about. */
+.caldot.soft{background:var(--sage);opacity:.5}
+.calmore{font-size:9px;color:var(--faint);line-height:1}
+@media (max-width:360px){
+  .calcell{padding:4px 0 2px}
+  .calcell .caln{font-size:12px}
+}
+/* A square cell is right on a phone, where 7 columns across 390px give
+   a square about 50px. On a laptop the reading column is twice that
+   wide, so 1:1 makes each day 93px tall, the month runs off the screen
+   and the dots drift miles from their number. Past the phone the cell
+   keeps a sensible height instead of a ratio. */
+@media (min-width:620px){
+  .calcell{aspect-ratio:auto;min-height:48px;justify-content:center;gap:4px}
+  .calgrid{gap:4px}
+}
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 
@@ -1617,11 +1662,11 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
         <h2>The child</h2>
         <div class="field">
           <label for="nameIn">Name</label>
-          <input id="nameIn" type="text" value="Stetson" autocomplete="off">
+          <input id="nameIn" type="text" value="Sprout" autocomplete="off">
         </div>
         <div class="field">
           <label for="bdayIn">Birthday</label>
-          <input id="bdayIn" type="date" value="2022-06-09">
+          <input id="bdayIn" type="date" value="2025-04-01">
         </div>
         <div class="field">
           <label id="jumpLbl">Jump to an age</label>
