@@ -340,6 +340,34 @@ def check_proxy_dupes(text, label):
         raise SystemExit(1)
 
 
+def check_dupe_functions(text, label):
+    """No top level function name may be declared twice in one file.
+
+    JavaScript does not complain. The second declaration quietly wins,
+    the first one is dead, and the app runs the version you were not
+    editing. That is exactly what happened to the week view: a patch
+    inserted a rewritten calWeekBlock above the original instead of
+    replacing it, both shipped, and the screen kept rendering the old
+    one while the new code sat there looking correct.
+
+    check_collisions already catches a name defined in 2 different
+    files. This is the same bug inside 1 file, which is the easier one
+    to cause and the harder one to see."""
+    bare = re.sub(r'/\*.*?\*/', ' ', text, flags=re.S)
+    bare = re.sub(r'(?m)^\s*//.*$', ' ', bare)
+    names = re.findall(r'(?m)^function\s+([A-Za-z_$][\w$]*)\s*\(', bare)
+    seen = {}
+    for n in names:
+        seen[n] = seen.get(n, 0) + 1
+    bad = sorted([n for n, c in seen.items() if c > 1])
+    if bad:
+        print('FUNCTION DECLARED TWICE in ' + label + ':')
+        for n in bad:
+            print('  ' + n + ' (' + str(seen[n]) + ' times, the last one wins and the rest are dead)')
+        raise SystemExit(1)
+
+
+check_dupe_functions(app, 'proto/app.js')
 check_proxy_dupes(app, 'proto/app.js')
 sub_tab_keys = check_sub_tabs(app, 'proto/app.js')
 

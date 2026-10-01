@@ -18311,9 +18311,31 @@ function calHomeStrip() {
   </button>`;
 }
 
-/* One entry, as a row. Readings are drawn flatter than entries on
-   purpose: a thing the app worked out should not look like a thing she
-   promised somebody she would be at. */
+/* An entry as a CHIP, filled with the person's colour. This is the
+   unit the week and the month are built out of, and the reason the
+   calendar reads as a calendar rather than as a page. A reading is
+   drawn as an outline of the same colour, so it is still legible and
+   still colour coded without pretending to be a commitment. */
+function calChipEl(e) {
+  const col = calColorOf(e.who);
+  const reading = e.from === 'app';
+  const attrs = reading
+    ? (e.go ? `data-calgo="${esc(JSON.stringify(e.go))}"` : 'disabled')
+    : `data-calopen="${esc(e.id)}"`;
+  const style = reading
+    ? `color:${esc(col.ink)}`
+    : `background:${esc(col.dot)}`;
+  return `
+  <button class="calchip-e${reading ? ' soft' : ''}" ${attrs} style="${style}"
+    title="${esc(e.title)}">
+    ${e.time ? `<span class="ct">${esc(calTimeLabel(e.time))}</span>` : ''}
+    <span class="cn">${esc(e.title)}</span>
+  </button>`;
+}
+
+/* One entry as a row, for the reading lists where there is room for a
+   subtitle. Tight: a colour spine, the time in its own column so the
+   times line up down the page, then the words. */
 function calRow(e, today) {
   const reading = e.from === 'app';
   const k = reading ? null : calKind(e.kind);
@@ -18322,22 +18344,15 @@ function calRow(e, today) {
     ? (e.go ? `data-calgo="${esc(JSON.stringify(e.go))}"` : '')
     : `data-calopen="${esc(e.id)}"`;
   const col = calColorOf(e.who);
+  const sub = [e.sub || (k ? k.label : ''), e.where || '', who].filter(Boolean).join(' · ');
   return `
-  <button class="lrow calrow" ${attrs}
-    style="align-items:flex-start;border-left:3px solid ${esc(col.dot)}${reading ? ';opacity:.92' : ''}">
-    <span class="licon" style="background:${esc(col.soft)}">
-      ${icon(reading ? (e.icon || 'calendar') : k.icon, 17, col.ink)}
+  <button class="calrow" ${attrs}>
+    <span class="calrow-c" style="background:${esc(col.dot)}${reading ? ';opacity:.5' : ''}"></span>
+    <span class="calrow-t${e.time ? '' : ' none'}">${e.time ? esc(calTimeLabel(e.time)) : 'All day'}</span>
+    <span class="calrow-m">
+      <span class="calrow-n">${esc(e.title)}</span>
+      ${sub ? `<span class="calrow-s">${esc(sub)}</span>` : ''}
     </span>
-    <span class="grow">
-      <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">
-        ${e.time ? `<span style="color:var(--deep2)">${esc(calTimeLabel(e.time))}</span> ` : ''}${esc(e.title)}
-      </span>
-      <span class="tiny" style="display:block;margin-top:2px">
-        ${esc([e.sub || (k ? k.label : ''), e.where || '', who].filter(Boolean).join(', '))}
-      </span>
-    </span>
-    ${reading ? (e.go ? `<span class="chev">${icon('chev', 16, 'var(--faint)')}</span>` : '')
-      : `<span class="chev">${icon('chev', 16, 'var(--faint)')}</span>`}
   </button>`;
 }
 
@@ -18368,7 +18383,6 @@ function calWeekBlock(who) {
     if (!byDay[e.date]) byDay[e.date] = [];
     byDay[e.date].push(e);
   });
-  const busiest = Math.max(1, ...days.map((d) => (byDay[d] || []).length));
 
   return `
   <div class="calhead">
@@ -18377,41 +18391,40 @@ function calWeekBlock(who) {
     <button class="calnav next" data-calweek="1" aria-label="Next week">${icon('chev', 15, 'var(--deep)')}</button>
   </div>
   ${Number(store.calWeekShift) ? `
-    <button class="chip" style="margin:0 auto 8px;display:block" data-calweek="0">Back to this week</button>` : ''}
+    <button class="chip" style="margin:0 auto 9px;display:block" data-calweek="0">Back to this week</button>` : ''}
 
-  ${/* THE LITTLE BAR CHART IS THE POINT OF A WEEK VIEW.
-        It answers the Sunday night question in one look, which is not
-        "what is on Tuesday" but "which day is going to hurt". Seven
-        numbers in a list cannot do that and seven bars can. */''}
-  <div class="calweekbar">
+  <div class="calweek">
     ${days.map((d) => {
-      const n = (byDay[d] || []).length;
-      const h = Math.round((n / busiest) * 22);
+      const list = byDay[d] || [];
+      const p = calParse(d);
       return `
-      <button class="calwb${d === today ? ' today' : ''}${d === (store.calDay || today) ? ' sel' : ''}"
-        data-calday="${esc(d)}" aria-label="${esc(calDayLabel(d, today))}, ${n} ${n === 1 ? 'thing' : 'things'}">
-        <span class="calwb-bar" style="height:${n ? Math.max(3, h) : 0}px"></span>
-        <span class="calwb-d">${esc(CAL_DOW[calParse(d).getDay()].slice(0, 1))}</span>
-        <span class="calwb-n">${calParse(d).getDate()}</span>
-      </button>`;
+      <div class="calwd${d === today ? ' today' : ''}">
+        <span class="calwd-h">
+          <span class="calwd-d">${esc(CAL_DOW[p.getDay()])}</span>
+          <span class="calwd-n">${p.getDate()}</span>
+        </span>
+        <span class="calwd-b">
+          ${/* AN EMPTY DAY SAYS NOTHING AT ALL.
+                "Nothing on this day" written down a whole week is 5
+                lines of grey competing with the 2 lines that matter.
+                A free day should read as space, which is also what it
+                feels like. */''}
+          ${list.length ? list.map(calChipEl).join('') : '<span class="calwd-free"></span>'}
+        </span>
+      </div>`;
     }).join('')}
-  </div>
-
-  ${days.map((d) => {
-    const list = byDay[d] || [];
-    return `
-    <p class="sect" style="margin-top:14px">${esc(calDayLabel(d, today))}</p>
-    ${list.length ? list.map((e) => calRow(e, today)).join('')
-      : `<p class="tiny" style="padding:2px 2px 6px">${esc(CAL_EMPTY_DAY)}</p>`}`;
-  }).join('')}`;
+  </div>`;
 }
 
 function calDayBlock(date, today, who) {
   const list = calOnDay(date, who);
   return `
-  <p class="sect" style="margin-top:14px">${esc(calDayLabel(date, today))}</p>
+  <div class="caldayhead">
+    <span class="caldayhead-d">${esc(calDayLabel(date, today))}</span>
+    ${list.length ? `<span class="caldayhead-n">${list.length} ${list.length === 1 ? 'thing' : 'things'}</span>` : ''}
+  </div>
   ${list.length ? list.map((e) => calRow(e, today)).join('')
-    : `<p class="tiny" style="padding:2px 2px 6px">${esc(CAL_EMPTY_DAY)}</p>`}`;
+    : `<p class="calwd-none">${esc(CAL_EMPTY_DAY)}</p>`}`;
 }
 
 /* ------------------------------------------------------------------
@@ -18447,6 +18460,7 @@ function calGrid(who) {
     <button class="calnav next" data-calshift="1" aria-label="Next month">${icon('chev', 15, 'var(--deep)')}</button>
   </div>
   ${Number(store.calShift) ? `<button class="chip" style="margin:0 auto 8px;display:block" data-calshift="0">Back to this month</button>` : ''}
+  <div class="calgridwrap">
   <div class="calgrid">
     ${CAL_DOW.map((d) => `<span class="caldow">${esc(d)}</span>`).join('')}
     ${cells.map((cell) => {
@@ -18457,16 +18471,23 @@ function calGrid(who) {
       <button class="calcell${cell.inMonth ? '' : ' out'}${isToday ? ' today' : ''}${isSel ? ' sel' : ''}"
         data-calday="${esc(cell.date)}" aria-label="${esc(calDayLabel(cell.date, today))}">
         <span class="caln">${calParse(cell.date).getDate()}</span>
-        <span class="caldots">
+        <span class="calbars">
           ${list.slice(0, 3).map((e) => {
             const col = calColorOf(e.who);
-            return `<span class="caldot${e.from === 'app' ? ' soft' : ''}"
-              style="background:${esc(col.dot)}"></span>`;
+            const reading = e.from === 'app';
+            /* The text inside only shows above 620 pixels, where the
+               cell is wide enough to hold a word. Below that the same
+               element is a 4 pixel bar and the text is clipped away by
+               the height, which keeps 1 piece of markup for both. */
+            return `<span class="calbar${reading ? ' soft' : ''}"
+              style="${reading ? 'color:' + esc(col.ink) : 'background:' + esc(col.dot)}"
+              >${esc(e.title)}</span>`;
           }).join('')}
-          ${list.length > 3 ? '<span class="calmore">+</span>' : ''}
+          ${list.length > 3 ? `<span class="calmore">+${list.length - 3} more</span>` : ''}
         </span>
       </button>`;
     }).join('')}
+  </div>
   </div>`;
 }
 
@@ -18698,11 +18719,51 @@ function screenCalendar(c) {
   const tab = store.calTab || 'next';
   const sel = store.calDay || today;
   const editing = !!store.calEdit;
-  const mine = calEvents().length;
 
-  const whoChips = `
-    <div class="chips" style="margin:0 0 4px">
-      <button class="chip${who === 'all' ? ' on' : ''}" data-calfilter="all"
+  if (editing) {
+    return `
+    ${cornerLeaves()}
+    <div class="sc-head tight">
+      <button class="back" data-calcancel="1">${icon('back', 15, 'var(--deep)')} Back</button>
+      <h1 class="title sm">${esc(calEvents().some((e) => e.id === store.calEdit.id)
+        ? 'Edit this' : 'Something coming up')}</h1>
+    </div>
+    <div class="sc">${calEditor()}</div>`;
+  }
+
+  /* THE CHROME WAS EATING THE SCREEN.
+
+     The first version opened with a logo, an ask bar, a back button, a
+     title in 34 pixel serif, a 3 line subtitle, a full width Add
+     button, 4 view chips that wrapped onto 2 rows and 5 person chips
+     that wrapped onto 2 more. The calendar itself started about two
+     thirds of the way down. That is the thing that made it look wrong:
+     not the colours, the ratio of furniture to information.
+
+     So the header is 1 line, the title doubles as the month heading
+     with the arrows built into it, Add is a round button in that same
+     row, and both chip rows scroll sideways instead of wrapping. The
+     grid now starts within a thumb's reach of the top. */
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head tight">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+  </div>
+  <div class="sc">
+
+    <div class="calbar">
+      <div class="calscroll">
+        ${[{ id: 'next', label: 'Coming up' }, { id: 'week', label: 'Week' },
+           { id: 'month', label: 'Month' }, { id: 'past', label: 'Past' }].map((t) => `
+          <button class="chip${tab === t.id ? ' on' : ''}" data-sub="calTab" data-val="${esc(t.id)}"
+            aria-pressed="${tab === t.id}">${esc(t.label)}</button>`).join('')}
+      </div>
+      <button class="caladd" data-caladd="1" aria-label="Add something">
+        ${icon('plus', 18, '#fff')}</button>
+    </div>
+
+    <div class="calscroll calkey">
+      <button class="chip calchip${who === 'all' ? ' on' : ''}" data-calfilter="all"
         aria-pressed="${who === 'all'}">${esc(CAL_WHO_ALL)}</button>
       ${calWhoOptions().map((o) => {
         const col = calColorOf(o.id);
@@ -18711,62 +18772,39 @@ function screenCalendar(c) {
           aria-pressed="${who === o.id}">
           <span class="caldot" style="background:${esc(col.dot)}"></span>${esc(o.label)}</button>`;
       }).join('')}
-    </div>`;
-
-  const next30 = calAllIn(today, calAddDays(today, 45), who);
-  const days = [];
-  next30.forEach((e) => { if (days.indexOf(e.date) === -1) days.push(e.date); });
-
-  return `
-  ${cornerLeaves()}
-  <div class="sc-head">
-    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
-    <h1 class="title sm">${esc(CAL_TITLE)}</h1>
-    <p class="sub">${esc(CAL_SUB)}</p>
-  </div>
-  <div class="sc">
-    ${editing ? calEditor() : `
-    <button class="btn" style="width:100%" data-caladd="1">
-      ${icon('plus', 15, '#fff')} Add something</button>`}
-
-    ${editing ? '' : `
-    <div style="margin-top:13px">${subTabs('calTab', tab, [
-      { id: 'next', label: 'Coming up' },
-      { id: 'week', label: 'This week' },
-      { id: 'month', label: 'The month' },
-      { id: 'past', label: 'Already happened' },
-    ])}</div>
-
-    ${whoChips}
+    </div>
 
     ${tab === 'week' ? calWeekBlock(who)
     : tab === 'month' ? `
       ${calGrid(who)}
       ${calDayBlock(sel, today, who)}
     ` : tab === 'past' ? `
-      <p class="tiny" style="margin:6px 0 2px">${esc(CAL_PAST_NOTE)}</p>
+      <p class="tiny" style="margin:10px 0 2px">${esc(CAL_PAST_NOTE)}</p>
       ${(() => {
         const past = calAllIn(calAddDays(today, -400), calAddDays(today, -1), who).reverse();
-        if (!past.length) return `<p class="tiny" style="padding:8px 2px">Nothing yet.</p>`;
-        return past.slice(0, 60).map((e) => `
-          <p class="sect" style="margin-top:12px">${esc(calDayLabel(e.date, today))}</p>
-          ${calRow(e, today)}`).join('');
+        if (!past.length) return `<p class="calwd-none">Nothing yet.</p>`;
+        const days = [];
+        past.forEach((e) => { if (days.indexOf(e.date) === -1) days.push(e.date); });
+        return days.slice(0, 40).map((d) => calDayBlock(d, today, who)).join('');
       })()}
-    ` : `
-      ${days.length ? days.map((d) => calDayBlock(d, today, who)).join('') : `
-      <div class="card flat" style="margin-top:12px">
-        <p class="eyebrow">${esc(CAL_EMPTY_ALL.title)}</p>
-        <p class="bodytext" style="margin-top:6px">${esc(CAL_EMPTY_ALL.body)}</p>
-      </div>`}
-    `}
+    ` : (() => {
+      const next = calAllIn(today, calAddDays(today, 45), who);
+      const days = [];
+      next.forEach((e) => { if (days.indexOf(e.date) === -1) days.push(e.date); });
+      if (!days.length) {
+        return `
+        <div class="card flat" style="margin-top:12px">
+          <p class="eyebrow">${esc(CAL_EMPTY_ALL.title)}</p>
+          <p class="bodytext" style="margin-top:6px">${esc(CAL_EMPTY_ALL.body)}</p>
+        </div>`;
+      }
+      return days.map((d) => calDayBlock(d, today, who)).join('');
+    })()}
 
     ${calFeedsBlock()}
     ${calSubscribeBlock()}
-
-    ${mine ? '' : ''}
     <p class="disclaimer">Nothing on this calendar is shared outside your house, and nothing here
       ever goes to the community.</p>
-    `}
   </div>`;
 }
 
@@ -20180,11 +20218,25 @@ function screenChild(c) {
     ${kid && !editing ? `
     <button class="bigface facebtn" data-edit="${esc(kid.id)}" aria-label="Edit ${esc(first)}'s details">
       ${faceHTML(v.photo, 84, c.growth ? c.growth.order : 2)}
-    </button>
-    <p class="tapedit">Tap to edit details</p>` : `
+    </button>` : `
     <div class="bigface">${faceHTML(v.photo, 84, c.growth ? c.growth.order : 2)}</div>`}
     <h1 class="title" style="margin-top:8px">${esc(name)}</h1>
     <p class="sub">${esc(c.summary.label || 'Add a birthday')}${c.stage ? ' &middot; ' + esc(c.stage.label) : ''}</p>
+    ${/* A REAL BUTTON THAT SAYS EDIT.
+
+          Her own profile has had one of these since it was written. A
+          child's never did: the only way in was tapping their face,
+          with a line of small grey text underneath saying so. She
+          asked twice how to delete a profile, went to that profile
+          both times, saw nothing that said edit or remove, and
+          reasonably concluded the app would not let her.
+
+          Tapping the face still works. It is just no longer the only
+          thing that does, and it is no longer something you have to
+          already know. */''}
+    ${kid && !editing ? `
+    <button class="btn ghost sm" style="margin:10px auto 0;display:flex"
+      data-edit="${esc(kid.id)}">${icon('star', 14, 'var(--deep)')} Edit ${esc(first)}</button>` : ''}
   </div>
   <div class="sc">
 
