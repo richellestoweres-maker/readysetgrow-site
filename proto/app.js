@@ -2613,6 +2613,7 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'monitors') html = screenMonitors(c);
   else if (v && v.type === 'screen' && v.id === 'nightlight') html = screenNightLight(c);
   else if (v && v.type === 'screen' && v.id === 'commrules') html = screenCommRules(c);
+  else if (v && v.type === 'screen' && v.id === 'vaxafter') html = screenVaxAfter(c);
   else if (v && v.type === 'screen' && v.id === 'nesting') html = screenNesting(c);
   else if (v && v.type === 'screen' && v.id === 'bumplabor') html = screenBumpLabor(c);
   else if (v && v.type === 'screen' && v.id === 'privacy') html = screenPrivacy(c);
@@ -3199,7 +3200,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3951,6 +3952,13 @@ function initControls() {
         willowAsk((live && live.ask) || 'Tell me about this.');
         return;
       }
+    } else if (t.dataset.roomask) {
+      /* Straight into the same place every other message to a person
+         goes, with the reason already filled in. */
+      store.fbFrom = 'roomrequest';
+      fb.kind = 'idea';
+      state.view = { type: 'screen', id: 'feedback' };
+      window.scrollTo(0, 0);
     } else if (t.dataset.commdismiss) {
       store.commNotice = null;
       store.feedError = '';
@@ -13160,7 +13168,19 @@ async function feedShare(post) {
     /* Said at the moment she presses share rather than left for her to
        discover later, and it says which rule and what tripped it. A
        support verdict is not an error and never reads as one. */
-    const v = commVerdictFor(doc.body, groupLabel(doc.group || ''));
+    const v = await commCheckAll(doc.body, groupLabel(doc.group || ''));
+    /* The model may have tightened it after the document went up, so
+       the status is corrected rather than left as the patterns set it. */
+    if (v && v.action !== 'live') {
+      const want = v.action === 'remove' ? FEED_STATUS.removed
+        : v.action === 'hold' ? FEED_STATUS.held : doc.status;
+      if (want !== doc.status) {
+        try {
+          await fs.updateDoc(fs.doc(cloud.db, 'feed', ref.id), { status: want });
+          post.sharedStatus = want;
+        } catch (e) { /* the rules had the last word, which is correct */ }
+      }
+    }
     if (v && v.action !== 'live') {
       store.commNotice = v;
       store.feedError = v.action === 'support' ? '' : (v.notice ? v.notice.title : '');
@@ -13406,6 +13426,7 @@ function feedCard(p, opts) {
    file that cannot reach back. Handed over once at boot. */
 function commWireFilter() {
   if (typeof setFilterFlags === 'function') setFilterFlags(CR_FLAGS);
+  if (typeof setFilterMode === 'function') setFilterMode(CR_VACCINE_MODE);
 }
 
 /* Everything needed to tell somebody what happened, worked out from
@@ -13449,6 +13470,7 @@ const COMM_RULE_OF = {
   childPhoto: 'otherPeoplesKids',
   possibleMinor: 'adultsOnly',
   namingAnAbuser: 'noTargeting',
+  vaccineDebate: 'vaccineTalk',
   crisisLanguage: 'emergencies',
   postpartumStruggle: 'beKind',
   abuseDisclosure: 'emergencies',
@@ -13494,10 +13516,20 @@ function commSupportCard(v) {
 function commNoticeCard(v) {
   if (!v || !v.notice || v.action === 'support') return '';
   const bad = v.action === 'remove';
+  const vax = v.verdict === 'vaccineDebate';
   return `
   <div class="card" style="border-left:3px solid ${bad ? '#B5705C' : 'var(--attention)'}">
     <p class="eyebrow" style="${bad ? 'color:#A85A44' : ''}">${esc(v.notice.title)}</p>
     <p class="bodytext" style="margin-top:8px">${esc(v.notice.body)}</p>
+    ${/* Not just stopped. A vaccine post held here is usually somebody
+          with a real question underneath the argument, so it points at
+          the answer rather than at a closed door. */''}
+    ${vax ? `
+    <p class="bodytext" style="margin-top:9px">${esc(CR_VACCINE_SEND.line)}</p>
+    <div class="chips" style="gap:7px;margin-top:9px">
+      <button class="chip" data-go="screen" data-id="vaxafter">${esc(VAX_AFTER_TITLE)}</button>
+      <button class="chip" data-go="screen" data-id="${esc(CR_VACCINE_SEND.screen)}">${esc(CR_VACCINE_SEND.label)}</button>
+    </div>` : ''}
     <p class="tiny" style="margin-top:9px">${esc(v.notice.appeal)}</p>
     <div class="chips" style="gap:7px;margin-top:11px">
       <button class="chip" data-commappeal="${esc(v.verdict)}">Ask a person to look</button>
@@ -13505,6 +13537,210 @@ function commNoticeCard(v) {
       <button class="chip" data-commdismiss="1">Close</button>
     </div>
   </div>`;
+}
+
+/* =================================================================
+   THE AI MODERATOR
+
+   Her ask: "I would want AI to be a moderator and remove anything
+   talk about anything dangerous."
+
+   The patterns in feed.js are fast, free, and literal. They catch a
+   post that says "homemade formula" and miss one that says "my cousin
+   cured her son with that bleach stuff you buy online", which is the
+   same post and the more dangerous one, because the person writing it
+   does not know it has a name. So a model reads what the patterns
+   waved through.
+
+   THE 4 RULES THIS IS BUILT UNDER, and they all exist to stop a model
+   doing damage with confidence:
+
+   1. IT CAN ONLY MAKE THINGS WORSE, NEVER BETTER. If the patterns
+      already said remove, the model is not asked and cannot overturn
+      it. The model can escalate a clean post to held. It can never
+      take a held post and publish it.
+
+   2. IT MUST QUOTE. To remove anything, the model has to hand back the
+      exact words it objects to, and those words have to actually
+      appear in the post. A model that cannot point at the sentence is
+      a model that is guessing, and a guess gets downgraded to held so
+      a person reads it instead. This is the single most useful guard
+      in the file and it also makes the notice better, because it can
+      show the line.
+
+   3. SUPPORT IS UNTOUCHABLE. If the patterns said this is a parent in
+      crisis or writing about their own depression, the model is never
+      asked and the post is never hidden. No classifier gets to decide
+      that the hardest sentence somebody ever typed is a violation.
+
+   4. IT IS ALLOWED TO BE ABSENT. Over quota, offline, slow, or broken,
+      posting carries on exactly as it did before and the patterns
+      stand alone. Nothing a parent does should ever wait on a model.
+
+   WHERE THIS RUNS. In the browser, because her Cloud Functions deploy
+   is still not working. That means a determined person could bypass it
+   by talking to the database directly, which is why firestore.rules
+   still enforces the hard patterns on arrival as the real floor. When
+   Functions are working this should move behind them, and then the
+   model becomes enforcement rather than a very good front door.
+   ================================================================= */
+
+const MOD_SYSTEM = [
+  'You are a content check for a parenting app community. You classify one post and nothing else.',
+  '',
+  'Answer with ONE line in exactly this format and no other text:',
+  'VERDICT|QUOTE',
+  '',
+  'VERDICT is exactly one of these words:',
+  '  clean            nothing here needs anything',
+  '  lethalAdvice     telling a parent to give a baby chlorine dioxide or MMS, homemade or DIY',
+  '                   infant formula, or raw unpasteurized milk. These 3 only.',
+  '  unsafeSleep      telling another parent an unsafe sleep setup is fine, such as stomach',
+  '                   sleeping for an infant, crib bumpers, inclined sleepers, or weighted',
+  '                   sleep products',
+  '  skipNewborn      urging another parent to decline vitamin K, the eye ointment, the newborn',
+  '                   screen or the hepatitis B dose',
+  '  dosing           giving a dose or a medicine regimen for somebody else\'s child',
+  '  vaccineDebate    arguing for or against vaccines, posting studies at somebody, or telling',
+  '                   another parent what to do about their child\'s shots. Asking what to',
+  '                   expect, saying what happened at their own appointment, or saying they',
+  '                   are nervous is NOT this and must be clean.',
+  '  harassment       aimed at a specific member with insults or contempt',
+  '  selling          promoting their own shop, service, coaching or discount code',
+  '',
+  'QUOTE is the exact words from the post that made you choose, copied character for character.',
+  'If the verdict is clean, QUOTE is empty.',
+  'If you cannot quote actual words from the post, answer clean.',
+  '',
+  'WHAT YOU NEVER FLAG, no matter how it is worded:',
+  'A parent describing their own feelings, their own depression or anxiety,',
+  'their own intrusive thoughts, their own exhaustion, or being frightened of themselves.',
+  'That is somebody asking for help and it is always clean.',
+  'A parent describing something that happened to their own child.',
+  'A parent asking a question.',
+  'Grief, loss, anger at a partner, or swearing.',
+  'A feeding choice, a birth choice, or a parenting choice of any kind.',
+  '',
+  'When unsure, answer clean. A missed post costs far less than a wrongly flagged one.',
+].join('\n');
+
+/* The verdict words the model is allowed to use, mapped onto the app's
+   own flag ids. Anything it says that is not in here is treated as a
+   model having a bad day and the post is left alone. */
+const MOD_VERDICTS = {
+  lethalAdvice: 'lethalAdvice',
+  unsafeSleep: 'unsafeSleepAdvice',
+  skipNewborn: 'skippingNewbornCare',
+  dosing: 'dosingAndSubstances',
+  vaccineDebate: 'vaccineDebate',
+  harassment: 'targetedHarassment',
+  selling: 'sellingSomething',
+};
+
+const modAI = { model: null, loading: null };
+
+async function modLoad() {
+  if (modAI.model) return modAI.model;
+  if (modAI.loading) return modAI.loading;
+  modAI.loading = (async () => {
+    const v = FIREBASE_SDK_VERSION;
+    const { app } = await loadFirebase();
+    const aiMod = await import(`https://www.gstatic.com/firebasejs/${v}/firebase-ai.js`);
+    const ai = aiMod.getAI(app, { backend: new aiMod.GoogleAIBackend() });
+    modAI.model = aiMod.getGenerativeModel(ai, {
+      model: WILLOW_MODEL,
+      systemInstruction: MOD_SYSTEM,
+    });
+    return modAI.model;
+  })().catch((err) => { modAI.loading = null; throw err; });
+  return modAI.loading;
+}
+
+/* Reads a post and returns a flag id, or '' for nothing.
+
+   Never throws. Every failure path returns '' so that a model being
+   down is indistinguishable, from the parent's side, from a post that
+   was fine. */
+async function modCheck(body) {
+  const text = String(body || '').trim();
+  if (!text || text.length < 12) return null;
+  if (!hasAccess() || liftOutOfQuota()) return null;
+  try {
+    const model = await modLoad();
+    const res = await model.generateContent('POST:\n' + text.slice(0, 4000));
+    const raw = res && res.response && typeof res.response.text === 'function'
+      ? String(res.response.text()).trim() : '';
+    if (!raw) return null;
+
+    const line = raw.split('\n')[0];
+    const bar = line.indexOf('|');
+    const word = (bar === -1 ? line : line.slice(0, bar)).trim();
+    const quote = bar === -1 ? '' : line.slice(bar + 1).trim();
+
+    if (!word || word === 'clean') return null;
+    const flagId = MOD_VERDICTS[word];
+    if (!flagId) return null;
+
+    /* RULE 2. The quote has to be real. A model that cannot point at
+       the words is guessing, and a guess is downgraded to a hold so a
+       person reads it rather than a parent losing a post to it. */
+    const clean = (s) => String(s).toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+    const quoted = quote && clean(text).indexOf(clean(quote)) !== -1;
+    return { flagId: flagId, quote: quoted ? quote : '', sure: !!quoted };
+  } catch (err) {
+    /* Over quota, offline, or a model that will not load. The patterns
+       already ran and the post is already where it should be. */
+    liftNoteQuota(err);
+    return null;
+  }
+}
+
+/* What the model's answer actually does, once the guards are applied. */
+function modApply(aiResult) {
+  if (!aiResult) return null;
+  const action = filterAction(aiResult.flagId);
+  /* RULE 2 again, at the point it matters. An unquoted removal becomes
+     a hold. Nothing the model says on its own takes a post down. */
+  if (action === 'remove' && !aiResult.sure) {
+    return { verdict: aiResult.flagId, action: 'hold', quote: '', fromAI: true };
+  }
+  return { verdict: aiResult.flagId, action: action, quote: aiResult.quote, fromAI: true };
+}
+
+/* THE WHOLE PASS, patterns then model.
+
+   Called where a post is shared. Returns the same shape commVerdictFor
+   returns so the notices do not have to know which of the 2 found it. */
+async function commCheckAll(body, forumName) {
+  const first = commVerdictFor(body, forumName);
+
+  /* RULE 1 and RULE 3. If the patterns already decided, or decided
+     this is somebody who needs help, the model is not consulted. */
+  if (first && (first.action === 'remove' || first.action === 'support')) return first;
+
+  const ai = modApply(await modCheck(body));
+  if (!ai) return first;
+
+  /* The stricter of the 2 wins, and the model can only tighten. */
+  const rank = { live: 0, warn: 1, hold: 2, remove: 3 };
+  if (first && rank[first.action] >= rank[ai.action]) return first;
+
+  const rule = crRule(commRuleFor(ai.verdict));
+  return {
+    verdict: ai.verdict,
+    action: ai.action,
+    flag: crFlag(ai.verdict),
+    fromAI: true,
+    quote: ai.quote,
+    ruleTitle: rule ? rule.title : '',
+    notice: crNotice(commNoticeKind(ai.action), {
+      forumName: forumName || 'the community',
+      ruleTitle: rule ? rule.title : '',
+      triggerDetail: ai.quote
+        ? 'this part of it, "' + ai.quote.slice(0, 120) + '"'
+        : filterTrigger(ai.verdict),
+    }),
+  };
 }
 
 /* =================================================================
@@ -13536,10 +13772,17 @@ function screenCommRules(c) {
 
     <div style="margin-top:13px">${subTabs('crTab', tab, tabs)}</div>
 
-    ${tab !== 'rules' ? '' : CR_RULES.map((r, i) => `
+    ${tab !== 'rules' ? '' : crRulesAll().map((r, i) => `
       <div class="card" style="margin-bottom:9px">
         <p style="margin:0;font-size:15px;font-weight:600;color:var(--ink)">${esc(String(i + 1) + '. ' + r.title)}</p>
         <p class="bodytext" style="margin-top:7px">${esc(r.body)}</p>
+        ${/* The vaccine rule is the only one where what is WELCOME
+              matters as much as what is not, so it says so rather than
+              leaving people to guess where the line is. */''}
+        ${r.id === 'vaccineTalk' && CR_VACCINE_MODE !== 'all' ? `
+        <p class="tiny" style="margin-top:9px;font-weight:600;color:var(--deep2)">All of this is welcome</p>
+        ${list(CR_VACCINE_WELCOME)}
+        <button class="chip" style="margin-top:9px" data-go="screen" data-id="vaxafter">${esc(VAX_AFTER_TITLE)}</button>` : ''}
         <p class="tiny" style="margin-top:7px"><strong style="color:var(--ink)">Why.</strong> ${esc(r.why)}</p>
       </div>`).join('')}
 
@@ -13615,11 +13858,18 @@ function screenCommunity(c) {
     setTimeout(() => feedLoad(), 0);
   }
 
+  /* FIREFLIES IS THE FRONT DOOR.
+
+     Her call, and the right one. It is the only part of this community
+     nobody else has, it asks nobody to type, and it answers the thing a
+     parent actually opens this tab for at 3am, which is not advice, it
+     is evidence that somebody else is awake. Everything else is a tap
+     away underneath it. */
   const tab = feed.view === 'queue' && feed.isMod ? 'queue'
     : feed.view === 'mine' ? 'mine'
-    : feed.view === 'flies' ? 'flies'
+    : feed.view === 'feed' ? 'feed'
     : feed.view === 'rooms' ? 'rooms'
-      : feed.view === 'foryou' ? 'foryou' : 'feed';
+      : feed.view === 'foryou' ? 'foryou' : 'flies';
 
   /* The sky is live while it is on screen and listening to nothing at
      all when it is not. Started here, torn down in render(). */
@@ -13711,6 +13961,27 @@ function screenCommunity(c) {
           </span>
           <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
         </button>`).join('')}
+
+      ${/* REQUEST, NOT CREATE.
+
+            Every room somebody makes is a new place that has to be
+            read, and most of them end up holding 1 post, which makes
+            the whole place look abandoned. A request gives the same
+            signal with none of that: the same ask arriving 8 times is
+            a room worth making, and it gets made properly rather than
+            by whoever asked first. */''}
+      <div class="card flat" style="margin-top:13px">
+        <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Somewhere missing</p>
+        <p class="tiny" style="margin-top:4px">If there is no room for the thing you are in the
+        middle of, say so. Rooms get made when the same one is asked for a few times, which keeps
+        them busy enough to be worth opening.</p>
+        <button class="btn ghost sm" style="width:100%;margin-top:11px" data-roomask="1">
+          Ask for a room</button>
+      </div>
+
+      ${dsec('How this room works', `
+        <p class="bodytext" style="margin:0 0 9px">${esc(CR_SAFETY.notAdvice)}</p>
+        <button class="chip" data-go="screen" data-id="commrules">The rules</button>`)}
     ` : tab === 'mine' ? `
       <p class="sect">What you have shared</p>
       ${(feed.mine || []).length
@@ -18595,6 +18866,7 @@ const AGE_WINDOWS = {
   growth:      { from: 0,   to: null, why: 'The CDC charts run to 20.' },
   vaxrecord:   { from: 0,   to: null, why: 'The schedule runs through 18, and the record is worth keeping after.' },
   vaccines:    { from: 0,   to: null, why: 'Same.' },
+  vaxafter:    { from: 0,   to: 216,  why: 'Shots carry on through 18, and the evening after one is the same evening at every age.' },
   now:         { from: 0,   to: null, why: 'Something being wrong has no age.' },
   monitors:    { from: 0,   to: 48,   why: 'The sock is 1 to 18 months. Thermometers and button batteries carry it to 4, which is where mouthing everything stops.' },
   growingup:   { from: 18,  to: null, why: 'Starts as the right words for body parts and nobody has to hug anybody, long before puberty.' },
@@ -19132,6 +19404,9 @@ function screenChild(c) {
         'data-go="screen" data-id="growth"')}
       ${ageRow('vaxrecord', months, kid, 'note', 'Vaccine record', vaxRowSub(kid, months),
         'data-go="screen" data-id="vaxrecord"')}
+      ${ageRow('vaxafter', months, kid, 'heart', esc(VAX_AFTER_TITLE),
+        'A fever, a sore leg, and the Tylenol rule nearly everybody has backward',
+        'data-go="screen" data-id="vaxafter"')}
       ${ageRow('vaccines', months, kid, 'shield', 'Vaccines',
         'What the evidence says, what your rights are, and how to decide',
         'data-go="screen" data-id="vaccines"')}
@@ -23244,6 +23519,65 @@ function vaxRemoveSeasonal(kid, seriesId, date) {
   kid.vax[key] = cur.filter((d) => d !== date);
   kid.updatedAt = Date.now();
   saveStore();
+}
+
+/* =================================================================
+   AFTER THE SHOTS
+
+   The practical half of the vaccine topic, which is the half she
+   argued should stay, and she was right for a better reason than the
+   one she gave.
+
+   She said parents are not supposed to give Tylenol after shots. That
+   is the common version and it is the wrong way round: the caution is
+   about giving it BEFORE, to head off a fever that has not happened.
+   Which means a parent holding the common version leaves a miserable
+   baby untreated all night for nothing. See VAX_AFTER_TYLENOL in
+   src/data/vaccines.js for the evidence and why it is worded as it is.
+   ================================================================= */
+
+function screenVaxAfter(c) {
+  const kid = activeChild();
+  const first = kid && kid.name ? kid.name.split(/\s+/)[0] : '';
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    ${first ? `<p class="eyebrow" style="margin-top:6px">${esc(first)}${c.summary.label ? ', ' + esc(c.summary.label) : ''}</p>` : ''}
+    <h1 class="title sm">${esc(VAX_AFTER_TITLE)}</h1>
+    <p class="sub">${esc(VAX_AFTER_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${dsec(VAX_AFTER_NORMAL.title, list(VAX_AFTER_NORMAL.items))}
+    ${dsec(VAX_AFTER_HELPS.title, list(VAX_AFTER_HELPS.items))}
+
+    ${/* Given a surface of its own because it is the part almost
+          everybody has backward, and because getting it right means a
+          baby sleeps. */''}
+    <div class="dsec">
+      <h4>${esc(VAX_AFTER_TYLENOL.title)}</h4>
+      <div class="card" style="background:var(--leaf3)">
+        ${VAX_AFTER_TYLENOL.body.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+      </div>
+    </div>
+
+    <div class="card" style="border:1.5px solid #E4C9BF;background:#FCF4F1">
+      <p class="eyebrow" style="color:#A85A44">${esc(VAX_AFTER_CALL.title)}</p>
+      <ul class="dlist warn" style="margin-top:7px">
+        ${VAX_AFTER_CALL.items.map((x) => `<li>${esc(x)}</li>`).join('')}
+      </ul>
+    </div>
+
+    <div class="card flat">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Also here</p>
+      <button class="chip" style="margin-top:9px" data-go="screen" data-id="vaxrecord">The record</button>
+      <button class="chip" style="margin-top:9px" data-go="screen" data-id="vaccines">What the evidence says</button>
+      <button class="chip" style="margin-top:9px" data-go="screen" data-id="now">Something is wrong right now</button>
+    </div>
+
+    ${dsec('Sources', sourceRows(VAX_AFTER_SOURCES))}
+    <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>
+  </div>`;
 }
 
 function screenVaxRecord(c) {
