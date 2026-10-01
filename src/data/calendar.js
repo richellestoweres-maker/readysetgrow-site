@@ -112,6 +112,9 @@ export function calRemind(id) {
   return r || CAL_REMIND[0];
 }
 
+export const CAL_LENGTH_HELP =
+  'How long to block out. It only changes how big it looks on the day, so a rough answer is fine.';
+
 export const CAL_REPEAT = [
   { id: '', label: 'Just once' },
   { id: 'weekly', label: 'Every week' },
@@ -294,6 +297,140 @@ export function calOccursOn(ev, date) {
   }
   if (ev.repeat === 'yearly') return a.getDate() === b.getDate() && a.getMonth() === b.getMonth();
   return false;
+}
+
+/* ==================================================================
+   TIME, AS A LINE RATHER THAN A LIST
+
+   THE THING I HAD WRONG, AND IT WAS THE WHOLE THING.
+
+   Every view in the first 2 attempts was a list: things in order, one
+   under the next. That is a to do list that happens to have dates on
+   it. A calendar is a TIMELINE. The hours run down the side, an entry
+   is a block sitting at the hour it starts, and its height is how long
+   it lasts. That is what lets somebody see the shape of a day, which
+   is mostly the gaps: swimming at 4 does not matter on its own, it
+   matters because it is 40 minutes after school ends.
+
+   None of that is possible without an end time, which the entries did
+   not have. So they have one now, and an entry saved before this gets
+   a sensible default rather than a zero height block.
+   ================================================================== */
+
+/* How long something lasts when nobody said. An hour is the right
+   guess for most of what a family puts on a calendar, and a dentist
+   that actually takes 20 minutes still reads correctly as "late
+   morning is spoken for". */
+export const CAL_DEFAULT_MINS = 60;
+
+export const CAL_LENGTHS = [
+  { id: 15, label: '15 min' },
+  { id: 30, label: '30 min' },
+  { id: 45, label: '45 min' },
+  { id: 60, label: '1 hour' },
+  { id: 90, label: '1.5 hours' },
+  { id: 120, label: '2 hours' },
+  { id: 180, label: '3 hours' },
+  { id: 240, label: '4 hours' },
+  { id: 480, label: 'Most of the day' },
+];
+
+export function calMinutes(t) {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(String(t || ''));
+  if (!m) return null;
+  return Number(m[1]) * 60 + Number(m[2]);
+}
+
+export function calFromMinutes(n) {
+  const x = Math.max(0, Math.min(24 * 60 - 1, Math.round(n)));
+  const h = Math.floor(x / 60);
+  const mm = x % 60;
+  return (h < 10 ? '0' : '') + h + ':' + (mm < 10 ? '0' : '') + mm;
+}
+
+/* Start and end in minutes from midnight, or null for an all day
+   thing. Anything that runs past midnight is clipped to the end of its
+   own day rather than drawn into tomorrow, because a block that wraps
+   round a grid is harder to read than 2 honest ones. */
+export function calSpan(ev) {
+  const start = calMinutes(ev && ev.time);
+  if (start === null) return null;
+  let mins = Number(ev.mins);
+  if (!isFinite(mins) || mins <= 0) mins = CAL_DEFAULT_MINS;
+  const end = Math.min(24 * 60, start + mins);
+  return { start: start, end: end, mins: end - start };
+}
+
+export function calEndLabel(ev) {
+  const sp = calSpan(ev);
+  if (!sp) return '';
+  return calTimeLabel(calFromMinutes(sp.end));
+}
+
+/* WHICH HOURS THE GRID HAS TO COVER.
+
+   Not midnight to midnight. 24 hours on a phone gives each one about
+   26 pixels and most families have nothing at all in 14 of them, so
+   the day you care about is squeezed into a third of the screen. The
+   grid covers the hours this day actually uses, padded by 1 either
+   side, inside a sensible floor and ceiling. A day with nothing timed
+   on it falls back to a normal waking day. */
+export function calHourRange(list) {
+  let lo = null;
+  let hi = null;
+  (list || []).forEach((e) => {
+    const sp = calSpan(e);
+    if (!sp) return;
+    const a = Math.floor(sp.start / 60);
+    const b = Math.ceil(sp.end / 60);
+    if (lo === null || a < lo) lo = a;
+    if (hi === null || b > hi) hi = b;
+  });
+  if (lo === null) return { from: 7, to: 21 };
+  return { from: Math.max(0, Math.min(lo - 1, 8)), to: Math.min(24, Math.max(hi + 1, 19)) };
+}
+
+/* OVERLAPS.
+
+   Two things at 4pm cannot both have the full width or one hides the
+   other. They are laid out in columns: anything that overlaps anything
+   already placed goes in the next column along, and the whole group
+   shares the width. This is the simple version of what every calendar
+   does, and for a family calendar, where 3 things at once is a busy
+   day, the simple version is the correct amount of machinery. */
+export function calLayout(list) {
+  const timed = (list || []).filter((e) => calSpan(e)).map((e) => {
+    const sp = calSpan(e);
+    return { ev: e, start: sp.start, end: sp.end, col: 0, cols: 1 };
+  }).sort((a, b) => (a.start - b.start) || (a.end - b.end));
+
+  let group = [];
+  let groupEnd = -1;
+  const out = [];
+  const closeGroup = () => {
+    const width = group.reduce((n, x) => Math.max(n, x.col + 1), 1);
+    group.forEach((x) => { x.cols = width; out.push(x); });
+    group = [];
+    groupEnd = -1;
+  };
+  timed.forEach((item) => {
+    if (group.length && item.start >= groupEnd) closeGroup();
+    const taken = {};
+    group.forEach((x) => { if (x.end > item.start) taken[x.col] = true; });
+    let c = 0;
+    while (taken[c]) c += 1;
+    item.col = c;
+    group.push(item);
+    groupEnd = Math.max(groupEnd, item.end);
+  });
+  if (group.length) closeGroup();
+  return out;
+}
+
+export function calHourLabel(h) {
+  if (h === 0 || h === 24) return '12am';
+  if (h === 12) return '12pm';
+  return (h > 12 ? h - 12 : h) + (h >= 12 ? 'pm' : 'am');
 }
 
 /* ==================================================================
