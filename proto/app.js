@@ -1045,7 +1045,7 @@ const store = {
   /* The parent's own account. Password is deliberately absent. A real
      account needs a server, and storing one in a browser would be worse
      than not having one at all. The profile screen says so out loud. */
-  parent: { name: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '',
+  parent: { name: '', lastName: '', username: '', email: '', birthday: '', lastPeriod: '', cycleLength: '',
     photo: '',
     /* Who they are to the child, and how the app should write about
        them. Both optional. See CALLED_BY and REFERS_TO. */
@@ -1156,11 +1156,17 @@ const store = {
      between visits, they just have to survive a repaint. */
   learnAllBands: false,
   hsOpen: '',
+  /* Signing up. The name being typed on a child slide, and whether the
+     full list of what can be turned on is showing. Neither outlives
+     the walkthrough. */
+  obKidDraft: '',
+  obNeedsAll: false,
   /* Which part of the For them tab is open. */
   forTab: 'today',
   /* Sleep foundations, and nesting, the same idea. */
   sfTab: '',
   nestTab: 'nesting',
+  nlTab: '',
   /* Whether comfort care for a fever is open. Starts closed every time
      rather than being remembered, because the fever screen has to open
      on the triage rather than on a long read. */
@@ -1351,7 +1357,7 @@ const state = {};
     tabs, and to Jobs, Growth and the vaccine record with them. The
     build now refuses to finish if a data-sub key is not here. */
  'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'sexedTab',
- 'pottyTab', 'sfTab', 'nestTab', 'forTab',
+ 'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab',
  'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -2602,6 +2608,7 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'potty') html = screenPotty(c);
   else if (v && v.type === 'screen' && v.id === 'sleepfound') html = screenSleepFound(c);
   else if (v && v.type === 'screen' && v.id === 'monitors') html = screenMonitors(c);
+  else if (v && v.type === 'screen' && v.id === 'nightlight') html = screenNightLight(c);
   else if (v && v.type === 'screen' && v.id === 'nesting') html = screenNesting(c);
   else if (v && v.type === 'screen' && v.id === 'bumplabor') html = screenBumpLabor(c);
   else if (v && v.type === 'screen' && v.id === 'privacy') html = screenPrivacy(c);
@@ -2970,6 +2977,21 @@ function initControls() {
       if (saveBtn) saveBtn.disabled = !postHasContent();
       saveStore();
     }
+    else if (e.target.matches('[data-obkidname]')) {
+      /* A child's name as it is typed, which is also what brings that
+         child's record into existence, so stepping back to this slide
+         finds her rather than an empty box. No repaint, or the caret
+         jumps on every keystroke. */
+      const i = Number(e.target.dataset.obkidname);
+      const v = e.target.value;
+      store.obKidDraft = v;
+      if (String(v).trim()) {
+        const kid = obKidEnsure(i, v);
+        kid.name = v;
+        kid.updatedAt = Date.now();
+        saveStore();
+      }
+    }
     else if (e.target.matches('[data-obfield]')) {
       const f = e.target.dataset.obfield;
       const v = e.target.value;
@@ -3173,7 +3195,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3357,11 +3379,41 @@ function initControls() {
     } else if (t.dataset.nudge) {
       if (t.dataset.nudge === 'open') nudgeTake(); else nudgeDismiss();
       return;
+    } else if (t.dataset.obwho) {
+      obWhoToggle(t.dataset.obwho);
+    } else if (t.dataset.obcalled) {
+      store.parent.calledBy = store.parent.calledBy === t.dataset.obcalled ? '' : t.dataset.obcalled;
+      store.parentUpdatedAt = Date.now();
+      flushStore();
+    } else if (t.dataset.obcount !== undefined) {
+      const ob = onboard();
+      ob.kidCount = Number(t.dataset.obcount) || 0;
+      ob.hasKids = ob.kidCount > 0;
+      flushStore();
+    } else if (t.dataset.obsex !== undefined) {
+      const kid = obKidAt(Number(t.dataset.obkid));
+      if (kid) { kid.sex = t.dataset.obsex; kid.updatedAt = Date.now(); flushStore(); }
+    } else if (t.dataset.obneed !== undefined) {
+      const kid = obKidAt(Number(t.dataset.obkid));
+      if (kid) {
+        const id = t.dataset.obneed;
+        if (!Array.isArray(kid.lenses)) kid.lenses = [];
+        /* Nothing yet clears the lot, which is what it means. */
+        if (!id) kid.lenses = [];
+        else {
+          const at = kid.lenses.indexOf(id);
+          if (at === -1) kid.lenses.push(id); else kid.lenses.splice(at, 1);
+        }
+        kid.updatedAt = Date.now();
+        flushStore();
+      }
+    } else if (t.dataset.obneedsall) {
+      store.obNeedsAll = t.dataset.obneedsall === '1';
     } else if (t.dataset.ob) {
       const a = t.dataset.ob;
       if (a === 'restart') { onboardStart(); render(); }
-      else if (a === 'next') onboardGo(onboardNext(onboard().step));
-      else if (a === 'back') onboardGo(onboardBack(onboard().step));
+      else if (a === 'next') onboardGo(onboardNext(onboard().step, obCtx()));
+      else if (a === 'back') onboardGo(onboardBack(onboard().step, obCtx()));
       else if (a === 'skip') onboardSkip();
       else if (a === 'done') onboardFinish();
       else if (a === 'addchild') {
@@ -7135,6 +7187,115 @@ function screenSleepFound(c) {
    asked for and the insurance answer she asked me to look up rather
    than guess at.
    ================================================================= */
+
+/* =================================================================
+   THE SOUND MACHINE, THE NIGHT LIGHT, AND THE MORNING SIGNAL
+
+   Her ask, and her own setup is the worked example on it: red at 32
+   percent, sound at 30, on at 7:30pm, a different color at 7:30am
+   meaning he may come out.
+
+   The ok to wake part leads for a child old enough for it, because it
+   is the thing most owners of these devices never set up. For a baby
+   it opens on the volume instead, which is the part that matters at
+   that age and is the part with real measurements behind it.
+   ================================================================= */
+
+const NL_TABS = [
+  { id: 'okwake', label: 'The morning signal' },
+  { id: 'settings', label: 'What to set it to' },
+  { id: 'sound', label: 'Volume and safety' },
+  { id: 'dark', label: 'Afraid of the dark' },
+  { id: 'honest', label: 'What is actually true' },
+];
+
+function screenNightLight(c) {
+  const kid = activeChild();
+  const months = c.months;
+  const first = kid && kid.name ? kid.name.split(/\s+/)[0] : '';
+  const want = store.nlTab;
+  const tab = NL_TABS.some((t) => t.id === want) ? want : nlFirstTab(months);
+
+  const body = tab === 'okwake' ? nlSections(NL_OKWAKE)
+    : tab === 'settings' ? nlSettingsTab()
+      : tab === 'sound' ? nlSections(NL_SOUND, true)
+        : tab === 'dark' ? nlSections(NL_DARK)
+          : nlHonestTab();
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    ${first ? `<p class="eyebrow" style="margin-top:6px">${esc(first)}${c.summary.label ? ', ' + esc(c.summary.label) : ''}</p>` : ''}
+    <h1 class="title sm">${esc(NL_TITLE)}</h1>
+    <p class="sub">${esc(NL_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      ${NL_INTRO.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+    </div>
+
+    <div style="margin-top:13px">${subTabs('nlTab', tab, NL_TABS)}</div>
+    ${body}
+
+    ${tab !== 'okwake' ? '' : `
+    <p class="sect" style="margin-top:18px">What it is for at each stage</p>
+    ${NL_AGES.map((a) => `
+      <div class="card flat" style="margin-bottom:8px">
+        <p style="margin:0;font-size:14px;font-weight:600;color:var(--ink)">${esc(a.band)}</p>
+        <p class="bodytext" style="margin-top:5px">${esc(a.what)}</p>
+      </div>`).join('')}
+    <div class="card flat">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} As a gift</p>
+      <ul class="dlist" style="margin-top:8px">${NL_GIFT.map((g) => `<li>${esc(g)}</li>`).join('')}</ul>
+      <button class="chip" style="margin-top:10px" data-go="screen" data-id="nesting">The shower basket</button>
+    </div>`}
+
+    ${dsec('Sources', sourceRows(NL_SOURCES))}
+    <p class="disclaimer">${esc(TOPIC_DISCLAIMER)}</p>`;
+}
+
+function nlSections(list, warn) {
+  return list.map((s) => `
+    <div class="dsec">
+      <h4>${esc(s.h)}</h4>
+      ${(s.body || []).map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+      ${list2(s.list, !!s.warn || !!warn)}
+    </div>`).join('');
+}
+
+/* list() is taken, and shadowing it inside a function that also calls
+   it is how a bundle in one flat scope breaks quietly. */
+function list2(items, warn) {
+  return list(items, warn);
+}
+
+function nlSettingsTab() {
+  return `
+  ${nlSections(NL_SETTINGS)}
+  <div class="card" style="background:var(--leaf3)">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} One real setup, for a 4 year old</p>
+    <p class="bodytext" style="margin-top:8px">Red light at about 32 percent, sound at about 30
+    percent, on at 7:30pm. At 7:30am it turns blue, and blue means he is welcome to come out and
+    get into our bed. The color is doing the work a clock cannot do yet.</p>
+    <p class="tiny" style="margin-top:8px">Somebody's actual numbers rather than a recommendation.
+    Start near them and move them until your house is quieter.</p>
+  </div>`;
+}
+
+function nlHonestTab() {
+  return `
+  <div class="card flat">
+    <p class="bodytext" style="margin:0">Most of this category is sold harder than the research
+    supports. None of that means it does not work in your house. Both of those are true and the
+    rest of this page says which is which.</p>
+  </div>
+  ${NL_HONEST.map((h) => `
+    <div class="dsec">
+      <h4>${esc(h.h)}</h4>
+      ${h.body.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+    </div>`).join('')}`;
+}
 
 function screenMonitors(c) {
   /* The sock sections come out once a child is past the age it is
@@ -18183,6 +18344,7 @@ const AGE_WINDOWS = {
   diapers:     { from: 0,   to: 60,   why: 'Night diapers can run to 5, which is where the diaper math stops being useful.' },
   sleepfound:  { from: 0,   to: 30,   why: 'Swaddles, sacks and wake windows. The room and the wind down outlast it, and the tabs thin out as they go.' },
   potty:       { from: 15,  to: 96,   why: 'Reading about it starts well before doing it, and night dryness is still in range at 7.' },
+  nightlight:  { from: 0,   to: 120,  why: 'The volume warning matters on day 1. The morning signal becomes an alarm clock, and fear of the dark does not finish at school age.' },
   topics:      { from: 0,   to: null, why: 'The list inside is already age filtered, so the row hides itself when that list is empty.' },
   rhythm:      { from: 0,   to: 72,   why: 'Naps and a built day. Past 6 the rhythm is school, not this.' },
 
@@ -18672,6 +18834,9 @@ function screenChild(c) {
       ${ageRow('sleepfound', months, kid, 'moon', esc(SF_TITLE),
         esc(sfRowSub(months)),
         'data-go="screen" data-id="sleepfound"')}
+      ${ageRow('nightlight', months, kid, 'sun', esc(NL_TITLE),
+        esc(nlRowSub(months)),
+        'data-go="screen" data-id="nightlight"')}
       ${ageRow('potty', months, kid, 'check-circle', esc(POTTY_TITLE),
         esc(pottyRowSub(months)),
         'data-go="screen" data-id="potty"')}
@@ -20016,7 +20181,11 @@ function onboard() {
     store.onboard = { open: false, done: false, step: 'hello', line: '', lineFrom: '' };
   }
   const ob = store.onboard;
-  if (ONBOARD_STEPS.indexOf(ob.step) === -1) ob.step = 'hello';
+  /* A child slide carries its index, such as kidbday:1, so what is
+     checked is the name rather than the whole string. Without this the
+     walkthrough bounced back to the start the moment it reached the
+     first child. */
+  if (ONBOARD_STEPS.indexOf(onboardStepName(ob.step)) === -1) ob.step = 'hello';
   return ob;
 }
 
@@ -20033,7 +20202,7 @@ function onboardGo(step) {
   ob.step = step;
   /* The closing line is written the moment that step is reached, so it
      has something specific to say about what they just told us. */
-  if (step === 'ready') onboardLine();
+  if (onboardStepName(step) === 'ready') onboardLine();
   flushStore();
   render();
 }
@@ -20098,12 +20267,28 @@ function onboardFirstChild() {
 }
 
 function onboardDots(step) {
-  const here = onboardIndex(step);
+  const here = onboardIndex(step, obCtx());
+  const steps = onboardSteps(obCtx());
   return `
   <div class="obdots" aria-hidden="true">
-    ${ONBOARD_STEPS.map((_, i) =>
+    ${steps.map((_, i) =>
       `<span class="obdot${i === here ? ' on' : ''}${i < here ? ' done' : ''}"></span>`).join('')}
   </div>`;
+}
+
+/* The heading for a slide. Child slides say the child's name once it
+   is known, so slide 9 of 14 does not read like slide 6 of 14. */
+function obTitle(step, kidIndex) {
+  const name = onboardStepName(step);
+  const base = ONBOARD_TITLES[name] || '';
+  if (kidIndex < 0) return base;
+  const kid = obKidAt(kidIndex);
+  const first = kid && kid.name ? kid.name.split(/\s+/)[0] : '';
+  if (!first) return base;
+  if (name === 'kidbday') return 'When was ' + first + ' born?';
+  if (name === 'kidsex') return 'About ' + first;
+  if (name === 'kidneeds') return 'Anything about ' + first + '?';
+  return base;
 }
 
 /* Willow saying something, drawn the same way her chat bubbles are so
@@ -20158,16 +20343,274 @@ function screenWillowWelcome() {
   </div>`;
 }
 
+/* =================================================================
+   SIGNING UP, ONE QUESTION AT A TIME
+
+   She asked for this and named the problem exactly: "so they don't
+   have to play with the whole app in order to get set up because
+   these may be hard to find."
+
+   The old version asked the same things 3 or 4 to a screen, and the
+   2 answers that tailor the app most, which are a child's birthday
+   and whether anything is turned on for them, were either buried or
+   not in the flow at all.
+
+   NOW IT IS SLIDES. One question each, big enough to answer with a
+   thumb, and the set of slides is built from the answers rather than
+   fixed, so nobody is asked for a due date who is not pregnant and
+   nobody walks through a child they do not have.
+
+   Every slide is still skippable and nothing is required. A person
+   who taps straight through ends up with a working app.
+   ================================================================= */
+
+/* The answers so far, which decide which slides exist. */
+function obCtx() {
+  const sit = situation();
+  const ob = onboard();
+  return {
+    expecting: hasStage(sit, 'expecting'),
+    hasKids: !!ob.hasKids,
+    kidCount: Number(ob.kidCount) || 0,
+  };
+}
+
+/* The child a child slide is about. Created the moment her name is
+   typed, so the back button never loses her. */
+function obKidAt(i) {
+  const ob = onboard();
+  const ids = Array.isArray(ob.kidIds) ? ob.kidIds : [];
+  const id = ids[i];
+  return id ? store.children.filter((k) => k.id === id)[0] || null : null;
+}
+
+function obKidEnsure(i, name) {
+  const ob = onboard();
+  if (!Array.isArray(ob.kidIds)) ob.kidIds = [];
+  let kid = obKidAt(i);
+  if (!kid) {
+    kid = newChildRecord(String(name || '').trim(), null);
+    store.children.push(kid);
+    ob.kidIds[i] = kid.id;
+    selectChild(kid.id);
+  }
+  return kid;
+}
+
+/* The pregnancy record, made once she says she is pregnant, so the due
+   date slide has something to write to. Named for now and renameable. */
+function obBumpEnsure() {
+  const ob = onboard();
+  let bump = ob.bumpId ? store.children.filter((k) => k.id === ob.bumpId)[0] : null;
+  if (!bump) bump = store.children.filter((k) => isExpecting(k))[0] || null;
+  if (!bump) {
+    bump = newChildRecord('Bean', null);
+    bump.expecting = true;
+    store.children.push(bump);
+    ob.bumpId = bump.id;
+    selectChild(bump.id);
+    flushStore();
+  }
+  return bump;
+}
+
+/* One tick row on the who slide, written against whichever of the 3
+   shapes that option actually is. */
+function obWhoOn(opt) {
+  const sit = situation();
+  if (opt.kind === 'stage') return hasStage(sit, opt.id);
+  if (opt.kind === 'role') return (sit.roles || []).indexOf(opt.id) !== -1;
+  return !!onboard().hasKids;
+}
+
+function obWhoToggle(id) {
+  const opt = ONBOARD_WHO.filter((o) => o.id === id)[0];
+  if (!opt) return;
+  if (opt.kind === 'flag') {
+    const ob = onboard();
+    ob.hasKids = !ob.hasKids;
+    /* Ticking it is a good enough answer to start from, so the count
+       slide is not staring at zero. */
+    if (ob.hasKids && !ob.kidCount) ob.kidCount = 1;
+    if (!ob.hasKids) ob.kidCount = 0;
+  } else if (opt.kind === 'stage') {
+    sitToggle('stages', id);
+  } else {
+    sitToggle('roles', id);
+  }
+  flushStore();
+}
+
+/* A big tappable answer, which is most of what these slides are. */
+function obPick(on, label, help, attrs) {
+  return `
+  <button class="obpick${on ? ' on' : ''}" ${attrs}>
+    <span class="grow">
+      <span class="obpick-t">${esc(label)}</span>
+      ${help ? `<span class="obpick-s">${esc(help)}</span>` : ''}
+    </span>
+    <span class="obpick-x">${on ? icon('check', 16, 'var(--sage)') : ''}</span>
+  </button>`;
+}
+
+function obSlide(step, kidIndex) {
+  const name = onboardStepName(step);
+  const kid = kidIndex >= 0 ? obKidAt(kidIndex) : null;
+  const kidName = kid && kid.name ? kid.name.split(/\s+/)[0] : '';
+  const ob = onboard();
+
+  if (name === 'name') {
+    return `
+    ${onboardSays(ONBOARD_LINES.name)}
+    <div class="card" style="margin-top:12px">
+      <p class="eyebrow">First name</p>
+      <input class="inp" type="text" id="obName" data-obfield="name"
+        value="${esc(store.parent.name || '')}" placeholder="Your first name"
+        autocomplete="given-name" style="margin-top:8px;width:100%" />
+      <p class="eyebrow" style="margin-top:14px">Last name</p>
+      <input class="inp" type="text" id="obLast" data-obfield="lastName"
+        value="${esc(store.parent.lastName || '')}" placeholder="Optional"
+        autocomplete="family-name" style="margin-top:8px;width:100%" />
+      <p class="eyebrow" style="margin-top:14px">A username</p>
+      <input class="inp" type="text" id="obUser" data-obfield="username"
+        value="${esc(store.parent.username || '')}" placeholder="Optional"
+        autocomplete="off" style="margin-top:8px;width:100%" />
+      <p class="tiny" style="margin-top:9px">${esc(ONBOARD_NAME_NOTE)}</p>
+    </div>`;
+  }
+
+  if (name === 'bday') {
+    return `
+    ${onboardSays(ONBOARD_LINES.bday)}
+    <div class="card" style="margin-top:12px">
+      ${dateSelects('parent:birthday', store.parent.birthday || '', 90, 13)}
+    </div>`;
+  }
+
+  if (name === 'who') {
+    return `
+    ${onboardSays(ONBOARD_LINES.who)}
+    <div style="margin-top:12px">
+      ${ONBOARD_WHO.map((o) => obPick(obWhoOn(o), o.label, '',
+        `data-obwho="${esc(o.id)}"`)).join('')}
+    </div>
+    <p class="tiny" style="margin-top:10px">${esc(ONBOARD_WHO_NOTE)}</p>`;
+  }
+
+  if (name === 'calledby') {
+    const cur = store.parent.calledBy || '';
+    return `
+    ${onboardSays(ONBOARD_LINES.calledby)}
+    <div class="chips" style="gap:7px;margin-top:12px">
+      ${CALLED_BY.map((c) => `
+        <button class="chip" data-obcalled="${esc(c.id)}"
+          aria-pressed="${cur === c.id}">${esc(c.label)}</button>`).join('')}
+    </div>`;
+  }
+
+  if (name === 'due') {
+    /* The bump needs a record before it can have a due date, so one is
+       made here rather than making her do it. She can rename it. */
+    const bump = obBumpEnsure();
+    return `
+    ${onboardSays(ONBOARD_LINES.due)}
+    <div class="card" style="margin-top:12px">
+      ${dateSelects('due:' + bump.id, bump.dueDate || '', 1, 1)}
+      <p class="tiny" style="margin-top:9px">The weekly writing starts from here, and so does the
+      size of them. An estimate is completely fine.</p>
+    </div>`;
+  }
+
+  if (name === 'kids') {
+    const n = Number(ob.kidCount) || 0;
+    return `
+    ${onboardSays(ONBOARD_LINES.kids)}
+    <div class="chips" style="gap:7px;margin-top:12px">
+      <button class="chip" data-obcount="0" aria-pressed="${n === 0}">${esc(ONBOARD_COUNT_NONE)}</button>
+      ${ONBOARD_COUNTS.map((c) => `
+        <button class="chip" data-obcount="${c}" aria-pressed="${n === c}">${c}</button>`).join('')}
+    </div>
+    <p class="tiny" style="margin-top:10px">${esc(ONBOARD_CHILD_SKIP)}</p>`;
+  }
+
+  if (name === 'kidname') {
+    const draft = kid ? (kid.name || '') : (store.obKidDraft || '');
+    return `
+    ${onboardSays(kidIndex > 0
+      ? 'And the next one. Same 3 questions.'
+      : ONBOARD_LINES.kidname)}
+    <div class="card" style="margin-top:12px">
+      <p class="eyebrow">Their name or nickname</p>
+      <input class="inp" type="text" id="obKidName" data-obkidname="${kidIndex}"
+        value="${esc(draft)}" placeholder="What you call them"
+        autocomplete="off" style="margin-top:8px;width:100%" />
+      <p class="tiny" style="margin-top:9px">A nickname is fine. Expecting? Put what you are calling
+      them for now and the app follows the pregnancy instead.</p>
+    </div>`;
+  }
+
+  if (name === 'kidbday') {
+    return `
+    ${onboardSays(kidName
+      ? 'When was ' + kidName + ' born? Almost everything in the app follows from this one answer.'
+      : ONBOARD_LINES.kidbday)}
+    <div class="card" style="margin-top:12px">
+      ${dateSelects('child:' + (kid ? kid.id : ''), (kid && kid.birthday) || '', 25, 0)}
+      ${kid && kid.birthday ? `
+        <p class="tiny" style="margin-top:9px">${icon('check', 11, 'var(--sage)')}
+        That makes them ${esc((getAgeSummary({ name: kid.name, birthday: kid.birthday }) || {}).label || '')}.</p>` : ''}
+    </div>`;
+  }
+
+  if (name === 'kidsex') {
+    const cur = kid ? (kid.sex || '') : '';
+    const set = kid ? (kid.sex !== undefined && kid.sex !== null) : false;
+    return `
+    ${onboardSays(ONBOARD_LINES.kidsex)}
+    <div style="margin-top:12px">
+      ${ONBOARD_SEX.map((o) => obPick(set && cur === o.id, o.label, '',
+        `data-obsex="${esc(o.id)}" data-obkid="${kidIndex}"`)).join('')}
+    </div>
+    <p class="tiny" style="margin-top:10px">${esc(ONBOARD_SEX_NOTE)}</p>`;
+  }
+
+  if (name === 'kidneeds') {
+    const on = kid ? (kid.lenses || []) : [];
+    const all = !!store.obNeedsAll;
+    const shown = all ? SUPPORT_LENSES : COMMON_LENSES.map((id) => getLens(id)).filter(Boolean);
+    return `
+    ${onboardSays(kidName
+      ? 'Last one for ' + kidName + ', and it is the one that changes the most.'
+      : ONBOARD_LINES.kidneeds)}
+    <div style="margin-top:12px">
+      ${obPick(!on.length, ONBOARD_NEEDS_NONE, '', `data-obneed="" data-obkid="${kidIndex}"`)}
+      ${shown.map((l) => obPick(on.indexOf(l.id) !== -1, l.label, l.tagline || '',
+        `data-obneed="${esc(l.id)}" data-obkid="${kidIndex}"`)).join('')}
+    </div>
+    <button class="chip" style="margin-top:10px" data-obneedsall="${all ? '0' : '1'}">
+      ${all ? 'Show the common ones' : 'See all ' + SUPPORT_LENSES.length}</button>
+    <p class="tiny" style="margin-top:10px">${esc(ONBOARD_NEEDS_NOTE)}</p>`;
+  }
+
+  return '';
+}
+
 function screenOnboard() {
   const ob = onboard();
   const step = ob.step;
-  if (step === 'hello') return screenWillowWelcome();
-  const next = onboardNext(step);
-  const back = onboardBack(step);
+  if (onboardStepName(step) === 'hello') return screenWillowWelcome();
+  const ctx = obCtx();
+  const next = onboardNext(step, ctx);
+  const back = onboardBack(step, ctx);
+  const kidIndex = onboardStepKid(step);
 
-  let body = '';
+  /* One question per slide. The old multi question steps are kept
+     below for the handful of places that still send somebody to them,
+     such as the Settings button that reruns the walkthrough on an
+     account that was set up under the old flow. */
+  let body = obSlide(step, kidIndex);
 
-  if (step === 'hello') {
+  if (!body && step === 'hello') {
     body = `
     ${onboardSays(ONBOARD_HELLO)}
     <div class="card" style="margin-top:12px">
@@ -20182,7 +20625,7 @@ function screenOnboard() {
     </div>`;
   }
 
-  if (step === 'you') {
+  if (!body && step === 'you') {
     body = `
     ${onboardSays(ONBOARD_LINES.you)}
     <div class="card" style="margin-top:12px">
@@ -20198,7 +20641,7 @@ function screenOnboard() {
     </div>`;
   }
 
-  if (step === 'where') {
+  if (!body && step === 'where') {
     const sit = situation();
     body = `
     ${onboardSays(ONBOARD_LINES.where)}
@@ -20215,7 +20658,7 @@ function screenOnboard() {
     <p class="tiny" style="margin-top:10px">${esc(SITUATION_PRIVACY)}</p>`;
   }
 
-  if (step === 'child') {
+  if (!body && step === 'child') {
     const kid = onboardFirstChild();
     body = `
     ${onboardSays(ONBOARD_LINES.child)}
@@ -20247,7 +20690,7 @@ function screenOnboard() {
     <p class="tiny" style="margin-top:10px">${esc(ONBOARD_CHILD_SKIP)}</p>`}`;
   }
 
-  if (step === 'ready') {
+  if (!body && step === 'ready') {
     body = `
     ${onboardSays(onboardLine())}
     <p class="sect" style="margin-top:14px">3 things worth doing first</p>
@@ -20276,13 +20719,13 @@ function screenOnboard() {
       <button class="chip" data-ob="skip">${esc(ONBOARD_SKIP)}</button>
     </div>
     ${onboardDots(step)}
-    <h1 class="title" style="margin-top:8px">${esc(ONBOARD_TITLES[step] || '')}</h1>
+    <h1 class="title" style="margin-top:8px">${esc(obTitle(step, kidIndex))}</h1>
   </div>
   <div class="sc">
     ${body}
     ${next ? `
     <button class="btn" data-ob="next" style="margin-top:16px;width:100%">
-      ${step === 'hello' ? 'Show me' : 'Next'} ${icon('chev', 15, '#fff')}
+      ${onboardStepName(step) === 'hello' ? 'Show me' : 'Next'} ${icon('chev', 15, '#fff')}
     </button>` : `
     <button class="btn" data-ob="done" style="margin-top:16px;width:100%">
       Take me in ${icon('chev', 15, '#fff')}
