@@ -73,8 +73,34 @@ export const ONBOARD_WHO = [
 ];
 
 export const ONBOARD_WHO_NOTE =
-  'Tick anything that is true. It moves those parts of the app to the front and puts the rest '
-  + 'away, and none of it is ever shown to anybody else.';
+  'It moves those parts of the app to the front and puts the rest away, and none of it is ever '
+  + 'shown to anybody else.';
+
+/* SELECT ALL THAT APPLY, SAID WHERE IT CAN BE SEEN.
+
+   She flagged this and she was right about the cause: "someone may be
+   pregnant and have children as well, some may have adoptive children
+   plus bio and or be pregnant so we cant assume."
+
+   It always allowed all of those. It just did not look like it did,
+   because 11 big cards with a check on the right read as a pick one
+   list, and the line saying otherwise was in Willow's bubble above
+   rather than against the list itself. So the list is now drawn as
+   checkboxes, it is split into its 2 real halves, and it counts what
+   is ticked so nobody has to wonder. */
+export const ONBOARD_WHO_ALL = 'Select all that apply';
+
+export const ONBOARD_WHO_GROUPS = [
+  { id: 'stage', label: 'Where you are' },
+  { id: 'role', label: 'Who you are to them' },
+];
+
+/* The one pair that genuinely cannot both be true. Turning one on turns
+   the other off, which used to happen silently and looked like a bug.
+   Now it says so. */
+export const ONBOARD_WHO_SWAP =
+  'Trying to conceive and pregnant are the only 2 that cannot both be true, so turning one on '
+  + 'turns the other off. Everything else here stacks.';
 
 /* How many, asked plainly, because the alternative is a parent of 4
    adding them one at a time and wondering if it took. */
