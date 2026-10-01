@@ -221,6 +221,29 @@ export function calTimeLabel(t) {
   return h + (m[2] === '00' ? '' : ':' + m[2]) + suffix;
 }
 
+/* The 7 days of the week a date falls in, starting Sunday to match the
+   month grid. A week that starts on a different day to the month above
+   it is the kind of small wrongness people feel without being able to
+   name. */
+export function calWeekOf(date) {
+  const d = calParse(date);
+  if (!d) return [];
+  const start = calAddDays(date, -d.getDay());
+  const out = [];
+  for (let i = 0; i < 7; i += 1) out.push(calAddDays(start, i));
+  return out;
+}
+
+export function calWeekLabel(dates) {
+  if (!dates || !dates.length) return '';
+  const a = calParse(dates[0]);
+  const b = calParse(dates[dates.length - 1]);
+  if (!a || !b) return '';
+  const sameMonth = a.getMonth() === b.getMonth();
+  const left = a.getDate() + (sameMonth ? '' : ' ' + CAL_MONTHS[a.getMonth()].slice(0, 3));
+  return left + ' to ' + b.getDate() + ' ' + CAL_MONTHS[b.getMonth()];
+}
+
 /* ------------------------------------------------------------------
    THE MONTH GRID
    6 rows of 7 always, rather than 5 rows some months and 6 in others,
@@ -329,6 +352,141 @@ export function calRemindAt(ev) {
   const day = calAddDays(ev.date, -(r.daysBefore || 0));
   return day + 'T' + two(r.atHour || 9) + ':00';
 }
+
+/* ==================================================================
+   A COLOUR PER PERSON
+
+   The most visible thing a family calendar on a wall does, and the
+   reason you can read a month from across the kitchen: whose week is
+   heavy is a shape, not a list you have to go through name by name.
+
+   THE PALETTE IS PICKED FOR THIS APP, NOT BORROWED.
+   Every one of these sits inside the sage, cream and earth range the
+   rest of the app lives in. A calendar that suddenly goes primary red
+   and electric blue would read as a different product bolted on. These
+   are muted on purpose and still tell apart at the size of a 5 pixel
+   dot, which is the only size that actually matters here.
+
+   They also have to survive being the ONLY difference between 2 rows,
+   so none of them are a pair that a red green colour blindness would
+   collapse. The sage and the clay are the 2 most likely to be
+   confused, and they differ in lightness as well as hue, which is what
+   keeps them apart. Colour is never the only signal anyway: every row
+   says whose it is in words, and the filter chips work without it.
+   ================================================================== */
+export const CAL_COLORS = [
+  { id: 'sage', label: 'Sage', dot: '#7C9068', soft: '#EAEFE2', ink: '#3C5435' },
+  { id: 'clay', label: 'Clay', dot: '#A85A44', soft: '#F6E8E3', ink: '#7C4030' },
+  { id: 'sky', label: 'Sky', dot: '#5B7F99', soft: '#E4EDF2', ink: '#3B5A6E' },
+  { id: 'plum', label: 'Plum', dot: '#7A5B82', soft: '#EFE7F1', ink: '#553D5C' },
+  { id: 'honey', label: 'Honey', dot: '#B58B3C', soft: '#F6EDD9', ink: '#7E5F22' },
+  { id: 'moss', label: 'Moss', dot: '#5F7355', soft: '#E6EBE1', ink: '#3F4F38' },
+  { id: 'rose', label: 'Rose', dot: '#A76A77', soft: '#F4E7EA', ink: '#75464F' },
+  { id: 'slate', label: 'Slate', dot: '#6B7280', soft: '#E9EAEC', ink: '#45494F' },
+];
+
+export function calColor(id) {
+  const c = CAL_COLORS.filter((x) => x.id === id)[0];
+  return c || CAL_COLORS[CAL_COLORS.length - 1];
+}
+
+/* Somebody with no colour chosen still has to have one, or the
+   calendar is grey until every person has been through a settings
+   screen nobody will open. So an unset colour is worked out from the
+   person's id, which means it is stable for that person forever and
+   different from their siblings without anybody picking anything.
+
+   The parent is always sage, because that is the app's own colour and
+   she is the one constant on every household's calendar. */
+export function calColorFor(who, explicit) {
+  if (explicit) return calColor(explicit);
+  if (!who || who === 'house') return calColor('slate');
+  if (who === 'me') return calColor('sage');
+  let n = 0;
+  const s = String(who);
+  for (let i = 0; i < s.length; i += 1) n = (n * 31 + s.charCodeAt(i)) % 100000;
+  /* Skips sage, so a child is never the same colour as the parent. */
+  const pick = CAL_COLORS.filter((c) => c.id !== 'sage');
+  return pick[n % pick.length];
+}
+
+export const CAL_COLOR_HELP =
+  'Pick a colour and this person is that colour everywhere on the calendar. Leave it and they get '
+  + 'one of their own anyway.';
+
+/* ==================================================================
+   WHAT FILLS ITSELF IN, AND WHY NONE OF IT IS ASSUMED
+
+   The first version of this put the next vaccine dose on the calendar
+   for every child, worked out from their age. That was wrong and she
+   caught it. Plenty of families do not vaccinate, or do it on their
+   own schedule, and an app that quietly writes "Hepatitis B due" onto
+   their October has taken a side in something that is theirs to
+   decide. It is the same mistake as a red overdue badge, just in a
+   nicer font.
+
+   The app's own rule on this has been settled since the vaccine screen
+   was written: educate, never push, and say plainly that the parent
+   decides. A calendar that fills itself in has to obey that too.
+
+   So 2 things changed.
+
+   1. EVERY FEED HAS A SWITCH, and the switches live on the calendar
+      where she can see what is putting things there. Nothing arrives
+      from a source she cannot turn off.
+
+   2. THE VACCINE FEED DOES NOT START ITSELF. It stays off until the
+      family has actually used the vaccine record, meaning they have
+      written down a dose or marked a series as one they are not
+      giving. Either of those is a family telling the app they are
+      tracking this. Until then the app has not been told anything and
+      says nothing, which is the correct behaviour for a question it
+      has no business having an opinion on.
+
+      Note that marking a series as not being given counts as engaging.
+      That is deliberate. A parent who has gone through and said no to
+      some of them is tracking the schedule as carefully as anybody,
+      and the record already respects a skip by never suggesting it
+      again.
+   ================================================================== */
+export const CAL_FEEDS = [
+  { id: 'birthdays', label: 'Birthdays',
+    hint: 'Yours and each child\'s, every year, with what they are turning.',
+    defaultOn: true },
+  { id: 'chores', label: 'The chore chart',
+    hint: 'One line per person per day, from the chart you already built.',
+    defaultOn: true },
+  { id: 'vaccines', label: 'Vaccine doses coming due',
+    hint: 'Only for children whose record you are keeping, and only the next one '
+      + 'outstanding. Nothing appears here unless you have started the record.',
+    defaultOn: true, needsOptIn: true },
+  { id: 'cycle', label: 'Your period, estimated',
+    hint: 'From your own average, once you have logged a couple.',
+    defaultOn: true },
+  { id: 'due', label: 'A due date, if you are expecting',
+    hint: 'Marked as an estimate, because that is what it is.',
+    defaultOn: true },
+];
+
+export function calFeedOn(id, prefs) {
+  const p = (prefs && typeof prefs === 'object') ? prefs : {};
+  if (p[id] === true) return true;
+  if (p[id] === false) return false;
+  const f = CAL_FEEDS.filter((x) => x.id === id)[0];
+  return !!(f && f.defaultOn);
+}
+
+export const CAL_FEEDS_TITLE = 'What fills this in by itself';
+
+export const CAL_FEEDS_INTRO =
+  'Everything below is worked out from what is already in the app, so you never type it twice. Turn '
+  + 'off anything you would rather not see. Nothing here is ever posted anywhere, and turning one '
+  + 'off changes the calendar only, not the screen it comes from.';
+
+export const CAL_VAX_OFF =
+  'Nothing is shown here until you start a vaccine record for a child, either by writing down a dose '
+  + 'they have had or by marking one you are not giving. Whether and when to vaccinate is yours to '
+  + 'decide and the app does not assume either way.';
 
 /* ==================================================================
    MIRRORING IT INTO THE PHONE'S OWN CALENDAR
