@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-01 16:49">
+<meta name="rsg-build" content="2026-10-01 18:23">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1567,6 +1567,27 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
   .calcell{aspect-ratio:auto;min-height:48px;justify-content:center;gap:4px}
   .calgrid{gap:4px}
 }
+/* The week's shape, as 7 little bars. Reading height is far faster than
+   reading 7 numbers, which is the whole reason this view exists. */
+.calweekbar{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;align-items:end;
+  margin:4px 0 2px;padding:6px 0 0}
+.calwb{appearance:none;border:1px solid transparent;background:transparent;border-radius:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;
+  padding:4px 1px 5px;cursor:pointer;min-width:0}
+.calwb:hover{background:var(--leaf2)}
+.calwb.today{background:var(--leaf2)}
+.calwb.sel{border-color:var(--sage)}
+.calwb-bar{width:60%;max-width:22px;border-radius:3px 3px 0 0;background:var(--sage);display:block;
+  min-height:0}
+.calwb-d{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);line-height:1}
+.calwb-n{font-size:12px;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
+.calwb.today .calwb-n{font-weight:700;color:var(--deep2)}
+/* A colour chip carries its own dot, so the filter row reads as a key
+   as well as a set of buttons. */
+.calchip{display:inline-flex;align-items:center;gap:6px}
+.calchip .caldot{width:7px;height:7px;flex:none}
+.calrow{padding-left:11px}
+
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 <!--
@@ -1868,7 +1889,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-01 16:49';
+const BUILD_STAMP = '2026-10-01 18:23';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -19056,6 +19077,27 @@ function calTimeLabel(t) {
         h -= 12;
     return h + (m[2] === '00' ? '' : ':' + m[2]) + suffix;
 }
+function calWeekOf(date) {
+    const d = calParse(date);
+    if (!d)
+        return [];
+    const start = calAddDays(date, -d.getDay());
+    const out = [];
+    for (let i = 0; i < 7; i += 1)
+        out.push(calAddDays(start, i));
+    return out;
+}
+function calWeekLabel(dates) {
+    if (!dates || !dates.length)
+        return '';
+    const a = calParse(dates[0]);
+    const b = calParse(dates[dates.length - 1]);
+    if (!a || !b)
+        return '';
+    const sameMonth = a.getMonth() === b.getMonth();
+    const left = a.getDate() + (sameMonth ? '' : ' ' + CAL_MONTHS[a.getMonth()].slice(0, 3));
+    return left + ' to ' + b.getDate() + ' ' + CAL_MONTHS[b.getMonth()];
+}
 function calMonthGrid(year, month) {
     const first = new Date(year, month, 1, 12);
     const start = new Date(year, month, 1 - first.getDay(), 12);
@@ -19131,6 +19173,70 @@ function calRemindAt(ev) {
     const day = calAddDays(ev.date, -(r.daysBefore || 0));
     return day + 'T' + two(r.atHour || 9) + ':00';
 }
+const CAL_COLORS = [
+    { id: 'sage', label: 'Sage', dot: '#7C9068', soft: '#EAEFE2', ink: '#3C5435' },
+    { id: 'clay', label: 'Clay', dot: '#A85A44', soft: '#F6E8E3', ink: '#7C4030' },
+    { id: 'sky', label: 'Sky', dot: '#5B7F99', soft: '#E4EDF2', ink: '#3B5A6E' },
+    { id: 'plum', label: 'Plum', dot: '#7A5B82', soft: '#EFE7F1', ink: '#553D5C' },
+    { id: 'honey', label: 'Honey', dot: '#B58B3C', soft: '#F6EDD9', ink: '#7E5F22' },
+    { id: 'moss', label: 'Moss', dot: '#5F7355', soft: '#E6EBE1', ink: '#3F4F38' },
+    { id: 'rose', label: 'Rose', dot: '#A76A77', soft: '#F4E7EA', ink: '#75464F' },
+    { id: 'slate', label: 'Slate', dot: '#6B7280', soft: '#E9EAEC', ink: '#45494F' },
+];
+function calColor(id) {
+    const c = CAL_COLORS.filter((x) => x.id === id)[0];
+    return c || CAL_COLORS[CAL_COLORS.length - 1];
+}
+function calColorFor(who, explicit) {
+    if (explicit)
+        return calColor(explicit);
+    if (!who || who === 'house')
+        return calColor('slate');
+    if (who === 'me')
+        return calColor('sage');
+    let n = 0;
+    const s = String(who);
+    for (let i = 0; i < s.length; i += 1)
+        n = (n * 31 + s.charCodeAt(i)) % 100000;
+    const pick = CAL_COLORS.filter((c) => c.id !== 'sage');
+    return pick[n % pick.length];
+}
+const CAL_COLOR_HELP = 'Pick a colour and this person is that colour everywhere on the calendar. Leave it and they get '
+    + 'one of their own anyway.';
+const CAL_FEEDS = [
+    { id: 'birthdays', label: 'Birthdays',
+        hint: 'Yours and each child\'s, every year, with what they are turning.',
+        defaultOn: true },
+    { id: 'chores', label: 'The chore chart',
+        hint: 'One line per person per day, from the chart you already built.',
+        defaultOn: true },
+    { id: 'vaccines', label: 'Vaccine doses coming due',
+        hint: 'Only for children whose record you are keeping, and only the next one '
+            + 'outstanding. Nothing appears here unless you have started the record.',
+        defaultOn: true, needsOptIn: true },
+    { id: 'cycle', label: 'Your period, estimated',
+        hint: 'From your own average, once you have logged a couple.',
+        defaultOn: true },
+    { id: 'due', label: 'A due date, if you are expecting',
+        hint: 'Marked as an estimate, because that is what it is.',
+        defaultOn: true },
+];
+function calFeedOn(id, prefs) {
+    const p = (prefs && typeof prefs === 'object') ? prefs : {};
+    if (p[id] === true)
+        return true;
+    if (p[id] === false)
+        return false;
+    const f = CAL_FEEDS.filter((x) => x.id === id)[0];
+    return !!(f && f.defaultOn);
+}
+const CAL_FEEDS_TITLE = 'What fills this in by itself';
+const CAL_FEEDS_INTRO = 'Everything below is worked out from what is already in the app, so you never type it twice. Turn '
+    + 'off anything you would rather not see. Nothing here is ever posted anywhere, and turning one '
+    + 'off changes the calendar only, not the screen it comes from.';
+const CAL_VAX_OFF = 'Nothing is shown here until you start a vaccine record for a child, either by writing down a dose '
+    + 'they have had or by marking one you are not giving. Whether and when to vaccinate is yours to '
+    + 'decide and the app does not assume either way.';
 const CAL_SUBSCRIBE = {
     title: 'Put this on your phone calendar',
     body: [
@@ -48708,6 +48814,7 @@ function newChildRecord(name, birthday) {
         name: (name || '').trim(),
         birthday: birthday || null,
         photo: '',
+        calColor: '',
         lenses: [],
         lensOptions: {},
         lensNumbers: {},
@@ -48776,6 +48883,8 @@ const store = {
     calOpen: '',
     calSubOpen: false,
     calNote: '',
+    calFeeds: {},
+    calWeekShift: 0,
     choreTab: 'today',
     choreDay: null,
     chorePick: null,
@@ -48895,7 +49004,7 @@ const state = {};
     'tab', 'view', 'undGroup', 'lensBand', 'feedTab', 'outTab', 'safetyTab',
     'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'sexedTab',
     'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab', 'crTab', 'calTab',
-    'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen',
+    'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift',
     'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
     Object.defineProperty(state, key, {
         enumerable: true,
@@ -48949,6 +49058,7 @@ function flushStore() {
             deletedChildIds: store.deletedChildIds,
             events: store.events,
             deletedEventIds: store.deletedEventIds,
+            calFeeds: store.calFeeds,
             notDuplicates: store.notDuplicates,
             parentUpdatedAt: store.parentUpdatedAt,
         }));
@@ -49008,6 +49118,7 @@ function loadStore() {
         store.guest = !!saved.guest;
         store.deletedChildIds = Array.isArray(saved.deletedChildIds) ? saved.deletedChildIds : [];
         store.events = Array.isArray(saved.events) ? saved.events : [];
+        store.calFeeds = (saved.calFeeds && typeof saved.calFeeds === 'object') ? saved.calFeeds : {};
         store.deletedEventIds = Array.isArray(saved.deletedEventIds) ? saved.deletedEventIds : [];
         store.notDuplicates = Array.isArray(saved.notDuplicates) ? saved.notDuplicates : [];
         store.parentUpdatedAt = Number(saved.parentUpdatedAt) || 0;
@@ -49667,6 +49778,7 @@ function tabList() {
         { id: 'logs', label: 'Logs', icon: 'note' },
         { id: 'home', label: 'Home', icon: 'home', center: true },
         { id: 'outings', label: 'Outings', icon: 'bag' },
+        { id: 'calendar', label: 'Calendar', icon: 'calendar' },
         { id: 'profile', label: 'Profile', icon: 'user' },
     ];
 }
@@ -50008,6 +50120,8 @@ function render() {
         html = screenSettings();
     else if (state.tab === 'profile')
         html = screenProfileTab(c);
+    else if (state.tab === 'calendar')
+        html = screenCalendar(c);
     else if (state.tab === 'community')
         html = screenCommunity(c);
     else if (state.tab === 'outings')
@@ -50486,7 +50600,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calfeed],[data-calsetcolor],[data-calweek]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -51076,8 +51190,37 @@ function initControls() {
             if (store.calShift > 24)
                 store.calShift = 24;
         }
+        else if (t.dataset.calweek != null && t.hasAttribute('data-calweek')) {
+            const v = t.dataset.calweek;
+            store.calWeekShift = v === '0' ? 0 : (Number(store.calWeekShift) || 0) + Number(v);
+            if (store.calWeekShift < -104)
+                store.calWeekShift = -104;
+            if (store.calWeekShift > 104)
+                store.calWeekShift = 104;
+        }
         else if (t.dataset.calday) {
             store.calDay = t.dataset.calday;
+        }
+        else if (t.dataset.calsetcolor) {
+            const whoFor = t.dataset.calwhofor;
+            if (whoFor === 'me') {
+                store.parent.calColor = t.dataset.calsetcolor;
+                store.parentUpdatedAt = Date.now();
+            }
+            else {
+                const k = (store.children || []).filter((x) => x.id === whoFor)[0];
+                if (k) {
+                    k.calColor = t.dataset.calsetcolor;
+                    k.updatedAt = Date.now();
+                }
+            }
+        }
+        else if (t.dataset.calfeed) {
+            const id = t.dataset.calfeed;
+            if (!store.calFeeds || typeof store.calFeeds !== 'object')
+                store.calFeeds = {};
+            store.calFeeds[id] = !calFeedOn(id, store.calFeeds);
+            store.parentUpdatedAt = Date.now();
         }
         else if (t.dataset.calsub) {
             store.calSubOpen = t.dataset.calsub === 'open';
@@ -63380,10 +63523,12 @@ function calRow(e, today) {
     const attrs = reading
         ? (e.go ? `data-calgo="${esc(JSON.stringify(e.go))}"` : '')
         : `data-calopen="${esc(e.id)}"`;
+    const col = calColorOf(e.who);
     return `
-  <button class="lrow" ${attrs} style="align-items:flex-start;${reading ? 'opacity:.92' : ''}">
-    <span class="licon" style="background:${reading ? 'var(--cream2, #F0EDE4)' : 'var(--leaf2)'}">
-      ${icon(reading ? (e.icon || 'calendar') : k.icon, 17)}
+  <button class="lrow calrow" ${attrs}
+    style="align-items:flex-start;border-left:3px solid ${esc(col.dot)}${reading ? ';opacity:.92' : ''}">
+    <span class="licon" style="background:${esc(col.soft)}">
+      ${icon(reading ? (e.icon || 'calendar') : k.icon, 17, col.ink)}
     </span>
     <span class="grow">
       <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">
@@ -63396,6 +63541,49 @@ function calRow(e, today) {
     ${reading ? (e.go ? `<span class="chev">${icon('chev', 16, 'var(--faint)')}</span>` : '')
         : `<span class="chev">${icon('chev', 16, 'var(--faint)')}</span>`}
   </button>`;
+}
+function calWeekBlock(who) {
+    const today = calToday();
+    const anchor = store.calDay || today;
+    const days = calWeekOf(calAddDays(anchor, (Number(store.calWeekShift) || 0) * 7));
+    const from = days[0];
+    const to = days[days.length - 1];
+    const byDay = {};
+    calAllIn(from, to, who).forEach((e) => {
+        if (!byDay[e.date])
+            byDay[e.date] = [];
+        byDay[e.date].push(e);
+    });
+    const busiest = Math.max(1, ...days.map((d) => (byDay[d] || []).length));
+    return `
+  <div class="calhead">
+    <button class="calnav" data-calweek="-1" aria-label="Previous week">${icon('chev', 15, 'var(--deep)')}</button>
+    <span class="calmonth">${esc(calWeekLabel(days))}</span>
+    <button class="calnav next" data-calweek="1" aria-label="Next week">${icon('chev', 15, 'var(--deep)')}</button>
+  </div>
+  ${Number(store.calWeekShift) ? `
+    <button class="chip" style="margin:0 auto 8px;display:block" data-calweek="0">Back to this week</button>` : ''}
+  ${''}
+  <div class="calweekbar">
+    ${days.map((d) => {
+        const n = (byDay[d] || []).length;
+        const h = Math.round((n / busiest) * 22);
+        return `
+      <button class="calwb${d === today ? ' today' : ''}${d === (store.calDay || today) ? ' sel' : ''}"
+        data-calday="${esc(d)}" aria-label="${esc(calDayLabel(d, today))}, ${n} ${n === 1 ? 'thing' : 'things'}">
+        <span class="calwb-bar" style="height:${n ? Math.max(3, h) : 0}px"></span>
+        <span class="calwb-d">${esc(CAL_DOW[calParse(d).getDay()].slice(0, 1))}</span>
+        <span class="calwb-n">${calParse(d).getDate()}</span>
+      </button>`;
+    }).join('')}
+  </div>
+  ${days.map((d) => {
+        const list = byDay[d] || [];
+        return `
+    <p class="sect" style="margin-top:14px">${esc(calDayLabel(d, today))}</p>
+    ${list.length ? list.map((e) => calRow(e, today)).join('')
+            : `<p class="tiny" style="padding:2px 2px 6px">${esc(CAL_EMPTY_DAY)}</p>`}`;
+    }).join('')}`;
 }
 function calDayBlock(date, today, who) {
     const list = calOnDay(date, who);
@@ -63438,7 +63626,11 @@ function calGrid(who) {
         data-calday="${esc(cell.date)}" aria-label="${esc(calDayLabel(cell.date, today))}">
         <span class="caln">${calParse(cell.date).getDate()}</span>
         <span class="caldots">
-          ${list.slice(0, 3).map((e) => `<span class="caldot${e.from === 'app' ? ' soft' : ''}"></span>`).join('')}
+          ${list.slice(0, 3).map((e) => {
+            const col = calColorOf(e.who);
+            return `<span class="caldot${e.from === 'app' ? ' soft' : ''}"
+              style="background:${esc(col.dot)}"></span>`;
+        }).join('')}
           ${list.length > 3 ? '<span class="calmore">+</span>' : ''}
         </span>
       </button>`;
@@ -63478,6 +63670,19 @@ function calEditor() {
           aria-pressed="${o.id === d.who}">${esc(o.label)}</button>`).join('')}
     </div>
     <p class="tiny" style="margin:0 0 10px">${esc(CAL_ADD_HELP)}</p>
+    ${''}
+    ${d.who && d.who !== CAL_WHO_HOUSE_ID ? `
+      <p class="eyebrow">${esc(calWhoName(d.who))}'s colour</p>
+      <div class="chips" style="margin:7px 0 2px">
+        ${CAL_COLORS.map((col) => {
+        const cur = calColorOf(d.who);
+        return `<button class="chip calchip${cur.id === col.id ? ' on' : ''}"
+            data-calsetcolor="${esc(col.id)}" data-calwhofor="${esc(d.who)}"
+            aria-pressed="${cur.id === col.id}">
+            <span class="caldot" style="background:${esc(col.dot)}"></span>${esc(col.label)}</button>`;
+    }).join('')}
+      </div>
+      <p class="tiny" style="margin:0 0 10px">${esc(CAL_COLOR_HELP)}</p>` : ''}
     <div class="card flat" style="margin-bottom:8px">
       <p class="eyebrow">When</p>
       <div style="margin-top:7px">${dateSelects('calev', d.date || calToday(), 2, 3)}</div>
@@ -63634,9 +63839,13 @@ function screenCalendar(c) {
     <div class="chips" style="margin:0 0 4px">
       <button class="chip${who === 'all' ? ' on' : ''}" data-calfilter="all"
         aria-pressed="${who === 'all'}">${esc(CAL_WHO_ALL)}</button>
-      ${calWhoOptions().map((o) => `
-        <button class="chip${who === o.id ? ' on' : ''}" data-calfilter="${esc(o.id)}"
-          aria-pressed="${who === o.id}">${esc(o.label)}</button>`).join('')}
+      ${calWhoOptions().map((o) => {
+        const col = calColorOf(o.id);
+        return `
+        <button class="chip calchip${who === o.id ? ' on' : ''}" data-calfilter="${esc(o.id)}"
+          aria-pressed="${who === o.id}">
+          <span class="caldot" style="background:${esc(col.dot)}"></span>${esc(o.label)}</button>`;
+    }).join('')}
     </div>`;
     const next30 = calAllIn(today, calAddDays(today, 45), who);
     const days = [];
@@ -63656,23 +63865,25 @@ function screenCalendar(c) {
     ${editing ? '' : `
     <div style="margin-top:13px">${subTabs('calTab', tab, [
         { id: 'next', label: 'Coming up' },
+        { id: 'week', label: 'This week' },
         { id: 'month', label: 'The month' },
         { id: 'past', label: 'Already happened' },
     ])}</div>
     ${whoChips}
-    ${tab === 'month' ? `
+    ${tab === 'week' ? calWeekBlock(who)
+        : tab === 'month' ? `
       ${calGrid(who)}
       ${calDayBlock(sel, today, who)}
     ` : tab === 'past' ? `
       <p class="tiny" style="margin:6px 0 2px">${esc(CAL_PAST_NOTE)}</p>
       ${(() => {
-        const past = calAllIn(calAddDays(today, -400), calAddDays(today, -1), who).reverse();
-        if (!past.length)
-            return `<p class="tiny" style="padding:8px 2px">Nothing yet.</p>`;
-        return past.slice(0, 60).map((e) => `
+            const past = calAllIn(calAddDays(today, -400), calAddDays(today, -1), who).reverse();
+            if (!past.length)
+                return `<p class="tiny" style="padding:8px 2px">Nothing yet.</p>`;
+            return past.slice(0, 60).map((e) => `
           <p class="sect" style="margin-top:12px">${esc(calDayLabel(e.date, today))}</p>
           ${calRow(e, today)}`).join('');
-    })()}
+        })()}
     ` : `
       ${days.length ? days.map((d) => calDayBlock(d, today, who)).join('') : `
       <div class="card flat" style="margin-top:12px">
@@ -63680,6 +63891,7 @@ function screenCalendar(c) {
         <p class="bodytext" style="margin-top:6px">${esc(CAL_EMPTY_ALL.body)}</p>
       </div>`}
     `}
+    ${calFeedsBlock()}
     ${calSubscribeBlock()}
     ${mine ? '' : ''}
     <p class="disclaimer">Nothing on this calendar is shared outside your house, and nothing here
@@ -66967,6 +67179,7 @@ function normalizeChild(k) {
         checkins: k.checkins && typeof k.checkins === 'object' ? k.checkins : {},
         arrival: Array.isArray(k.arrival) ? k.arrival : [],
         photo: k.photo || '',
+        calColor: typeof k.calColor === 'string' ? k.calColor : '',
         routineInclude: Array.isArray(k.routineInclude) ? k.routineInclude : [],
         routineMode: typeof k.routineMode === 'string' ? k.routineMode : '',
         dayKind: k.dayKind && typeof k.dayKind === 'object' ? k.dayKind : null,
@@ -67003,6 +67216,7 @@ function parentPayload() {
         deletedChildIds: store.deletedChildIds || [],
         events: store.events || [],
         deletedEventIds: store.deletedEventIds || [],
+        calFeeds: store.calFeeds || {},
         notDuplicates: store.notDuplicates || [],
         updatedAt: store.parentUpdatedAt || 0,
     }));
@@ -67237,6 +67451,9 @@ async function cloudFirstSync() {
         store.memories = mergeMemories(store.memories, Array.isArray(remoteUser.memories) ? remoteUser.memories : [], store.deletedMemoryIds);
         store.deletedEventIds = mergeDeletedIds(store.deletedEventIds, Array.isArray(remoteUser.deletedEventIds) ? remoteUser.deletedEventIds : []);
         store.events = mergeEvents(store.events, Array.isArray(remoteUser.events) ? remoteUser.events : [], store.deletedEventIds);
+        if (remoteUser.calFeeds && typeof remoteUser.calFeeds === 'object') {
+            store.calFeeds = Object.assign({}, remoteUser.calFeeds, store.calFeeds || {});
+        }
     }
     remoteKids.forEach((k) => { cloud.known[k.id] = contentKey(k); });
     if (remoteUser)
@@ -68980,6 +69197,12 @@ function choreLiveJobs() {
     chorePeople().forEach((p) => { ids[p.id] = true; });
     return choreJobs().filter((j) => ids[j.personId] && choreById(j.choreId));
 }
+function calColorOf(who) {
+    if (who === 'me')
+        return calColorFor('me', (store.parent || {}).calColor);
+    const k = (store.children || []).filter((x) => x.id === who)[0];
+    return calColorFor(who, k ? k.calColor : '');
+}
 function calEvents() {
     return Array.isArray(store.events) ? store.events : [];
 }
@@ -69051,7 +69274,11 @@ function calFeedVaccines(fromDate, toDate) {
         const months = sum && sum.age ? sum.age.totalMonths : null;
         if (months === null)
             return;
-        const next = vaxNextUp(months, vaxRecord(k), vaxSkipped(k));
+        const rec = vaxRecord(k);
+        const started = Object.keys(rec || {}).length > 0 || vaxSkipped(k).length > 0;
+        if (!started)
+            return;
+        const next = vaxNextUp(months, rec, vaxSkipped(k));
         if (!next)
             return;
         const due = calAddDays(String(k.birthday).slice(0, 10), Math.round(next.dose.at * 30.44));
@@ -69109,29 +69336,47 @@ function calFeedCycle(fromDate, toDate) {
     }
     return out;
 }
+function calFeedPrefs() {
+    return (store.calFeeds && typeof store.calFeeds === 'object') ? store.calFeeds : {};
+}
 function calFeedAll(fromDate, toDate) {
+    const prefs = calFeedPrefs();
     let out = [];
-    try {
-        out = out.concat(calFeedBirthdays(fromDate, toDate));
-    }
-    catch (err) { }
-    try {
-        out = out.concat(calFeedDue(fromDate, toDate));
-    }
-    catch (err) { }
-    try {
-        out = out.concat(calFeedVaccines(fromDate, toDate));
-    }
-    catch (err) { }
-    try {
-        out = out.concat(calFeedChores(fromDate, toDate));
-    }
-    catch (err) { }
-    try {
-        out = out.concat(calFeedCycle(fromDate, toDate));
-    }
-    catch (err) { }
+    const run = (id, fn) => {
+        if (!calFeedOn(id, prefs))
+            return;
+        try {
+            out = out.concat(fn(fromDate, toDate));
+        }
+        catch (err) { }
+    };
+    run('birthdays', calFeedBirthdays);
+    run('due', calFeedDue);
+    run('vaccines', calFeedVaccines);
+    run('chores', calFeedChores);
+    run('cycle', calFeedCycle);
     return out;
+}
+function calVaxStarted() {
+    return (store.children || []).some((k) => Object.keys(vaxRecord(k) || {}).length > 0
+        || vaxSkipped(k).length > 0);
+}
+function calFeedsBlock() {
+    const prefs = calFeedPrefs();
+    const vaxLive = calVaxStarted();
+    return `
+  <div class="card flat" style="margin-top:14px">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(CAL_FEEDS_TITLE)}</p>
+    <p class="tiny" style="margin-top:6px">${esc(CAL_FEEDS_INTRO)}</p>
+    ${CAL_FEEDS.map((f) => {
+        const on = calFeedOn(f.id, prefs);
+        const quiet = f.id === 'vaccines' && !vaxLive;
+        return `
+      <div style="margin-top:11px">
+        ${tickRow(on && !quiet, f.label, quiet ? CAL_VAX_OFF : f.hint, quiet ? '' : 'data-calfeed="' + esc(f.id) + '"')}
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 function calEntriesIn(fromDate, toDate) {
     const out = [];
