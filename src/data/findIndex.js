@@ -154,6 +154,9 @@ export const FIND_INDEX = [
     words: 'calendar appointment appointments schedule diary dentist doctor visit booking '
       + 'reminder remind due date birthday week month plan agenda event what is coming up',
     go: { screen: 'calendar' } },
+  { title: 'Lists',
+    words: 'list lists grocery groceries shopping to do todo pack packing wish list what to ask appointment questions shared checklist',
+    go: { screen: 'lists' } },
 ];
 
 function findNorm(s) {
