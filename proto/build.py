@@ -121,6 +121,7 @@ order = [
     ('lensDays',            SRC/'data/lensDays.js'),
     ('hardDay',             SRC/'data/hardDay.js'),
     ('nightLight',          SRC/'data/nightLight.js'),
+    ('communityRules',      SRC/'data/communityRules.js'),
     ('firebaseConfig',      SRC/'data/firebaseConfig.js'),
 ]
 

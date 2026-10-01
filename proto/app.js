@@ -1167,6 +1167,9 @@ const store = {
   sfTab: '',
   nestTab: 'nesting',
   nlTab: '',
+  crTab: 'rules',
+  /* The notice showing after something was posted, if anything was. */
+  commNotice: null,
   /* Whether comfort care for a fever is open. Starts closed every time
      rather than being remembered, because the fever screen has to open
      on the triage rather than on a long read. */
@@ -1357,7 +1360,7 @@ const state = {};
     tabs, and to Jobs, Growth and the vaccine record with them. The
     build now refuses to finish if a data-sub key is not here. */
  'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'sexedTab',
- 'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab',
+ 'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab', 'crTab',
  'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -2609,6 +2612,7 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'sleepfound') html = screenSleepFound(c);
   else if (v && v.type === 'screen' && v.id === 'monitors') html = screenMonitors(c);
   else if (v && v.type === 'screen' && v.id === 'nightlight') html = screenNightLight(c);
+  else if (v && v.type === 'screen' && v.id === 'commrules') html = screenCommRules(c);
   else if (v && v.type === 'screen' && v.id === 'nesting') html = screenNesting(c);
   else if (v && v.type === 'screen' && v.id === 'bumplabor') html = screenBumpLabor(c);
   else if (v && v.type === 'screen' && v.id === 'privacy') html = screenPrivacy(c);
@@ -3195,7 +3199,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3947,6 +3951,19 @@ function initControls() {
         willowAsk((live && live.ask) || 'Tell me about this.');
         return;
       }
+    } else if (t.dataset.commdismiss) {
+      store.commNotice = null;
+      store.feedError = '';
+    } else if (t.dataset.commappeal) {
+      /* An appeal is a message to a person, so it goes where every
+         other message to a person goes rather than inventing a second
+         inbox that nobody reads. */
+      store.commNotice = null;
+      store.feedError = '';
+      store.fbFrom = 'appeal:' + t.dataset.commappeal;
+      fb.kind = 'wrong';
+      state.view = { type: 'screen', id: 'feedback' };
+      window.scrollTo(0, 0);
     } else if (t.dataset.hardtalk) {
       hardTodayTalk();
     } else if (t.dataset.daykind !== undefined) {
@@ -13140,8 +13157,13 @@ async function feedShare(post) {
     post.sharedStatus = doc.status;
     /* Said at the moment she presses share rather than left for her to
        discover later, and it says which of the two patterns it was. */
-    if (doc.status === FEED_STATUS.held) {
-      store.feedError = filterReason(filterVerdict(doc.body));
+    /* Said at the moment she presses share rather than left for her to
+       discover later, and it says which rule and what tripped it. A
+       support verdict is not an error and never reads as one. */
+    const v = commVerdictFor(doc.body, groupLabel(doc.group || ''));
+    if (v && v.action !== 'live') {
+      store.commNotice = v;
+      store.feedError = v.action === 'support' ? '' : (v.notice ? v.notice.title : '');
     }
     store.parentUpdatedAt = Date.now();
     feed.loaded = false;
@@ -13364,6 +13386,214 @@ function feedCard(p, opts) {
         </button>`).join('')}
       <button class="chip" style="margin-top:8px" data-feed="reportclose">Never mind</button>
     </div>` : ''}` : ''}
+  </div>`;
+}
+
+/* =================================================================
+   WHAT A PERSON IS TOLD WHEN THE FILTER ACTS
+
+   Her ask, and the half most apps skip: "it should flag things like
+   facebook does and remove things and let them know why etc."
+
+   A post that quietly vanishes teaches somebody the app dislikes them.
+   So every action produces a notice that names the forum, names the
+   rule, names the specific thing that tripped it, assumes they meant
+   no harm, and offers an appeal. The words are in
+   src/data/communityRules.js.
+   ================================================================= */
+
+/* The filter's rule list has to reach the filter, which lives in a
+   file that cannot reach back. Handed over once at boot. */
+function commWireFilter() {
+  if (typeof setFilterFlags === 'function') setFilterFlags(CR_FLAGS);
+}
+
+/* Everything needed to tell somebody what happened, worked out from
+   the post itself. */
+function commVerdictFor(body, forumName) {
+  const verdict = filterVerdict(body);
+  if (!verdict) return null;
+  const flag = crFlag(verdict);
+  const action = filterAction(verdict);
+  /* Which written rule this belongs to, so the notice can name it.
+     Falls back to the flag's own words rather than leaving it blank. */
+  const rule = crRule(commRuleFor(verdict));
+  /* If the map is ever wrong, say nothing rather than printing a flag's
+     internal reasoning where a rule name should be. crNotice falls back
+     to a plain phrase, which reads far better than the wrong answer. */
+  return {
+    verdict: verdict,
+    action: action,
+    flag: flag,
+    ruleTitle: rule ? rule.title : '',
+    notice: crNotice(commNoticeKind(action), {
+      forumName: forumName || 'the community',
+      ruleTitle: rule ? rule.title : '',
+      triggerDetail: filterTrigger(verdict),
+    }),
+  };
+}
+
+/* Which of the written rules a flag belongs under. Kept as a small map
+   rather than guessed, because a notice that names the wrong rule is
+   worse than one that names none. */
+const COMM_RULE_OF = {
+  lethalAdvice: 'dangerousAdvice',
+  unsafeSleepAdvice: 'dangerousAdvice',
+  skippingNewbornCare: 'dangerousAdvice',
+  dosingAndSubstances: 'notMedicalFact',
+  personalDetails: 'keepItPrivate',
+  targetedHarassment: 'beKind',
+  spamAndScams: 'noSelling',
+  sellingSomething: 'noSelling',
+  childPhoto: 'otherPeoplesKids',
+  possibleMinor: 'adultsOnly',
+  namingAnAbuser: 'noTargeting',
+  crisisLanguage: 'emergencies',
+  postpartumStruggle: 'beKind',
+  abuseDisclosure: 'emergencies',
+};
+
+function commRuleFor(verdict) {
+  const want = COMM_RULE_OF[verdict];
+  if (want && crRule(want)) return want;
+  /* The ids in the rules file are whatever they are, so if the map is
+     wrong the nearest match by word is better than nothing. */
+  const hit = CR_RULES.filter((r) => r.id.toLowerCase().indexOf(String(verdict).slice(0, 5).toLowerCase()) !== -1)[0];
+  return hit ? hit.id : '';
+}
+
+function commNoticeKind(action) {
+  if (action === 'remove') return 'removed';
+  if (action === 'hold') return 'held';
+  if (action === 'warn') return 'warned';
+  if (action === 'support') return 'supportShown';
+  return 'held';
+}
+
+/* THE SUPPORT CARD.
+
+   The post is still up. Nothing has happened to it and nothing is
+   going to. Somebody has simply noticed, and this is what noticing
+   looks like. */
+function commSupportCard(v) {
+  if (!v || v.action !== 'support' || !v.notice) return '';
+  return `
+  <div class="card" style="border-left:3px solid var(--sage);background:var(--leaf3)">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(v.notice.title)}</p>
+    <p class="bodytext" style="margin-top:8px">${esc(v.notice.body)}</p>
+    <div class="chips" style="gap:7px;margin-top:11px">
+      <button class="chip" data-go="screen" data-id="momnow">Where to start</button>
+      <button class="chip" data-commdismiss="1">Thank you</button>
+    </div>
+  </div>`;
+}
+
+/* The notice for everything that is not support, which is the one that
+   has to be fair. */
+function commNoticeCard(v) {
+  if (!v || !v.notice || v.action === 'support') return '';
+  const bad = v.action === 'remove';
+  return `
+  <div class="card" style="border-left:3px solid ${bad ? '#B5705C' : 'var(--attention)'}">
+    <p class="eyebrow" style="${bad ? 'color:#A85A44' : ''}">${esc(v.notice.title)}</p>
+    <p class="bodytext" style="margin-top:8px">${esc(v.notice.body)}</p>
+    <p class="tiny" style="margin-top:9px">${esc(v.notice.appeal)}</p>
+    <div class="chips" style="gap:7px;margin-top:11px">
+      <button class="chip" data-commappeal="${esc(v.verdict)}">Ask a person to look</button>
+      <button class="chip" data-go="screen" data-id="commrules">The rules</button>
+      <button class="chip" data-commdismiss="1">Close</button>
+    </div>
+  </div>`;
+}
+
+/* =================================================================
+   THE RULES SCREEN
+
+   Reachable from every notice, from the community tab, and from the
+   post box, because a rule nobody can find is not a rule.
+   ================================================================= */
+
+function screenCommRules(c) {
+  const tab = store.crTab || 'rules';
+  const tabs = [
+    { id: 'rules', label: 'The rules' },
+    { id: 'how', label: 'How flagging works' },
+    { id: 'forums', label: 'The forums' },
+    { id: 'safety', label: 'Safety' },
+  ];
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">Community rules</h1>
+    <p class="sub">What this room is for, and what happens when something crosses a line.</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      ${CR_INTRO.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+    </div>
+
+    <div style="margin-top:13px">${subTabs('crTab', tab, tabs)}</div>
+
+    ${tab !== 'rules' ? '' : CR_RULES.map((r, i) => `
+      <div class="card" style="margin-bottom:9px">
+        <p style="margin:0;font-size:15px;font-weight:600;color:var(--ink)">${esc(String(i + 1) + '. ' + r.title)}</p>
+        <p class="bodytext" style="margin-top:7px">${esc(r.body)}</p>
+        <p class="tiny" style="margin-top:7px"><strong style="color:var(--ink)">Why.</strong> ${esc(r.why)}</p>
+      </div>`).join('')}
+
+    ${tab !== 'how' ? '' : `
+    <div class="card flat">
+      <p class="bodytext" style="margin:0">A check runs on everything as it is posted. Most posts go
+      straight up and never meet it. When it does act, you are told which rule, what specifically
+      tripped it, and how to ask a person to look again. There are 4 things it can do.</p>
+    </div>
+    ${['support', 'warn', 'hold', 'remove'].map((act) => {
+      const label = { support: 'Nothing happens, and somebody checks on you',
+        warn: 'It stays up and you hear about it',
+        hold: 'It waits for a person to read it',
+        remove: 'It comes down straight away' }[act];
+      const mine = CR_FLAGS.filter((f) => f.action === act);
+      return `
+      <div class="dsec">
+        <h4>${esc(label)}</h4>
+        ${act === 'support' ? `<p class="bodytext" style="margin:0 0 9px">This one matters most. If you
+        write about your own depression, your own intrusive thoughts, or being frightened of your own
+        temper, your post stays exactly where it is. Nothing is hidden and nothing is removed. You
+        will see a card with somewhere to start, and that is all that happens.</p>` : ''}
+        ${act === 'remove' ? `<p class="bodytext" style="margin:0 0 9px">Kept deliberately short. These
+        are the things that can hurt a baby while they sit on screen, plus posts aimed at a person and
+        obvious scams. Anything else that looks risky is held for a human instead.</p>` : ''}
+        ${list(mine.map((f) => f.what))}
+      </div>`;
+    }).join('')}`}
+
+    ${tab !== 'forums' ? '' : `
+    <div class="card flat">
+      <p class="bodytext" style="margin:0">These exist from the start. You can also make your own.</p>
+    </div>
+    ${CR_FORUMS.map((f) => `
+      <div class="card flat" style="margin-bottom:8px">
+        <p style="margin:0;font-size:14px;font-weight:600;color:var(--ink)">${esc(f.name)}${f.sensitive
+          ? ` <span class="tag">Handled gently</span>` : ''}</p>
+        <p class="tiny" style="margin-top:4px">${esc(f.about)}</p>
+      </div>`).join('')}
+    ${dsec('Starting your own', list(CR_NEW_FORUM))}`}
+
+    ${tab !== 'safety' ? '' : `
+    ${dsec('Adults only', `<p class="bodytext" style="margin:0">${esc(CR_SAFETY.underAge)}</p>`)}
+    ${dsec('If somebody says a child is being hurt', `<p class="bodytext" style="margin:0">${esc(CR_SAFETY.mandatory)}</p>`)}
+    ${dsec('None of this is medical advice', `<p class="bodytext" style="margin:0">${esc(CR_SAFETY.notAdvice)}</p>`)}
+    <div class="card flat">
+      <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} Reaching a person</p>
+      <p class="tiny" style="margin-top:4px">Every notice has a way to ask for a second look, and
+      anything in the room can be reported from the post itself. Reports are read.</p>
+      <button class="btn ghost sm" style="width:100%;margin-top:11px" data-go="screen" data-id="feedback">
+        Send us something</button>
+    </div>`}
+
+    ${dsec('Sources', sourceRows(CR_SOURCES))}
   </div>`;
 }
 
@@ -26297,6 +26527,10 @@ function willowPanel() {
    Please leave this here.
    ----------------------------------------------------------------- */
 loadStore();
+/* The community filter's rule list lives in communityRules.js and the
+   filter lives in feed.js, which cannot reach it. Handed over once,
+   here, before anything can post. */
+commWireFilter();
 /* Before the first render and before anything is written anywhere: the
    invite code comes out of the address bar into memory, and the address
    is rewritten without it. A single use credential should not sit in
