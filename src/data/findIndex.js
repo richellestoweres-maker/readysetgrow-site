@@ -64,6 +64,10 @@ export const FIND_INDEX = [
     words: 'feeding breastfeeding formula bottle bottles latch weight gain solids starting solids allergens baby led weaning milk' },
   { title: 'Diapers, how many you need', where: 'Child profile', go: { screen: 'diaperplan' },
     words: 'diapers nappies how many diapers sizes wet diapers' },
+  { title: 'Sound machines and night lights', where: 'Child profile, Everyday care', go: { screen: 'nightlight' },
+    words: 'hatch sound machine white noise night light nightlight ok to wake okay to wake toddler '
+      + 'clock green means get up color changing afraid of the dark scared of the dark fear of the '
+      + 'dark red light volume too loud decibels coming out of their room early waking' },
   { title: 'Sleep foundations', where: 'Child profile, Everyday care', go: { screen: 'sleepfound' },
     words: 'swaddle swaddling how to swaddle stop swaddling sleep sack sleeping bag tog zipadee '
       + 'merlin magic sleepsuit blackout curtains white noise sound machine shusher wake windows '

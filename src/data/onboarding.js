@@ -24,7 +24,78 @@
  * 4. Nothing said here is ever shown to anybody else.
  */
 
-export const ONBOARD_STEPS = ['hello', 'you', 'where', 'child', 'ready'];
+/* ONE QUESTION AT A TIME.
+
+   She asked for this and she was right about why: "when you first sign
+   up it come up with slides, like what's your first and last name,
+   next slide birthday, next slide are you trying to conceive, pregnant,
+   have children, dad, grandparent, adoptive parent, check all that
+   apply, next slide letting you build your own profile, next slide
+   letting you build your child's profile, so they don't have to play
+   with the whole app in order to get set up because these may be hard
+   to find."
+
+   WHAT WAS WRONG BEFORE. The same questions were there, 3 or 4 to a
+   screen, in dense cards. A page with 7 things on it reads as work,
+   and the things that actually tailor the app, such as whether a child
+   has anything turned on, were not in the flow at all. They were
+   somewhere in the app, which is exactly her point: hard to find.
+
+   SO EVERY SLIDE ASKS 1 THING. The list below is the full set. Which
+   of them a person actually sees depends on their answers, because
+   asking a grandparent for a due date is how an app loses somebody.
+   onboardSteps() works out the real list. Everything is still
+   skippable and nothing is required. */
+export const ONBOARD_STEPS = ['hello', 'name', 'bday', 'who', 'calledby', 'due',
+  'kids', 'kidname', 'kidbday', 'kidsex', 'kidneeds', 'ready'];
+
+/* The slides that belong to one child, run once per child. */
+export const ONBOARD_KID_STEPS = ['kidname', 'kidbday', 'kidsex', 'kidneeds'];
+
+/* THE ONE SLIDE THAT DOES THE MOST WORK.
+
+   Her list, in her order, written the way she said it. It maps onto
+   what the app already holds rather than inventing a new shape: some
+   of these are a stage, some are a role, and the slide does not make
+   anybody care which is which. */
+export const ONBOARD_WHO = [
+  { id: 'trying', kind: 'stage', label: 'Trying to conceive' },
+  { id: 'expecting', kind: 'stage', label: 'Pregnant right now' },
+  { id: 'postpartum', kind: 'stage', label: 'In the first year after a birth' },
+  { id: 'haskids', kind: 'flag', label: 'I have children already' },
+  { id: 'birth', kind: 'role', label: 'I gave birth to them' },
+  { id: 'partner', kind: 'role', label: 'My partner gave birth' },
+  { id: 'adoptive', kind: 'role', label: 'Adoptive parent' },
+  { id: 'foster', kind: 'role', label: 'Foster parent' },
+  { id: 'step', kind: 'role', label: 'Step parent' },
+  { id: 'kinship', kind: 'role', label: 'Grandparent, or family raising them' },
+  { id: 'guardian', kind: 'role', label: 'Guardian' },
+];
+
+export const ONBOARD_WHO_NOTE =
+  'Tick anything that is true. It moves those parts of the app to the front and puts the rest '
+  + 'away, and none of it is ever shown to anybody else.';
+
+/* How many, asked plainly, because the alternative is a parent of 4
+   adding them one at a time and wondering if it took. */
+export const ONBOARD_COUNTS = [1, 2, 3, 4, 5, 6];
+export const ONBOARD_COUNT_MORE = 'More than 6';
+export const ONBOARD_COUNT_NONE = 'None yet';
+
+export const ONBOARD_SEX = [
+  { id: 'f', label: 'Girl' },
+  { id: 'm', label: 'Boy' },
+  { id: '', label: 'Rather not say' },
+];
+export const ONBOARD_SEX_NOTE =
+  'Only used for growth charts, which are drawn differently, and for the parts about puberty. '
+  + 'Nothing else in the app changes, and you can change it or clear it whenever you like.';
+
+export const ONBOARD_NEEDS_NOTE =
+  'If something about how they learn or how their day goes has a name, or you think it might, '
+  + 'turning it on here reshapes the whole app around them rather than adding a page about it. '
+  + 'Nothing here is a diagnosis and nothing is shared.';
+export const ONBOARD_NEEDS_NONE = 'Nothing yet, or still working it out';
 
 /* The very first thing a new parent reads. Written, never generated,
    because waiting on a model for the opening line of the app would mean
@@ -85,6 +156,18 @@ export const ONBOARD_WHAT = [
 /* What Willow says at the top of each step. Short, because the step
    itself is the content and she is only introducing it. */
 export const ONBOARD_LINES = {
+  name: 'First, what should I call you? This is just so I am not talking to a stranger.',
+  bday: 'And your birthday. This is only so the app knows when to wish you a happy one, and '
+    + 'so the parts about your own body know roughly where you are.',
+  who: 'Now the one that does the most work. Tick anything that is true for you today.',
+  calledby: 'What do they call you? It changes how I write to you, which sounds small and is not.',
+  due: 'When are they due? An estimate is fine, and you can change it whenever the estimate does.',
+  kids: 'How many children are we looking after here? Each one gets their own everything, kept '
+    + 'separate from the others.',
+  kidname: 'Who are we growing?',
+  kidbday: 'And their birthday. Almost everything in the app follows from this one answer.',
+  kidsex: 'One more, and it is optional.',
+  kidneeds: 'Last one, and it is the one that changes the most.',
   you: 'First, what should I call you? This is just so I am not talking to a stranger.',
   where: 'Now the part that does the most work. Tick anything that is true for you today, '
     + 'and I will bring those parts of the app forward and put the rest away. Nothing here '
@@ -97,6 +180,16 @@ export const ONBOARD_LINES = {
 
 export const ONBOARD_TITLES = {
   hello: 'Hi, I am Willow',
+  name: 'What is your name?',
+  bday: 'When is your birthday?',
+  who: 'Where are you right now?',
+  calledby: 'What do they call you?',
+  due: 'When are they due?',
+  kids: 'How many children?',
+  kidname: 'What is their name?',
+  kidbday: 'When were they born?',
+  kidsex: 'Boy or girl?',
+  kidneeds: 'Anything worth knowing?',
   you: 'What should I call you?',
   where: 'Where are you right now?',
   child: 'Who are we growing?',
@@ -193,19 +286,57 @@ export function onboardShouldOpen(ob) {
   return !!(ob && ob.open && !ob.done);
 }
 
-export function onboardNext(step) {
-  const i = ONBOARD_STEPS.indexOf(step);
-  if (i === -1 || i === ONBOARD_STEPS.length - 1) return null;
-  return ONBOARD_STEPS[i + 1];
+/* WHICH SLIDES THIS PERSON ACTUALLY SEES.
+
+   Built from what they have already said rather than fixed, because a
+   grandparent should never be asked for a due date and somebody with
+   no children yet should not be walked through a child they do not
+   have. The child slides repeat, once per child, which is why they
+   carry an index. */
+export function onboardSteps(ctx) {
+  const c = ctx || {};
+  const out = ['hello', 'name', 'bday', 'who'];
+  if (c.expecting) out.push('due');
+  if (c.hasKids) out.push('calledby');
+  out.push('kids');
+  const n = Math.max(0, Math.min(6, Number(c.kidCount) || 0));
+  for (let i = 0; i < n; i++) {
+    ONBOARD_KID_STEPS.forEach((s) => out.push(s + ':' + i));
+  }
+  out.push('ready');
+  return out;
 }
 
-export function onboardBack(step) {
-  const i = ONBOARD_STEPS.indexOf(step);
+/* A step is either a plain name or a child slide carrying its index,
+   such as kidbday:1. These 2 take them apart so nothing else has to. */
+export function onboardStepName(step) {
+  return String(step || '').split(':')[0];
+}
+
+export function onboardStepKid(step) {
+  const parts = String(step || '').split(':');
+  return parts.length > 1 ? Number(parts[1]) : -1;
+}
+
+export function onboardNext(step, ctx) {
+  const steps = onboardSteps(ctx);
+  const i = steps.indexOf(step);
+  if (i === -1 || i === steps.length - 1) return null;
+  return steps[i + 1];
+}
+
+export function onboardBack(step, ctx) {
+  const steps = onboardSteps(ctx);
+  const i = steps.indexOf(step);
   if (i <= 0) return null;
-  return ONBOARD_STEPS[i - 1];
+  return steps[i - 1];
 }
 
-export function onboardIndex(step) {
-  const i = ONBOARD_STEPS.indexOf(step);
+export function onboardIndex(step, ctx) {
+  const i = onboardSteps(ctx).indexOf(step);
   return i === -1 ? 0 : i;
+}
+
+export function onboardCount(ctx) {
+  return onboardSteps(ctx).length;
 }
