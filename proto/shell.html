@@ -1644,6 +1644,27 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
   .calcell{aspect-ratio:auto;min-height:48px;justify-content:center;gap:4px}
   .calgrid{gap:4px}
 }
+/* The week's shape, as 7 little bars. Reading height is far faster than
+   reading 7 numbers, which is the whole reason this view exists. */
+.calweekbar{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;align-items:end;
+  margin:4px 0 2px;padding:6px 0 0}
+.calwb{appearance:none;border:1px solid transparent;background:transparent;border-radius:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;
+  padding:4px 1px 5px;cursor:pointer;min-width:0}
+.calwb:hover{background:var(--leaf2)}
+.calwb.today{background:var(--leaf2)}
+.calwb.sel{border-color:var(--sage)}
+.calwb-bar{width:60%;max-width:22px;border-radius:3px 3px 0 0;background:var(--sage);display:block;
+  min-height:0}
+.calwb-d{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);line-height:1}
+.calwb-n{font-size:12px;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
+.calwb.today .calwb-n{font-weight:700;color:var(--deep2)}
+/* A colour chip carries its own dot, so the filter row reads as a key
+   as well as a set of buttons. */
+.calchip{display:inline-flex;align-items:center;gap:6px}
+.calchip .caldot{width:7px;height:7px;flex:none}
+.calrow{padding-left:11px}
+
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 

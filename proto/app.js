@@ -950,6 +950,10 @@ function newChildRecord(name, birthday) {
        or empty for the growth sprout. Stored on the record so it follows
        them to every device rather than living in one browser. */
     photo: '',
+    /* Their colour on the family calendar. Empty means one is worked
+       out from their id, so nobody is grey and nobody has to go and
+       choose before the calendar reads properly. */
+    calColor: '',
     lenses: [],
     lensOptions: {},
     lensNumbers: {},
@@ -1148,6 +1152,10 @@ const store = {
   calOpen: '',
   calSubOpen: false,
   calNote: '',
+  /* Which of the automatic feeds she wants on the calendar. Household
+     level, because it is one calendar. */
+  calFeeds: {},
+  calWeekShift: 0,
   choreTab: 'today',
   choreDay: null,
   chorePick: null,
@@ -1389,7 +1397,7 @@ const state = {};
     build now refuses to finish if a data-sub key is not here. */
  'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'sexedTab',
  'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab', 'crTab', 'calTab',
- 'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen',
+ 'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift',
  'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -1456,6 +1464,7 @@ function flushStore() {
       deletedChildIds: store.deletedChildIds,
       events: store.events,
       deletedEventIds: store.deletedEventIds,
+      calFeeds: store.calFeeds,
       notDuplicates: store.notDuplicates,
       parentUpdatedAt: store.parentUpdatedAt,
     }));
@@ -1530,6 +1539,7 @@ function loadStore() {
     store.guest = !!saved.guest;
     store.deletedChildIds = Array.isArray(saved.deletedChildIds) ? saved.deletedChildIds : [];
     store.events = Array.isArray(saved.events) ? saved.events : [];
+    store.calFeeds = (saved.calFeeds && typeof saved.calFeeds === 'object') ? saved.calFeeds : {};
     store.deletedEventIds = Array.isArray(saved.deletedEventIds) ? saved.deletedEventIds : [];
     store.notDuplicates = Array.isArray(saved.notDuplicates) ? saved.notDuplicates : [];
     store.parentUpdatedAt = Number(saved.parentUpdatedAt) || 0;
@@ -2429,6 +2439,7 @@ function tabList() {
        had nothing to say about, and buried two screens down nobody
        would ever find it. */
     { id: 'outings', label: 'Outings', icon: 'bag' },
+    { id: 'calendar', label: 'Calendar', icon: 'calendar' },
     { id: 'profile', label: 'Profile', icon: 'user' },
     /* Settings used to sit here and it made six, which is too many
        across a phone. It is not a daily destination, it is the place
@@ -2743,6 +2754,7 @@ function render() {
   /* Profile shows whoever is selected. Her own face in the corner puts
      her here, a child's circle on Home puts them here. */
   else if (state.tab === 'profile') html = screenProfileTab(c);
+  else if (state.tab === 'calendar') html = screenCalendar(c);
   else if (state.tab === 'community') html = screenCommunity(c);
   else if (state.tab === 'outings') html = screenOutings(c);
   else if (state.tab === 'logs') html = screenLogsHub(c);
@@ -3267,7 +3279,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calfeed],[data-calsetcolor],[data-calweek]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3687,8 +3699,27 @@ function initControls() {
       store.calShift = v === '0' ? 0 : (Number(store.calShift) || 0) + Number(v);
       if (store.calShift < -24) store.calShift = -24;
       if (store.calShift > 24) store.calShift = 24;
+    } else if (t.dataset.calweek != null && t.hasAttribute('data-calweek')) {
+      const v = t.dataset.calweek;
+      store.calWeekShift = v === '0' ? 0 : (Number(store.calWeekShift) || 0) + Number(v);
+      if (store.calWeekShift < -104) store.calWeekShift = -104;
+      if (store.calWeekShift > 104) store.calWeekShift = 104;
     } else if (t.dataset.calday) {
       store.calDay = t.dataset.calday;
+    } else if (t.dataset.calsetcolor) {
+      const whoFor = t.dataset.calwhofor;
+      if (whoFor === 'me') {
+        store.parent.calColor = t.dataset.calsetcolor;
+        store.parentUpdatedAt = Date.now();
+      } else {
+        const k = (store.children || []).filter((x) => x.id === whoFor)[0];
+        if (k) { k.calColor = t.dataset.calsetcolor; k.updatedAt = Date.now(); }
+      }
+    } else if (t.dataset.calfeed) {
+      const id = t.dataset.calfeed;
+      if (!store.calFeeds || typeof store.calFeeds !== 'object') store.calFeeds = {};
+      store.calFeeds[id] = !calFeedOn(id, store.calFeeds);
+      store.parentUpdatedAt = Date.now();
     } else if (t.dataset.calsub) {
       store.calSubOpen = t.dataset.calsub === 'open';
     } else if (t.dataset.calgo) {
@@ -18290,10 +18321,12 @@ function calRow(e, today) {
   const attrs = reading
     ? (e.go ? `data-calgo="${esc(JSON.stringify(e.go))}"` : '')
     : `data-calopen="${esc(e.id)}"`;
+  const col = calColorOf(e.who);
   return `
-  <button class="lrow" ${attrs} style="align-items:flex-start;${reading ? 'opacity:.92' : ''}">
-    <span class="licon" style="background:${reading ? 'var(--cream2, #F0EDE4)' : 'var(--leaf2)'}">
-      ${icon(reading ? (e.icon || 'calendar') : k.icon, 17)}
+  <button class="lrow calrow" ${attrs}
+    style="align-items:flex-start;border-left:3px solid ${esc(col.dot)}${reading ? ';opacity:.92' : ''}">
+    <span class="licon" style="background:${esc(col.soft)}">
+      ${icon(reading ? (e.icon || 'calendar') : k.icon, 17, col.ink)}
     </span>
     <span class="grow">
       <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">
@@ -18306,6 +18339,71 @@ function calRow(e, today) {
     ${reading ? (e.go ? `<span class="chev">${icon('chev', 16, 'var(--faint)')}</span>` : '')
       : `<span class="chev">${icon('chev', 16, 'var(--faint)')}</span>`}
   </button>`;
+}
+
+
+/* ------------------------------------------------------------------
+   THE WEEK
+
+   The view families actually live in, which is why Skylight leads with
+   it. A month answers "when is that thing", a week answers "what is
+   this week going to be like", and the second question is the one
+   asked on a Sunday night.
+
+   Drawn as 7 stacked days rather than 7 columns. A column per day on a
+   390 pixel phone gives each one 52 pixels, which fits a dot and
+   nothing a person can read. Stacked, every entry keeps its words.
+   ------------------------------------------------------------------ */
+function calWeekBlock(who) {
+  const today = calToday();
+  const anchor = store.calDay || today;
+  const days = calWeekOf(calAddDays(anchor, (Number(store.calWeekShift) || 0) * 7));
+  const from = days[0];
+  const to = days[days.length - 1];
+
+  /* One pass for the whole week rather than 7, for the same reason the
+     month grid does it once. */
+  const byDay = {};
+  calAllIn(from, to, who).forEach((e) => {
+    if (!byDay[e.date]) byDay[e.date] = [];
+    byDay[e.date].push(e);
+  });
+  const busiest = Math.max(1, ...days.map((d) => (byDay[d] || []).length));
+
+  return `
+  <div class="calhead">
+    <button class="calnav" data-calweek="-1" aria-label="Previous week">${icon('chev', 15, 'var(--deep)')}</button>
+    <span class="calmonth">${esc(calWeekLabel(days))}</span>
+    <button class="calnav next" data-calweek="1" aria-label="Next week">${icon('chev', 15, 'var(--deep)')}</button>
+  </div>
+  ${Number(store.calWeekShift) ? `
+    <button class="chip" style="margin:0 auto 8px;display:block" data-calweek="0">Back to this week</button>` : ''}
+
+  ${/* THE LITTLE BAR CHART IS THE POINT OF A WEEK VIEW.
+        It answers the Sunday night question in one look, which is not
+        "what is on Tuesday" but "which day is going to hurt". Seven
+        numbers in a list cannot do that and seven bars can. */''}
+  <div class="calweekbar">
+    ${days.map((d) => {
+      const n = (byDay[d] || []).length;
+      const h = Math.round((n / busiest) * 22);
+      return `
+      <button class="calwb${d === today ? ' today' : ''}${d === (store.calDay || today) ? ' sel' : ''}"
+        data-calday="${esc(d)}" aria-label="${esc(calDayLabel(d, today))}, ${n} ${n === 1 ? 'thing' : 'things'}">
+        <span class="calwb-bar" style="height:${n ? Math.max(3, h) : 0}px"></span>
+        <span class="calwb-d">${esc(CAL_DOW[calParse(d).getDay()].slice(0, 1))}</span>
+        <span class="calwb-n">${calParse(d).getDate()}</span>
+      </button>`;
+    }).join('')}
+  </div>
+
+  ${days.map((d) => {
+    const list = byDay[d] || [];
+    return `
+    <p class="sect" style="margin-top:14px">${esc(calDayLabel(d, today))}</p>
+    ${list.length ? list.map((e) => calRow(e, today)).join('')
+      : `<p class="tiny" style="padding:2px 2px 6px">${esc(CAL_EMPTY_DAY)}</p>`}`;
+  }).join('')}`;
 }
 
 function calDayBlock(date, today, who) {
@@ -18360,7 +18458,11 @@ function calGrid(who) {
         data-calday="${esc(cell.date)}" aria-label="${esc(calDayLabel(cell.date, today))}">
         <span class="caln">${calParse(cell.date).getDate()}</span>
         <span class="caldots">
-          ${list.slice(0, 3).map((e) => `<span class="caldot${e.from === 'app' ? ' soft' : ''}"></span>`).join('')}
+          ${list.slice(0, 3).map((e) => {
+            const col = calColorOf(e.who);
+            return `<span class="caldot${e.from === 'app' ? ' soft' : ''}"
+              style="background:${esc(col.dot)}"></span>`;
+          }).join('')}
           ${list.length > 3 ? '<span class="calmore">+</span>' : ''}
         </span>
       </button>`;
@@ -18411,6 +18513,23 @@ function calEditor() {
           aria-pressed="${o.id === d.who}">${esc(o.label)}</button>`).join('')}
     </div>
     <p class="tiny" style="margin:0 0 10px">${esc(CAL_ADD_HELP)}</p>
+
+    ${/* The colour belongs to the PERSON, not to this entry, so it is
+          set here once and every entry of theirs follows. Putting it
+          per entry would mean a calendar where the same child is 3
+          colours, which defeats the point of colour entirely. */''}
+    ${d.who && d.who !== CAL_WHO_HOUSE_ID ? `
+      <p class="eyebrow">${esc(calWhoName(d.who))}'s colour</p>
+      <div class="chips" style="margin:7px 0 2px">
+        ${CAL_COLORS.map((col) => {
+          const cur = calColorOf(d.who);
+          return `<button class="chip calchip${cur.id === col.id ? ' on' : ''}"
+            data-calsetcolor="${esc(col.id)}" data-calwhofor="${esc(d.who)}"
+            aria-pressed="${cur.id === col.id}">
+            <span class="caldot" style="background:${esc(col.dot)}"></span>${esc(col.label)}</button>`;
+        }).join('')}
+      </div>
+      <p class="tiny" style="margin:0 0 10px">${esc(CAL_COLOR_HELP)}</p>` : ''}
 
     <div class="card flat" style="margin-bottom:8px">
       <p class="eyebrow">When</p>
@@ -18585,9 +18704,13 @@ function screenCalendar(c) {
     <div class="chips" style="margin:0 0 4px">
       <button class="chip${who === 'all' ? ' on' : ''}" data-calfilter="all"
         aria-pressed="${who === 'all'}">${esc(CAL_WHO_ALL)}</button>
-      ${calWhoOptions().map((o) => `
-        <button class="chip${who === o.id ? ' on' : ''}" data-calfilter="${esc(o.id)}"
-          aria-pressed="${who === o.id}">${esc(o.label)}</button>`).join('')}
+      ${calWhoOptions().map((o) => {
+        const col = calColorOf(o.id);
+        return `
+        <button class="chip calchip${who === o.id ? ' on' : ''}" data-calfilter="${esc(o.id)}"
+          aria-pressed="${who === o.id}">
+          <span class="caldot" style="background:${esc(col.dot)}"></span>${esc(o.label)}</button>`;
+      }).join('')}
     </div>`;
 
   const next30 = calAllIn(today, calAddDays(today, 45), who);
@@ -18609,13 +18732,15 @@ function screenCalendar(c) {
     ${editing ? '' : `
     <div style="margin-top:13px">${subTabs('calTab', tab, [
       { id: 'next', label: 'Coming up' },
+      { id: 'week', label: 'This week' },
       { id: 'month', label: 'The month' },
       { id: 'past', label: 'Already happened' },
     ])}</div>
 
     ${whoChips}
 
-    ${tab === 'month' ? `
+    ${tab === 'week' ? calWeekBlock(who)
+    : tab === 'month' ? `
       ${calGrid(who)}
       ${calDayBlock(sel, today, who)}
     ` : tab === 'past' ? `
@@ -18635,6 +18760,7 @@ function screenCalendar(c) {
       </div>`}
     `}
 
+    ${calFeedsBlock()}
     ${calSubscribeBlock()}
 
     ${mine ? '' : ''}
@@ -22735,6 +22861,7 @@ function normalizeChild(k) {
     checkins: k.checkins && typeof k.checkins === 'object' ? k.checkins : {},
     arrival: Array.isArray(k.arrival) ? k.arrival : [],
     photo: k.photo || '',
+    calColor: typeof k.calColor === 'string' ? k.calColor : '',
     routineInclude: Array.isArray(k.routineInclude) ? k.routineInclude : [],
     routineMode: typeof k.routineMode === 'string' ? k.routineMode : '',
     dayKind: k.dayKind && typeof k.dayKind === 'object' ? k.dayKind : null,
@@ -22788,6 +22915,7 @@ function parentPayload() {
        calendars that disagree. */
     events: store.events || [],
     deletedEventIds: store.deletedEventIds || [],
+    calFeeds: store.calFeeds || {},
     notDuplicates: store.notDuplicates || [],
     updatedAt: store.parentUpdatedAt || 0,
   }));
@@ -23091,6 +23219,9 @@ async function cloudFirstSync() {
       Array.isArray(remoteUser.events) ? remoteUser.events : [],
       store.deletedEventIds
     );
+    if (remoteUser.calFeeds && typeof remoteUser.calFeeds === 'object') {
+      store.calFeeds = Object.assign({}, remoteUser.calFeeds, store.calFeeds || {});
+    }
   }
 
   remoteKids.forEach((k) => { cloud.known[k.id] = contentKey(k); });
@@ -25119,6 +25250,16 @@ function choreLiveJobs() {
    the part that reads her actual data.
    ================================================================== */
 
+/* The colour for whoever an entry is about. Reads an explicit choice
+   off the person's record when there is one and falls back to the
+   worked out colour otherwise, which is what stops a brand new family
+   opening a grey calendar. */
+function calColorOf(who) {
+  if (who === 'me') return calColorFor('me', (store.parent || {}).calColor);
+  const k = (store.children || []).filter((x) => x.id === who)[0];
+  return calColorFor(who, k ? k.calColor : '');
+}
+
 function calEvents() {
   return Array.isArray(store.events) ? store.events : [];
 }
@@ -25215,7 +25356,18 @@ function calFeedVaccines(fromDate, toDate) {
     const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
     const months = sum && sum.age ? sum.age.totalMonths : null;
     if (months === null) return;
-    const next = vaxNextUp(months, vaxRecord(k), vaxSkipped(k));
+    /* THE GATE SHE ASKED FOR.
+
+       A family that has never touched the vaccine record has told the
+       app nothing, and the app does not get to guess. One recorded
+       dose, or one series marked as not being given, is a family
+       saying they are tracking this. Either counts. Until then this
+       feed is silent for that child. */
+    const rec = vaxRecord(k);
+    const started = Object.keys(rec || {}).length > 0 || vaxSkipped(k).length > 0;
+    if (!started) return;
+
+    const next = vaxNextUp(months, rec, vaxSkipped(k));
     if (!next) return;
     /* The date the dose becomes due, counted from their birthday,
        which is the only honest way to place it on a square. */
@@ -25295,14 +25447,49 @@ function calFeedCycle(fromDate, toDate) {
 
 /* Everything the app knows, for a window of days. Kept behind one
    function so a screen never has to remember which feeds exist. */
+function calFeedPrefs() {
+  return (store.calFeeds && typeof store.calFeeds === 'object') ? store.calFeeds : {};
+}
+
 function calFeedAll(fromDate, toDate) {
+  const prefs = calFeedPrefs();
   let out = [];
-  try { out = out.concat(calFeedBirthdays(fromDate, toDate)); } catch (err) {}
-  try { out = out.concat(calFeedDue(fromDate, toDate)); } catch (err) {}
-  try { out = out.concat(calFeedVaccines(fromDate, toDate)); } catch (err) {}
-  try { out = out.concat(calFeedChores(fromDate, toDate)); } catch (err) {}
-  try { out = out.concat(calFeedCycle(fromDate, toDate)); } catch (err) {}
+  const run = (id, fn) => {
+    if (!calFeedOn(id, prefs)) return;
+    try { out = out.concat(fn(fromDate, toDate)); } catch (err) {}
+  };
+  run('birthdays', calFeedBirthdays);
+  run('due', calFeedDue);
+  run('vaccines', calFeedVaccines);
+  run('chores', calFeedChores);
+  run('cycle', calFeedCycle);
   return out;
+}
+
+/* Has any child's vaccine record been started. Drives whether that row
+   reads as a switch or as an explanation of why it is quiet. */
+function calVaxStarted() {
+  return (store.children || []).some((k) => Object.keys(vaxRecord(k) || {}).length > 0
+    || vaxSkipped(k).length > 0);
+}
+
+function calFeedsBlock() {
+  const prefs = calFeedPrefs();
+  const vaxLive = calVaxStarted();
+  return `
+  <div class="card flat" style="margin-top:14px">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(CAL_FEEDS_TITLE)}</p>
+    <p class="tiny" style="margin-top:6px">${esc(CAL_FEEDS_INTRO)}</p>
+    ${CAL_FEEDS.map((f) => {
+      const on = calFeedOn(f.id, prefs);
+      const quiet = f.id === 'vaccines' && !vaxLive;
+      return `
+      <div style="margin-top:11px">
+        ${tickRow(on && !quiet, f.label, quiet ? CAL_VAX_OFF : f.hint,
+          quiet ? '' : 'data-calfeed="' + esc(f.id) + '"')}
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 
 /* Her own entries, expanded across repeats, for the same window. */
