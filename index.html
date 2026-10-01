@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-01 19:20">
+<meta name="rsg-build" content="2026-10-01 22:01">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1745,6 +1745,28 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 .fcchip{display:inline-flex;align-items:center;gap:6px}
 .fcchip .fcdot{width:8px;height:8px;border-radius:50%;flex:none;display:block}
 
+/* ==================================================================
+   LISTS
+
+   A ticked thing goes grey and sinks, it does not disappear. Half the
+   use of a shopping list is seeing what is already in the trolley.
+   ================================================================== */
+.listadd{display:flex;gap:8px;align-items:center;margin:4px 0 12px}
+.listadd .inp{flex:1;min-width:0}
+.listbox{background:var(--surface);border:1px solid var(--line2);border-radius:14px;overflow:hidden}
+.listrow{display:flex;align-items:center;gap:11px;width:100%;text-align:left;appearance:none;
+  border:0;background:transparent;padding:11px 12px;cursor:pointer;font-size:14.5px;
+  color:var(--ink);border-bottom:1px solid var(--line2);line-height:1.35}
+.listrow:last-child{border-bottom:0}
+.listrow:hover{background:var(--leaf3)}
+.listrow.done{color:var(--faint)}
+.listrow.done .grow{text-decoration:line-through}
+.listbox-t{width:21px;height:21px;min-width:21px;border-radius:7px;border:2px solid var(--line);
+  display:grid;place-items:center;flex:none;transition:background .12s}
+.listrow.done .listbox-t{background:var(--sage);border-color:var(--sage)}
+.listdel{font-size:19px;line-height:1;color:var(--faint);padding:0 2px;flex:none;opacity:.55}
+.listdel:hover{opacity:1;color:#A85A44}
+
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 <!--
@@ -2046,7 +2068,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-01 19:20';
+const BUILD_STAMP = '2026-10-01 22:01';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -19528,6 +19550,72 @@ const CAL_WHO_HOUSE = 'The whole house';
 const CAL_WHO_HOUSE_ID = 'house';
 const CAL_ADD_HELP = 'Who it is about decides whose profile it shows up on, and nothing more. It stays on this '
     + 'calendar either way.';
+const LISTS_TITLE = 'Lists';
+const LISTS_SUB = 'Groceries, what to pack, what to ask at the appointment. Shared with everybody in the house and '
+    + 'with nobody outside it.';
+const LISTS_EMPTY = {
+    title: 'No lists yet',
+    body: 'Start with the one you would otherwise be keeping in your head or in a text message to '
+        + 'yourself. Groceries is the usual first one.',
+};
+const LISTS_EMPTY_ONE = 'Nothing on this list yet.';
+const LIST_STARTERS = [
+    {
+        id: 'grocery',
+        name: 'Groceries',
+        icon: 'bag',
+        hint: 'The one everybody needs. Add as you run out rather than the night before.',
+        items: ['Milk', 'Bread', 'Eggs', 'Nappies or pull ups', 'Fruit'],
+    },
+    {
+        id: 'ask',
+        name: 'Ask at the appointment',
+        icon: 'note',
+        hint: 'Everything you think of at 2am and forget in the room. Worth more than you expect.',
+        items: ['The thing I keep meaning to mention', 'Is this normal for their age',
+            'Anything about sleep'],
+    },
+    {
+        id: 'pack',
+        name: 'What to pack',
+        icon: 'bag',
+        hint: 'For a day out, a night away, or the hospital. Keep it and reuse it.',
+        items: ['Spare clothes', 'Snacks', 'Water', 'Something to do in the car'],
+    },
+    {
+        id: 'wish',
+        name: 'Wish list',
+        icon: 'star',
+        hint: 'What they actually want, kept somewhere you can find it in December.',
+        items: [],
+    },
+];
+const LISTS_START_HELP = 'Pick one to start with, or make your own. Everything on them can be changed or deleted.';
+const LIST_NEW_NAME = 'What is this list for';
+const LIST_NEW_PLACEHOLDER = 'Groceries, party, school run';
+const LIST_ADD_PLACEHOLDER = 'Add something';
+const LIST_TICKED_NOTE = 'Ticked things drop to the bottom and stay there until you clear them, so you can see what you '
+    + 'already have.';
+const LIST_CLEAR = 'Clear the ticked ones';
+const LIST_DELETE_ASK = 'Delete this whole list and everything on it. This cannot be undone.';
+function listCountLine(items) {
+    const all = (items || []).length;
+    if (!all)
+        return 'Nothing on it yet';
+    const left = (items || []).filter((x) => !x.done).length;
+    if (!left)
+        return 'All ' + all + ' done';
+    return left + ' to go' + (all - left ? ', ' + (all - left) + ' done' : '');
+}
+function listSort(items) {
+    return (items || []).slice().sort((a, b) => {
+        if (!!a.done !== !!b.done)
+            return a.done ? 1 : -1;
+        return (Number(a.at) || 0) - (Number(b.at) || 0);
+    });
+}
+const LISTS_PRIVACY = 'Lists are shared with everybody signed in to this house and with nobody else. They are never '
+    + 'posted, never shown in the community, and nothing on them reaches another family.';
 const FEED_STATUS = {
     live: 'live',
     held: 'held',
@@ -30714,6 +30802,9 @@ const FIND_INDEX = [
         words: 'calendar appointment appointments schedule diary dentist doctor visit booking '
             + 'reminder remind due date birthday week month plan agenda event what is coming up',
         go: { screen: 'calendar' } },
+    { title: 'Lists',
+        words: 'list lists grocery groceries shopping to do todo pack packing wish list what to ask appointment questions shared checklist',
+        go: { screen: 'lists' } },
 ];
 function findNorm(s) {
     return String(s || '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
@@ -49139,6 +49230,14 @@ const store = {
     calNote: '',
     calFeeds: {},
     calWeekShift: 0,
+    lists: [],
+    deletedListIds: [],
+    listOpen: '',
+    listNewOpen: false,
+    listDraftName: '',
+    listDraftWho: '',
+    listDraftItem: '',
+    listAskDel: '',
     choreTab: 'today',
     choreDay: null,
     chorePick: null,
@@ -49258,7 +49357,7 @@ const state = {};
     'tab', 'view', 'undGroup', 'lensBand', 'feedTab', 'outTab', 'safetyTab',
     'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'sexedTab',
     'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab', 'crTab', 'calTab',
-    'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift',
+    'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift', 'lists', 'deletedListIds', 'listOpen',
     'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
     Object.defineProperty(state, key, {
         enumerable: true,
@@ -49313,6 +49412,8 @@ function flushStore() {
             events: store.events,
             deletedEventIds: store.deletedEventIds,
             calFeeds: store.calFeeds,
+            lists: store.lists,
+            deletedListIds: store.deletedListIds,
             notDuplicates: store.notDuplicates,
             parentUpdatedAt: store.parentUpdatedAt,
         }));
@@ -49373,6 +49474,8 @@ function loadStore() {
         store.deletedChildIds = Array.isArray(saved.deletedChildIds) ? saved.deletedChildIds : [];
         store.events = Array.isArray(saved.events) ? saved.events : [];
         store.calFeeds = (saved.calFeeds && typeof saved.calFeeds === 'object') ? saved.calFeeds : {};
+        store.lists = Array.isArray(saved.lists) ? saved.lists : [];
+        store.deletedListIds = Array.isArray(saved.deletedListIds) ? saved.deletedListIds : [];
         store.deletedEventIds = Array.isArray(saved.deletedEventIds) ? saved.deletedEventIds : [];
         store.notDuplicates = Array.isArray(saved.notDuplicates) ? saved.notDuplicates : [];
         store.parentUpdatedAt = Number(saved.parentUpdatedAt) || 0;
@@ -50267,6 +50370,8 @@ function render() {
         html = screenInstall();
     else if (v && v.type === 'screen' && v.id === 'calendar')
         html = screenCalendar(c);
+    else if (v && v.type === 'screen' && v.id === 'lists')
+        html = screenLists(c);
     else if (v && v.type === 'screen' && v.id === 'chores')
         html = screenChores();
     else if (v && v.type === 'screen' && v.id === 'learning')
@@ -50613,6 +50718,13 @@ function initControls() {
                 flushStore();
             }
         }
+        else if (e.target.matches('[data-listfield]')) {
+            store['listDraft' + e.target.dataset.listfield.charAt(0).toUpperCase()
+                + e.target.dataset.listfield.slice(1)] = e.target.value;
+        }
+        else if (e.target.matches('[data-listadd]')) {
+            store.listDraftItem = e.target.value;
+        }
         else if (e.target.matches('[data-calfield]')) {
             calDraft()[e.target.dataset.calfield] = e.target.value;
         }
@@ -50821,6 +50933,11 @@ function initControls() {
                 doSignIn();
             return;
         }
+        if (e.target.id === 'list_item' && e.key === 'Enter') {
+            e.preventDefault();
+            listPush(e.target.dataset.listadd);
+            return;
+        }
         if (e.target.id === 'findQ' && e.key === 'Enter') {
             e.preventDefault();
             if ((state.findQ || '').trim()) {
@@ -50854,7 +50971,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -51443,6 +51560,101 @@ function initControls() {
                 store.calShift = -24;
             if (store.calShift > 24)
                 store.calShift = 24;
+        }
+        else if (t.dataset.listnew) {
+            store.listNewOpen = true;
+            store.listDraftName = '';
+            store.listDraftWho = CAL_WHO_HOUSE_ID;
+        }
+        else if (t.dataset.listcancel) {
+            store.listNewOpen = false;
+            store.listDraftName = '';
+        }
+        else if (t.dataset.listwho) {
+            store.listDraftWho = t.dataset.listwho;
+        }
+        else if (t.dataset.listmake) {
+            const name = String(store.listDraftName || '').trim();
+            if (!name)
+                return;
+            const made = listNew(name, store.listDraftWho || CAL_WHO_HOUSE_ID, []);
+            store.lists = listsAll().concat([made]);
+            store.listNewOpen = false;
+            store.listDraftName = '';
+            store.listOpen = made.id;
+            listsSave();
+            return;
+        }
+        else if (t.dataset.liststart) {
+            const st = LIST_STARTERS.filter((x) => x.id === t.dataset.liststart)[0];
+            if (!st)
+                return;
+            const made = listNew(st.name, CAL_WHO_HOUSE_ID, st.items);
+            store.lists = listsAll().concat([made]);
+            store.listOpen = made.id;
+            listsSave();
+            return;
+        }
+        else if (t.dataset.listopen) {
+            store.listOpen = t.dataset.listopen;
+            store.listDraftItem = '';
+            window.scrollTo(0, 0);
+        }
+        else if (t.dataset.listclose) {
+            store.listOpen = '';
+            store.listAskDel = '';
+        }
+        else if (t.dataset.listpush) {
+            listPush(t.dataset.listpush);
+            return;
+        }
+        else if (t.dataset.listdelitem) {
+            const l = listById(t.dataset.listdelitem);
+            if (!l)
+                return;
+            l.items = (l.items || []).filter((x) => x.id !== t.dataset.item);
+            l.updatedAt = Date.now();
+            listsSave();
+            return;
+        }
+        else if (t.dataset.listtick) {
+            const l = listById(t.dataset.listtick);
+            if (!l)
+                return;
+            const it = (l.items || []).filter((x) => x.id === t.dataset.item)[0];
+            if (!it)
+                return;
+            it.done = !it.done;
+            l.updatedAt = Date.now();
+            listsSave();
+            return;
+        }
+        else if (t.dataset.listclear) {
+            const l = listById(t.dataset.listclear);
+            if (!l)
+                return;
+            l.items = (l.items || []).filter((x) => !x.done);
+            l.updatedAt = Date.now();
+            listsSave();
+            return;
+        }
+        else if (t.dataset.listaskdel) {
+            store.listAskDel = t.dataset.listaskdel;
+        }
+        else if (t.dataset.listnodel) {
+            store.listAskDel = '';
+        }
+        else if (t.dataset.listdel) {
+            const id = t.dataset.listdel;
+            store.lists = listsAll().filter((x) => x.id !== id);
+            if (!Array.isArray(store.deletedListIds))
+                store.deletedListIds = [];
+            if (store.deletedListIds.indexOf(id) === -1)
+                store.deletedListIds.push(id);
+            store.listOpen = '';
+            store.listAskDel = '';
+            listsSave();
+            return;
         }
         else if (t.dataset.calstep) {
             store.calDay = t.dataset.calstep === 'today'
@@ -64247,6 +64459,170 @@ function calSubscribeBlock() {
       update, and this is where it will be.</p>` : ''}
   </div>`;
 }
+function listsAll() {
+    return Array.isArray(store.lists) ? store.lists : [];
+}
+function listById(id) {
+    return listsAll().filter((l) => l.id === id)[0] || null;
+}
+function listNew(name, who, items) {
+    return {
+        id: 'l' + Date.now() + Math.floor(Math.random() * 1000),
+        name: String(name || '').trim() || 'List',
+        who: who || CAL_WHO_HOUSE_ID,
+        items: (items || []).map((t, i) => ({
+            id: 'i' + Date.now() + i + Math.floor(Math.random() * 1000),
+            text: String(t), done: false, at: Date.now() + i,
+        })),
+        createdAt: new Date().toISOString(),
+        updatedAt: Date.now(),
+    };
+}
+function listPush(id) {
+    const l = listById(id);
+    const text = String(store.listDraftItem || '').trim();
+    if (!l || !text)
+        return;
+    l.items = (l.items || []).concat([{
+            id: 'i' + Date.now() + Math.floor(Math.random() * 1000),
+            text: text, done: false, at: Date.now(),
+        }]);
+    l.updatedAt = Date.now();
+    store.listDraftItem = '';
+    listsSave();
+    setTimeout(() => {
+        const box = document.getElementById('list_item');
+        if (box)
+            box.focus();
+    }, 0);
+}
+function listsSave() {
+    store.parentUpdatedAt = Date.now();
+    flushStore();
+    render();
+}
+function screenLists(c) {
+    const open = store.listOpen ? listById(store.listOpen) : null;
+    if (open)
+        return listsOneScreen(open);
+    const all = listsAll();
+    return `
+  ${cornerLeaves()}
+  <div class="sc-head tight">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(LISTS_TITLE)}</h1>
+    <p class="sub">${esc(LISTS_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${store.listNewOpen ? `
+    <div class="card" style="margin-bottom:10px">
+      <p class="eyebrow">${esc(LIST_NEW_NAME)}</p>
+      <input class="inp" type="text" id="list_name" data-listfield="name"
+        value="${esc(store.listDraftName || '')}" placeholder="${esc(LIST_NEW_PLACEHOLDER)}"
+        autocomplete="off" style="margin-top:7px;width:100%" />
+      <p class="eyebrow" style="margin-top:11px">Who is it about</p>
+      <div class="chips" style="margin:7px 0 2px">
+        ${calWhoOptions().map((o) => {
+        const col = calColorOf(o.id);
+        const on = (store.listDraftWho || CAL_WHO_HOUSE_ID) === o.id;
+        return `<button class="chip fcchip${on ? ' on' : ''}" data-listwho="${esc(o.id)}"
+            aria-pressed="${on}">
+            <span class="fcdot" style="background:${esc(col.dot)}"></span>${esc(o.label)}</button>`;
+    }).join('')}
+      </div>
+      <div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn" style="flex:1 1 120px" data-listmake="1">
+          ${icon('check', 15, '#fff')} Make it</button>
+        <button class="btn ghost" style="flex:1 1 90px" data-listcancel="1">Cancel</button>
+      </div>
+    </div>` : `
+    <button class="btn" style="width:100%" data-listnew="1">
+      ${icon('plus', 15, '#fff')} New list</button>`}
+    ${all.length ? all.map((l) => {
+        const col = calColorOf(l.who);
+        return `
+      <button class="lrow" data-listopen="${esc(l.id)}" style="align-items:center;margin-top:8px">
+        <span class="licon" style="background:${esc(col.soft)}">${icon('note', 17, col.ink)}</span>
+        <span class="grow">
+          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(l.name)}</span>
+          <span class="tiny" style="display:block;margin-top:2px">${esc(listCountLine(l.items))}
+            ${l.who && l.who !== CAL_WHO_HOUSE_ID ? ' &middot; ' + esc(calWhoName(l.who)) : ''}</span>
+        </span>
+        <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+      </button>`;
+    }).join('') : `
+    <div class="card flat" style="margin-top:12px">
+      <p class="eyebrow">${esc(LISTS_EMPTY.title)}</p>
+      <p class="bodytext" style="margin-top:6px">${esc(LISTS_EMPTY.body)}</p>
+    </div>`}
+    ${''}
+    ${all.length < 3 ? `
+    <p class="sect" style="margin-top:18px">Ready made</p>
+    <p class="tiny" style="margin:0 0 8px">${esc(LISTS_START_HELP)}</p>
+    ${LIST_STARTERS.filter((st) => !all.some((l) => l.name === st.name)).map((st) => `
+      <button class="lrow" data-liststart="${esc(st.id)}" style="align-items:flex-start;margin-top:7px">
+        <span class="licon">${icon(st.icon, 17)}</span>
+        <span class="grow">
+          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(st.name)}</span>
+          <span class="tiny" style="display:block;margin-top:2px">${esc(st.hint)}</span>
+        </span>
+        <span class="chev">${icon('plus', 15, 'var(--sage)')}</span>
+      </button>`).join('')}` : ''}
+    <p class="disclaimer">${esc(LISTS_PRIVACY)}</p>
+  </div>`;
+}
+function listsOneScreen(l) {
+    const col = calColorOf(l.who);
+    const items = listSort(l.items);
+    const doneCount = (l.items || []).filter((x) => x.done).length;
+    return `
+  ${cornerLeaves()}
+  <div class="sc-head tight">
+    <button class="back" data-listclose="1">${icon('back', 15, 'var(--deep)')} All lists</button>
+    <h1 class="title sm">${esc(l.name)}</h1>
+    ${''}
+    <p class="sub">
+      <span class="fcdot" style="background:${esc(col.dot)};display:inline-block;
+        width:9px;height:9px;border-radius:50%;margin-right:6px"></span>${esc(listCountLine(l.items))}${l.who && l.who !== CAL_WHO_HOUSE_ID
+        ? ', ' + esc(calWhoName(l.who)) : ''}</p>
+  </div>
+  <div class="sc">
+    ${''}
+    <div class="listadd">
+      <input class="inp" type="text" id="list_item" data-listadd="${esc(l.id)}"
+        value="${esc(store.listDraftItem || '')}" placeholder="${esc(LIST_ADD_PLACEHOLDER)}"
+        autocomplete="off" />
+      <button class="caladd fcadd" data-listpush="${esc(l.id)}" aria-label="Add to the list">
+        ${icon('plus', 18, '#fff')}</button>
+    </div>
+    ${items.length ? `<div class="listbox">${items.map((it) => `
+      <button class="listrow${it.done ? ' done' : ''}" data-listtick="${esc(l.id)}"
+        data-item="${esc(it.id)}">
+        <span class="listbox-t" style="${it.done ? '' : 'border-color:' + esc(col.dot)}">
+          ${it.done ? icon('check', 12, '#fff') : ''}</span>
+        <span class="grow">${esc(it.text)}</span>
+        <span class="listdel" data-listdelitem="${esc(l.id)}" data-item="${esc(it.id)}"
+          aria-label="Remove">&times;</span>
+      </button>`).join('')}</div>` : `
+      <p class="fcwd-none" style="padding:10px 2px">${esc(LISTS_EMPTY_ONE)}</p>`}
+    ${doneCount ? `
+      <p class="tiny" style="margin-top:10px">${esc(LIST_TICKED_NOTE)}</p>
+      <button class="btn ghost sm" style="width:100%;margin-top:8px" data-listclear="${esc(l.id)}">
+        ${esc(LIST_CLEAR)} (${doneCount})</button>` : ''}
+    ${store.listAskDel === l.id ? `
+    <div class="card" style="border-color:var(--attention);margin-top:14px">
+      <p class="eyebrow" style="color:#A85A44">Delete ${esc(l.name)}</p>
+      <p class="bodytext" style="margin-top:6px">${esc(LIST_DELETE_ASK)}</p>
+      <div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap">
+        <button class="btn ghost sm" style="flex:1 1 110px" data-listnodel="1">Keep it</button>
+        <button class="btn sm" style="flex:1 1 110px;background:#A85A44;border-color:#A85A44"
+          data-listdel="${esc(l.id)}">Delete for good</button>
+      </div>
+    </div>` : `
+    <button class="btn ghost sm" style="width:100%;margin-top:16px;color:#A85A44"
+      data-listaskdel="${esc(l.id)}">Delete this list</button>`}
+  </div>`;
+}
 function screenCalendar(c) {
     const today = calToday();
     const who = store.calWho || 'all';
@@ -64320,6 +64696,21 @@ function screenCalendar(c) {
             }
             return days.map((d) => calDayBlock(d, today, who)).join('');
         })()}
+    ${(() => {
+        const n = listsAll().length;
+        const left = listsAll().reduce((a, l) => a + (l.items || []).filter((x) => !x.done).length, 0);
+        return `
+      <button class="lrow" data-go="screen" data-id="lists" style="align-items:center;margin-top:14px">
+        <span class="licon">${icon('note', 17)}</span>
+        <span class="grow">
+          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(LISTS_TITLE)}</span>
+          <span class="tiny" style="display:block;margin-top:2px">${n
+            ? esc(n + (n === 1 ? ' list, ' : ' lists, ') + left + ' thing' + (left === 1 ? '' : 's') + ' to get')
+            : 'Groceries, what to pack, what to ask at the appointment'}</span>
+        </span>
+        <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+      </button>`;
+    })()}
     ${calFeedsBlock()}
     ${calSubscribeBlock()}
     <p class="disclaimer">Nothing on this calendar is shared outside your house, and nothing here
@@ -67647,6 +68038,8 @@ function parentPayload() {
         events: store.events || [],
         deletedEventIds: store.deletedEventIds || [],
         calFeeds: store.calFeeds || {},
+        lists: store.lists || [],
+        deletedListIds: store.deletedListIds || [],
         notDuplicates: store.notDuplicates || [],
         updatedAt: store.parentUpdatedAt || 0,
     }));
@@ -67884,6 +68277,8 @@ async function cloudFirstSync() {
         if (remoteUser.calFeeds && typeof remoteUser.calFeeds === 'object') {
             store.calFeeds = Object.assign({}, remoteUser.calFeeds, store.calFeeds || {});
         }
+        store.deletedListIds = mergeDeletedIds(store.deletedListIds, Array.isArray(remoteUser.deletedListIds) ? remoteUser.deletedListIds : []);
+        store.lists = mergeEvents(store.lists, Array.isArray(remoteUser.lists) ? remoteUser.lists : [], store.deletedListIds);
     }
     remoteKids.forEach((k) => { cloud.known[k.id] = contentKey(k); });
     if (remoteUser)
