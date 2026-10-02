@@ -1147,7 +1147,7 @@ const store = {
   calShift: 0,
   calWho: 'all',
   calDay: null,
-  calTab: 'day',
+  calTab: 'week',
   calEdit: null,
   calOpen: '',
   calSubOpen: false,
@@ -2933,19 +2933,33 @@ function render() {
     postCaret = null;
   } else if (keepId) restoreFocus(keepId, keepStart, keepEnd);
 
+  /* ICONS ONLY, AND TIGHTER.
+
+     6 tabs with words under them do not fit across her phone, which
+     she had to tell me after I measured the buttons and declared there
+     was room. The buttons fit. The WORDS did not, and I measured the
+     wrong thing.
+
+     The label is still there for anybody using a screen reader, it is
+     just not drawn. An icon row at the bottom of a phone is a pattern
+     nobody needs teaching, and the selected one is marked twice, by
+     colour and by the bar underneath, so it never depends on colour
+     alone. */
   document.getElementById('tabs').innerHTML = tabList().map((t) => {
     const on = state.tab === t.id && !state.view;
     if (t.center) {
       return `
-      <button class="tab center${on ? ' on' : ''}" role="tab" data-tab="${t.id}" aria-selected="${on}">
+      <button class="tab center${on ? ' on' : ''}" role="tab" data-tab="${t.id}"
+        aria-selected="${on}" aria-label="${esc(t.label)}" title="${esc(t.label)}">
         <span class="tabdisc">${icon(t.icon, 21, '#fff')}</span>
-        <span>${t.label}</span>
+        <span class="sronly">${esc(t.label)}</span>
       </button>`;
     }
     return `
-    <button class="tab" role="tab" data-tab="${t.id}" aria-selected="${on}">
-      ${icon(t.icon, 20, on ? 'var(--deep)' : 'var(--muted)')}
-      <span>${t.label}</span><span class="dot"></span>
+    <button class="tab" role="tab" data-tab="${t.id}" aria-selected="${on}"
+      aria-label="${esc(t.label)}" title="${esc(t.label)}">
+      ${icon(t.icon, 22, on ? 'var(--deep)' : 'var(--muted)')}
+      <span class="sronly">${esc(t.label)}</span><span class="dot"></span>
     </button>`;
   }).join('');
 
@@ -3312,7 +3326,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3732,6 +3746,27 @@ function initControls() {
       store.calShift = v === '0' ? 0 : (Number(store.calShift) || 0) + Number(v);
       if (store.calShift < -24) store.calShift = -24;
       if (store.calShift > 24) store.calShift = 24;
+    } else if (t.dataset.calgoday) {
+      store.calDay = t.dataset.calgoday;
+      store.calTab = 'day';
+      store.calWho = 'all';
+      state.view = null;
+      state.tab = 'calendar';
+      window.scrollTo(0, 0);
+    } else if (t.dataset.caljump) {
+      store.calWho = t.dataset.caljump;
+      store.calTab = 'day';
+      store.calDay = calToday();
+      state.view = null;
+      state.tab = 'calendar';
+      window.scrollTo(0, 0);
+    } else if (t.dataset.caladdfor) {
+      store.calEdit = calNewEvent();
+      store.calEdit.who = t.dataset.caladdfor;
+      store.calEdit.remind = calKind(store.calEdit.kind).remind;
+      state.view = null;
+      state.tab = 'calendar';
+      window.scrollTo(0, 0);
     } else if (t.dataset.listnew) {
       store.listNewOpen = true;
       store.listDraftName = '';
@@ -19083,6 +19118,146 @@ function listsSave() {
    rather than 2 because a list is a small thing and bouncing through a
    router to tick milk off is silly.
    ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------
+   ONE PERSON'S DAY, ON THEIR OWN PROFILE
+
+   Her design, and it is the right one. The calendar tab is the
+   house's: everybody, the whole week. A child's profile carries only
+   that child's day, hour by hour, because that is what you want when
+   you have opened THEM rather than opened the calendar.
+
+   It is the same timeline the calendar draws, filtered to 1 person and
+   shortened: today only, no view switcher, no filter chips, no month.
+   Tapping it opens the full calendar already filtered to them.
+
+   It does not render at all on a day with nothing on it. A grid of
+   empty hours on a toddler's profile is furniture.
+   ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------
+   THE WHOLE HOUSE'S WEEK, ON HER PROFILE
+
+   Her words: all of ours on my profile, for the week of what is to
+   come. So her profile carries everybody, not just her. That is the
+   one place in the app where that is right, because she is the one
+   holding the whole week in her head and the app should hold it for
+   her instead.
+
+   The children's profiles carry only their own day, which is the
+   other half of the same idea.
+   ------------------------------------------------------------------ */
+function profileWeekBlock() {
+  const today = calToday();
+  const days = calWeekOf(today);
+  const byDay = {};
+  calAllIn(days[0], days[6], 'all').forEach((e) => {
+    if (!byDay[e.date]) byDay[e.date] = [];
+    byDay[e.date].push(e);
+  });
+  const total = Object.keys(byDay).reduce((n, k) => n + byDay[k].length, 0);
+  if (!total) return '';
+
+  return `
+  <p class="sect" style="margin-top:18px">This week, everybody</p>
+  <div class="pdaybox">
+    <div class="fcweek">
+      ${days.map((d) => {
+        const list = byDay[d] || [];
+        const p = calParse(d);
+        const past = d < today;
+        return `
+        <button class="fcwd${d === today ? ' today' : ''}${past ? ' gone' : ''}"
+          data-calgoday="${esc(d)}">
+          <span class="fcwd-h">
+            <span class="fcwd-d">${esc(CAL_DOW[p.getDay()])}</span>
+            <span class="fcwd-n">${p.getDate()}</span>
+          </span>
+          <span class="fcwd-b">
+            ${list.length ? list.slice(0, 4).map(calChipEl).join('')
+              + (list.length > 4 ? `<span class="fcmore">and ${list.length - 4} more</span>` : '')
+              : '<span class="fcwd-free"></span>'}
+          </span>
+        </button>`;
+      }).join('')}
+    </div>
+    <button class="chip" style="margin-top:10px" data-tab="calendar">
+      ${icon('calendar', 12, 'var(--deep)')} The whole calendar</button>
+  </div>`;
+}
+
+function profileDayBlock(whoId) {
+  const today = calToday();
+  const list = calOnDay(today, whoId);
+  if (!list.length) return '';
+
+  const col = calColorOf(whoId);
+  const timed = list.filter((e) => calSpan(e));
+  const allDay = list.filter((e) => !calSpan(e));
+  const name = calWhoName(whoId);
+
+  /* No hours worth drawing means no grid worth drawing. 3 all day
+     things read better as 3 lines than as labels floating beside an
+     empty timeline. */
+  if (!timed.length) {
+    return `
+    <p class="sect" style="margin-top:18px">${esc(name === 'You' ? 'Your day' : name + "'s day")}</p>
+    <div class="pdaybox">
+      ${allDay.map((e) => calChipEl(e)).join('')}
+      <button class="chip" style="margin-top:9px" data-caljump="${esc(whoId)}">
+        ${icon('calendar', 12, 'var(--deep)')} The whole calendar</button>
+    </div>`;
+  }
+
+  const range = calHourRange(timed);
+  const hours = [];
+  for (let h = range.from; h <= range.to; h += 1) hours.push(h);
+  const px = 40;
+
+  return `
+  <p class="sect" style="margin-top:18px">${esc(name === 'You' ? 'Your day' : name + "'s day")}</p>
+  <div class="pdaybox">
+    ${allDay.length ? `<div class="pday-ad">${allDay.map(calChipEl).join('')}</div>` : ''}
+    <div class="fctl pday">
+      <div class="fctl-scroll">
+        <div class="fctl-b" style="height:${(range.to - range.from) * px}px">
+          <div class="fctl-gut">
+            ${hours.map((h, i) => `
+              <span class="fctl-hr" style="top:${i * px}px">${esc(calHourLabel(h))}</span>`).join('')}
+          </div>
+          <div class="fctl-col today">
+            ${hours.map((h, i) => `<span class="fctl-line" style="top:${i * px}px"></span>`).join('')}
+            ${calNowLine(range, px)}
+            ${calLayout(timed).map((item) => {
+              const e = item.ev;
+              const c2 = calColorOf(e.who);
+              const reading = e.from === 'app';
+              const top = ((item.start / 60) - range.from) * px;
+              const h = Math.max(17, ((item.end - item.start) / 60) * px - 2);
+              const w = 100 / item.cols;
+              return `
+              <button class="fctl-ev${reading ? ' soft' : ''}"
+                ${reading ? (e.go ? `data-calgo="${esc(JSON.stringify(e.go))}"` : 'disabled')
+                          : `data-calopen="${esc(e.id)}"`}
+                style="top:${top}px;height:${h}px;left:${item.col * w}%;width:calc(${w}% - 3px);
+                  ${reading ? 'color:' + esc(c2.ink) + ';border-color:' + esc(c2.dot)
+                            : 'background:' + esc(c2.dot)}">
+                <span class="fctl-t">${esc(calTimeLabel(e.time))}</span>
+                <span class="fctl-n">${esc(e.title)}</span>
+              </button>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap">
+      <button class="chip" data-caljump="${esc(whoId)}">
+        ${icon('calendar', 12, 'var(--deep)')} The whole calendar</button>
+      <button class="chip" data-caladdfor="${esc(whoId)}">
+        ${icon('plus', 12, 'var(--deep)')} Add something</button>
+    </div>
+  </div>`;
+}
+
 function screenLists(c) {
   const open = store.listOpen ? listById(store.listOpen) : null;
   if (open) return listsOneScreen(open);
@@ -19229,7 +19404,16 @@ function screenCalendar(c) {
      Part of why this did not read as a calendar is that the first
      thing it showed was an agenda. A calendar app that opens on a list
      is a list app. */
-  const tab = store.calTab || 'day';
+  /* HER CALL, AND THE RIGHT ONE.
+
+     The calendar tab is the HOUSE's screen, so it opens on the whole
+     family's week. Each child's own day lives on their own profile,
+     which is the rule she set for everything else in this app and
+     which I should have followed here from the start.
+
+     3 views, not 5. Day, Week, Month, List and Past was a settings
+     menu to read before you could see your own week. */
+  const tab = store.calTab || 'week';
   const sel = store.calDay || today;
   const editing = !!store.calEdit;
 
@@ -19258,7 +19442,15 @@ function screenCalendar(c) {
      row, and both chip rows scroll sideways instead of wrapping. The
      grid now starts within a thumb's reach of the top. */
   return `
-  ${cornerLeaves()}
+  ${/* THE LEAVES COME OFF THIS ONE PAGE.
+
+        They are right everywhere else and they are wrong behind a
+        grid. A page you read can have things drifting behind the
+        words. A page you scan needs the background to shut up, or
+        every leaf reads as a mark on the calendar. Only this screen
+        and only this screen. */''}
+  ${pageHeader()}
+  <div class="calmquiet"></div>
   <div class="sc-head tight">
     <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
   </div>
@@ -19266,9 +19458,8 @@ function screenCalendar(c) {
 
     <div class="fcviewbar">
       <div class="fcscroll">
-        ${[{ id: 'day', label: 'Day' }, { id: 'week', label: 'Week' },
-           { id: 'month', label: 'Month' }, { id: 'next', label: 'List' },
-           { id: 'past', label: 'Past' }].map((t) => `
+        ${[{ id: 'week', label: 'Week' }, { id: 'day', label: 'Day' },
+           { id: 'month', label: 'Month' }].map((t) => `
           <button class="chip${tab === t.id ? ' on' : ''}" data-sub="calTab" data-val="${esc(t.id)}"
             aria-pressed="${tab === t.id}">${esc(t.label)}</button>`).join('')}
       </div>
@@ -19330,6 +19521,15 @@ function screenCalendar(c) {
         <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
       </button>`;
     })()}
+
+    ${tab === 'next' || tab === 'past' ? '' : `
+    <div class="chips" style="margin-top:14px">
+      <button class="chip" data-sub="calTab" data-val="next">Everything coming up</button>
+      <button class="chip" data-sub="calTab" data-val="past">Already happened</button>
+    </div>`}
+    ${tab === 'next' || tab === 'past' ? `
+    <button class="chip" style="margin-top:12px" data-sub="calTab" data-val="week">
+      Back to the week</button>` : ''}
 
     ${calFeedsBlock()}
     ${calSubscribeBlock()}
@@ -20485,6 +20685,12 @@ function screenMyProfile() {
       <button class="chip" style="margin-top:9px" data-feed="errok">Close</button>
     </div>` : ''}
 
+    ${/* THE WHOLE HOUSE'S WEEK, which is what she asked for. Not just
+          hers: she is the one carrying everybody's week, so her
+          profile carries everybody's week. The children's profiles
+          carry their own day. */''}
+    ${profileWeekBlock()}
+
     ${/* The box she writes in lives on Home and only on Home. This page
           is where the posts LAND, which is the whole reason they are two
           different screens. A second composer here was the same thing in
@@ -20735,7 +20941,14 @@ function screenChild(c) {
      (ciPopupHtml), so it does not need to sit at the top all day. */
   const ciHtml = body.checkin ? body.checkin() : '';
   tiles.sort((x, y) => TILE_IDS.indexOf(x.id) - TILE_IDS.indexOf(y.id));
-  const sections = ageNewCard(months, kid, first) + monthTopCard(kid) + daily + (tiles.length ? `
+  /* THEIR DAY, HIGH UP AND ONLY THEIRS.
+
+     Her design: the calendar tab is the whole house for the week, a
+     child's profile is that child for the day. It sits with the other
+     daily things rather than down in the reference half, because it
+     is the most perishable thing on the page. */
+  const sections = ageNewCard(months, kid, first) + monthTopCard(kid)
+    + (kid ? profileDayBlock(kid.id) : '') + daily + (tiles.length ? `
     <p class="sect" style="margin-top:18px">Everything about ${esc(first)}</p>
     <div class="kidtiles">${tiles.map((t) => kidTile(t.id, t.html)).join('')}</div>` : '')
     + (ciHtml ? `<p class="sect" style="margin-top:18px">How today went</p>` + ciHtml : '')

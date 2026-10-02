@@ -413,10 +413,17 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 .back{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--deep);padding:6px 2px;min-height:38px}
 
 /* ---------- TAB BAR ---------- */
-.tabs{display:flex;background:var(--surface);border-top:1px solid var(--line2);padding:7px 4px 9px;flex:none;position:relative;z-index:2}
-.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 2px;color:var(--muted);font-size:10px;font-weight:600;min-height:44px}
+/* Tighter, now there are no words to make room for. */
+.tabs{display:flex;background:var(--surface);border-top:1px solid var(--line2);padding:4px 6px 7px;flex:none;position:relative;z-index:2;gap:2px}
+/* Icons only. The words are still in the markup for screen readers,
+   they are just not drawn, which is what let 6 tabs fit across a
+   phone when 6 labelled ones would not. */
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 0 7px;
+  color:var(--muted);min-height:46px;justify-content:center}
 .tab[aria-selected="true"]{color:var(--deep)}
-.tab .dot{width:18px;height:2.5px;border-radius:2px;background:transparent;margin-top:1px}
+/* Selected is marked by the bar AND by the icon colour, never by
+   colour alone. */
+.tab .dot{width:16px;height:2.5px;border-radius:2px;background:transparent}
 .tab[aria-selected="true"] .dot{background:var(--deep)}
 
 /* HOME.
@@ -1652,7 +1659,7 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
    still frames the screen, it just stops showing through the content. */
 .fcwd{display:grid;grid-template-columns:46px 1fr;gap:9px;align-items:center;
   padding:8px 10px;border-radius:12px;min-height:46px;background:var(--surface);
-  border:1px solid var(--line2)}
+  border:1px solid var(--line2);appearance:none;cursor:pointer;text-align:left;width:100%}
 .fcwd.today{background:var(--leaf2);border-color:var(--leaf)}
 .fcwd-free{display:block;height:1px;border-top:1px dashed var(--line);opacity:.7;width:38px}
 .fcwd-h{display:flex;flex-direction:column;align-items:center;gap:1px;padding-top:1px}
@@ -1821,6 +1828,20 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 /* ---- the filter row doubles as the colour key ---- */
 .fcchip{display:inline-flex;align-items:center;gap:6px}
 .fcchip .fcdot{width:8px;height:8px;border-radius:50%;flex:none;display:block}
+
+/* One person's day, on their own profile. The same timeline the
+   calendar draws, shorter and with none of its furniture. */
+.pdaybox{background:var(--surface);border:1px solid var(--line2);border-radius:14px;padding:10px}
+.pday .fctl-scroll{overflow:hidden}
+.pday{border:0;border-radius:10px;margin:0}
+.pday .fctl-gut{width:42px;min-width:42px}
+.pday-ad{display:flex;flex-direction:column;gap:3px;margin-bottom:9px}
+/* A day already gone reads quieter than one still coming. */
+.fcwd.gone{opacity:.5}
+.fcwd:hover{border-color:var(--leaf)}
+
+/* The calendar page is the one screen with no leaves behind it. */
+.calmquiet{position:fixed;inset:0;background:var(--cream);z-index:0;pointer-events:none}
 
 /* ==================================================================
    LISTS
