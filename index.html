@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-01 22:01">
+<meta name="rsg-build" content="2026-10-02 00:17">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -336,10 +336,17 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 .back{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--deep);padding:6px 2px;min-height:38px}
 
 /* ---------- TAB BAR ---------- */
-.tabs{display:flex;background:var(--surface);border-top:1px solid var(--line2);padding:7px 4px 9px;flex:none;position:relative;z-index:2}
-.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 2px;color:var(--muted);font-size:10px;font-weight:600;min-height:44px}
+/* Tighter, now there are no words to make room for. */
+.tabs{display:flex;background:var(--surface);border-top:1px solid var(--line2);padding:4px 6px 7px;flex:none;position:relative;z-index:2;gap:2px}
+/* Icons only. The words are still in the markup for screen readers,
+   they are just not drawn, which is what let 6 tabs fit across a
+   phone when 6 labelled ones would not. */
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 0 7px;
+  color:var(--muted);min-height:46px;justify-content:center}
 .tab[aria-selected="true"]{color:var(--deep)}
-.tab .dot{width:18px;height:2.5px;border-radius:2px;background:transparent;margin-top:1px}
+/* Selected is marked by the bar AND by the icon colour, never by
+   colour alone. */
+.tab .dot{width:16px;height:2.5px;border-radius:2px;background:transparent}
 .tab[aria-selected="true"] .dot{background:var(--deep)}
 
 /* HOME.
@@ -1575,7 +1582,7 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
    still frames the screen, it just stops showing through the content. */
 .fcwd{display:grid;grid-template-columns:46px 1fr;gap:9px;align-items:center;
   padding:8px 10px;border-radius:12px;min-height:46px;background:var(--surface);
-  border:1px solid var(--line2)}
+  border:1px solid var(--line2);appearance:none;cursor:pointer;text-align:left;width:100%}
 .fcwd.today{background:var(--leaf2);border-color:var(--leaf)}
 .fcwd-free{display:block;height:1px;border-top:1px dashed var(--line);opacity:.7;width:38px}
 .fcwd-h{display:flex;flex-direction:column;align-items:center;gap:1px;padding-top:1px}
@@ -1744,6 +1751,20 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 /* ---- the filter row doubles as the colour key ---- */
 .fcchip{display:inline-flex;align-items:center;gap:6px}
 .fcchip .fcdot{width:8px;height:8px;border-radius:50%;flex:none;display:block}
+
+/* One person's day, on their own profile. The same timeline the
+   calendar draws, shorter and with none of its furniture. */
+.pdaybox{background:var(--surface);border:1px solid var(--line2);border-radius:14px;padding:10px}
+.pday .fctl-scroll{overflow:hidden}
+.pday{border:0;border-radius:10px;margin:0}
+.pday .fctl-gut{width:42px;min-width:42px}
+.pday-ad{display:flex;flex-direction:column;gap:3px;margin-bottom:9px}
+/* A day already gone reads quieter than one still coming. */
+.fcwd.gone{opacity:.5}
+.fcwd:hover{border-color:var(--leaf)}
+
+/* The calendar page is the one screen with no leaves behind it. */
+.calmquiet{position:fixed;inset:0;background:var(--cream);z-index:0;pointer-events:none}
 
 /* ==================================================================
    LISTS
@@ -2068,7 +2089,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-01 22:01';
+const BUILD_STAMP = '2026-10-02 00:17';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -49223,7 +49244,7 @@ const store = {
     calShift: 0,
     calWho: 'all',
     calDay: null,
-    calTab: 'day',
+    calTab: 'week',
     calEdit: null,
     calOpen: '',
     calSubOpen: false,
@@ -50600,15 +50621,17 @@ function render() {
         const on = state.tab === t.id && !state.view;
         if (t.center) {
             return `
-      <button class="tab center${on ? ' on' : ''}" role="tab" data-tab="${t.id}" aria-selected="${on}">
+      <button class="tab center${on ? ' on' : ''}" role="tab" data-tab="${t.id}"
+        aria-selected="${on}" aria-label="${esc(t.label)}" title="${esc(t.label)}">
         <span class="tabdisc">${icon(t.icon, 21, '#fff')}</span>
-        <span>${t.label}</span>
+        <span class="sronly">${esc(t.label)}</span>
       </button>`;
         }
         return `
-    <button class="tab" role="tab" data-tab="${t.id}" aria-selected="${on}">
-      ${icon(t.icon, 20, on ? 'var(--deep)' : 'var(--muted)')}
-      <span>${t.label}</span><span class="dot"></span>
+    <button class="tab" role="tab" data-tab="${t.id}" aria-selected="${on}"
+      aria-label="${esc(t.label)}" title="${esc(t.label)}">
+      ${icon(t.icon, 22, on ? 'var(--deep)' : 'var(--muted)')}
+      <span class="sronly">${esc(t.label)}</span><span class="dot"></span>
     </button>`;
     }).join('');
     let cpText;
@@ -50971,7 +50994,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -51560,6 +51583,30 @@ function initControls() {
                 store.calShift = -24;
             if (store.calShift > 24)
                 store.calShift = 24;
+        }
+        else if (t.dataset.calgoday) {
+            store.calDay = t.dataset.calgoday;
+            store.calTab = 'day';
+            store.calWho = 'all';
+            state.view = null;
+            state.tab = 'calendar';
+            window.scrollTo(0, 0);
+        }
+        else if (t.dataset.caljump) {
+            store.calWho = t.dataset.caljump;
+            store.calTab = 'day';
+            store.calDay = calToday();
+            state.view = null;
+            state.tab = 'calendar';
+            window.scrollTo(0, 0);
+        }
+        else if (t.dataset.caladdfor) {
+            store.calEdit = calNewEvent();
+            store.calEdit.who = t.dataset.caladdfor;
+            store.calEdit.remind = calKind(store.calEdit.kind).remind;
+            state.view = null;
+            state.tab = 'calendar';
+            window.scrollTo(0, 0);
         }
         else if (t.dataset.listnew) {
             store.listNewOpen = true;
@@ -64501,6 +64548,112 @@ function listsSave() {
     flushStore();
     render();
 }
+function profileWeekBlock() {
+    const today = calToday();
+    const days = calWeekOf(today);
+    const byDay = {};
+    calAllIn(days[0], days[6], 'all').forEach((e) => {
+        if (!byDay[e.date])
+            byDay[e.date] = [];
+        byDay[e.date].push(e);
+    });
+    const total = Object.keys(byDay).reduce((n, k) => n + byDay[k].length, 0);
+    if (!total)
+        return '';
+    return `
+  <p class="sect" style="margin-top:18px">This week, everybody</p>
+  <div class="pdaybox">
+    <div class="fcweek">
+      ${days.map((d) => {
+        const list = byDay[d] || [];
+        const p = calParse(d);
+        const past = d < today;
+        return `
+        <button class="fcwd${d === today ? ' today' : ''}${past ? ' gone' : ''}"
+          data-calgoday="${esc(d)}">
+          <span class="fcwd-h">
+            <span class="fcwd-d">${esc(CAL_DOW[p.getDay()])}</span>
+            <span class="fcwd-n">${p.getDate()}</span>
+          </span>
+          <span class="fcwd-b">
+            ${list.length ? list.slice(0, 4).map(calChipEl).join('')
+            + (list.length > 4 ? `<span class="fcmore">and ${list.length - 4} more</span>` : '')
+            : '<span class="fcwd-free"></span>'}
+          </span>
+        </button>`;
+    }).join('')}
+    </div>
+    <button class="chip" style="margin-top:10px" data-tab="calendar">
+      ${icon('calendar', 12, 'var(--deep)')} The whole calendar</button>
+  </div>`;
+}
+function profileDayBlock(whoId) {
+    const today = calToday();
+    const list = calOnDay(today, whoId);
+    if (!list.length)
+        return '';
+    const col = calColorOf(whoId);
+    const timed = list.filter((e) => calSpan(e));
+    const allDay = list.filter((e) => !calSpan(e));
+    const name = calWhoName(whoId);
+    if (!timed.length) {
+        return `
+    <p class="sect" style="margin-top:18px">${esc(name === 'You' ? 'Your day' : name + "'s day")}</p>
+    <div class="pdaybox">
+      ${allDay.map((e) => calChipEl(e)).join('')}
+      <button class="chip" style="margin-top:9px" data-caljump="${esc(whoId)}">
+        ${icon('calendar', 12, 'var(--deep)')} The whole calendar</button>
+    </div>`;
+    }
+    const range = calHourRange(timed);
+    const hours = [];
+    for (let h = range.from; h <= range.to; h += 1)
+        hours.push(h);
+    const px = 40;
+    return `
+  <p class="sect" style="margin-top:18px">${esc(name === 'You' ? 'Your day' : name + "'s day")}</p>
+  <div class="pdaybox">
+    ${allDay.length ? `<div class="pday-ad">${allDay.map(calChipEl).join('')}</div>` : ''}
+    <div class="fctl pday">
+      <div class="fctl-scroll">
+        <div class="fctl-b" style="height:${(range.to - range.from) * px}px">
+          <div class="fctl-gut">
+            ${hours.map((h, i) => `
+              <span class="fctl-hr" style="top:${i * px}px">${esc(calHourLabel(h))}</span>`).join('')}
+          </div>
+          <div class="fctl-col today">
+            ${hours.map((h, i) => `<span class="fctl-line" style="top:${i * px}px"></span>`).join('')}
+            ${calNowLine(range, px)}
+            ${calLayout(timed).map((item) => {
+        const e = item.ev;
+        const c2 = calColorOf(e.who);
+        const reading = e.from === 'app';
+        const top = ((item.start / 60) - range.from) * px;
+        const h = Math.max(17, ((item.end - item.start) / 60) * px - 2);
+        const w = 100 / item.cols;
+        return `
+              <button class="fctl-ev${reading ? ' soft' : ''}"
+                ${reading ? (e.go ? `data-calgo="${esc(JSON.stringify(e.go))}"` : 'disabled')
+            : `data-calopen="${esc(e.id)}"`}
+                style="top:${top}px;height:${h}px;left:${item.col * w}%;width:calc(${w}% - 3px);
+                  ${reading ? 'color:' + esc(c2.ink) + ';border-color:' + esc(c2.dot)
+            : 'background:' + esc(c2.dot)}">
+                <span class="fctl-t">${esc(calTimeLabel(e.time))}</span>
+                <span class="fctl-n">${esc(e.title)}</span>
+              </button>`;
+    }).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap">
+      <button class="chip" data-caljump="${esc(whoId)}">
+        ${icon('calendar', 12, 'var(--deep)')} The whole calendar</button>
+      <button class="chip" data-caladdfor="${esc(whoId)}">
+        ${icon('plus', 12, 'var(--deep)')} Add something</button>
+    </div>
+  </div>`;
+}
 function screenLists(c) {
     const open = store.listOpen ? listById(store.listOpen) : null;
     if (open)
@@ -64626,7 +64779,7 @@ function listsOneScreen(l) {
 function screenCalendar(c) {
     const today = calToday();
     const who = store.calWho || 'all';
-    const tab = store.calTab || 'day';
+    const tab = store.calTab || 'week';
     const sel = store.calDay || today;
     const editing = !!store.calEdit;
     if (editing) {
@@ -64640,16 +64793,17 @@ function screenCalendar(c) {
     <div class="sc">${calEditor()}</div>`;
     }
     return `
-  ${cornerLeaves()}
+  ${''}
+  ${pageHeader()}
+  <div class="calmquiet"></div>
   <div class="sc-head tight">
     <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
   </div>
   <div class="sc">
     <div class="fcviewbar">
       <div class="fcscroll">
-        ${[{ id: 'day', label: 'Day' }, { id: 'week', label: 'Week' },
-        { id: 'month', label: 'Month' }, { id: 'next', label: 'List' },
-        { id: 'past', label: 'Past' }].map((t) => `
+        ${[{ id: 'week', label: 'Week' }, { id: 'day', label: 'Day' },
+        { id: 'month', label: 'Month' }].map((t) => `
           <button class="chip${tab === t.id ? ' on' : ''}" data-sub="calTab" data-val="${esc(t.id)}"
             aria-pressed="${tab === t.id}">${esc(t.label)}</button>`).join('')}
       </div>
@@ -64711,6 +64865,14 @@ function screenCalendar(c) {
         <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
       </button>`;
     })()}
+    ${tab === 'next' || tab === 'past' ? '' : `
+    <div class="chips" style="margin-top:14px">
+      <button class="chip" data-sub="calTab" data-val="next">Everything coming up</button>
+      <button class="chip" data-sub="calTab" data-val="past">Already happened</button>
+    </div>`}
+    ${tab === 'next' || tab === 'past' ? `
+    <button class="chip" style="margin-top:12px" data-sub="calTab" data-val="week">
+      Back to the week</button>` : ''}
     ${calFeedsBlock()}
     ${calSubscribeBlock()}
     <p class="disclaimer">Nothing on this calendar is shared outside your house, and nothing here
@@ -65636,6 +65798,8 @@ function screenMyProfile() {
       <button class="chip" style="margin-top:9px" data-feed="errok">Close</button>
     </div>` : ''}
     ${''}
+    ${profileWeekBlock()}
+    ${''}
     ${posts.length ? '' : `
     <p class="tiny" style="text-align:center;padding:4px 0 2px">
       Nothing posted yet. The box to write in is on Home.
@@ -65774,7 +65938,8 @@ function screenChild(c) {
     }).join('');
     const ciHtml = body.checkin ? body.checkin() : '';
     tiles.sort((x, y) => TILE_IDS.indexOf(x.id) - TILE_IDS.indexOf(y.id));
-    const sections = ageNewCard(months, kid, first) + monthTopCard(kid) + daily + (tiles.length ? `
+    const sections = ageNewCard(months, kid, first) + monthTopCard(kid)
+        + (kid ? profileDayBlock(kid.id) : '') + daily + (tiles.length ? `
     <p class="sect" style="margin-top:18px">Everything about ${esc(first)}</p>
     <div class="kidtiles">${tiles.map((t) => kidTile(t.id, t.html)).join('')}</div>` : '')
         + (ciHtml ? `<p class="sect" style="margin-top:18px">How today went</p>` + ciHtml : '')
