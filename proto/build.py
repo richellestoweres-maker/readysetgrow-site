@@ -75,6 +75,7 @@ order = [
     ('planFraming',         SRC/'data/planFraming.js'),
     ('calendar',            SRC/'data/calendar.js'),
     ('lists',               SRC/'data/lists.js'),
+    ('rewards',             SRC/'data/rewards.js'),
     ('feed',                SRC/'data/feed.js'),
     ('fireflies',           SRC/'data/fireflies.js'),
     ('groups',              SRC/'data/groups.js'),

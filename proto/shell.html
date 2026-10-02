@@ -413,14 +413,26 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 .back{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--deep);padding:6px 2px;min-height:38px}
 
 /* ---------- TAB BAR ---------- */
-/* Tighter, now there are no words to make room for. */
-.tabs{display:flex;background:var(--surface);border-top:1px solid var(--line2);padding:4px 6px 7px;flex:none;position:relative;z-index:2;gap:2px}
+/* GROUPED, NOT SPREAD.
+
+   The tabs were flex:1, which stretches them to fill the whole width
+   whatever the screen, so 6 icons ended up marooned at opposite ends
+   of a phone. They are a fixed size and centred now, so they sit as
+   one group a thumb can travel across. Still 48 wide and 46 tall,
+   which is above the 44 pixel minimum for something you tap. */
+.tabs{display:flex;justify-content:center;gap:0;background:var(--surface);
+  border-top:1px solid var(--line2);padding:4px 6px 7px;flex:none;position:relative;z-index:2}
 /* Icons only. The words are still in the markup for screen readers,
    they are just not drawn, which is what let 6 tabs fit across a
    phone when 6 labelled ones would not. */
-.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 0 7px;
-  color:var(--muted);min-height:46px;justify-content:center}
+.tab{flex:none;width:44px;display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:9px 0 7px;color:var(--muted);min-height:46px;justify-content:center}
+@media (max-width:360px){ .tab{width:40px} }
 .tab[aria-selected="true"]{color:var(--deep)}
+.tabic{position:relative;display:flex;align-items:center;justify-content:center}
+.tabbadge{position:absolute;top:-5px;right:-8px;min-width:16px;height:16px;padding:0 4px;
+  border-radius:9px;background:#A85A44;color:#fff;font-size:10px;font-weight:700;line-height:16px;
+  text-align:center;box-shadow:0 0 0 2px var(--surface)}
 /* Selected is marked by the bar AND by the icon colour, never by
    colour alone. */
 .tab .dot{width:16px;height:2.5px;border-radius:2px;background:transparent}
@@ -1842,6 +1854,41 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 
 /* The calendar page is the one screen with no leaves behind it. */
 .calmquiet{position:fixed;inset:0;background:var(--cream);z-index:0;pointer-events:none}
+
+/* ==================================================================
+   THE JOBS CHART AND ITS STARS
+
+   A ring rather than a bar, because a ring reads as "how far round am
+   I" at a glance and a bar reads as a measurement. The number inside
+   it is the honest version: 2 of 5, not a percentage.
+   ================================================================== */
+.rewhead{display:flex;align-items:center;gap:12px;padding:2px 2px 12px;
+  border-bottom:1px solid var(--line2);margin-bottom:10px}
+.rewring{width:48px;height:48px;min-width:48px;border-radius:50%;display:grid;place-items:center;flex:none}
+.rewring-in{width:38px;height:38px;border-radius:50%;background:var(--surface);display:grid;
+  place-items:center;font-size:14px;font-weight:700;color:var(--ink);line-height:1;
+  font-variant-numeric:tabular-nums}
+.rewring-of{font-size:10px;font-weight:600;color:var(--faint)}
+.rewhead-t{display:block;font-size:14.5px;font-weight:600;color:var(--ink);line-height:1.3}
+.rewhead-s{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--body);
+  opacity:.8;margin-top:2px;line-height:1.35}
+
+.rewjobs{display:flex;flex-direction:column;gap:2px}
+.rewjob{display:flex;align-items:center;gap:11px;width:100%;text-align:left;appearance:none;
+  border:0;background:transparent;border-radius:10px;padding:9px 8px;cursor:pointer;
+  font-size:14.5px;color:var(--ink);line-height:1.35}
+.rewjob:hover{background:var(--leaf3)}
+.rewjob.done{color:var(--faint)}
+.rewjob.done .grow{text-decoration:line-through}
+.rewjob-t{width:22px;height:22px;min-width:22px;border-radius:7px;border:2px solid var(--line);
+  display:grid;place-items:center;flex:none;transition:background .12s}
+.rewjob.done .rewjob-t{background:var(--sage);border-color:var(--sage)}
+.rewjob-s{display:flex;align-items:center;gap:2px;font-size:12px;font-weight:700;color:#B58B3C;
+  flex:none;font-variant-numeric:tabular-nums}
+
+/* The running total, on the rewards screen. */
+.rewbig{font-size:38px;font-weight:700;color:var(--deep2);line-height:1;margin:6px 0 2px;
+  font-variant-numeric:tabular-nums}
 
 /* ==================================================================
    LISTS

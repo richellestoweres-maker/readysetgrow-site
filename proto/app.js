@@ -954,6 +954,9 @@ function newChildRecord(name, birthday) {
        out from their id, so nobody is grey and nobody has to go and
        choose before the calendar reads properly. */
     calColor: '',
+    /* Stars are off until a parent turns them on for this child. See
+       src/data/rewards.js for why that is not a default. */
+    starsOn: false,
     lenses: [],
     lensOptions: {},
     lensNumbers: {},
@@ -1161,6 +1164,14 @@ const store = {
      a shopping list only one adult can see is not a shopping list. */
   lists: [],
   deletedListIds: [],
+
+  /* STARS AND REWARDS. The rewards themselves and what has been
+     claimed are the household's. Whether stars are on at all is per
+     child, on the child record, because it suits some and not
+     others. */
+  rewards: [],
+  rewardLog: [],
+  rewKid: '',
   listOpen: '',
   listNewOpen: false,
   listDraftName: '',
@@ -1408,7 +1419,7 @@ const state = {};
     build now refuses to finish if a data-sub key is not here. */
  'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'sexedTab',
  'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab', 'crTab', 'calTab',
- 'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift', 'lists', 'deletedListIds', 'listOpen',
+ 'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift', 'lists', 'deletedListIds', 'listOpen', 'rewards', 'rewardLog', 'rewKid',
  'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -1478,6 +1489,8 @@ function flushStore() {
       calFeeds: store.calFeeds,
       lists: store.lists,
       deletedListIds: store.deletedListIds,
+      rewards: store.rewards,
+      rewardLog: store.rewardLog,
       notDuplicates: store.notDuplicates,
       parentUpdatedAt: store.parentUpdatedAt,
     }));
@@ -1554,6 +1567,8 @@ function loadStore() {
     store.events = Array.isArray(saved.events) ? saved.events : [];
     store.calFeeds = (saved.calFeeds && typeof saved.calFeeds === 'object') ? saved.calFeeds : {};
     store.lists = Array.isArray(saved.lists) ? saved.lists : [];
+    store.rewards = Array.isArray(saved.rewards) ? saved.rewards : [];
+    store.rewardLog = Array.isArray(saved.rewardLog) ? saved.rewardLog : [];
     store.deletedListIds = Array.isArray(saved.deletedListIds) ? saved.deletedListIds : [];
     store.deletedEventIds = Array.isArray(saved.deletedEventIds) ? saved.deletedEventIds : [];
     store.notDuplicates = Array.isArray(saved.notDuplicates) ? saved.notDuplicates : [];
@@ -2443,25 +2458,32 @@ function emptyScreen(msg) {
 const BOTTOM_BAR = ['today', 'now', 'child', 'logs', 'me'];
 
 function tabList() {
-  /* Home sits in the middle on purpose. It is the one you reach for
-     without thinking, and the thumb lands there first. */
+  /* HER ORDER, SEPTEMBER 2026 REVISED OCTOBER 2026.
+
+     Home used to sit in the middle, raised, on the argument that it is
+     the one you reach for without looking. She has asked for it first
+     instead, which is the other good answer: first is where a thumb
+     starts and where every app puts the thing you came for. It keeps
+     the disc so it still reads as the primary one, it just no longer
+     has to be in the centre for that to be true. */
   return [
-    { id: 'community', label: 'Community', icon: 'people' },
-    { id: 'logs', label: 'Logs', icon: 'note' },
     { id: 'home', label: 'Home', icon: 'home', center: true },
-    /* Sixth tab, which means Home is no longer exactly in the middle.
-       Worth it: going places is a whole category of thing this app
-       had nothing to say about, and buried two screens down nobody
-       would ever find it. */
+    { id: 'community', label: 'Community', icon: 'people' },
+    /* LOGS NO LONGER HAS A TAB.
+
+       Her reasoning and it is right: she clicks "Everything logged for
+       Ada" and gets Ada's own log page, which is what she wants, while
+       the tab showed everybody's logs in one place behind a person
+       picker. One of those is a record of a child and the other is a
+       pile.
+
+       Nothing was removed. Entering a log was always done from a
+       profile, and reading them back now is too: each child has their
+       own page and so does she. It also gives a tab back on a bar she
+       had just told me was too crowded. */
     { id: 'outings', label: 'Outings', icon: 'bag' },
     { id: 'calendar', label: 'Calendar', icon: 'calendar' },
     { id: 'profile', label: 'Profile', icon: 'user' },
-    /* Settings used to sit here and it made six, which is too many
-       across a phone. It is not a daily destination, it is the place
-       you go once a month to change something, so it moved into the
-       menu behind your own face at the top, the way every app with an
-       account does it. Nothing was removed, it just stopped taking a
-       sixth of the bottom of the screen. */
   ];
 }
 
@@ -2702,6 +2724,7 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'install') html = screenInstall();
   else if (v && v.type === 'screen' && v.id === 'calendar') html = screenCalendar(c);
   else if (v && v.type === 'screen' && v.id === 'lists') html = screenLists(c);
+  else if (v && v.type === 'screen' && v.id === 'rewards') html = screenRewards(c);
   else if (v && v.type === 'screen' && v.id === 'chores') html = screenChores();
   else if (v && v.type === 'screen' && v.id === 'learning') html = screenLearning(c);
   else if (v && v.type === 'screen' && v.id === 'growth') html = screenGrowth(c);
@@ -2762,7 +2785,12 @@ function render() {
      simply hands over to the Logs tab. */
   else if (v && v.type === 'caretaker') html = viewCaretaker(v.id);
   else if (v && v.type === 'screen' && v.id === 'momlogs') {
-    state.view = null; state.tab = 'logs'; store.logWho = 'me'; html = screenLogsHub(c);
+    /* Her own logs as a page of their own, the same shape as a child's.
+       It used to throw her into the Logs tab with a person picker,
+       which is exactly the all in one place view she said she did not
+       want. */
+    store.logWho = 'me';
+    html = screenLogsHub(c, { page: true });
   }
   else if (v && v.type === 'momnow') html = screenMomNowOne(v.id);
   else if (state.tab === 'welcome') html = screenWelcome(c);
@@ -2955,10 +2983,18 @@ function render() {
         <span class="sronly">${esc(t.label)}</span>
       </button>`;
     }
+    /* A number on Community when something is waiting on her. It
+       counts things that need HER, not everything that happened in the
+       room, because a badge that never reaches zero is a badge people
+       stop seeing. */
+    const badge = t.id === 'community' ? commBadge() : 0;
     return `
     <button class="tab" role="tab" data-tab="${t.id}" aria-selected="${on}"
-      aria-label="${esc(t.label)}" title="${esc(t.label)}">
-      ${icon(t.icon, 22, on ? 'var(--deep)' : 'var(--muted)')}
+      aria-label="${esc(t.label)}${badge ? ', ' + badge + ' waiting' : ''}" title="${esc(t.label)}">
+      <span class="tabic">
+        ${icon(t.icon, 22, on ? 'var(--deep)' : 'var(--muted)')}
+        ${badge ? `<span class="tabbadge">${badge > 9 ? '9+' : badge}</span>` : ''}
+      </span>
       <span class="sronly">${esc(t.label)}</span><span class="dot"></span>
     </button>`;
   }).join('');
@@ -3326,7 +3362,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3746,6 +3782,34 @@ function initControls() {
       store.calShift = v === '0' ? 0 : (Number(store.calShift) || 0) + Number(v);
       if (store.calShift < -24) store.calShift = -24;
       if (store.calShift > 24) store.calShift = 24;
+    } else if (t.dataset.rewon) {
+      const k = (store.children || []).filter((x) => x.id === t.dataset.rewon)[0];
+      if (k) { k.starsOn = true; k.updatedAt = Date.now(); }
+    } else if (t.dataset.rewoff) {
+      const k = (store.children || []).filter((x) => x.id === t.dataset.rewoff)[0];
+      if (k) { k.starsOn = false; k.updatedAt = Date.now(); }
+    } else if (t.dataset.rewkid) {
+      store.rewKid = t.dataset.rewkid;
+    } else if (t.dataset.rewadd) {
+      const idea = REW_IDEAS.filter((x) => x.id === t.dataset.rewadd)[0];
+      if (!idea) return;
+      store.rewards = rewList().concat([{
+        id: 'r' + Date.now() + Math.floor(Math.random() * 1000),
+        label: idea.label, cost: idea.cost, updatedAt: Date.now(),
+      }]);
+      store.parentUpdatedAt = Date.now();
+    } else if (t.dataset.rewspend) {
+      const r = rewList().filter((x) => x.id === t.dataset.rewspend)[0];
+      const kidId = t.dataset.kid;
+      if (!r || !kidId) return;
+      if (!rewCanAfford(rewBalance(kidId), r.cost)) return;
+      if (!Array.isArray(store.rewardLog)) store.rewardLog = [];
+      /* The spend is written down rather than the balance, so the
+         number is always the ticks minus the rewards and can never
+         drift away from the chart it came from. */
+      store.rewardLog.push({ id: 'g' + Date.now(), kidId: kidId, label: r.label,
+        cost: r.cost, day: calToday(), at: Date.now() });
+      store.parentUpdatedAt = Date.now();
     } else if (t.dataset.calgoday) {
       store.calDay = t.dataset.calgoday;
       store.calTab = 'day';
@@ -14152,6 +14216,60 @@ function screenCommRules(c) {
   </div>`;
 }
 
+/* ------------------------------------------------------------------
+   WHAT IS WAITING FOR HER
+
+   She asked where community notifications turn up, and the honest
+   answer was nowhere. The server can send a push when somebody replies
+   or lights a firefly back, and that is it: open the app and there is
+   no sign anything happened. A notification you only get while the app
+   is SHUT is a strange thing to build first.
+
+   This counts what the app already knows without asking the server
+   anything new: her own posts that are held or were taken down, which
+   are the ones she most needs to know about and the ones currently
+   easiest to miss entirely.
+
+   Replies and me toos need 1 more read per post, which is the next
+   piece, and the badge is built to take them without changing shape.
+   ------------------------------------------------------------------ */
+function commWaiting() {
+  const mine = feed.mine || [];
+  const held = mine.filter((p) => p.status === FEED_STATUS.held);
+  const removed = mine.filter((p) => p.status === FEED_STATUS.removed);
+  const queue = (feed.isMod && feed.queue) ? feed.queue.length : 0;
+  return { held: held.length, removed: removed.length, queue: queue,
+    total: held.length + removed.length + queue };
+}
+
+/* The number on the tab. Deliberately a count of things that need HER,
+   not a count of everything that happened: a badge that never clears
+   because the room is busy is a badge people learn to ignore. */
+function commBadge() {
+  const w = commWaiting();
+  return w.total;
+}
+
+function commWaitingCard() {
+  const w = commWaiting();
+  if (!w.total) return '';
+  const lines = [];
+  if (w.held) lines.push(w.held + (w.held === 1 ? ' post of yours is waiting on a person'
+    : ' posts of yours are waiting on a person'));
+  if (w.removed) lines.push(w.removed + (w.removed === 1 ? ' post was taken down'
+    : ' posts were taken down'));
+  if (w.queue) lines.push(w.queue + (w.queue === 1 ? ' post needs a look' : ' posts need a look'));
+  return `
+  <div class="card" style="margin-bottom:11px;border-color:var(--sage)">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} For you</p>
+    ${lines.map((x) => `<p class="bodytext" style="margin-top:6px">${esc(x)}.</p>`).join('')}
+    <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+      ${w.held || w.removed ? `<button class="chip" data-feed="view" data-v="mine">See yours</button>` : ''}
+      ${w.queue ? `<button class="chip" data-feed="view" data-v="queue">Open the queue</button>` : ''}
+    </div>
+  </div>`;
+}
+
 function screenCommunity(c) {
   const signedIn = !!auth.user;
   const blocked = blockedList();
@@ -14201,6 +14319,7 @@ function screenCommunity(c) {
   </div>
   <div class="sc">
 
+    ${signedIn ? commWaitingCard() : ''}
     ${signedIn ? `
     <div class="feedtabs">
       <button class="chip${tab === 'flies' ? ' on' : ''}" data-feed="view" data-v="flies">${esc(FIREFLY_TITLE)}</button>
@@ -19258,6 +19377,216 @@ function profileDayBlock(whoId) {
   </div>`;
 }
 
+
+/* ==================================================================
+   STARS AND REWARDS
+
+   Why this is off until somebody turns it on, and why a star is never
+   taken away as a punishment, is in src/data/rewards.js.
+   ================================================================== */
+
+function rewOn(kid) {
+  return !!(kid && kid.starsOn);
+}
+
+function rewList() {
+  return Array.isArray(store.rewards) ? store.rewards : [];
+}
+
+/* Every star this child has ever earned, from the chart's own record
+   of what was ticked, minus whatever has been spent. Worked out rather
+   than stored, so it can never drift away from the ticks it came
+   from. */
+function rewEarned(kidId) {
+  const done = (store.choreDone && typeof store.choreDone === 'object') ? store.choreDone : {};
+  const jobs = {};
+  (store.choreJobs || []).forEach((j) => { jobs[j.id] = j; });
+  let n = 0;
+  Object.keys(done).forEach((day) => {
+    Object.keys(done[day] || {}).forEach((jobId) => {
+      if (!done[day][jobId]) return;
+      const j = jobs[jobId];
+      if (!j || j.personId !== kidId) return;
+      const c = choreById(j.choreId);
+      n += (c && c.stars) ? c.stars : 1;
+    });
+  });
+  return n;
+}
+
+function rewSpent(kidId) {
+  return (store.rewardLog || [])
+    .filter((r) => r.kidId === kidId)
+    .reduce((a, r) => a + (Number(r.cost) || 0), 0);
+}
+
+function rewBalance(kidId) {
+  return Math.max(0, rewEarned(kidId) - rewSpent(kidId));
+}
+
+/* Today's jobs for one child, as tickable rows with their stars on. */
+function rewTodayJobs(kidId) {
+  const dow = new Date().getDay();
+  const day = ciToday();
+  return (typeof choreLiveJobs === 'function' ? choreLiveJobs() : [])
+    .filter((j) => j.personId === kidId && (j.days || []).indexOf(dow) !== -1)
+    .map((j) => {
+      const c = choreById(j.choreId);
+      return { job: j, chore: c, done: choreIsDone(j.id, day), stars: (c && c.stars) ? c.stars : 1 };
+    });
+}
+
+/* ------------------------------------------------------------------
+   THE BLOCK ON A CHILD'S PROFILE
+
+   Her picture: the child, a ring showing how far through the day they
+   are, their star count, then the jobs as cards they tick.
+   ------------------------------------------------------------------ */
+function rewDayBlock(kid, months) {
+  if (!kid) return '';
+  const jobs = rewTodayJobs(kid.id);
+  const on = rewOn(kid);
+
+  /* Nothing on the chart for them today means nothing to draw. The
+     offer to turn stars on lives on the chore screen, not as a sales
+     pitch on a profile with no jobs on it. */
+  if (!jobs.length) return '';
+
+  const doneN = jobs.filter((j) => j.done).length;
+  const starsToday = jobs.filter((j) => j.done).reduce((a, j) => a + j.stars, 0);
+  const col = calColorOf(kid.id);
+  const pct = jobs.length ? Math.round((doneN / jobs.length) * 100) : 0;
+  const first = (kid.name || 'They').split(/\s+/)[0];
+
+  return `
+  <p class="sect" style="margin-top:18px">${esc(first)}'s jobs today</p>
+  <div class="pdaybox">
+    <div class="rewhead">
+      <span class="rewring" style="background:conic-gradient(${esc(col.dot)} ${pct}%,var(--leaf2) 0)">
+        <span class="rewring-in">${doneN}<span class="rewring-of">/${jobs.length}</span></span>
+      </span>
+      <span class="grow">
+        <span class="rewhead-t">${doneN === jobs.length
+          ? 'All done' : doneN + ' of ' + jobs.length + ' done'}</span>
+        ${on ? `
+        <span class="rewhead-s">${icon('star', 12, '#B58B3C')} ${starsToday} today,
+          ${rewBalance(kid.id)} saved up</span>` : `
+        <span class="rewhead-s">Stars are off for ${esc(first)}</span>`}
+      </span>
+      ${on ? `<button class="chip" data-go="screen" data-id="rewards">Rewards</button>` : ''}
+    </div>
+
+    <div class="rewjobs">
+      ${jobs.map((j) => `
+        <button class="rewjob${j.done ? ' done' : ''}" data-chore="tick" data-id="${esc(j.job.id)}">
+          <span class="rewjob-t" style="${j.done ? '' : 'border-color:' + esc(col.dot)}">
+            ${j.done ? icon('check', 13, '#fff') : ''}</span>
+          <span class="grow">${esc(j.chore ? j.chore.label : 'A job')}</span>
+          ${on ? `<span class="rewjob-s">${icon('star', 11, '#B58B3C')}${j.stars}</span>` : ''}
+        </button>`).join('')}
+    </div>
+
+    ${!on && rewShows(months) ? `
+      <button class="btn ghost sm" style="width:100%;margin-top:10px" data-rewon="${esc(kid.id)}">
+        ${icon('star', 13, 'var(--deep)')} ${esc(REW_ON_LABEL)} ${esc(first)}</button>` : ''}
+  </div>`;
+}
+
+/* ------------------------------------------------------------------
+   THE REWARDS SCREEN
+   ------------------------------------------------------------------ */
+function screenRewards(c) {
+  const kids = (store.children || []).filter((k) => !isExampleChild(k) && rewOn(k));
+  const who = store.rewKid && kids.some((k) => k.id === store.rewKid)
+    ? store.rewKid : (kids[0] ? kids[0].id : '');
+  const kid = (store.children || []).filter((k) => k.id === who)[0] || null;
+  const list = rewList();
+
+  return `
+  ${pageHeader()}
+  <div class="sc-head tight">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(REW_TITLE)}</h1>
+    <p class="sub">${esc(REW_SUB)}</p>
+  </div>
+  <div class="sc">
+
+    ${!kids.length ? `
+      <div class="card flat">
+        <p class="eyebrow">${esc(REW_OFF_TITLE)}</p>
+        ${REW_OFF_BODY.map((x) => `<p class="bodytext" style="margin-top:7px">${esc(x)}</p>`).join('')}
+        <p class="tiny" style="margin-top:9px">${esc(REW_AGE_NOTE)}</p>
+      </div>
+      ${(store.children || []).filter((k) => !isExampleChild(k)).map((k) => {
+        const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+        const m = sum && sum.age ? sum.age.totalMonths : null;
+        if (!rewShows(m)) return '';
+        return `
+        <button class="btn ghost" style="width:100%;margin-top:9px" data-rewon="${esc(k.id)}">
+          ${icon('star', 14, 'var(--deep)')} ${esc(REW_ON_LABEL)} ${esc((k.name || '').split(/\\s+/)[0])}
+        </button>`;
+      }).join('')}
+    ` : `
+      ${kids.length > 1 ? `
+      <div class="chips" style="margin-bottom:11px">
+        ${kids.map((k) => `
+          <button class="chip${k.id === who ? ' on' : ''}" data-rewkid="${esc(k.id)}"
+            aria-pressed="${k.id === who}">${esc((k.name || '').split(/\\s+/)[0])}</button>`).join('')}
+      </div>` : ''}
+
+      <div class="card leafy" style="margin-bottom:12px">
+        <p class="eyebrow">${icon('star', 11, '#B58B3C')} ${esc((kid && kid.name) || 'They')}</p>
+        <p class="rewbig">${rewBalance(who)}</p>
+        <p class="tiny">stars saved up. ${rewEarned(who)} earned, ${rewSpent(who)} spent.</p>
+        <p class="tiny" style="margin-top:8px">${esc(REW_NEVER_TAKE)}</p>
+      </div>
+
+      ${list.length ? list.map((r) => {
+        const can = rewCanAfford(rewBalance(who), r.cost);
+        return `
+        <div class="card" style="margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:11px">
+            <span class="grow">
+              <span style="display:block;font-size:15px;font-weight:600;color:var(--ink)">${esc(r.label)}</span>
+              <span class="tiny" style="display:block;margin-top:2px">
+                ${icon('star', 10, '#B58B3C')} ${r.cost} stars${can ? '' : ', ' + esc(REW_NOT_ENOUGH)}</span>
+            </span>
+            <button class="btn sm${can ? '' : ' ghost'}" ${can ? '' : 'disabled'}
+              data-rewspend="${esc(r.id)}" data-kid="${esc(who)}">
+              ${can ? 'Give it' : 'Not yet'}</button>
+          </div>
+        </div>`;
+      }).join('') : `
+      <div class="card flat" style="margin-bottom:10px">
+        <p class="eyebrow">${esc(REW_EMPTY.title)}</p>
+        <p class="bodytext" style="margin-top:6px">${esc(REW_EMPTY.body)}</p>
+      </div>`}
+
+      <p class="sect" style="margin-top:16px">Add a reward</p>
+      <p class="tiny" style="margin:0 0 9px">${esc(REW_IDEAS_NOTE)}</p>
+      ${REW_IDEAS.filter((i) => !list.some((r) => r.label === i.label)).map((i) => `
+        <button class="lrow" data-rewadd="${esc(i.id)}" style="align-items:center;margin-top:7px">
+          <span class="licon">${icon('star', 16, '#B58B3C')}</span>
+          <span class="grow">
+            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(i.label)}</span>
+            <span class="tiny" style="display:block;margin-top:2px">${i.cost} stars</span>
+          </span>
+          <span class="chev">${icon('plus', 15, 'var(--sage)')}</span>
+        </button>`).join('')}
+
+      ${(store.rewardLog || []).filter((r) => r.kidId === who).length ? `
+      <p class="sect" style="margin-top:18px">${esc(REW_HISTORY_TITLE)}</p>
+      ${(store.rewardLog || []).filter((r) => r.kidId === who).slice().reverse().slice(0, 12).map((r) => `
+        <p class="tiny" style="padding:5px 2px;border-bottom:1px solid var(--line2)">
+          ${esc(r.label)} &middot; ${r.cost} stars &middot; ${esc(calDayLabel(r.day))}</p>`).join('')}` : ''}
+
+      ${dsec(REW_HOW.title, list2 ? list2(REW_HOW.items) : '<ul class="dlist">'
+        + REW_HOW.items.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul>')}
+      ${dsec('Where this comes from', sourceRows(REW_SOURCES))}
+    `}
+  </div>`;
+}
+
 function screenLists(c) {
   const open = store.listOpen ? listById(store.listOpen) : null;
   if (open) return listsOneScreen(open);
@@ -20685,6 +21014,18 @@ function screenMyProfile() {
       <button class="chip" style="margin-top:9px" data-feed="errok">Close</button>
     </div>` : ''}
 
+    ${/* Her own logs, reached the same way a child's are: from the
+          profile of the person they are about. */''}
+    <button class="lrow" data-go="screen" data-id="momlogs" style="align-items:center;margin-top:14px">
+      <span class="licon">${icon('note', 17)}</span>
+      <span class="grow">
+        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Everything logged for you</span>
+        <span class="tiny" style="display:block;margin-top:2px">Feeding, your body, your mood, and
+          where the numbers have moved</span>
+      </span>
+      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+    </button>
+
     ${/* THE WHOLE HOUSE'S WEEK, which is what she asked for. Not just
           hers: she is the one carrying everybody's week, so her
           profile carries everybody's week. The children's profiles
@@ -20947,8 +21288,17 @@ function screenChild(c) {
      child's profile is that child for the day. It sits with the other
      daily things rather than down in the reference half, because it
      is the most perishable thing on the page. */
+  /* HER PLACEMENT, OCTOBER 2026.
+
+     The jobs chart sits under "Log it as it happens" and above
+     "Everything about them", which is the line between the half of
+     this page she DOES things on and the half she reads. A chart is a
+     doing thing, so it belongs on the near side of that line, at the
+     bottom of it. Their day timeline stays higher, with the other
+     things that are about today. */
   const sections = ageNewCard(months, kid, first) + monthTopCard(kid)
-    + (kid ? profileDayBlock(kid.id) : '') + daily + (tiles.length ? `
+    + (kid ? profileDayBlock(kid.id) : '') + daily
+    + (kid ? rewDayBlock(kid, months) : '') + (tiles.length ? `
     <p class="sect" style="margin-top:18px">Everything about ${esc(first)}</p>
     <div class="kidtiles">${tiles.map((t) => kidTile(t.id, t.html)).join('')}</div>` : '')
     + (ciHtml ? `<p class="sect" style="margin-top:18px">How today went</p>` + ciHtml : '')
@@ -23657,6 +24007,7 @@ function normalizeChild(k) {
     arrival: Array.isArray(k.arrival) ? k.arrival : [],
     photo: k.photo || '',
     calColor: typeof k.calColor === 'string' ? k.calColor : '',
+    starsOn: !!k.starsOn,
     routineInclude: Array.isArray(k.routineInclude) ? k.routineInclude : [],
     routineMode: typeof k.routineMode === 'string' ? k.routineMode : '',
     dayKind: k.dayKind && typeof k.dayKind === 'object' ? k.dayKind : null,
@@ -23713,6 +24064,8 @@ function parentPayload() {
     calFeeds: store.calFeeds || {},
     lists: store.lists || [],
     deletedListIds: store.deletedListIds || [],
+    rewards: store.rewards || [],
+    rewardLog: store.rewardLog || [],
     notDuplicates: store.notDuplicates || [],
     updatedAt: store.parentUpdatedAt || 0,
   }));
@@ -24032,6 +24385,12 @@ async function cloudFirstSync() {
       Array.isArray(remoteUser.lists) ? remoteUser.lists : [],
       store.deletedListIds
     );
+    store.rewards = mergeEvents(store.rewards, Array.isArray(remoteUser.rewards)
+      ? remoteUser.rewards : [], []);
+    /* A claimed reward is a fact that happened, so both devices' lots
+       are kept rather than one winning. */
+    store.rewardLog = mergeEvents(store.rewardLog, Array.isArray(remoteUser.rewardLog)
+      ? remoteUser.rewardLog : [], []);
   }
 
   remoteKids.forEach((k) => { cloud.known[k.id] = contentKey(k); });
