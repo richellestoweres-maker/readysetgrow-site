@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-02 00:34">
+<meta name="rsg-build" content="2026-10-02 01:07">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -343,14 +343,20 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
    of a phone. They are a fixed size and centred now, so they sit as
    one group a thumb can travel across. Still 48 wide and 46 tall,
    which is above the 44 pixel minimum for something you tap. */
-.tabs{display:flex;justify-content:center;gap:0;background:var(--surface);
+.tabs{display:flex;justify-content:center;gap:15px;background:var(--surface);
   border-top:1px solid var(--line2);padding:4px 6px 7px;flex:none;position:relative;z-index:2}
 /* Icons only. The words are still in the markup for screen readers,
    they are just not drawn, which is what let 6 tabs fit across a
    phone when 6 labelled ones would not. */
-.tab{flex:none;width:44px;display:flex;flex-direction:column;align-items:center;gap:4px;
+.tab{flex:none;width:50px;display:flex;flex-direction:column;align-items:center;gap:4px;
   padding:9px 0 7px;color:var(--muted);min-height:46px;justify-content:center}
-@media (max-width:360px){ .tab{width:40px} }
+/* THE THIRD SETTING.
+   flex:1 spread 5 icons over the whole width and she said they were
+   too far apart. 44 wide with no gap bunched them into the middle and
+   she said they were too close. This is the middle: 5 buttons of 50
+   with 15 between them is about 310 across on a 390 wide phone, so
+   the row reaches most of the way without touching either edge. */
+@media (max-width:360px){ .tabs{gap:10px} .tab{width:46px} }
 .tab[aria-selected="true"]{color:var(--deep)}
 .tabic{position:relative;display:flex;align-items:center;justify-content:center}
 .tabbadge{position:absolute;top:-5px;right:-8px;min-width:16px;height:16px;padding:0 4px;
@@ -1691,8 +1697,15 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 /* The week scrolls sideways on a narrow screen. The hour gutter is
    sticky inside that scroll, so the times stay beside the columns
    instead of sliding away with them. */
-.fctl-scroll{overflow-x:hidden}
-.fctl.wide .fctl-scroll{overflow-x:auto;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+/* THE GRID IS ITS OWN WINDOW NOW.
+   It used to be as tall as its hour range, so an 8am to 7pm day was a
+   506 pixel block and the page scrolled past the whole calendar to
+   get to the afternoon. Capping it means the week always sits inside
+   one screen, the days stay pinned to the top of it while the hours
+   move, and the page behind it stops scrolling at all. */
+.fctl-scroll{overflow-x:hidden;overflow-y:auto;max-height:min(58vh,470px);
+  scrollbar-width:thin;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.fctl.wide .fctl-scroll{overflow-x:auto}
 .fctl.wide .fctl-h, .fctl.wide .fctl-b{min-width:max-content}
 .fctl.wide .fctl-col{min-width:74px}
 .fctl.wide .fctl-gut{position:sticky;left:0;z-index:4;background:var(--surface)}
@@ -1702,7 +1715,8 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
   .fctl.wide .fctl-h, .fctl.wide .fctl-b{min-width:0}
   .fctl.wide .fctl-col{min-width:0}
 }
-.fctl-h{display:flex;border-bottom:1px solid var(--line2);background:var(--surface2)}
+.fctl-h{display:flex;border-bottom:1px solid var(--line2);background:var(--surface2);
+  position:sticky;top:0;z-index:6}
 .fctl-b{display:flex;position:relative}
 .fctl-gut{width:46px;min-width:46px;flex:none;position:relative}
 .fctl-b .fctl-gut{border-right:1px solid var(--line2)}
@@ -1722,6 +1736,9 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
   gap:0;line-height:1.2;box-shadow:0 1px 2px rgba(60,84,53,.15)}
 .fctl-ev .fctl-t{font-size:10px;font-weight:700;opacity:.85;font-variant-numeric:tabular-nums}
 .fctl-ev .fctl-n{font-size:11.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.fctl-ev.tight{flex-direction:row;align-items:baseline;gap:4px;padding:2px 5px}
+.fctl-ev.tight .fctl-t{flex:none;font-size:9.5px}
+.fctl-ev.tight .fctl-n{font-size:10.5px;white-space:nowrap;min-width:0}
 .fctl-ev.soft{background:var(--surface)!important;border:1px solid currentColor;box-shadow:none}
 .fctl-ev.soft .fctl-t{opacity:.7}
 /* The all day strip, above the hours where it belongs. */
@@ -1777,6 +1794,10 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 
 /* The calendar page is the one screen with no leaves behind it. */
 .calmquiet{position:fixed;inset:0;background:var(--cream);z-index:0;pointer-events:none}
+.calhdr{margin-bottom:-22px}
+body.calpage .mark-holder{padding:14px 18px 0}
+body.calpage .mark{transform:scale(.76);transform-origin:top center}
+body.calpage .mark-holder{margin-bottom:-20px}
 
 /* ==================================================================
    THE JOBS CHART AND ITS STARS
@@ -1796,6 +1817,10 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 .rewhead-s{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--body);
   opacity:.8;margin-top:2px;line-height:1.35}
 
+.profstat-go{appearance:none;border:0;background:transparent;font:inherit;color:inherit;
+  cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);
+  text-underline-offset:3px;padding:0}
+.profstat-go:hover{text-decoration-color:var(--sage)}
 .rewjobs{display:flex;flex-direction:column;gap:2px}
 .rewjob{display:flex;align-items:center;gap:11px;width:100%;text-align:left;appearance:none;
   border:0;background:transparent;border-radius:10px;padding:9px 8px;cursor:pointer;
@@ -2136,7 +2161,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-02 00:34';
+const BUILD_STAMP = '2026-10-02 01:07';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -19335,6 +19360,15 @@ function calWeekOf(date) {
         out.push(calAddDays(start, i));
     return out;
 }
+function calWeekFrom(date) {
+    const d = calParse(date);
+    if (!d)
+        return [];
+    const out = [];
+    for (let i = 0; i < 7; i += 1)
+        out.push(calAddDays(date, i));
+    return out;
+}
 function calWeekLabel(dates) {
     if (!dates || !dates.length)
         return '';
@@ -19518,14 +19552,14 @@ function calRemindAt(ev) {
     return day + 'T' + two(r.atHour || 9) + ':00';
 }
 const CAL_COLORS = [
-    { id: 'sage', label: 'Sage', dot: '#7C9068', soft: '#EAEFE2', ink: '#3C5435' },
-    { id: 'clay', label: 'Clay', dot: '#A85A44', soft: '#F6E8E3', ink: '#7C4030' },
-    { id: 'sky', label: 'Sky', dot: '#5B7F99', soft: '#E4EDF2', ink: '#3B5A6E' },
-    { id: 'plum', label: 'Plum', dot: '#7A5B82', soft: '#EFE7F1', ink: '#553D5C' },
-    { id: 'honey', label: 'Honey', dot: '#B58B3C', soft: '#F6EDD9', ink: '#7E5F22' },
-    { id: 'moss', label: 'Moss', dot: '#5F7355', soft: '#E6EBE1', ink: '#3F4F38' },
-    { id: 'rose', label: 'Rose', dot: '#A76A77', soft: '#F4E7EA', ink: '#75464F' },
-    { id: 'slate', label: 'Slate', dot: '#6B7280', soft: '#E9EAEC', ink: '#45494F' },
+    { id: 'sage', label: 'Sage', dot: '#7C9068', soft: '#DCE8CC', ink: '#36502C' },
+    { id: 'clay', label: 'Apricot', dot: '#C9765B', soft: '#FADFD2', ink: '#7A3B27' },
+    { id: 'sky', label: 'Sky', dot: '#5D90AC', soft: '#D6E8F2', ink: '#2F5468' },
+    { id: 'plum', label: 'Lilac', dot: '#8B6EA0', soft: '#E7DCF2', ink: '#4D3660' },
+    { id: 'honey', label: 'Honey', dot: '#C79A47', soft: '#FAEECC', ink: '#6E521A' },
+    { id: 'moss', label: 'Mint', dot: '#5E9A7C', soft: '#D4EDDF', ink: '#2C5440' },
+    { id: 'rose', label: 'Rose', dot: '#C0738A', soft: '#FADEE6', ink: '#6D3A49' },
+    { id: 'slate', label: 'Slate', dot: '#6E7A8C', soft: '#DFE4EC', ink: '#3A4350' },
 ];
 function calColor(id) {
     const c = CAL_COLORS.filter((x) => x.id === id)[0];
@@ -21597,6 +21631,11 @@ const CHORE_DAYS = [
 ];
 function choreById(id) {
     return CHORES.filter((c) => c.id === id)[0] || null;
+}
+const CHORE_MIN_MONTHS = 24;
+const CHORE_MIN_NOTE = 'The chart starts at 2. Younger than that and a job with their name on it is really still yours.';
+function choreOldEnough(months) {
+    return months != null && isFinite(Number(months)) && Number(months) >= CHORE_MIN_MONTHS;
 }
 function choresForMonths(months) {
     const m = Number(months);
@@ -50285,9 +50324,9 @@ function emptyScreen(msg) {
 const BOTTOM_BAR = ['today', 'now', 'child', 'logs', 'me'];
 function tabList() {
     return [
-        { id: 'home', label: 'Home', icon: 'home', center: true },
         { id: 'community', label: 'Community', icon: 'people' },
         { id: 'outings', label: 'Outings', icon: 'bag' },
+        { id: 'home', label: 'Home', icon: 'home', center: true },
         { id: 'calendar', label: 'Calendar', icon: 'calendar' },
         { id: 'profile', label: 'Profile', icon: 'user' },
     ];
@@ -50413,6 +50452,10 @@ function render() {
     const screen = document.getElementById('screen');
     let html;
     let v = state.view;
+    if (store.chorePick && !(v && v.type === 'screen' && v.id === 'chores')) {
+        store.chorePick = null;
+    }
+    document.body.classList.toggle('calpage', !!(v && v.type === 'screen' && v.id === 'calendar'));
     if (!hasAccess()) {
         document.body.classList.add('locked');
         paintBackground();
@@ -50527,6 +50570,8 @@ function render() {
         html = screenLists(c);
     else if (v && v.type === 'screen' && v.id === 'rewards')
         html = screenRewards(c);
+    else if (v && v.type === 'screen' && v.id === 'kids')
+        html = screenKids();
     else if (v && v.type === 'screen' && v.id === 'chores')
         html = screenChores();
     else if (v && v.type === 'screen' && v.id === 'learning')
@@ -52293,6 +52338,8 @@ function initControls() {
             const key = t.dataset.sub;
             const val = t.dataset.val;
             state[key] = val === '' ? null : val;
+            if (key === 'choreTab')
+                store.chorePick = null;
         }
         else if (t.dataset.out) {
             if (!Array.isArray(store.outChecked))
@@ -52593,6 +52640,12 @@ function initControls() {
         }
         else if (t.dataset.back) {
             const to = t.dataset.back;
+            if (store.chorePick && state.view && state.view.type === 'screen' && state.view.id === 'chores') {
+                store.chorePick = null;
+                saveStore();
+                render();
+                return;
+            }
             if (to === 'offchild') {
                 store.profileWho = 'me';
                 store.profileEdit = null;
@@ -64284,23 +64337,25 @@ function calRow(e, today) {
     </span>
   </button>`;
 }
+let calFirstTop = 0;
 function calTimeGrid(who) {
     const today = calToday();
     const sel = store.calDay || today;
     const wide = (store.calTab || 'day') === 'week';
-    const days = wide ? calWeekOf(sel) : [sel];
+    const days = wide ? calWeekFrom(sel) : [sel];
     if (wide) {
         setTimeout(() => {
-            const box = document.getElementById('calscroller');
-            if (!box)
-                return;
-            const idx = days.indexOf(sel);
-            if (idx < 0)
-                return;
-            const colW = (box.scrollWidth - 46) / days.length;
-            box.scrollLeft = Math.max(0, (idx * colW) - colW);
+            const box = document.getElementById('calvscroll');
+            if (box)
+                box.scrollLeft = 0;
         }, 0);
     }
+    setTimeout(() => {
+        const box = document.getElementById('calvscroll');
+        if (!box)
+            return;
+        box.scrollTop = Math.max(0, (calFirstTop || 0) - 24);
+    }, 0);
     const byDay = {};
     calAllIn(days[0], days[days.length - 1], who).forEach((e) => {
         if (!byDay[e.date])
@@ -64317,6 +64372,19 @@ function calTimeGrid(who) {
     const height = (range.to - range.from) * px;
     const allDayOf = (d) => (byDay[d] || []).filter((e) => !calSpan(e));
     const step = wide ? 7 : 1;
+    let firstMin = null;
+    all.forEach((e) => {
+        const sp = calSpan(e);
+        if (!sp)
+            return;
+        if (firstMin == null || sp.start < firstMin)
+            firstMin = sp.start;
+    });
+    if (firstMin == null) {
+        const n = new Date();
+        firstMin = n.getHours() * 60 + n.getMinutes();
+    }
+    calFirstTop = Math.max(0, ((firstMin / 60) - range.from) * px);
     return `
   <div class="fchead">
     <button class="fcnav" data-calstep="${-step}"
@@ -64327,10 +64395,11 @@ function calTimeGrid(who) {
   </div>
   ${sel !== today ? `
     <button class="chip" style="margin:0 auto 8px;display:block" data-calstep="today">Back to today</button>` : ''}
-  ${calDayStrip(days, sel, today, byDay, who)}
+  ${''}
+  ${wide ? '' : calDayStrip(days, sel, today, byDay, who)}
   <div class="fctl${wide ? ' wide' : ''}">
     ${''}
-    <div class="fctl-scroll"${wide ? ' id="calscroller"' : ''}>
+    <div class="fctl-scroll" id="calvscroll">
     <div class="fctl-h">
       <span class="fctl-gut"></span>
       ${days.map((d) => {
@@ -64366,11 +64435,13 @@ function calTimeGrid(who) {
         const attrs = reading
             ? (e.go ? `data-calgo="${esc(JSON.stringify(e.go))}"` : 'disabled')
             : `data-calopen="${esc(e.id)}"`;
+        const tight = h < 38;
         return `
-            <button class="fctl-ev${reading ? ' soft' : ''}" ${attrs}
+            <button class="fctl-ev${reading ? ' soft' : ''}${tight ? ' tight' : ''}" ${attrs}
               style="top:${top}px;height:${h}px;left:${item.col * w}%;width:calc(${w}% - 3px);
                 ${reading ? 'color:' + esc(col.ink) + ';border-color:' + esc(col.dot)
-            : 'background:' + esc(col.dot)}">
+            : 'background:' + esc(col.soft) + ';color:' + esc(col.ink)
+                + ';box-shadow:inset 3px 0 0 ' + esc(col.dot)}">
               <span class="fctl-t">${esc(calTimeLabel(e.time))}</span>
               <span class="fctl-n">${esc(e.title)}</span>
             </button>`;
@@ -64913,13 +64984,27 @@ function rewDayBlock(kid, months) {
         return '';
     const jobs = rewTodayJobs(kid.id);
     const on = rewOn(kid);
-    if (!jobs.length)
-        return '';
+    const first = (kid.name || 'They').split(/\s+/)[0];
+    if (!jobs.length) {
+        if (!rewShows(months))
+            return '';
+        const any = (store.choreJobs || []).length;
+        return `
+    <p class="sect" style="margin-top:18px">${esc(first)}'s jobs</p>
+    <div class="pdaybox">
+      <p class="bodytext" style="margin:0">${esc(any
+            ? 'Nothing on the chart for ' + first + ' today. Put a few jobs on and they turn up here, '
+                + 'ready to tick off.'
+            : 'The chore chart is empty. Put a few jobs on it and they turn up here each day, ready to '
+                + 'tick off, with stars if you want them.')}</p>
+      <button class="btn ghost sm" style="width:100%;margin-top:11px" data-go="screen" data-id="chores">
+        ${icon('leaf', 13, 'var(--deep)')} Set up the chart</button>
+    </div>`;
+    }
     const doneN = jobs.filter((j) => j.done).length;
     const starsToday = jobs.filter((j) => j.done).reduce((a, j) => a + j.stars, 0);
     const col = calColorOf(kid.id);
     const pct = jobs.length ? Math.round((doneN / jobs.length) * 100) : 0;
-    const first = (kid.name || 'They').split(/\s+/)[0];
     return `
   <p class="sect" style="margin-top:18px">${esc(first)}'s jobs today</p>
   <div class="pdaybox">
@@ -65176,11 +65261,14 @@ function screenCalendar(c) {
     }
     return `
   ${''}
-  ${pageHeader()}
+  ${''}
+  <div class="calhdr">${pageHeader()}</div>
   <div class="calmquiet"></div>
+  ${''}
+  ${navStack.length ? `
   <div class="sc-head tight">
     <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
-  </div>
+  </div>` : '<div style="height:6px"></div>'}
   <div class="sc">
     <div class="fcviewbar">
       <div class="fcscroll">
@@ -66139,6 +66227,46 @@ function screenProfileTab(c) {
     }
     return screenMyProfile();
 }
+function screenKids() {
+    const kids = store.children || [];
+    return `
+  ${pageHeader()}
+  <div class="sc-head tight">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">Your children</h1>
+    <p class="sub">Open one to change their details, or remove any you no longer want. Removing takes
+      everything kept for them with it.</p>
+  </div>
+  <div class="sc">
+    ${kids.length ? kids.map((k) => {
+        if (removeAsk === k.id)
+            return removeConfirm(k);
+        const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+        const col = calColorOf(k.id);
+        return `
+      <div class="card" style="margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:11px">
+          ${childFace(k, 40)}
+          <span class="grow">
+            <span style="display:block;font-size:15px;font-weight:600;color:var(--ink)">
+              <span class="fcdot" style="display:inline-block;width:8px;height:8px;border-radius:50%;
+                background:${esc(col.dot)};margin-right:7px"></span>${esc(k.name || 'Unnamed')}${isExampleChild(k) ? ' <span class="tag warm">Example</span>' : ''}
+            </span>
+            <span class="tiny" style="display:block;margin-top:2px">
+              ${esc(sum && sum.label ? sum.label : 'No birthday yet')}</span>
+          </span>
+        </div>
+        <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+          <button class="chip" data-child="${esc(k.id)}">Open ${esc((k.name || 'them').split(/\s+/)[0])}</button>
+          <button class="chip" data-removechild="${esc(k.id)}" style="color:#A85A44">Remove</button>
+        </div>
+      </div>`;
+    }).join('') : `
+      <div class="card flat"><p class="bodytext">No children yet.</p></div>`}
+    <button class="btn ghost" style="width:100%;margin-top:10px" data-go="screen" data-id="addchild">
+      ${icon('plus', 15, 'var(--deep)')} Add a child</button>
+  </div>`;
+}
 function screenMyProfile() {
     const p = store.parent || {};
     const editing = editingWho() === 'me';
@@ -66160,8 +66288,10 @@ function screenMyProfile() {
     <div class="profstats">
       <span><b>${posts.length}</b> post${posts.length === 1 ? '' : 's'}</span>
       <span><b>${shared}</b> shared</span>
-      <span><b>${store.children.length}</b> ${store.children.length === 1 ? 'child' : 'children'}</span>
+      <button class="profstat-go" data-go="screen" data-id="kids">
+        <b>${store.children.length}</b> ${store.children.length === 1 ? 'child' : 'children'}</button>
     </div>
+    ${''}
     <div class="editbar">
       ${editing ? `
         <button class="btn" data-edit="save">${icon('check', 15, '#fff')} Save</button>
@@ -70565,7 +70695,9 @@ function chorePeople() {
     store.children.filter((k) => !isExampleChild(k)).forEach((k) => {
         const s = getAgeSummary({ name: k.name, birthday: k.birthday });
         const months = s.age ? s.age.totalMonths : null;
-        if (months != null && !choresForMonths(months).length)
+        if (!choreOldEnough(months))
+            return;
+        if (!choresForMonths(months).length)
             return;
         out.push({
             id: k.id,
@@ -70993,7 +71125,7 @@ function screenChores() {
     <p class="sub">${esc(CHORE_INTRO)}</p>
   </div>
   <div class="sc">
-    ${subTabs('choreTab', tab, tabs)}
+    ${store.chorePick ? '' : subTabs('choreTab', tab, tabs)}
     ${store.chorePick ? chorePicker() : body}
   </div>`;
 }
@@ -71179,6 +71311,9 @@ function chorePicker() {
         : (p.months == null ? [] : choresForMonths(p.months));
     const groups = choresByArea(pool);
     return `
+  <button class="back" data-chore="donepick" style="margin:0 0 12px">
+    ${icon('back', 15, 'var(--deep)')} Back to the chart
+  </button>
   <div class="card leafy">
     <p class="bodytext" style="margin:0">
       A job for ${esc(p.name)} on ${esc(CHORE_DAYS[day].label)}.
