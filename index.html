@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-02 01:07">
+<meta name="rsg-build" content="2026-10-02 13:08">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1707,7 +1707,7 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
   scrollbar-width:thin;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .fctl.wide .fctl-scroll{overflow-x:auto}
 .fctl.wide .fctl-h, .fctl.wide .fctl-b{min-width:max-content}
-.fctl.wide .fctl-col{min-width:74px}
+.fctl.wide .fctl-col{min-width:78px}
 .fctl.wide .fctl-gut{position:sticky;left:0;z-index:4;background:var(--surface)}
 .fctl.wide .fctl-h .fctl-gut{background:var(--surface2);z-index:5}
 @media (min-width:780px){
@@ -1722,7 +1722,10 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 .fctl-b .fctl-gut{border-right:1px solid var(--line2)}
 .fctl-hr{position:absolute;right:6px;transform:translateY(-50%);font-size:10px;color:var(--faint);
   line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
-.fctl-col{flex:1;min-width:0;position:relative;border-left:1px solid var(--line2)}
+/* A hairline between columns rather than a rule. The calendar she
+   sent me has almost no vertical structure at all, which is what lets
+   the coloured cards be the thing you see. */
+.fctl-col{flex:1;min-width:0;position:relative;border-left:1px solid var(--line3,rgba(0,0,0,.045))}
 .fctl-h .fctl-col{border-left:0;padding:0}
 .fctl-col.today{background:rgba(234,239,226,.5)}
 .fctl-line{position:absolute;left:0;right:0;height:1px;background:var(--line2);opacity:.75}
@@ -1731,14 +1734,69 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 .fctl-now::before{content:"";position:absolute;left:-3px;top:-3px;width:8px;height:8px;
   border-radius:50%;background:#A85A44}
 /* An entry. */
-.fctl-ev{position:absolute;z-index:2;appearance:none;border:0;border-radius:6px;padding:3px 6px;
-  text-align:left;overflow:hidden;cursor:pointer;color:#fff;display:flex;flex-direction:column;
-  gap:0;line-height:1.2;box-shadow:0 1px 2px rgba(60,84,53,.15)}
-.fctl-ev .fctl-t{font-size:10px;font-weight:700;opacity:.85;font-variant-numeric:tabular-nums}
-.fctl-ev .fctl-n{font-size:11.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis}
-.fctl-ev.tight{flex-direction:row;align-items:baseline;gap:4px;padding:2px 5px}
-.fctl-ev.tight .fctl-t{flex:none;font-size:9.5px}
-.fctl-ev.tight .fctl-n{font-size:10.5px;white-space:nowrap;min-width:0}
+/* THE CARD.
+   Name on top in bold, time underneath, the person as a small
+   coloured initial in the corner. Rounder and roomier than it was,
+   because a 6 pixel radius with 3 pixels of padding reads as a
+   spreadsheet cell and a 10 pixel radius with 6 reads as a card. */
+.fctl-ev{position:absolute;z-index:2;appearance:none;border:0;border-radius:10px;padding:4px 5px;
+  text-align:left;overflow:hidden;cursor:pointer;display:flex;flex-direction:row;align-items:flex-start;
+  gap:3px;line-height:1.2;box-shadow:0 1px 2px rgba(60,84,53,.12)}
+/* The card is a row of two: the words, then the person. Laying it out
+   rather than absolutely positioning the initial is what stops the
+   circle sitting on top of a long name, which it did. */
+.fctl-ev .fctl-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;overflow:hidden}
+/* break-word, not anywhere. anywhere splits Swimming into Swim and
+   ming the moment the column is one pixel short, which is worse to
+   read than a name that runs out of room. This only breaks a word
+   that genuinely cannot fit on a line of its own. */
+.fctl-ev .fctl-n{font-size:11px;font-weight:700;line-height:1.18;overflow:hidden;
+  overflow-wrap:break-word}
+.fctl-ev .fctl-t{font-size:9.5px;font-weight:500;opacity:.78;font-variant-numeric:tabular-nums;
+  white-space:nowrap}
+/* The initial sits in the bottom corner, out of the flow, because a
+   column that narrow cannot spare 18 pixels of its width to a letter
+   and the bottom corner of a card is nearly always empty. */
+.fctl-who{position:absolute;bottom:3px;right:3px;width:15px;height:15px;border-radius:50%;
+  color:#fff;font-size:9px;font-weight:700;line-height:15px;text-align:center}
+.fctl-ev.tight{align-items:center;gap:4px;padding:2px 5px;border-radius:8px}
+.fctl-ev.tight .fctl-body{flex-direction:row;align-items:baseline;gap:4px}
+.fctl-ev.tight .fctl-n{white-space:nowrap;text-overflow:ellipsis;font-size:10px;min-width:0}
+.fctl-ev.tight .fctl-t{font-size:9px}
+
+/* DINNER, across the top of each day. */
+.fctl-meal{appearance:none;border:0;width:calc(100% - 8px);margin:4px 4px 0;border-radius:7px;
+  padding:3px 6px;font-size:10px;font-weight:700;text-align:left;line-height:1.3;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;
+  background:var(--line2);color:var(--muted)}
+.fctl-meal.empty{background:transparent;border:1px dashed var(--line2);padding:2px 6px;
+  display:flex;align-items:center;justify-content:center;opacity:.55}
+.fctl-mealplus{display:flex;align-items:center}
+.mealquick{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+
+/* THE PEOPLE ROW, in place of the old filter chips. */
+/* THE PEOPLE ROW, LYING DOWN.
+   Stacked, each person was a 90 pixel tall tile and five of them was
+   a second screen before the calendar. On its side it is one line:
+   face, name, and the jobs bar tucked under the name where it reads
+   as a detail of that person rather than a row of its own. */
+.fcpeople{display:flex;gap:7px;padding:1px 0 9px}
+.fcperson{appearance:none;border:1px solid var(--line2);background:var(--surface);
+  border-radius:999px;padding:4px 11px 4px 4px;flex:none;cursor:pointer;
+  display:flex;flex-direction:row;align-items:center;gap:7px}
+.fcperson.on{border-color:var(--deep);box-shadow:0 0 0 1px var(--deep) inset}
+.fcface{width:24px;height:24px;border-radius:50%;color:#fff;font-size:11px;font-weight:700;
+  line-height:24px;text-align:center;flex:none}
+.fcface.all{background:var(--leaf2);display:flex;align-items:center;justify-content:center}
+.fcptext{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
+.fcpname{font-size:11.5px;font-weight:600;color:var(--ink);max-width:88px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;line-height:1.1}
+.fcpjobs{font-size:9px;color:var(--muted);font-variant-numeric:tabular-nums;line-height:1;
+  flex:none}
+.fcpbar{display:block;width:100%;min-width:38px;height:3px;border-radius:99px;
+  background:var(--line2);overflow:hidden}
+.fcpbar i{display:block;height:100%;border-radius:99px}
+.fcprog{display:flex;align-items:center;gap:5px;width:100%}
 .fctl-ev.soft{background:var(--surface)!important;border:1px solid currentColor;box-shadow:none}
 .fctl-ev.soft .fctl-t{opacity:.7}
 /* The all day strip, above the hours where it belongs. */
@@ -2161,7 +2219,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-02 01:07';
+const BUILD_STAMP = '2026-10-02 13:08';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -19796,6 +19854,57 @@ const REW_SOURCES = [
             + 'child in general',
         url: 'https://www.cdc.gov/parents/essentials/consequences/rewards.html' },
 ];
+const MEAL_TITLE = 'Dinner';
+const MEAL_SUB = 'One line a day, so everybody in the house can see what is happening at 6 without asking.';
+const MEAL_PLACEHOLDER = 'What is for dinner';
+const MEAL_HELP = 'Short is better. Tacos, leftovers, whatever is in the freezer. Nobody needs a recipe here, they '
+    + 'need to stop asking.';
+const MEAL_CLEAR = 'Clear this day';
+const MEAL_MAX = 40;
+const MEAL_QUICK = [
+    'Tacos',
+    'Pasta',
+    'Pizza',
+    'Chicken and veg',
+    'Soup',
+    'Stir fry',
+    'Sandwiches',
+    'Breakfast for dinner',
+    'Leftovers',
+    'Takeaway',
+    'Out',
+];
+const MEAL_QUICK_NOTE = 'Tap one, or write your own.';
+const MEAL_COLOR_ID = 'clay';
+function mealClean(text) {
+    return String(text || '').replace(/\s+/g, ' ').trim().slice(0, MEAL_MAX);
+}
+function mealOn(map, date) {
+    if (!map || typeof map !== 'object')
+        return '';
+    return mealClean(map[date] || '');
+}
+function mealSet(map, date, text) {
+    const out = (map && typeof map === 'object') ? map : {};
+    const v = mealClean(text);
+    if (v)
+        out[date] = v;
+    else
+        delete out[date];
+    return out;
+}
+function mealTrim(map, todayDate, keepDays = 120) {
+    if (!map || typeof map !== 'object')
+        return {};
+    const out = {};
+    const cut = new Date(todayDate + 'T00:00:00');
+    cut.setDate(cut.getDate() - keepDays);
+    const cutKey = cut.getFullYear() + '-' + String(cut.getMonth() + 1).padStart(2, '0')
+        + '-' + String(cut.getDate()).padStart(2, '0');
+    Object.keys(map).forEach((d) => { if (d >= cutKey)
+        out[d] = map[d]; });
+    return out;
+}
 const FEED_STATUS = {
     live: 'live',
     held: 'held',
@@ -49430,6 +49539,8 @@ const store = {
     choreTab: 'today',
     choreDay: null,
     chorePick: null,
+    meals: {},
+    mealEdit: null,
     learnBand: '',
     learnTab: 'day',
     pushOn: false,
@@ -49605,6 +49716,7 @@ function flushStore() {
             deletedListIds: store.deletedListIds,
             rewards: store.rewards,
             rewardLog: store.rewardLog,
+            meals: store.meals,
             notDuplicates: store.notDuplicates,
             parentUpdatedAt: store.parentUpdatedAt,
         }));
@@ -49668,6 +49780,7 @@ function loadStore() {
         store.lists = Array.isArray(saved.lists) ? saved.lists : [];
         store.rewards = Array.isArray(saved.rewards) ? saved.rewards : [];
         store.rewardLog = Array.isArray(saved.rewardLog) ? saved.rewardLog : [];
+        store.meals = (saved.meals && typeof saved.meals === 'object') ? saved.meals : {};
         store.deletedListIds = Array.isArray(saved.deletedListIds) ? saved.deletedListIds : [];
         store.deletedEventIds = Array.isArray(saved.deletedEventIds) ? saved.deletedEventIds : [];
         store.notDuplicates = Array.isArray(saved.notDuplicates) ? saved.notDuplicates : [];
@@ -51175,7 +51288,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -51755,7 +51868,27 @@ function initControls() {
             return;
         }
         else if (t.dataset.calfilter) {
-            store.calWho = t.dataset.calfilter;
+            store.calWho = (store.calWho === t.dataset.calfilter && t.dataset.calfilter !== 'all')
+                ? 'all' : t.dataset.calfilter;
+        }
+        else if (t.dataset.calmeal) {
+            store.mealEdit = t.dataset.calmeal;
+        }
+        else if (t.dataset.mealpick) {
+            mealSave(store.mealEdit, t.dataset.mealpick);
+            store.mealEdit = null;
+        }
+        else if (t.dataset.mealsave) {
+            const f = document.getElementById('mealin');
+            mealSave(store.mealEdit, f ? f.value : '');
+            store.mealEdit = null;
+        }
+        else if (t.dataset.mealclear) {
+            mealSave(store.mealEdit, '');
+            store.mealEdit = null;
+        }
+        else if (t.dataset.mealcancel) {
+            store.mealEdit = null;
         }
         else if (t.dataset.calshift != null && t.hasAttribute('data-calshift')) {
             const v = t.dataset.calshift;
@@ -64337,6 +64470,47 @@ function calRow(e, today) {
     </span>
   </button>`;
 }
+function calPersonProgress(id) {
+    const day = choreTodayIndex();
+    const jobs = choreJobsFor(id, day);
+    if (!jobs.length)
+        return null;
+    const key = ciToday();
+    const done = jobs.filter((j) => choreIsDone(j.id, key)).length;
+    return { done: done, all: jobs.length };
+}
+function calPeopleRow(who) {
+    const opts = calWhoOptions();
+    return `
+  <div class="fcscroll fcpeople">
+    <button class="fcperson${who === 'all' ? ' on' : ''}" data-calfilter="all"
+      aria-pressed="${who === 'all'}">
+      <span class="fcface all">${icon('people', 14, 'var(--deep)')}</span>
+      <span class="fcptext"><span class="fcpname">${esc(CAL_WHO_ALL)}</span></span>
+    </button>
+    ${opts.map((o) => {
+        const col = calColorOf(o.id);
+        const first = o.id === CAL_WHO_HOUSE_ID
+            ? 'House' : String(o.label || '').trim().split(/\s+/)[0];
+        const pr = o.id === CAL_WHO_HOUSE_ID ? null : calPersonProgress(o.id);
+        const pct = pr ? Math.round((pr.done / pr.all) * 100) : 0;
+        return `
+      <button class="fcperson${who === o.id ? ' on' : ''}" data-calfilter="${esc(o.id)}"
+        aria-pressed="${who === o.id}"
+        aria-label="${esc(o.label)}${pr ? esc(', ' + pr.done + ' of ' + pr.all + ' jobs done today') : ''}">
+        <span class="fcface" style="background:${esc(col.dot)}">${esc(calInitial(o.id))}</span>
+        <span class="fcptext">
+          <span class="fcpname">${esc(first)}</span>
+          ${pr ? `
+            <span class="fcprog">
+              <span class="fcpjobs">${pr.done}/${pr.all}</span>
+              <span class="fcpbar"><i style="width:${pct}%;background:${esc(col.dot)}"></i></span>
+            </span>` : ''}
+        </span>
+      </button>`;
+    }).join('')}
+  </div>`;
+}
 let calFirstTop = 0;
 function calTimeGrid(who) {
     const today = calToday();
@@ -64370,7 +64544,9 @@ function calTimeGrid(who) {
         hours.push(h);
     const px = 46;
     const height = (range.to - range.from) * px;
-    const allDayOf = (d) => (byDay[d] || []).filter((e) => !calSpan(e));
+    const allDayOf = (d) => (byDay[d] || [])
+        .filter((e) => !calSpan(e))
+        .filter((e) => String(e.id || '').indexOf('chore:') !== 0);
     const step = wide ? 7 : 1;
     let firstMin = null;
     all.forEach((e) => {
@@ -64412,6 +64588,17 @@ function calTimeGrid(who) {
               <span class="fctl-dw">${esc(CAL_DOW[p.getDay()])}</span>
               <span class="fctl-dn">${p.getDate()}</span>
             </button>` : ''}
+          ${''}
+          ${(() => {
+            const m = mealFor(d);
+            const mc = calColor(MEAL_COLOR_ID);
+            return `
+            <button class="fctl-meal${m ? '' : ' empty'}" data-calmeal="${esc(d)}"
+              style="${m ? 'background:' + esc(mc.soft) + ';color:' + esc(mc.ink) : ''}"
+              aria-label="${m ? esc('Dinner on this day, ' + m) : 'Add dinner for this day'}">
+              ${m ? esc(m) : `<span class="fctl-mealplus">${icon('plus', 10, 'var(--faint)')}</span>`}
+            </button>`;
+        })()}
           ${ad.length ? `<div class="fctl-ad">${ad.map(calChipEl).join('')}</div>` : ''}
         </div>`;
     }).join('')}
@@ -64435,15 +64622,19 @@ function calTimeGrid(who) {
         const attrs = reading
             ? (e.go ? `data-calgo="${esc(JSON.stringify(e.go))}"` : 'disabled')
             : `data-calopen="${esc(e.id)}"`;
-        const tight = h < 38;
+        const tight = h < 40;
+        const ini = calInitial(e.who);
         return `
             <button class="fctl-ev${reading ? ' soft' : ''}${tight ? ' tight' : ''}" ${attrs}
-              style="top:${top}px;height:${h}px;left:${item.col * w}%;width:calc(${w}% - 3px);
+              style="top:${top}px;height:${h}px;left:${item.col * w}%;width:calc(${w}% - 4px);
                 ${reading ? 'color:' + esc(col.ink) + ';border-color:' + esc(col.dot)
-            : 'background:' + esc(col.soft) + ';color:' + esc(col.ink)
-                + ';box-shadow:inset 3px 0 0 ' + esc(col.dot)}">
-              <span class="fctl-t">${esc(calTimeLabel(e.time))}</span>
-              <span class="fctl-n">${esc(e.title)}</span>
+            : 'background:' + esc(col.soft) + ';color:' + esc(col.ink)}">
+              <span class="fctl-body">
+                <span class="fctl-n">${esc(e.title)}</span>
+                <span class="fctl-t">${esc(calTimeLabel(e.time))}</span>
+              </span>
+              ${tight || reading ? '' : `
+                <span class="fctl-who" style="background:${esc(col.dot)}">${esc(ini)}</span>`}
             </button>`;
     }).join('')}
         </div>`).join('')}
@@ -65249,6 +65440,34 @@ function screenCalendar(c) {
     const tab = store.calTab || 'week';
     const sel = store.calDay || today;
     const editing = !!store.calEdit;
+    if (store.mealEdit) {
+        const d = store.mealEdit;
+        const now = mealFor(d);
+        const p = calParse(d);
+        return `
+    ${cornerLeaves()}
+    <div class="sc-head tight">
+      <button class="back" data-mealcancel="1">${icon('back', 15, 'var(--deep)')} Back</button>
+      <h1 class="title sm">${esc(MEAL_TITLE)}</h1>
+      <p class="sub">${esc(calDayLabel(d, calToday()))}</p>
+    </div>
+    <div class="sc">
+      <div class="card flat">
+        <input class="inp" id="mealin" type="text" autocomplete="off" maxlength="${MEAL_MAX}"
+          placeholder="${esc(MEAL_PLACEHOLDER)}" value="${esc(now)}">
+        <p class="tiny" style="margin:8px 0 0">${esc(MEAL_HELP)}</p>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn grow" data-mealsave="1" style="justify-content:center">Save</button>
+          ${now ? `<button class="btn ghost" data-mealclear="1" style="flex:none">${esc(MEAL_CLEAR)}</button>` : ''}
+        </div>
+      </div>
+      <p class="sect">${esc(MEAL_QUICK_NOTE)}</p>
+      <div class="mealquick">
+        ${MEAL_QUICK.map((q) => `
+          <button class="chip${q === now ? ' on' : ''}" data-mealpick="${esc(q)}">${esc(q)}</button>`).join('')}
+      </div>
+    </div>`;
+    }
     if (editing) {
         return `
     ${cornerLeaves()}
@@ -65280,17 +65499,8 @@ function screenCalendar(c) {
       <button class="fcadd" data-caladd="1" aria-label="Add something">
         ${icon('plus', 18, '#fff')}</button>
     </div>
-    <div class="fcscroll fckey">
-      <button class="chip fcchip${who === 'all' ? ' on' : ''}" data-calfilter="all"
-        aria-pressed="${who === 'all'}">${esc(CAL_WHO_ALL)}</button>
-      ${calWhoOptions().map((o) => {
-        const col = calColorOf(o.id);
-        return `
-        <button class="chip fcchip${who === o.id ? ' on' : ''}" data-calfilter="${esc(o.id)}"
-          aria-pressed="${who === o.id}">
-          <span class="fcdot" style="background:${esc(col.dot)}"></span>${esc(o.label)}</button>`;
-    }).join('')}
-    </div>
+    ${''}
+    ${calPeopleRow(who)}
     ${tab === 'day' || tab === 'week' ? calTimeGrid(who)
         : tab === 'month' ? `
       ${calGrid(who)}
@@ -68731,6 +68941,7 @@ function parentPayload() {
         deletedListIds: store.deletedListIds || [],
         rewards: store.rewards || [],
         rewardLog: store.rewardLog || [],
+        meals: store.meals || {},
         notDuplicates: store.notDuplicates || [],
         updatedAt: store.parentUpdatedAt || 0,
     }));
@@ -68974,6 +69185,10 @@ async function cloudFirstSync() {
             ? remoteUser.rewards : [], []);
         store.rewardLog = mergeEvents(store.rewardLog, Array.isArray(remoteUser.rewardLog)
             ? remoteUser.rewardLog : [], []);
+        if (remoteUser.meals && typeof remoteUser.meals === 'object') {
+            const merged = Object.assign({}, store.meals || {}, remoteUser.meals);
+            store.meals = mealTrim(merged, calToday());
+        }
     }
     remoteKids.forEach((k) => { cloud.known[k.id] = contentKey(k); });
     if (remoteUser)
@@ -70724,6 +70939,27 @@ function calColorOf(who) {
         return calColorFor('me', (store.parent || {}).calColor);
     const k = (store.children || []).filter((x) => x.id === who)[0];
     return calColorFor(who, k ? k.calColor : '');
+}
+function calInitial(who) {
+    if (!who || who === CAL_WHO_HOUSE_ID)
+        return '\u00B7';
+    if (who === 'me')
+        return ((store.parent || {}).name || 'You').trim().charAt(0).toUpperCase();
+    const k = (store.children || []).filter((x) => x.id === who)[0];
+    return ((k && k.name) || '?').trim().charAt(0).toUpperCase();
+}
+function mealMap() {
+    if (!store.meals || typeof store.meals !== 'object')
+        store.meals = {};
+    return store.meals;
+}
+function mealFor(date) {
+    return mealOn(mealMap(), date);
+}
+function mealSave(date, text) {
+    store.meals = mealTrim(mealSet(mealMap(), date, text), calToday());
+    store.parentUpdatedAt = Date.now();
+    flushStore();
 }
 function calEvents() {
     return Array.isArray(store.events) ? store.events : [];
