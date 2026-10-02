@@ -237,6 +237,34 @@ export function choreById(id) {
   return CHORES.filter((c) => c.id === id)[0] || null;
 }
 
+/* ------------------------------------------------------------------
+   WHO IS OLD ENOUGH TO BE ON THE CHART AT ALL
+
+   Separate from minMonths, and it has to be. minMonths says the
+   earliest age a child could manage one particular job, and some of
+   those are 16 months, because a 16 month old genuinely can carry
+   their cup to the sink.
+
+   Being ON a chart is a different question. A chart is a list of
+   things somebody is expected to do, with their name on it, and that
+   only means anything once a child understands that it is theirs.
+   Before 2 that is not where they are, and a row with a toddler's
+   name on it mostly becomes a row the parent quietly does themselves
+   and ticks.
+
+   So the chart starts at 2, and a child with no birthday on file is
+   left off entirely rather than guessed at, because the whole point
+   of the age floor is not guessing.
+   ------------------------------------------------------------------ */
+export const CHORE_MIN_MONTHS = 24;
+
+export const CHORE_MIN_NOTE =
+  'The chart starts at 2. Younger than that and a job with their name on it is really still yours.';
+
+export function choreOldEnough(months) {
+  return months != null && isFinite(Number(months)) && Number(months) >= CHORE_MIN_MONTHS;
+}
+
 /* Everything a child of this age could reasonably be offered. Open
    ended on purpose: a twelve year old can still be the one who feeds
    the cat, and taking the easy jobs away as they grow is how you end

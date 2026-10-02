@@ -237,6 +237,30 @@ export function calWeekOf(date) {
   return out;
 }
 
+/* ------------------------------------------------------------------
+   THE WEEK THAT IS COMING, NOT THE WEEK ON THE WALL
+
+   A Sunday to Saturday week is right on paper, where you can see the
+   whole thing at once. On a phone, where about four columns fit and
+   the rest is a swipe away, it is quietly wrong: open the app on a
+   Friday and more than half of the grid is days that have already
+   happened, and the part she actually wants, what is coming, is the
+   part off the edge of the screen.
+
+   Her words for this screen were "the week of what's to come", so the
+   week view is seven days starting from the day she is on, which is
+   today unless she has moved. The month view is still a proper
+   calendar month with Sunday at the left, because there the whole
+   thing does fit and the shape of the month is the information.
+   ------------------------------------------------------------------ */
+export function calWeekFrom(date) {
+  const d = calParse(date);
+  if (!d) return [];
+  const out = [];
+  for (let i = 0; i < 7; i += 1) out.push(calAddDays(date, i));
+  return out;
+}
+
 export function calWeekLabel(dates) {
   if (!dates || !dates.length) return '';
   const a = calParse(dates[0]);
@@ -511,15 +535,39 @@ export function calRemindAt(ev) {
    keeps them apart. Colour is never the only signal anyway: every row
    says whose it is in words, and the filter chips work without it.
    ================================================================== */
+/* ------------------------------------------------------------------
+   THE PALETTE, SECOND PASS
+
+   The first set was too polite. Every soft fill was within a few
+   percent of white, so a week with 6 things on it still read as a
+   cream page with cream boxes on it, and her note was exactly right:
+   soft colours, not just cream and green.
+
+   These are still quiet, and they are still built around the app's
+   sage, but each one is now far enough from the paper to be a colour
+   you can name across the room, which is the whole job a person
+   colour has to do on a family calendar.
+
+   Three values each and they are not interchangeable:
+     dot   the full strength colour. The chip beside a name, the
+           stripe down the side of an entry. Never a background behind
+           text, because white on these at 11px is thin and tiring.
+     soft  the fill behind an entry. Light enough for dark text to sit
+           on it at a comfortable contrast and saturated enough to be
+           recognisable at the size of a 30 minute appointment.
+     ink   the text on that fill. Each one is checked against its own
+           soft rather than against white, so no pairing is the one
+           that goes grey in sunlight.
+   ------------------------------------------------------------------ */
 export const CAL_COLORS = [
-  { id: 'sage', label: 'Sage', dot: '#7C9068', soft: '#EAEFE2', ink: '#3C5435' },
-  { id: 'clay', label: 'Clay', dot: '#A85A44', soft: '#F6E8E3', ink: '#7C4030' },
-  { id: 'sky', label: 'Sky', dot: '#5B7F99', soft: '#E4EDF2', ink: '#3B5A6E' },
-  { id: 'plum', label: 'Plum', dot: '#7A5B82', soft: '#EFE7F1', ink: '#553D5C' },
-  { id: 'honey', label: 'Honey', dot: '#B58B3C', soft: '#F6EDD9', ink: '#7E5F22' },
-  { id: 'moss', label: 'Moss', dot: '#5F7355', soft: '#E6EBE1', ink: '#3F4F38' },
-  { id: 'rose', label: 'Rose', dot: '#A76A77', soft: '#F4E7EA', ink: '#75464F' },
-  { id: 'slate', label: 'Slate', dot: '#6B7280', soft: '#E9EAEC', ink: '#45494F' },
+  { id: 'sage', label: 'Sage', dot: '#7C9068', soft: '#DCE8CC', ink: '#36502C' },
+  { id: 'clay', label: 'Apricot', dot: '#C9765B', soft: '#FADFD2', ink: '#7A3B27' },
+  { id: 'sky', label: 'Sky', dot: '#5D90AC', soft: '#D6E8F2', ink: '#2F5468' },
+  { id: 'plum', label: 'Lilac', dot: '#8B6EA0', soft: '#E7DCF2', ink: '#4D3660' },
+  { id: 'honey', label: 'Honey', dot: '#C79A47', soft: '#FAEECC', ink: '#6E521A' },
+  { id: 'moss', label: 'Mint', dot: '#5E9A7C', soft: '#D4EDDF', ink: '#2C5440' },
+  { id: 'rose', label: 'Rose', dot: '#C0738A', soft: '#FADEE6', ink: '#6D3A49' },
+  { id: 'slate', label: 'Slate', dot: '#6E7A8C', soft: '#DFE4EC', ink: '#3A4350' },
 ];
 
 export function calColor(id) {
