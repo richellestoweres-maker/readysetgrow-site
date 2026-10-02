@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-02 00:17">
+<meta name="rsg-build" content="2026-10-02 00:34">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -336,14 +336,26 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 .back{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--deep);padding:6px 2px;min-height:38px}
 
 /* ---------- TAB BAR ---------- */
-/* Tighter, now there are no words to make room for. */
-.tabs{display:flex;background:var(--surface);border-top:1px solid var(--line2);padding:4px 6px 7px;flex:none;position:relative;z-index:2;gap:2px}
+/* GROUPED, NOT SPREAD.
+
+   The tabs were flex:1, which stretches them to fill the whole width
+   whatever the screen, so 6 icons ended up marooned at opposite ends
+   of a phone. They are a fixed size and centred now, so they sit as
+   one group a thumb can travel across. Still 48 wide and 46 tall,
+   which is above the 44 pixel minimum for something you tap. */
+.tabs{display:flex;justify-content:center;gap:0;background:var(--surface);
+  border-top:1px solid var(--line2);padding:4px 6px 7px;flex:none;position:relative;z-index:2}
 /* Icons only. The words are still in the markup for screen readers,
    they are just not drawn, which is what let 6 tabs fit across a
    phone when 6 labelled ones would not. */
-.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 0 7px;
-  color:var(--muted);min-height:46px;justify-content:center}
+.tab{flex:none;width:44px;display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:9px 0 7px;color:var(--muted);min-height:46px;justify-content:center}
+@media (max-width:360px){ .tab{width:40px} }
 .tab[aria-selected="true"]{color:var(--deep)}
+.tabic{position:relative;display:flex;align-items:center;justify-content:center}
+.tabbadge{position:absolute;top:-5px;right:-8px;min-width:16px;height:16px;padding:0 4px;
+  border-radius:9px;background:#A85A44;color:#fff;font-size:10px;font-weight:700;line-height:16px;
+  text-align:center;box-shadow:0 0 0 2px var(--surface)}
 /* Selected is marked by the bar AND by the icon colour, never by
    colour alone. */
 .tab .dot{width:16px;height:2.5px;border-radius:2px;background:transparent}
@@ -1767,6 +1779,41 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 .calmquiet{position:fixed;inset:0;background:var(--cream);z-index:0;pointer-events:none}
 
 /* ==================================================================
+   THE JOBS CHART AND ITS STARS
+
+   A ring rather than a bar, because a ring reads as "how far round am
+   I" at a glance and a bar reads as a measurement. The number inside
+   it is the honest version: 2 of 5, not a percentage.
+   ================================================================== */
+.rewhead{display:flex;align-items:center;gap:12px;padding:2px 2px 12px;
+  border-bottom:1px solid var(--line2);margin-bottom:10px}
+.rewring{width:48px;height:48px;min-width:48px;border-radius:50%;display:grid;place-items:center;flex:none}
+.rewring-in{width:38px;height:38px;border-radius:50%;background:var(--surface);display:grid;
+  place-items:center;font-size:14px;font-weight:700;color:var(--ink);line-height:1;
+  font-variant-numeric:tabular-nums}
+.rewring-of{font-size:10px;font-weight:600;color:var(--faint)}
+.rewhead-t{display:block;font-size:14.5px;font-weight:600;color:var(--ink);line-height:1.3}
+.rewhead-s{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--body);
+  opacity:.8;margin-top:2px;line-height:1.35}
+
+.rewjobs{display:flex;flex-direction:column;gap:2px}
+.rewjob{display:flex;align-items:center;gap:11px;width:100%;text-align:left;appearance:none;
+  border:0;background:transparent;border-radius:10px;padding:9px 8px;cursor:pointer;
+  font-size:14.5px;color:var(--ink);line-height:1.35}
+.rewjob:hover{background:var(--leaf3)}
+.rewjob.done{color:var(--faint)}
+.rewjob.done .grow{text-decoration:line-through}
+.rewjob-t{width:22px;height:22px;min-width:22px;border-radius:7px;border:2px solid var(--line);
+  display:grid;place-items:center;flex:none;transition:background .12s}
+.rewjob.done .rewjob-t{background:var(--sage);border-color:var(--sage)}
+.rewjob-s{display:flex;align-items:center;gap:2px;font-size:12px;font-weight:700;color:#B58B3C;
+  flex:none;font-variant-numeric:tabular-nums}
+
+/* The running total, on the rewards screen. */
+.rewbig{font-size:38px;font-weight:700;color:var(--deep2);line-height:1;margin:6px 0 2px;
+  font-variant-numeric:tabular-nums}
+
+/* ==================================================================
    LISTS
 
    A ticked thing goes grey and sinks, it does not disappear. Half the
@@ -2089,7 +2136,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-02 00:17';
+const BUILD_STAMP = '2026-10-02 00:34';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -19637,6 +19684,84 @@ function listSort(items) {
 }
 const LISTS_PRIVACY = 'Lists are shared with everybody signed in to this house and with nobody else. They are never '
     + 'posted, never shown in the community, and nothing on them reaches another family.';
+const REW_TITLE = 'Stars and rewards';
+const REW_SUB = 'Jobs on the chart earn stars. Stars buy something the family agreed on. Off until you turn it on '
+    + 'for a child, because this suits some children and not others.';
+const REW_FROM_MONTHS = 36;
+const REW_TO_MONTHS = 156;
+const REW_AGE_NOTE = 'Usually lands somewhere between 3 and 13. Younger than that and the star is not connected to the '
+    + 'job yet. Older and most children would rather be asked, or paid.';
+const REW_OFF_TITLE = 'Stars are off for this child';
+const REW_OFF_BODY = [
+    'Reward charts help some children a great deal and make things worse for others, and which one it '
+        + 'is depends on the child rather than on the chart.',
+    'They work well when a child needs the next step made visible and the win made obvious. They work '
+        + 'badly when the thing being asked is already hard for a reason, such as attention or sensory '
+        + 'load, because the barrier was never motivation, and a chart then turns an ordinary morning '
+        + 'into something they can fail at.',
+    'You know which one yours is. Nothing here switches itself on.',
+];
+const REW_ON_LABEL = 'Turn stars on for';
+const REW_HOW = {
+    title: 'How it works',
+    items: [
+        'Jobs on the chore chart are already worth 1, 2 or 3 stars depending on how big they are.',
+        'Ticking a job off earns its stars. Unticking it takes them back off, because it was a mistake '
+            + 'rather than a punishment.',
+        'Stars are never removed for behaviour. The only thing that spends them is choosing a reward.',
+        'You set the rewards and what they cost, so a week of jobs buys something real rather than '
+            + 'something the app invented.',
+    ],
+};
+const REW_IDEAS = [
+    { id: 'story', label: 'An extra bedtime story', cost: 10, kind: 'time' },
+    { id: 'pick-dinner', label: 'Pick what is for dinner', cost: 20, kind: 'choice' },
+    { id: 'film', label: 'Film night, their choice', cost: 40, kind: 'time' },
+    { id: 'late', label: 'Stay up 30 minutes later, once', cost: 30, kind: 'choice' },
+    { id: 'park', label: 'A trip to the park with you', cost: 25, kind: 'time' },
+    { id: 'baking', label: 'Bake something together', cost: 35, kind: 'time' },
+    { id: 'friend', label: 'A friend over', cost: 60, kind: 'time' },
+    { id: 'money', label: 'Pocket money', cost: 50, kind: 'thing' },
+    { id: 'toy', label: 'A small something from the shop', cost: 80, kind: 'thing' },
+];
+const REW_IDEAS_NOTE = 'Time and choice work better than things, and cost nothing, which is also why they last. Change '
+    + 'any of these or write your own.';
+const REW_NEW_PLACEHOLDER = 'What they are working towards';
+const REW_EMPTY = {
+    title: 'Nothing to work towards yet',
+    body: 'Stars only mean something once there is something to spend them on. Pick one below or '
+        + 'write your own, and agree it with them before it starts.',
+};
+const REW_SPEND_ASK = 'Give this reward and take the stars off';
+const REW_NOT_ENOUGH = 'Not enough stars yet';
+const REW_HISTORY_TITLE = 'Already earned';
+const REW_HISTORY_EMPTY = 'Nothing claimed yet.';
+const REW_NEVER_TAKE = 'Stars are never taken away for behaviour. The only thing that spends them is a reward you both '
+    + 'agreed on.';
+function rewStarsFromJobs(jobs, choreLookup) {
+    let n = 0;
+    (jobs || []).forEach((j) => {
+        const c = choreLookup(j.choreId);
+        n += (c && c.stars) ? c.stars : 1;
+    });
+    return n;
+}
+function rewShows(months) {
+    return months != null && months >= REW_FROM_MONTHS && months <= REW_TO_MONTHS;
+}
+function rewCanAfford(balance, cost) {
+    return (Number(balance) || 0) >= (Number(cost) || 0);
+}
+const REW_SOURCES = [
+    { org: 'NHS',
+        label: 'Reward charts for children, including keeping them to a few specific things and not '
+            + 'taking rewards away once earned',
+        url: 'https://www.nhs.uk/conditions/baby/babys-development/behaviour/temper-tantrums/' },
+    { org: 'CDC, Essentials for Parenting',
+        label: 'Using rewards and why praising the specific thing done works better than praising the '
+            + 'child in general',
+        url: 'https://www.cdc.gov/parents/essentials/consequences/rewards.html' },
+];
 const FEED_STATUS = {
     live: 'live',
     held: 'held',
@@ -49181,6 +49306,7 @@ function newChildRecord(name, birthday) {
         birthday: birthday || null,
         photo: '',
         calColor: '',
+        starsOn: false,
         lenses: [],
         lensOptions: {},
         lensNumbers: {},
@@ -49253,6 +49379,9 @@ const store = {
     calWeekShift: 0,
     lists: [],
     deletedListIds: [],
+    rewards: [],
+    rewardLog: [],
+    rewKid: '',
     listOpen: '',
     listNewOpen: false,
     listDraftName: '',
@@ -49378,7 +49507,7 @@ const state = {};
     'tab', 'view', 'undGroup', 'lensBand', 'feedTab', 'outTab', 'safetyTab',
     'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'sexedTab',
     'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab', 'crTab', 'calTab',
-    'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift', 'lists', 'deletedListIds', 'listOpen',
+    'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift', 'lists', 'deletedListIds', 'listOpen', 'rewards', 'rewardLog', 'rewKid',
     'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
     Object.defineProperty(state, key, {
         enumerable: true,
@@ -49435,6 +49564,8 @@ function flushStore() {
             calFeeds: store.calFeeds,
             lists: store.lists,
             deletedListIds: store.deletedListIds,
+            rewards: store.rewards,
+            rewardLog: store.rewardLog,
             notDuplicates: store.notDuplicates,
             parentUpdatedAt: store.parentUpdatedAt,
         }));
@@ -49496,6 +49627,8 @@ function loadStore() {
         store.events = Array.isArray(saved.events) ? saved.events : [];
         store.calFeeds = (saved.calFeeds && typeof saved.calFeeds === 'object') ? saved.calFeeds : {};
         store.lists = Array.isArray(saved.lists) ? saved.lists : [];
+        store.rewards = Array.isArray(saved.rewards) ? saved.rewards : [];
+        store.rewardLog = Array.isArray(saved.rewardLog) ? saved.rewardLog : [];
         store.deletedListIds = Array.isArray(saved.deletedListIds) ? saved.deletedListIds : [];
         store.deletedEventIds = Array.isArray(saved.deletedEventIds) ? saved.deletedEventIds : [];
         store.notDuplicates = Array.isArray(saved.notDuplicates) ? saved.notDuplicates : [];
@@ -50152,9 +50285,8 @@ function emptyScreen(msg) {
 const BOTTOM_BAR = ['today', 'now', 'child', 'logs', 'me'];
 function tabList() {
     return [
-        { id: 'community', label: 'Community', icon: 'people' },
-        { id: 'logs', label: 'Logs', icon: 'note' },
         { id: 'home', label: 'Home', icon: 'home', center: true },
+        { id: 'community', label: 'Community', icon: 'people' },
         { id: 'outings', label: 'Outings', icon: 'bag' },
         { id: 'calendar', label: 'Calendar', icon: 'calendar' },
         { id: 'profile', label: 'Profile', icon: 'user' },
@@ -50393,6 +50525,8 @@ function render() {
         html = screenCalendar(c);
     else if (v && v.type === 'screen' && v.id === 'lists')
         html = screenLists(c);
+    else if (v && v.type === 'screen' && v.id === 'rewards')
+        html = screenRewards(c);
     else if (v && v.type === 'screen' && v.id === 'chores')
         html = screenChores();
     else if (v && v.type === 'screen' && v.id === 'learning')
@@ -50487,10 +50621,8 @@ function render() {
     else if (v && v.type === 'caretaker')
         html = viewCaretaker(v.id);
     else if (v && v.type === 'screen' && v.id === 'momlogs') {
-        state.view = null;
-        state.tab = 'logs';
         store.logWho = 'me';
-        html = screenLogsHub(c);
+        html = screenLogsHub(c, { page: true });
     }
     else if (v && v.type === 'momnow')
         html = screenMomNowOne(v.id);
@@ -50627,10 +50759,14 @@ function render() {
         <span class="sronly">${esc(t.label)}</span>
       </button>`;
         }
+        const badge = t.id === 'community' ? commBadge() : 0;
         return `
     <button class="tab" role="tab" data-tab="${t.id}" aria-selected="${on}"
-      aria-label="${esc(t.label)}" title="${esc(t.label)}">
-      ${icon(t.icon, 22, on ? 'var(--deep)' : 'var(--muted)')}
+      aria-label="${esc(t.label)}${badge ? ', ' + badge + ' waiting' : ''}" title="${esc(t.label)}">
+      <span class="tabic">
+        ${icon(t.icon, 22, on ? 'var(--deep)' : 'var(--muted)')}
+        ${badge ? `<span class="tabbadge">${badge > 9 ? '9+' : badge}</span>` : ''}
+      </span>
       <span class="sronly">${esc(t.label)}</span><span class="dot"></span>
     </button>`;
     }).join('');
@@ -50994,7 +51130,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -51583,6 +51719,46 @@ function initControls() {
                 store.calShift = -24;
             if (store.calShift > 24)
                 store.calShift = 24;
+        }
+        else if (t.dataset.rewon) {
+            const k = (store.children || []).filter((x) => x.id === t.dataset.rewon)[0];
+            if (k) {
+                k.starsOn = true;
+                k.updatedAt = Date.now();
+            }
+        }
+        else if (t.dataset.rewoff) {
+            const k = (store.children || []).filter((x) => x.id === t.dataset.rewoff)[0];
+            if (k) {
+                k.starsOn = false;
+                k.updatedAt = Date.now();
+            }
+        }
+        else if (t.dataset.rewkid) {
+            store.rewKid = t.dataset.rewkid;
+        }
+        else if (t.dataset.rewadd) {
+            const idea = REW_IDEAS.filter((x) => x.id === t.dataset.rewadd)[0];
+            if (!idea)
+                return;
+            store.rewards = rewList().concat([{
+                    id: 'r' + Date.now() + Math.floor(Math.random() * 1000),
+                    label: idea.label, cost: idea.cost, updatedAt: Date.now(),
+                }]);
+            store.parentUpdatedAt = Date.now();
+        }
+        else if (t.dataset.rewspend) {
+            const r = rewList().filter((x) => x.id === t.dataset.rewspend)[0];
+            const kidId = t.dataset.kid;
+            if (!r || !kidId)
+                return;
+            if (!rewCanAfford(rewBalance(kidId), r.cost))
+                return;
+            if (!Array.isArray(store.rewardLog))
+                store.rewardLog = [];
+            store.rewardLog.push({ id: 'g' + Date.now(), kidId: kidId, label: r.label,
+                cost: r.cost, day: calToday(), at: Date.now() });
+            store.parentUpdatedAt = Date.now();
         }
         else if (t.dataset.calgoday) {
             store.calDay = t.dataset.calgoday;
@@ -60539,6 +60715,41 @@ function screenCommRules(c) {
     ${dsec('Sources', sourceRows(CR_SOURCES))}
   </div>`;
 }
+function commWaiting() {
+    const mine = feed.mine || [];
+    const held = mine.filter((p) => p.status === FEED_STATUS.held);
+    const removed = mine.filter((p) => p.status === FEED_STATUS.removed);
+    const queue = (feed.isMod && feed.queue) ? feed.queue.length : 0;
+    return { held: held.length, removed: removed.length, queue: queue,
+        total: held.length + removed.length + queue };
+}
+function commBadge() {
+    const w = commWaiting();
+    return w.total;
+}
+function commWaitingCard() {
+    const w = commWaiting();
+    if (!w.total)
+        return '';
+    const lines = [];
+    if (w.held)
+        lines.push(w.held + (w.held === 1 ? ' post of yours is waiting on a person'
+            : ' posts of yours are waiting on a person'));
+    if (w.removed)
+        lines.push(w.removed + (w.removed === 1 ? ' post was taken down'
+            : ' posts were taken down'));
+    if (w.queue)
+        lines.push(w.queue + (w.queue === 1 ? ' post needs a look' : ' posts need a look'));
+    return `
+  <div class="card" style="margin-bottom:11px;border-color:var(--sage)">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} For you</p>
+    ${lines.map((x) => `<p class="bodytext" style="margin-top:6px">${esc(x)}.</p>`).join('')}
+    <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+      ${w.held || w.removed ? `<button class="chip" data-feed="view" data-v="mine">See yours</button>` : ''}
+      ${w.queue ? `<button class="chip" data-feed="view" data-v="queue">Open the queue</button>` : ''}
+    </div>
+  </div>`;
+}
 function screenCommunity(c) {
     const signedIn = !!auth.user;
     const blocked = blockedList();
@@ -60569,6 +60780,7 @@ function screenCommunity(c) {
     `}
   </div>
   <div class="sc">
+    ${signedIn ? commWaitingCard() : ''}
     ${signedIn ? `
     <div class="feedtabs">
       <button class="chip${tab === 'flies' ? ' on' : ''}" data-feed="view" data-v="flies">${esc(FIREFLY_TITLE)}</button>
@@ -64654,6 +64866,176 @@ function profileDayBlock(whoId) {
     </div>
   </div>`;
 }
+function rewOn(kid) {
+    return !!(kid && kid.starsOn);
+}
+function rewList() {
+    return Array.isArray(store.rewards) ? store.rewards : [];
+}
+function rewEarned(kidId) {
+    const done = (store.choreDone && typeof store.choreDone === 'object') ? store.choreDone : {};
+    const jobs = {};
+    (store.choreJobs || []).forEach((j) => { jobs[j.id] = j; });
+    let n = 0;
+    Object.keys(done).forEach((day) => {
+        Object.keys(done[day] || {}).forEach((jobId) => {
+            if (!done[day][jobId])
+                return;
+            const j = jobs[jobId];
+            if (!j || j.personId !== kidId)
+                return;
+            const c = choreById(j.choreId);
+            n += (c && c.stars) ? c.stars : 1;
+        });
+    });
+    return n;
+}
+function rewSpent(kidId) {
+    return (store.rewardLog || [])
+        .filter((r) => r.kidId === kidId)
+        .reduce((a, r) => a + (Number(r.cost) || 0), 0);
+}
+function rewBalance(kidId) {
+    return Math.max(0, rewEarned(kidId) - rewSpent(kidId));
+}
+function rewTodayJobs(kidId) {
+    const dow = new Date().getDay();
+    const day = ciToday();
+    return (typeof choreLiveJobs === 'function' ? choreLiveJobs() : [])
+        .filter((j) => j.personId === kidId && (j.days || []).indexOf(dow) !== -1)
+        .map((j) => {
+        const c = choreById(j.choreId);
+        return { job: j, chore: c, done: choreIsDone(j.id, day), stars: (c && c.stars) ? c.stars : 1 };
+    });
+}
+function rewDayBlock(kid, months) {
+    if (!kid)
+        return '';
+    const jobs = rewTodayJobs(kid.id);
+    const on = rewOn(kid);
+    if (!jobs.length)
+        return '';
+    const doneN = jobs.filter((j) => j.done).length;
+    const starsToday = jobs.filter((j) => j.done).reduce((a, j) => a + j.stars, 0);
+    const col = calColorOf(kid.id);
+    const pct = jobs.length ? Math.round((doneN / jobs.length) * 100) : 0;
+    const first = (kid.name || 'They').split(/\s+/)[0];
+    return `
+  <p class="sect" style="margin-top:18px">${esc(first)}'s jobs today</p>
+  <div class="pdaybox">
+    <div class="rewhead">
+      <span class="rewring" style="background:conic-gradient(${esc(col.dot)} ${pct}%,var(--leaf2) 0)">
+        <span class="rewring-in">${doneN}<span class="rewring-of">/${jobs.length}</span></span>
+      </span>
+      <span class="grow">
+        <span class="rewhead-t">${doneN === jobs.length
+        ? 'All done' : doneN + ' of ' + jobs.length + ' done'}</span>
+        ${on ? `
+        <span class="rewhead-s">${icon('star', 12, '#B58B3C')} ${starsToday} today,
+          ${rewBalance(kid.id)} saved up</span>` : `
+        <span class="rewhead-s">Stars are off for ${esc(first)}</span>`}
+      </span>
+      ${on ? `<button class="chip" data-go="screen" data-id="rewards">Rewards</button>` : ''}
+    </div>
+    <div class="rewjobs">
+      ${jobs.map((j) => `
+        <button class="rewjob${j.done ? ' done' : ''}" data-chore="tick" data-id="${esc(j.job.id)}">
+          <span class="rewjob-t" style="${j.done ? '' : 'border-color:' + esc(col.dot)}">
+            ${j.done ? icon('check', 13, '#fff') : ''}</span>
+          <span class="grow">${esc(j.chore ? j.chore.label : 'A job')}</span>
+          ${on ? `<span class="rewjob-s">${icon('star', 11, '#B58B3C')}${j.stars}</span>` : ''}
+        </button>`).join('')}
+    </div>
+    ${!on && rewShows(months) ? `
+      <button class="btn ghost sm" style="width:100%;margin-top:10px" data-rewon="${esc(kid.id)}">
+        ${icon('star', 13, 'var(--deep)')} ${esc(REW_ON_LABEL)} ${esc(first)}</button>` : ''}
+  </div>`;
+}
+function screenRewards(c) {
+    const kids = (store.children || []).filter((k) => !isExampleChild(k) && rewOn(k));
+    const who = store.rewKid && kids.some((k) => k.id === store.rewKid)
+        ? store.rewKid : (kids[0] ? kids[0].id : '');
+    const kid = (store.children || []).filter((k) => k.id === who)[0] || null;
+    const list = rewList();
+    return `
+  ${pageHeader()}
+  <div class="sc-head tight">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(REW_TITLE)}</h1>
+    <p class="sub">${esc(REW_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${!kids.length ? `
+      <div class="card flat">
+        <p class="eyebrow">${esc(REW_OFF_TITLE)}</p>
+        ${REW_OFF_BODY.map((x) => `<p class="bodytext" style="margin-top:7px">${esc(x)}</p>`).join('')}
+        <p class="tiny" style="margin-top:9px">${esc(REW_AGE_NOTE)}</p>
+      </div>
+      ${(store.children || []).filter((k) => !isExampleChild(k)).map((k) => {
+        const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+        const m = sum && sum.age ? sum.age.totalMonths : null;
+        if (!rewShows(m))
+            return '';
+        return `
+        <button class="btn ghost" style="width:100%;margin-top:9px" data-rewon="${esc(k.id)}">
+          ${icon('star', 14, 'var(--deep)')} ${esc(REW_ON_LABEL)} ${esc((k.name || '').split(/\\s+/)[0])}
+        </button>`;
+    }).join('')}
+    ` : `
+      ${kids.length > 1 ? `
+      <div class="chips" style="margin-bottom:11px">
+        ${kids.map((k) => `
+          <button class="chip${k.id === who ? ' on' : ''}" data-rewkid="${esc(k.id)}"
+            aria-pressed="${k.id === who}">${esc((k.name || '').split(/\\s+/)[0])}</button>`).join('')}
+      </div>` : ''}
+      <div class="card leafy" style="margin-bottom:12px">
+        <p class="eyebrow">${icon('star', 11, '#B58B3C')} ${esc((kid && kid.name) || 'They')}</p>
+        <p class="rewbig">${rewBalance(who)}</p>
+        <p class="tiny">stars saved up. ${rewEarned(who)} earned, ${rewSpent(who)} spent.</p>
+        <p class="tiny" style="margin-top:8px">${esc(REW_NEVER_TAKE)}</p>
+      </div>
+      ${list.length ? list.map((r) => {
+        const can = rewCanAfford(rewBalance(who), r.cost);
+        return `
+        <div class="card" style="margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:11px">
+            <span class="grow">
+              <span style="display:block;font-size:15px;font-weight:600;color:var(--ink)">${esc(r.label)}</span>
+              <span class="tiny" style="display:block;margin-top:2px">
+                ${icon('star', 10, '#B58B3C')} ${r.cost} stars${can ? '' : ', ' + esc(REW_NOT_ENOUGH)}</span>
+            </span>
+            <button class="btn sm${can ? '' : ' ghost'}" ${can ? '' : 'disabled'}
+              data-rewspend="${esc(r.id)}" data-kid="${esc(who)}">
+              ${can ? 'Give it' : 'Not yet'}</button>
+          </div>
+        </div>`;
+    }).join('') : `
+      <div class="card flat" style="margin-bottom:10px">
+        <p class="eyebrow">${esc(REW_EMPTY.title)}</p>
+        <p class="bodytext" style="margin-top:6px">${esc(REW_EMPTY.body)}</p>
+      </div>`}
+      <p class="sect" style="margin-top:16px">Add a reward</p>
+      <p class="tiny" style="margin:0 0 9px">${esc(REW_IDEAS_NOTE)}</p>
+      ${REW_IDEAS.filter((i) => !list.some((r) => r.label === i.label)).map((i) => `
+        <button class="lrow" data-rewadd="${esc(i.id)}" style="align-items:center;margin-top:7px">
+          <span class="licon">${icon('star', 16, '#B58B3C')}</span>
+          <span class="grow">
+            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(i.label)}</span>
+            <span class="tiny" style="display:block;margin-top:2px">${i.cost} stars</span>
+          </span>
+          <span class="chev">${icon('plus', 15, 'var(--sage)')}</span>
+        </button>`).join('')}
+      ${(store.rewardLog || []).filter((r) => r.kidId === who).length ? `
+      <p class="sect" style="margin-top:18px">${esc(REW_HISTORY_TITLE)}</p>
+      ${(store.rewardLog || []).filter((r) => r.kidId === who).slice().reverse().slice(0, 12).map((r) => `
+        <p class="tiny" style="padding:5px 2px;border-bottom:1px solid var(--line2)">
+          ${esc(r.label)} &middot; ${r.cost} stars &middot; ${esc(calDayLabel(r.day))}</p>`).join('')}` : ''}
+      ${dsec(REW_HOW.title, list2 ? list2(REW_HOW.items) : '<ul class="dlist">'
+        + REW_HOW.items.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul>')}
+      ${dsec('Where this comes from', sourceRows(REW_SOURCES))}
+    `}
+  </div>`;
+}
 function screenLists(c) {
     const open = store.listOpen ? listById(store.listOpen) : null;
     if (open)
@@ -65798,6 +66180,16 @@ function screenMyProfile() {
       <button class="chip" style="margin-top:9px" data-feed="errok">Close</button>
     </div>` : ''}
     ${''}
+    <button class="lrow" data-go="screen" data-id="momlogs" style="align-items:center;margin-top:14px">
+      <span class="licon">${icon('note', 17)}</span>
+      <span class="grow">
+        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Everything logged for you</span>
+        <span class="tiny" style="display:block;margin-top:2px">Feeding, your body, your mood, and
+          where the numbers have moved</span>
+      </span>
+      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+    </button>
+    ${''}
     ${profileWeekBlock()}
     ${''}
     ${posts.length ? '' : `
@@ -65939,7 +66331,8 @@ function screenChild(c) {
     const ciHtml = body.checkin ? body.checkin() : '';
     tiles.sort((x, y) => TILE_IDS.indexOf(x.id) - TILE_IDS.indexOf(y.id));
     const sections = ageNewCard(months, kid, first) + monthTopCard(kid)
-        + (kid ? profileDayBlock(kid.id) : '') + daily + (tiles.length ? `
+        + (kid ? profileDayBlock(kid.id) : '') + daily
+        + (kid ? rewDayBlock(kid, months) : '') + (tiles.length ? `
     <p class="sect" style="margin-top:18px">Everything about ${esc(first)}</p>
     <div class="kidtiles">${tiles.map((t) => kidTile(t.id, t.html)).join('')}</div>` : '')
         + (ciHtml ? `<p class="sect" style="margin-top:18px">How today went</p>` + ciHtml : '')
@@ -68166,6 +68559,7 @@ function normalizeChild(k) {
         arrival: Array.isArray(k.arrival) ? k.arrival : [],
         photo: k.photo || '',
         calColor: typeof k.calColor === 'string' ? k.calColor : '',
+        starsOn: !!k.starsOn,
         routineInclude: Array.isArray(k.routineInclude) ? k.routineInclude : [],
         routineMode: typeof k.routineMode === 'string' ? k.routineMode : '',
         dayKind: k.dayKind && typeof k.dayKind === 'object' ? k.dayKind : null,
@@ -68205,6 +68599,8 @@ function parentPayload() {
         calFeeds: store.calFeeds || {},
         lists: store.lists || [],
         deletedListIds: store.deletedListIds || [],
+        rewards: store.rewards || [],
+        rewardLog: store.rewardLog || [],
         notDuplicates: store.notDuplicates || [],
         updatedAt: store.parentUpdatedAt || 0,
     }));
@@ -68444,6 +68840,10 @@ async function cloudFirstSync() {
         }
         store.deletedListIds = mergeDeletedIds(store.deletedListIds, Array.isArray(remoteUser.deletedListIds) ? remoteUser.deletedListIds : []);
         store.lists = mergeEvents(store.lists, Array.isArray(remoteUser.lists) ? remoteUser.lists : [], store.deletedListIds);
+        store.rewards = mergeEvents(store.rewards, Array.isArray(remoteUser.rewards)
+            ? remoteUser.rewards : [], []);
+        store.rewardLog = mergeEvents(store.rewardLog, Array.isArray(remoteUser.rewardLog)
+            ? remoteUser.rewardLog : [], []);
     }
     remoteKids.forEach((k) => { cloud.known[k.id] = contentKey(k); });
     if (remoteUser)
