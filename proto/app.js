@@ -1181,6 +1181,12 @@ const store = {
   choreTab: 'today',
   choreDay: null,
   chorePick: null,
+  /* What is for dinner, as a flat map of date to one short line.
+     Household level, so it syncs with the calendar and the chart. */
+  meals: {},
+  /* Which day's dinner is open for editing. Transient, never synced,
+     because a half typed meal on one phone is not news on another. */
+  mealEdit: null,
 
   /* Which age band of the learning day is being looked at, when it is
      not simply the active child's own. */
@@ -1491,6 +1497,7 @@ function flushStore() {
       deletedListIds: store.deletedListIds,
       rewards: store.rewards,
       rewardLog: store.rewardLog,
+      meals: store.meals,
       notDuplicates: store.notDuplicates,
       parentUpdatedAt: store.parentUpdatedAt,
     }));
@@ -1569,6 +1576,7 @@ function loadStore() {
     store.lists = Array.isArray(saved.lists) ? saved.lists : [];
     store.rewards = Array.isArray(saved.rewards) ? saved.rewards : [];
     store.rewardLog = Array.isArray(saved.rewardLog) ? saved.rewardLog : [];
+    store.meals = (saved.meals && typeof saved.meals === 'object') ? saved.meals : {};
     store.deletedListIds = Array.isArray(saved.deletedListIds) ? saved.deletedListIds : [];
     store.deletedEventIds = Array.isArray(saved.deletedEventIds) ? saved.deletedEventIds : [];
     store.notDuplicates = Array.isArray(saved.notDuplicates) ? saved.notDuplicates : [];
@@ -3381,7 +3389,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3795,7 +3803,24 @@ function initControls() {
       calDelete(t.dataset.caldelete);
       return;
     } else if (t.dataset.calfilter) {
-      store.calWho = t.dataset.calfilter;
+      /* Tapping the person you are already filtered to goes back to
+         everybody, so the row is a toggle rather than a trap. */
+      store.calWho = (store.calWho === t.dataset.calfilter && t.dataset.calfilter !== 'all')
+        ? 'all' : t.dataset.calfilter;
+    } else if (t.dataset.calmeal) {
+      store.mealEdit = t.dataset.calmeal;
+    } else if (t.dataset.mealpick) {
+      mealSave(store.mealEdit, t.dataset.mealpick);
+      store.mealEdit = null;
+    } else if (t.dataset.mealsave) {
+      const f = document.getElementById('mealin');
+      mealSave(store.mealEdit, f ? f.value : '');
+      store.mealEdit = null;
+    } else if (t.dataset.mealclear) {
+      mealSave(store.mealEdit, '');
+      store.mealEdit = null;
+    } else if (t.dataset.mealcancel) {
+      store.mealEdit = null;
     } else if (t.dataset.calshift != null && t.hasAttribute('data-calshift')) {
       const v = t.dataset.calshift;
       store.calShift = v === '0' ? 0 : (Number(store.calShift) || 0) + Number(v);
@@ -18680,6 +18705,69 @@ function calRow(e, today) {
    with a week strip across the top to move between them. Same grid,
    same code, different number of columns.
    ------------------------------------------------------------------ */
+/* ==================================================================
+   THE PEOPLE ROW
+
+   A circle with an initial in the person's own colour, their name
+   under it, and a thin bar showing how far through today's jobs they
+   are. Tapping one filters the week to them, tapping it again goes
+   back to everybody.
+
+   WHY THE PROGRESS BAR IS HERE AND NOT ONLY ON THE JOBS SCREEN
+   Because the week is the screen a family actually leaves open. A
+   chore chart you have to go and look at is a chart that gets looked
+   at on Sunday. The same number sitting over the calendar is the one
+   somebody notices on a Tuesday.
+
+   WHY A CHILD WITH NO JOBS GETS NO BAR
+   An empty bar reading 0 of 0 looks like a child who has done
+   nothing. A child with nothing on the chart has done exactly what
+   was asked of them.
+   ================================================================== */
+function calPersonProgress(id) {
+  const day = choreTodayIndex();
+  const jobs = choreJobsFor(id, day);
+  if (!jobs.length) return null;
+  const key = ciToday();
+  const done = jobs.filter((j) => choreIsDone(j.id, key)).length;
+  return { done: done, all: jobs.length };
+}
+
+function calPeopleRow(who) {
+  const opts = calWhoOptions();
+  return `
+  <div class="fcscroll fcpeople">
+    <button class="fcperson${who === 'all' ? ' on' : ''}" data-calfilter="all"
+      aria-pressed="${who === 'all'}">
+      <span class="fcface all">${icon('people', 14, 'var(--deep)')}</span>
+      <span class="fcptext"><span class="fcpname">${esc(CAL_WHO_ALL)}</span></span>
+    </button>
+    ${opts.map((o) => {
+    const col = calColorOf(o.id);
+    /* "The whole house" clipped to its first word reads as "The",
+       so the house gets a name of its own rather than a truncation. */
+    const first = o.id === CAL_WHO_HOUSE_ID
+      ? 'House' : String(o.label || '').trim().split(/\s+/)[0];
+    const pr = o.id === CAL_WHO_HOUSE_ID ? null : calPersonProgress(o.id);
+    const pct = pr ? Math.round((pr.done / pr.all) * 100) : 0;
+    return `
+      <button class="fcperson${who === o.id ? ' on' : ''}" data-calfilter="${esc(o.id)}"
+        aria-pressed="${who === o.id}"
+        aria-label="${esc(o.label)}${pr ? esc(', ' + pr.done + ' of ' + pr.all + ' jobs done today') : ''}">
+        <span class="fcface" style="background:${esc(col.dot)}">${esc(calInitial(o.id))}</span>
+        <span class="fcptext">
+          <span class="fcpname">${esc(first)}</span>
+          ${pr ? `
+            <span class="fcprog">
+              <span class="fcpjobs">${pr.done}/${pr.all}</span>
+              <span class="fcpbar"><i style="width:${pct}%;background:${esc(col.dot)}"></i></span>
+            </span>` : ''}
+        </span>
+      </button>`;
+  }).join('')}
+  </div>`;
+}
+
 /* Set by calTimeGrid on every build and read back by the scroller it
    schedules a tick later. A plain variable rather than state, because
    it is a measurement of the thing just drawn and means nothing once
@@ -18740,7 +18828,22 @@ function calTimeGrid(who) {
   const px = 46;
   const height = (range.to - range.from) * px;
 
-  const allDayOf = (d) => (byDay[d] || []).filter((e) => !calSpan(e));
+  /* THE CHORE LINES COME OFF THE TIMELINE.
+
+     They used to sit in the all day strip at the top of each column,
+     one per person per day, which on a week with 2 children was 14
+     identical grey rows pushing the actual calendar off the bottom of
+     the screen and squeezing it to 3 columns. They said nothing a
+     parent could act on either: "Stetson, 2 jobs" every single day.
+
+     The same information is now in the people row across the top, as
+     1 of 2 with a bar, which is the version that changes through the
+     day and is therefore worth looking at. The month and list views
+     still carry the chore lines, because there they are the only
+     place the chart shows up. */
+  const allDayOf = (d) => (byDay[d] || [])
+    .filter((e) => !calSpan(e))
+    .filter((e) => String(e.id || '').indexOf('chore:') !== 0);
 
   /* MOVING THROUGH TIME.
 
@@ -18806,6 +18909,24 @@ function calTimeGrid(who) {
               <span class="fctl-dw">${esc(CAL_DOW[p.getDay()])}</span>
               <span class="fctl-dn">${p.getDate()}</span>
             </button>` : ''}
+          ${/* DINNER SITS WITH THE DAY, NOT IN THE DAY.
+
+                On the calendar she sent me the meal is a bar across
+                the top of the column rather than a block at 6pm, and
+                that is right: dinner is a property of the day, like
+                the date is. Putting it in the grid at a time would
+                make it compete with a piano lesson for space it does
+                not need. */''}
+          ${(() => {
+            const m = mealFor(d);
+            const mc = calColor(MEAL_COLOR_ID);
+            return `
+            <button class="fctl-meal${m ? '' : ' empty'}" data-calmeal="${esc(d)}"
+              style="${m ? 'background:' + esc(mc.soft) + ';color:' + esc(mc.ink) : ''}"
+              aria-label="${m ? esc('Dinner on this day, ' + m) : 'Add dinner for this day'}">
+              ${m ? esc(m) : `<span class="fctl-mealplus">${icon('plus', 10, 'var(--faint)')}</span>`}
+            </button>`;
+          })()}
           ${ad.length ? `<div class="fctl-ad">${ad.map(calChipEl).join('')}</div>` : ''}
         </div>`;
       }).join('')}
@@ -18830,19 +18951,44 @@ function calTimeGrid(who) {
             const attrs = reading
               ? (e.go ? `data-calgo="${esc(JSON.stringify(e.go))}"` : 'disabled')
               : `data-calopen="${esc(e.id)}"`;
-            /* A 30 minute appointment is 21 pixels tall and two
-               stacked lines do not fit in 21 pixels, so the short ones
-               run the time and the name along one line instead of
-               clipping the name in half. */
-            const tight = h < 38;
+            /* THE CARD, REBUILT TO MATCH WHAT SHE SENT ME.
+
+               Four things were wrong and all four were on the card
+               rather than in the grid around it.
+
+               The name goes first and the time goes under it. I had
+               it the other way round, so the eye landed on "2pm" and
+               had to go looking for the thing that was at 2pm. On the
+               calendar she showed me the name is the headline every
+               time, in bold, with the time quiet underneath.
+
+               The person is a small circle with their initial in the
+               top corner, not a stripe down the side. A stripe tells
+               you two entries are different colours. A circle with a
+               letter in it tells you whose it is without a legend,
+               which is the whole reason a family calendar is coloured
+               at all.
+
+               More room inside, and a rounder corner, so a card reads
+               as a card. 3 pixels of padding and a 6 pixel radius
+               reads as a cell in a spreadsheet.
+
+               A 30 minute entry is 21 pixels tall, so the short ones
+               still run on one line, with the initial dropped rather
+               than squashed. */
+            const tight = h < 40;
+            const ini = calInitial(e.who);
             return `
             <button class="fctl-ev${reading ? ' soft' : ''}${tight ? ' tight' : ''}" ${attrs}
-              style="top:${top}px;height:${h}px;left:${item.col * w}%;width:calc(${w}% - 3px);
+              style="top:${top}px;height:${h}px;left:${item.col * w}%;width:calc(${w}% - 4px);
                 ${reading ? 'color:' + esc(col.ink) + ';border-color:' + esc(col.dot)
-    : 'background:' + esc(col.soft) + ';color:' + esc(col.ink)
-      + ';box-shadow:inset 3px 0 0 ' + esc(col.dot)}">
-              <span class="fctl-t">${esc(calTimeLabel(e.time))}</span>
-              <span class="fctl-n">${esc(e.title)}</span>
+    : 'background:' + esc(col.soft) + ';color:' + esc(col.ink)}">
+              <span class="fctl-body">
+                <span class="fctl-n">${esc(e.title)}</span>
+                <span class="fctl-t">${esc(calTimeLabel(e.time))}</span>
+              </span>
+              ${tight || reading ? '' : `
+                <span class="fctl-who" style="background:${esc(col.dot)}">${esc(ini)}</span>`}
             </button>`;
           }).join('')}
         </div>`).join('')}
@@ -19849,6 +19995,39 @@ function screenCalendar(c) {
   const sel = store.calDay || today;
   const editing = !!store.calEdit;
 
+  /* DINNER OPENS AS ITS OWN SMALL SCREEN, not a popup over the grid.
+     One field, eleven one tap answers, and a way to clear it. It is
+     the shortest screen in the app on purpose: anything longer and it
+     stops being quicker than a whiteboard. */
+  if (store.mealEdit) {
+    const d = store.mealEdit;
+    const now = mealFor(d);
+    const p = calParse(d);
+    return `
+    ${cornerLeaves()}
+    <div class="sc-head tight">
+      <button class="back" data-mealcancel="1">${icon('back', 15, 'var(--deep)')} Back</button>
+      <h1 class="title sm">${esc(MEAL_TITLE)}</h1>
+      <p class="sub">${esc(calDayLabel(d, calToday()))}</p>
+    </div>
+    <div class="sc">
+      <div class="card flat">
+        <input class="inp" id="mealin" type="text" autocomplete="off" maxlength="${MEAL_MAX}"
+          placeholder="${esc(MEAL_PLACEHOLDER)}" value="${esc(now)}">
+        <p class="tiny" style="margin:8px 0 0">${esc(MEAL_HELP)}</p>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn grow" data-mealsave="1" style="justify-content:center">Save</button>
+          ${now ? `<button class="btn ghost" data-mealclear="1" style="flex:none">${esc(MEAL_CLEAR)}</button>` : ''}
+        </div>
+      </div>
+      <p class="sect">${esc(MEAL_QUICK_NOTE)}</p>
+      <div class="mealquick">
+        ${MEAL_QUICK.map((q) => `
+          <button class="chip${q === now ? ' on' : ''}" data-mealpick="${esc(q)}">${esc(q)}</button>`).join('')}
+      </div>
+    </div>`;
+  }
+
   if (editing) {
     return `
     ${cornerLeaves()}
@@ -19915,17 +20094,19 @@ function screenCalendar(c) {
         ${icon('plus', 18, '#fff')}</button>
     </div>
 
-    <div class="fcscroll fckey">
-      <button class="chip fcchip${who === 'all' ? ' on' : ''}" data-calfilter="all"
-        aria-pressed="${who === 'all'}">${esc(CAL_WHO_ALL)}</button>
-      ${calWhoOptions().map((o) => {
-        const col = calColorOf(o.id);
-        return `
-        <button class="chip fcchip${who === o.id ? ' on' : ''}" data-calfilter="${esc(o.id)}"
-          aria-pressed="${who === o.id}">
-          <span class="fcdot" style="background:${esc(col.dot)}"></span>${esc(o.label)}</button>`;
-      }).join('')}
-    </div>
+    ${/* THE PEOPLE ROW.
+
+          This was a row of filter chips, which is a control. On the
+          calendar she sent me the same row is a row of PEOPLE: a
+          coloured circle with their initial, their name, and how far
+          through today's jobs they are. It still filters when you tap
+          it, so nothing was lost, but now it is also the one glance
+          that answers who is in this house, what colour are they, and
+          has anybody done anything today.
+
+          The progress bar only appears for somebody who has jobs
+          today. A bar reading 0 of 0 is a reproach for nothing. */''}
+    ${calPeopleRow(who)}
 
     ${tab === 'day' || tab === 'week' ? calTimeGrid(who)
     : tab === 'month' ? `
@@ -24251,6 +24432,10 @@ function parentPayload() {
     deletedListIds: store.deletedListIds || [],
     rewards: store.rewards || [],
     rewardLog: store.rewardLog || [],
+    /* DINNER SYNCS AT THE HOUSEHOLD LEVEL. Same reason as the
+       calendar and the chart: a meal plan only one parent can see is
+       not a meal plan, it is a note to self. */
+    meals: store.meals || {},
     notDuplicates: store.notDuplicates || [],
     updatedAt: store.parentUpdatedAt || 0,
   }));
@@ -24576,6 +24761,18 @@ async function cloudFirstSync() {
        are kept rather than one winning. */
     store.rewardLog = mergeEvents(store.rewardLog, Array.isArray(remoteUser.rewardLog)
       ? remoteUser.rewardLog : [], []);
+    /* DINNER MERGES PER DAY, not per device.
+
+       It is a flat map of date to one line, so there is no id to
+       match on and mergeEvents does not apply. Each day is taken from
+       whichever side has something for it, and when both sides have
+       written a different dinner for the same day the remote one
+       wins, which is the normal rule for a field with no history.
+       The worst case is somebody retypes one word. */
+    if (remoteUser.meals && typeof remoteUser.meals === 'object') {
+      const merged = Object.assign({}, store.meals || {}, remoteUser.meals);
+      store.meals = mealTrim(merged, calToday());
+    }
   }
 
   remoteKids.forEach((k) => { cloud.known[k.id] = contentKey(k); });
@@ -26622,6 +26819,38 @@ function calColorOf(who) {
   if (who === 'me') return calColorFor('me', (store.parent || {}).calColor);
   const k = (store.children || []).filter((x) => x.id === who)[0];
   return calColorFor(who, k ? k.calColor : '');
+}
+
+/* One letter for the circle on a card. The first letter of the
+   person's name, except the whole house, which gets a dot shape
+   rather than a letter because "T" for "The whole house" means
+   nothing to anybody. */
+function calInitial(who) {
+  if (!who || who === CAL_WHO_HOUSE_ID) return '\u00B7';
+  if (who === 'me') return ((store.parent || {}).name || 'You').trim().charAt(0).toUpperCase();
+  const k = (store.children || []).filter((x) => x.id === who)[0];
+  return ((k && k.name) || '?').trim().charAt(0).toUpperCase();
+}
+
+/* ------------------------------------------------------------------
+   DINNER
+
+   Kept with the calendar rather than in its own corner of the app,
+   because the only place it is ever read is the week.
+   ------------------------------------------------------------------ */
+function mealMap() {
+  if (!store.meals || typeof store.meals !== 'object') store.meals = {};
+  return store.meals;
+}
+
+function mealFor(date) {
+  return mealOn(mealMap(), date);
+}
+
+function mealSave(date, text) {
+  store.meals = mealTrim(mealSet(mealMap(), date, text), calToday());
+  store.parentUpdatedAt = Date.now();
+  flushStore();
 }
 
 function calEvents() {
