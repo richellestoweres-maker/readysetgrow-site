@@ -2458,16 +2458,17 @@ function emptyScreen(msg) {
 const BOTTOM_BAR = ['today', 'now', 'child', 'logs', 'me'];
 
 function tabList() {
-  /* HER ORDER, SEPTEMBER 2026 REVISED OCTOBER 2026.
+  /* HER ORDER, SEPTEMBER 2026, REVISED TWICE IN OCTOBER.
 
-     Home used to sit in the middle, raised, on the argument that it is
-     the one you reach for without looking. She has asked for it first
-     instead, which is the other good answer: first is where a thumb
-     starts and where every app puts the thing you came for. It keeps
-     the disc so it still reads as the primary one, it just no longer
-     has to be in the centre for that to be true. */
+     Home sat in the middle, then she asked for it first, then she
+     asked for it back in the middle because the dark green disc is
+     the anchor of the bar and an anchor off to one side looks like a
+     mistake. She is right, and it is also the better thumb position:
+     dead centre is the one spot you can hit without looking.
+
+     The other four keep the order she gave me, Community and Outings
+     to the left of it, Calendar and Profile to the right. */
   return [
-    { id: 'home', label: 'Home', icon: 'home', center: true },
     { id: 'community', label: 'Community', icon: 'people' },
     /* LOGS NO LONGER HAS A TAB.
 
@@ -2482,6 +2483,7 @@ function tabList() {
        own page and so does she. It also gives a tab back on a bar she
        had just told me was too crowded. */
     { id: 'outings', label: 'Outings', icon: 'bag' },
+    { id: 'home', label: 'Home', icon: 'home', center: true },
     { id: 'calendar', label: 'Calendar', icon: 'calendar' },
     { id: 'profile', label: 'Profile', icon: 'user' },
   ];
@@ -2638,6 +2640,22 @@ function render() {
   let html;
   let v = state.view;
 
+  /* THE JOB PICKER IS NEVER OPEN SOMEWHERE ELSE.
+
+     It is a layer on the Jobs screen and nothing else, so the moment
+     the screen is something else it is put away. Without this it sat
+     in the store waiting, and the next visit to Jobs opened on the
+     picker for whoever she had tapped last with no list of names in
+     sight. */
+  if (store.chorePick && !(v && v.type === 'screen' && v.id === 'chores')) {
+    store.chorePick = null;
+  }
+
+  /* The calendar is the one screen where the brand block competes
+     with the thing she came to look at, so it is marked on the body
+     and the stylesheet makes the mark smaller just here. */
+  document.body.classList.toggle('calpage', !!(v && v.type === 'screen' && v.id === 'calendar'));
+
   /* The front door. Nothing else renders until somebody is either
      signed in or has chosen to look around without an account. */
   if (!hasAccess()) {
@@ -2725,6 +2743,7 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'calendar') html = screenCalendar(c);
   else if (v && v.type === 'screen' && v.id === 'lists') html = screenLists(c);
   else if (v && v.type === 'screen' && v.id === 'rewards') html = screenRewards(c);
+  else if (v && v.type === 'screen' && v.id === 'kids') html = screenKids();
   else if (v && v.type === 'screen' && v.id === 'chores') html = screenChores();
   else if (v && v.type === 'screen' && v.id === 'learning') html = screenLearning(c);
   else if (v && v.type === 'screen' && v.id === 'growth') html = screenGrowth(c);
@@ -4217,6 +4236,9 @@ function initControls() {
       const key = t.dataset.sub;
       const val = t.dataset.val;
       state[key] = val === '' ? null : val;
+      /* Moving to another tab of the same screen puts any open picker
+         away rather than leaving it to reappear later. */
+      if (key === 'choreTab') store.chorePick = null;
     } else if (t.dataset.out) {
       if (!Array.isArray(store.outChecked)) store.outChecked = [];
       const id = t.dataset.out;
@@ -4448,6 +4470,15 @@ function initControls() {
       state.view = { type: t.dataset.go, id: t.dataset.id };
     } else if (t.dataset.back) {
       const to = t.dataset.back;
+      /* An open layer closes before the screen does. One Back shuts
+         the job picker, a second one leaves Jobs, which is what Back
+         does everywhere else and what she expected here. */
+      if (store.chorePick && state.view && state.view.type === 'screen' && state.view.id === 'chores') {
+        store.chorePick = null;
+        saveStore();
+        render();
+        return;
+      }
       if (to === 'offchild') {
         /* Coming back off a child's profile means going where she tapped
            their circle from, which is her own Home. */
@@ -18649,6 +18680,12 @@ function calRow(e, today) {
    with a week strip across the top to move between them. Same grid,
    same code, different number of columns.
    ------------------------------------------------------------------ */
+/* Set by calTimeGrid on every build and read back by the scroller it
+   schedules a tick later. A plain variable rather than state, because
+   it is a measurement of the thing just drawn and means nothing once
+   the screen changes. */
+let calFirstTop = 0;
+
 function calTimeGrid(who) {
   const today = calToday();
   const sel = store.calDay || today;
@@ -18661,19 +18698,31 @@ function calTimeGrid(who) {
      and a swipe for the rest. That is what every phone calendar does
      and it still reads unmistakably as a week. */
   const wide = (store.calTab || 'day') === 'week';
-  const days = wide ? calWeekOf(sel) : [sel];
+  const days = wide ? calWeekFrom(sel) : [sel];
   /* Land on today rather than on last Sunday. Done after the paint,
      because the element has to exist and have a width first. */
   if (wide) {
+    /* The week now starts on the day she is looking at, so the left
+       edge already IS today and there is nothing to scroll past. */
     setTimeout(() => {
-      const box = document.getElementById('calscroller');
-      if (!box) return;
-      const idx = days.indexOf(sel);
-      if (idx < 0) return;
-      const colW = (box.scrollWidth - 46) / days.length;
-      box.scrollLeft = Math.max(0, (idx * colW) - colW);
+      const box = document.getElementById('calvscroll');
+      if (box) box.scrollLeft = 0;
     }, 0);
   }
+
+  /* LANDING WHERE THE DAY ACTUALLY IS.
+
+     The grid opened at the top of its hour range, which on most days
+     is 8am and empty, so the first thing the calendar showed her was
+     four columns of nothing and everything real was below the fold.
+     A paper diary does not have this problem because you can see the
+     whole page at once. A phone cannot, so it has to land somewhere,
+     and the right somewhere is the first thing on. */
+  setTimeout(() => {
+    const box = document.getElementById('calvscroll');
+    if (!box) return;
+    box.scrollTop = Math.max(0, (calFirstTop || 0) - 24);
+  }, 0);
 
   const byDay = {};
   calAllIn(days[0], days[days.length - 1], who).forEach((e) => {
@@ -18700,6 +18749,22 @@ function calTimeGrid(who) {
      view and by a week in the week view, which is what the arrows next
      to a date mean everywhere else. */
   const step = wide ? 7 : 1;
+
+  /* Where the earliest thing on screen sits, in pixels down the grid,
+     so the scroller above knows where to open. Falls back to now on a
+     day with nothing on it, which is the other sensible answer. */
+  let firstMin = null;
+  all.forEach((e) => {
+    const sp = calSpan(e);
+    if (!sp) return;
+    if (firstMin == null || sp.start < firstMin) firstMin = sp.start;
+  });
+  if (firstMin == null) {
+    const n = new Date();
+    firstMin = n.getHours() * 60 + n.getMinutes();
+  }
+  calFirstTop = Math.max(0, ((firstMin / 60) - range.from) * px);
+
   return `
   <div class="fchead">
     <button class="fcnav" data-calstep="${-step}"
@@ -18710,7 +18775,15 @@ function calTimeGrid(who) {
   </div>
   ${sel !== today ? `
     <button class="chip" style="margin:0 auto 8px;display:block" data-calstep="today">Back to today</button>` : ''}
-  ${calDayStrip(days, sel, today, byDay, who)}
+  ${/* TWO ROWS OF THE SAME WEEK WAS ONE TOO MANY.
+
+        The week view already has the days across the top of the grid,
+        with the dates, big enough to tap. A second strip of S M T W
+        T F S above it said nothing the grid did not and pushed the
+        calendar itself a further 60 pixels down a screen that had
+        none to spare. The day view keeps it, because there it is the
+        only way to get to another day. */''}
+  ${wide ? '' : calDayStrip(days, sel, today, byDay, who)}
 
   <div class="fctl${wide ? ' wide' : ''}">
     ${/* ONE SCROLLER, NOT TWO.
@@ -18720,7 +18793,7 @@ function calTimeGrid(who) {
           the columns do not, and you are reading Tuesday's events
           under Thursday's heading. They live in the same scroller now,
           with the hour gutter stuck to the left inside it. */''}
-    <div class="fctl-scroll"${wide ? ' id="calscroller"' : ''}>
+    <div class="fctl-scroll" id="calvscroll">
     <div class="fctl-h">
       <span class="fctl-gut"></span>
       ${days.map((d) => {
@@ -18757,11 +18830,17 @@ function calTimeGrid(who) {
             const attrs = reading
               ? (e.go ? `data-calgo="${esc(JSON.stringify(e.go))}"` : 'disabled')
               : `data-calopen="${esc(e.id)}"`;
+            /* A 30 minute appointment is 21 pixels tall and two
+               stacked lines do not fit in 21 pixels, so the short ones
+               run the time and the name along one line instead of
+               clipping the name in half. */
+            const tight = h < 38;
             return `
-            <button class="fctl-ev${reading ? ' soft' : ''}" ${attrs}
+            <button class="fctl-ev${reading ? ' soft' : ''}${tight ? ' tight' : ''}" ${attrs}
               style="top:${top}px;height:${h}px;left:${item.col * w}%;width:calc(${w}% - 3px);
                 ${reading ? 'color:' + esc(col.ink) + ';border-color:' + esc(col.dot)
-                          : 'background:' + esc(col.dot)}">
+    : 'background:' + esc(col.soft) + ';color:' + esc(col.ink)
+      + ';box-shadow:inset 3px 0 0 ' + esc(col.dot)}">
               <span class="fctl-t">${esc(calTimeLabel(e.time))}</span>
               <span class="fctl-n">${esc(e.title)}</span>
             </button>`;
@@ -19446,17 +19525,41 @@ function rewDayBlock(kid, months) {
   if (!kid) return '';
   const jobs = rewTodayJobs(kid.id);
   const on = rewOn(kid);
+  /* Declared up here because the empty state below uses it too. It was
+     further down and the new branch reached back for it, which is a
+     const in its dead zone and throws rather than reading undefined. */
+  const first = (kid.name || 'They').split(/\s+/)[0];
 
-  /* Nothing on the chart for them today means nothing to draw. The
-     offer to turn stars on lives on the chore screen, not as a sales
-     pitch on a profile with no jobs on it. */
-  if (!jobs.length) return '';
+  /* NOTHING ON THE CHART IS NOT THE SAME AS NOTHING TO SAY.
+
+     This used to draw nothing at all when a child had no jobs yet,
+     which is why she refreshed, opened her son and found no stars
+     anywhere. The feature was working exactly as written and was
+     indistinguishable from not being there.
+
+     A child old enough for it gets an invitation instead. A child too
+     young still gets silence, because that one really is not for
+     them. */
+  if (!jobs.length) {
+    if (!rewShows(months)) return '';
+    const any = (store.choreJobs || []).length;
+    return `
+    <p class="sect" style="margin-top:18px">${esc(first)}'s jobs</p>
+    <div class="pdaybox">
+      <p class="bodytext" style="margin:0">${esc(any
+        ? 'Nothing on the chart for ' + first + ' today. Put a few jobs on and they turn up here, '
+          + 'ready to tick off.'
+        : 'The chore chart is empty. Put a few jobs on it and they turn up here each day, ready to '
+          + 'tick off, with stars if you want them.')}</p>
+      <button class="btn ghost sm" style="width:100%;margin-top:11px" data-go="screen" data-id="chores">
+        ${icon('leaf', 13, 'var(--deep)')} Set up the chart</button>
+    </div>`;
+  }
 
   const doneN = jobs.filter((j) => j.done).length;
   const starsToday = jobs.filter((j) => j.done).reduce((a, j) => a + j.stars, 0);
   const col = calColorOf(kid.id);
   const pct = jobs.length ? Math.round((doneN / jobs.length) * 100) : 0;
-  const first = (kid.name || 'They').split(/\s+/)[0];
 
   return `
   <p class="sect" style="margin-top:18px">${esc(first)}'s jobs today</p>
@@ -19778,11 +19881,27 @@ function screenCalendar(c) {
         words. A page you scan needs the background to shut up, or
         every leaf reads as a mark on the calendar. Only this screen
         and only this screen. */''}
-  ${pageHeader()}
+  ${/* THE BRAND BLOCK GETS SMALLER HERE, AND ONLY HERE.
+
+        Every other screen is something you read, and the logo over
+        the top of it is the app saying hello. A calendar is something
+        you scan, and the first thing it has to show you is the week.
+        So the mark stays, because it is hers and it belongs at the
+        top of the app, it just stops taking a third of the screen
+        before the grid starts. */''}
+  <div class="calhdr">${pageHeader()}</div>
   <div class="calmquiet"></div>
+  ${/* NO BACK BUTTON WHEN THERE IS NOWHERE BACK TO.
+
+        Calendar has its own tab at the bottom, so most of the time
+        she arrives here by tapping it, and Back on a tab means
+        nothing. It only appears when she came in from somewhere, such
+        as tapping a date on a child's profile, which is the only time
+        the word is true. */''}
+  ${navStack.length ? `
   <div class="sc-head tight">
     <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
-  </div>
+  </div>` : '<div style="height:6px"></div>'}
   <div class="sc">
 
     <div class="fcviewbar">
@@ -20968,6 +21087,69 @@ function screenProfileTab(c) {
   return screenMyProfile();
 }
 
+/* ------------------------------------------------------------------
+   MANAGING THE PROFILES, ALL OF THEM, IN ONE PLACE
+
+   She asked 3 times how to delete a child. Each time the answer was
+   technically yes: Settings had a list with a Remove on it, and the
+   child's own profile grew a labelled Edit button with a Remove at the
+   bottom of it. Both of those work. Neither of them was the thing she
+   needed.
+
+   What she was actually doing was clearing SIX test profiles at once,
+   and for that, per child Edit, scroll past the photo picker and the
+   birthday, Remove, confirm, 6 times over, is not a feature. It is a
+   chore the app is making her do.
+
+   Settings also stopped being a tab when the bar got crowded, which
+   quietly moved the one clean list of children behind her own face in
+   the corner.
+
+   So: 1 screen, every child, Remove on each, reached from the children
+   count on her own profile, which is where somebody looks when they
+   are thinking about their family rather than about one child.
+   ------------------------------------------------------------------ */
+function screenKids() {
+  const kids = store.children || [];
+  return `
+  ${pageHeader()}
+  <div class="sc-head tight">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">Your children</h1>
+    <p class="sub">Open one to change their details, or remove any you no longer want. Removing takes
+      everything kept for them with it.</p>
+  </div>
+  <div class="sc">
+    ${kids.length ? kids.map((k) => {
+      if (removeAsk === k.id) return removeConfirm(k);
+      const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+      const col = calColorOf(k.id);
+      return `
+      <div class="card" style="margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:11px">
+          ${childFace(k, 40)}
+          <span class="grow">
+            <span style="display:block;font-size:15px;font-weight:600;color:var(--ink)">
+              <span class="fcdot" style="display:inline-block;width:8px;height:8px;border-radius:50%;
+                background:${esc(col.dot)};margin-right:7px"></span>${esc(k.name || 'Unnamed')}${isExampleChild(k) ? ' <span class="tag warm">Example</span>' : ''}
+            </span>
+            <span class="tiny" style="display:block;margin-top:2px">
+              ${esc(sum && sum.label ? sum.label : 'No birthday yet')}</span>
+          </span>
+        </div>
+        <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+          <button class="chip" data-child="${esc(k.id)}">Open ${esc((k.name || 'them').split(/\s+/)[0])}</button>
+          <button class="chip" data-removechild="${esc(k.id)}" style="color:#A85A44">Remove</button>
+        </div>
+      </div>`;
+    }).join('') : `
+      <div class="card flat"><p class="bodytext">No children yet.</p></div>`}
+
+    <button class="btn ghost" style="width:100%;margin-top:10px" data-go="screen" data-id="addchild">
+      ${icon('plus', 15, 'var(--deep)')} Add a child</button>
+  </div>`;
+}
+
 function screenMyProfile() {
   const p = store.parent || {};
   const editing = editingWho() === 'me';
@@ -20991,8 +21173,11 @@ function screenMyProfile() {
     <div class="profstats">
       <span><b>${posts.length}</b> post${posts.length === 1 ? '' : 's'}</span>
       <span><b>${shared}</b> shared</span>
-      <span><b>${store.children.length}</b> ${store.children.length === 1 ? 'child' : 'children'}</span>
+      <button class="profstat-go" data-go="screen" data-id="kids">
+        <b>${store.children.length}</b> ${store.children.length === 1 ? 'child' : 'children'}</button>
     </div>
+    ${/* The count is the door. Somebody wondering how to get rid of a
+          profile looks at the number of children, not at Settings. */''}
 
     <div class="editbar">
       ${editing ? `
@@ -26378,10 +26563,20 @@ function chorePeople() {
   store.children.filter((k) => !isExampleChild(k)).forEach((k) => {
     const s = getAgeSummary({ name: k.name, birthday: k.birthday });
     const months = s.age ? s.age.totalMonths : null;
-    /* A baby is not on the chart. Not out of tidiness: a row with a
-       name and no possible job on it invites somebody to invent one,
-       and the youngest thing on the list is already sixteen months. */
-    if (months != null && !choresForMonths(months).length) return;
+    /* THE AGE FLOOR, AND WHY A MISSING BIRTHDAY IS ALSO A NO.
+
+       A baby is not on the chart, and neither is a child whose
+       birthday has not been filled in. The second half is the part I
+       had wrong: a child with no birthday used to get a row with
+       "Add their birthday to see what fits" under it, which put every
+       half finished profile on the chart looking like a real person
+       with real jobs. She has three of those from testing and said
+       exactly that.
+
+       The floor itself lives in chores.js so there is one answer to
+       the question rather than one per screen. */
+    if (!choreOldEnough(months)) return;
+    if (!choresForMonths(months).length) return;
     out.push({
       id: k.id,
       name: (k.name || 'Unnamed').split(/\s+/)[0],
@@ -26901,7 +27096,7 @@ function screenChores() {
     <p class="sub">${esc(CHORE_INTRO)}</p>
   </div>
   <div class="sc">
-    ${subTabs('choreTab', tab, tabs)}
+    ${store.chorePick ? '' : subTabs('choreTab', tab, tabs)}
     ${store.chorePick ? chorePicker() : body}
   </div>`;
 }
@@ -27092,7 +27287,21 @@ function chorePicker() {
     : (p.months == null ? [] : choresForMonths(p.months));
   const groups = choresByArea(pool);
 
+  /* A WAY OUT AT THE TOP.
+
+     This screen used to have exactly one exit, a Done button under a
+     list long enough to need scrolling. If she opened it on the wrong
+     person and added nothing, Back left the Jobs screen with the
+     picker still open underneath, so coming back in dropped her
+     straight into the same picker and the other names were nowhere.
+     She found that in about a minute.
+
+     Now it cancels at the top, Back cancels it too, and nothing has
+     to be added to get out. */
   return `
+  <button class="back" data-chore="donepick" style="margin:0 0 12px">
+    ${icon('back', 15, 'var(--deep)')} Back to the chart
+  </button>
   <div class="card leafy">
     <p class="bodytext" style="margin:0">
       A job for ${esc(p.name)} on ${esc(CHORE_DAYS[day].label)}.

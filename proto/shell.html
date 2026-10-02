@@ -420,14 +420,20 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
    of a phone. They are a fixed size and centred now, so they sit as
    one group a thumb can travel across. Still 48 wide and 46 tall,
    which is above the 44 pixel minimum for something you tap. */
-.tabs{display:flex;justify-content:center;gap:0;background:var(--surface);
+.tabs{display:flex;justify-content:center;gap:15px;background:var(--surface);
   border-top:1px solid var(--line2);padding:4px 6px 7px;flex:none;position:relative;z-index:2}
 /* Icons only. The words are still in the markup for screen readers,
    they are just not drawn, which is what let 6 tabs fit across a
    phone when 6 labelled ones would not. */
-.tab{flex:none;width:44px;display:flex;flex-direction:column;align-items:center;gap:4px;
+.tab{flex:none;width:50px;display:flex;flex-direction:column;align-items:center;gap:4px;
   padding:9px 0 7px;color:var(--muted);min-height:46px;justify-content:center}
-@media (max-width:360px){ .tab{width:40px} }
+/* THE THIRD SETTING.
+   flex:1 spread 5 icons over the whole width and she said they were
+   too far apart. 44 wide with no gap bunched them into the middle and
+   she said they were too close. This is the middle: 5 buttons of 50
+   with 15 between them is about 310 across on a 390 wide phone, so
+   the row reaches most of the way without touching either edge. */
+@media (max-width:360px){ .tabs{gap:10px} .tab{width:46px} }
 .tab[aria-selected="true"]{color:var(--deep)}
 .tabic{position:relative;display:flex;align-items:center;justify-content:center}
 .tabbadge{position:absolute;top:-5px;right:-8px;min-width:16px;height:16px;padding:0 4px;
@@ -1768,8 +1774,15 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 /* The week scrolls sideways on a narrow screen. The hour gutter is
    sticky inside that scroll, so the times stay beside the columns
    instead of sliding away with them. */
-.fctl-scroll{overflow-x:hidden}
-.fctl.wide .fctl-scroll{overflow-x:auto;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+/* THE GRID IS ITS OWN WINDOW NOW.
+   It used to be as tall as its hour range, so an 8am to 7pm day was a
+   506 pixel block and the page scrolled past the whole calendar to
+   get to the afternoon. Capping it means the week always sits inside
+   one screen, the days stay pinned to the top of it while the hours
+   move, and the page behind it stops scrolling at all. */
+.fctl-scroll{overflow-x:hidden;overflow-y:auto;max-height:min(58vh,470px);
+  scrollbar-width:thin;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.fctl.wide .fctl-scroll{overflow-x:auto}
 .fctl.wide .fctl-h, .fctl.wide .fctl-b{min-width:max-content}
 .fctl.wide .fctl-col{min-width:74px}
 .fctl.wide .fctl-gut{position:sticky;left:0;z-index:4;background:var(--surface)}
@@ -1779,7 +1792,8 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
   .fctl.wide .fctl-h, .fctl.wide .fctl-b{min-width:0}
   .fctl.wide .fctl-col{min-width:0}
 }
-.fctl-h{display:flex;border-bottom:1px solid var(--line2);background:var(--surface2)}
+.fctl-h{display:flex;border-bottom:1px solid var(--line2);background:var(--surface2);
+  position:sticky;top:0;z-index:6}
 .fctl-b{display:flex;position:relative}
 .fctl-gut{width:46px;min-width:46px;flex:none;position:relative}
 .fctl-b .fctl-gut{border-right:1px solid var(--line2)}
@@ -1799,6 +1813,9 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
   gap:0;line-height:1.2;box-shadow:0 1px 2px rgba(60,84,53,.15)}
 .fctl-ev .fctl-t{font-size:10px;font-weight:700;opacity:.85;font-variant-numeric:tabular-nums}
 .fctl-ev .fctl-n{font-size:11.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.fctl-ev.tight{flex-direction:row;align-items:baseline;gap:4px;padding:2px 5px}
+.fctl-ev.tight .fctl-t{flex:none;font-size:9.5px}
+.fctl-ev.tight .fctl-n{font-size:10.5px;white-space:nowrap;min-width:0}
 .fctl-ev.soft{background:var(--surface)!important;border:1px solid currentColor;box-shadow:none}
 .fctl-ev.soft .fctl-t{opacity:.7}
 /* The all day strip, above the hours where it belongs. */
@@ -1854,6 +1871,10 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 
 /* The calendar page is the one screen with no leaves behind it. */
 .calmquiet{position:fixed;inset:0;background:var(--cream);z-index:0;pointer-events:none}
+.calhdr{margin-bottom:-22px}
+body.calpage .mark-holder{padding:14px 18px 0}
+body.calpage .mark{transform:scale(.76);transform-origin:top center}
+body.calpage .mark-holder{margin-bottom:-20px}
 
 /* ==================================================================
    THE JOBS CHART AND ITS STARS
@@ -1873,6 +1894,10 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 .rewhead-s{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--body);
   opacity:.8;margin-top:2px;line-height:1.35}
 
+.profstat-go{appearance:none;border:0;background:transparent;font:inherit;color:inherit;
+  cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);
+  text-underline-offset:3px;padding:0}
+.profstat-go:hover{text-decoration-color:var(--sage)}
 .rewjobs{display:flex;flex-direction:column;gap:2px}
 .rewjob{display:flex;align-items:center;gap:11px;width:100%;text-align:left;appearance:none;
   border:0;background:transparent;border-radius:10px;padding:9px 8px;cursor:pointer;
