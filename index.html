@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-02 13:08">
+<meta name="rsg-build" content="2026-10-03 23:37">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -2219,7 +2219,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-02 13:08';
+const BUILD_STAMP = '2026-10-03 23:37';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -19904,6 +19904,148 @@ function mealTrim(map, todayDate, keepDays = 120) {
     Object.keys(map).forEach((d) => { if (d >= cutKey)
         out[d] = map[d]; });
     return out;
+}
+const ICS_TITLE = 'Put this on a phone';
+const ICS_PRODID = '-//Ready Set Grow//Family Calendar//EN';
+const ICS_NOW_TITLE = 'Send a copy now';
+const ICS_NOW_BODY = 'Makes a calendar file of everything coming up and hands it to your phone\'s share sheet, so you '
+    + 'can text it to somebody. They tap it and the appointments drop into whatever calendar they '
+    + 'already use. Nothing to install and nothing to set up.';
+const ICS_NOW_WARN = 'This is a copy, not a link. Something you change here afterwards will not change on their phone, '
+    + 'so send a fresh one when plans move.';
+const ICS_SUB_TITLE = 'Keep it in sync instead';
+const ICS_SUB_NOT_READY = 'The live link is not built yet. When it is, one tap will subscribe a phone and it will stay '
+    + 'up to date on its own. Until then the copy above is the way to do it.';
+const ICS_SHARE_LABEL = 'Share the calendar';
+const ICS_DOWNLOAD_LABEL = 'Download the file';
+const ICS_EMPTY = 'Nothing coming up to send yet.';
+const ICS_FILENAME = 'family-calendar.ics';
+const ICS_AHEAD_DAYS = 365;
+function icsEscape(text) {
+    return String(text == null ? '' : text)
+        .replace(/\\/g, '\\\\')
+        .replace(/;/g, '\\;')
+        .replace(/,/g, '\\,')
+        .replace(/\r?\n/g, '\\n');
+}
+function icsFold(line) {
+    const enc = (s) => (typeof TextEncoder !== 'undefined'
+        ? new TextEncoder().encode(s).length : s.length);
+    if (enc(line) <= 75)
+        return line;
+    const out = [];
+    let cur = '';
+    let limit = 75;
+    for (let i = 0; i < line.length; i += 1) {
+        const ch = line[i];
+        if (enc(cur + ch) > limit) {
+            out.push(cur);
+            cur = ' ' + ch;
+            limit = 74;
+        }
+        else {
+            cur += ch;
+        }
+    }
+    if (cur)
+        out.push(cur);
+    return out.join('\r\n');
+}
+function pad(n) { return String(n).padStart(2, '0'); }
+function icsDate(date) {
+    return String(date || '').replace(/-/g, '');
+}
+function icsDateTime(date, time) {
+    const t = String(time || '00:00').split(':');
+    return icsDate(date) + 'T' + pad(Number(t[0]) || 0) + pad(Number(t[1]) || 0) + '00';
+}
+function icsStamp(now) {
+    const d = now || new Date();
+    return d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate())
+        + 'T' + pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + pad(d.getUTCSeconds()) + 'Z';
+}
+function icsRrule(repeat) {
+    if (repeat === 'weekly')
+        return 'RRULE:FREQ=WEEKLY';
+    if (repeat === 'fortnightly')
+        return 'RRULE:FREQ=WEEKLY;INTERVAL=2';
+    if (repeat === 'monthly')
+        return 'RRULE:FREQ=MONTHLY';
+    if (repeat === 'yearly')
+        return 'RRULE:FREQ=YEARLY';
+    return '';
+}
+function icsAlarmMinutes(remindId, time) {
+    if (!remindId || remindId === 'none')
+        return null;
+    if (remindId === '30m')
+        return 30;
+    if (remindId === '2h')
+        return 120;
+    const t = String(time || '09:00').split(':');
+    const startMins = (Number(t[0]) || 0) * 60 + (Number(t[1]) || 0);
+    if (remindId === 'same9')
+        return Math.max(10, startMins - (9 * 60));
+    if (remindId === '1d')
+        return (24 * 60) - (18 * 60) + startMins;
+    if (remindId === '2d')
+        return (48 * 60) - (18 * 60) + startMins;
+    if (remindId === '1w')
+        return (7 * 24 * 60) - (18 * 60) + startMins;
+    return null;
+}
+function icsBuild(events, name, now) {
+    const lines = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:' + ICS_PRODID,
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'X-WR-CALNAME:' + icsEscape(name || 'Family'),
+    ];
+    const stamp = icsStamp(now);
+    (events || []).forEach((e, i) => {
+        if (!e || !e.date)
+            return;
+        lines.push('BEGIN:VEVENT');
+        lines.push('UID:' + icsEscape(String(e.id || ('rsg' + i))) + '@readysetgrow-app.com');
+        lines.push('DTSTAMP:' + stamp);
+        if (e.time) {
+            const mins = Number(e.mins) > 0 ? Number(e.mins) : 60;
+            const t = String(e.time).split(':');
+            const startM = (Number(t[0]) || 0) * 60 + (Number(t[1]) || 0);
+            const endM = Math.min(startM + mins, 23 * 60 + 59);
+            const endH = Math.floor(endM / 60);
+            lines.push('DTSTART:' + icsDateTime(e.date, e.time));
+            lines.push('DTEND:' + icsDateTime(e.date, pad(endH) + ':' + pad(endM - endH * 60)));
+        }
+        else {
+            const d = new Date(e.date + 'T00:00:00');
+            d.setDate(d.getDate() + 1);
+            lines.push('DTSTART;VALUE=DATE:' + icsDate(e.date));
+            lines.push('DTEND;VALUE=DATE:' + d.getFullYear()
+                + pad(d.getMonth() + 1) + pad(d.getDate()));
+        }
+        lines.push('SUMMARY:' + icsEscape(e.title || 'Something'));
+        if (e.where)
+            lines.push('LOCATION:' + icsEscape(e.where));
+        if (e.notes)
+            lines.push('DESCRIPTION:' + icsEscape(e.notes));
+        const rr = icsRrule(e.repeat);
+        if (rr)
+            lines.push(rr);
+        const alarm = icsAlarmMinutes(e.remind, e.time);
+        if (alarm != null) {
+            lines.push('BEGIN:VALARM');
+            lines.push('ACTION:DISPLAY');
+            lines.push('DESCRIPTION:' + icsEscape(e.title || 'Something'));
+            lines.push('TRIGGER:-PT' + Math.round(alarm) + 'M');
+            lines.push('END:VALARM');
+        }
+        lines.push('END:VEVENT');
+    });
+    lines.push('END:VCALENDAR');
+    return lines.map(icsFold).join('\r\n') + '\r\n';
 }
 const FEED_STATUS = {
     live: 'live',
@@ -51288,7 +51430,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -51870,6 +52012,13 @@ function initControls() {
         else if (t.dataset.calfilter) {
             store.calWho = (store.calWho === t.dataset.calfilter && t.dataset.calfilter !== 'all')
                 ? 'all' : t.dataset.calfilter;
+        }
+        else if (t.dataset.ics) {
+            if (t.dataset.ics === 'share')
+                icsShare();
+            else
+                icsDownload();
+            return;
         }
         else if (t.dataset.calmeal) {
             store.mealEdit = t.dataset.calmeal;
@@ -64963,21 +65112,69 @@ function calDelete(id) {
     flushStore();
     render();
 }
+function icsEventsForExport() {
+    const from = calToday();
+    const to = calAddDays(from, ICS_AHEAD_DAYS);
+    return calEvents().filter((e) => {
+        if (!e || !e.date || !e.title)
+            return false;
+        if (e.repeat)
+            return e.date <= to;
+        return e.date >= from && e.date <= to;
+    });
+}
+function icsHouseName() {
+    const n = ((store.parent || {}).name || '').trim().split(/\s+/)[0];
+    return n ? n + "'s family" : 'Our family';
+}
+async function icsShare() {
+    const list = icsEventsForExport();
+    if (!list.length)
+        return;
+    const text = icsBuild(list, icsHouseName());
+    const blob = new Blob([text], { type: 'text/calendar;charset=utf-8' });
+    try {
+        if (navigator.share && typeof File === 'function') {
+            const file = new File([blob], ICS_FILENAME, { type: 'text/calendar' });
+            if (!navigator.canShare || navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], title: icsHouseName() });
+                return;
+            }
+        }
+    }
+    catch (err) {
+        if (err && err.name === 'AbortError')
+            return;
+    }
+    icsDownload(blob);
+}
+function icsDownload(blob) {
+    const b = blob || new Blob([icsBuild(icsEventsForExport(), icsHouseName())], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(b);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = ICS_FILENAME;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
 function calSubscribeBlock() {
-    const open = !!store.calSubOpen;
+    const n = icsEventsForExport().length;
     return `
   <div class="card flat" style="margin-top:14px">
-    <p class="eyebrow">${icon('calendar', 11, 'var(--sage)')} ${esc(CAL_SUBSCRIBE.title)}</p>
-    ${CAL_SUBSCRIBE.body.map((x) => `<p class="tiny" style="margin-top:6px">${esc(x)}</p>`).join('')}
-    <button class="btn ghost sm" style="width:100%;margin-top:10px" data-calsub="${open ? 'close' : 'open'}">
-      ${open ? 'Hide the steps' : 'How it works'}</button>
-    ${open ? `
-      ${CAL_SUBSCRIBE.steps.map((s) => `
-        <p class="tiny" style="margin-top:8px"><strong style="color:var(--ink)">${esc(s.who)}.</strong>
-        ${esc(s.how)}</p>`).join('')}
-      <p class="tiny" style="margin-top:8px;color:#A85A44">${esc(CAL_SUBSCRIBE.warn)}</p>
-      <p class="tiny" style="margin-top:8px">Your link is being set up. It arrives with the next
-      update, and this is where it will be.</p>` : ''}
+    <p class="eyebrow">${icon('calendar', 11, 'var(--sage)')} ${esc(ICS_TITLE)}</p>
+    <p class="sect" style="margin-top:10px">${esc(ICS_NOW_TITLE)}</p>
+    <p class="tiny" style="margin-top:4px">${esc(ICS_NOW_BODY)}</p>
+    <button class="btn" style="width:100%;margin-top:10px;justify-content:center"
+      data-ics="share" ${n ? '' : 'disabled'}>
+      ${icon('calendar', 14, '#fff')} ${esc(n ? ICS_SHARE_LABEL : ICS_EMPTY)}</button>
+    ${n ? `
+      <button class="btn ghost sm" style="width:100%;margin-top:8px;justify-content:center"
+        data-ics="download">${esc(ICS_DOWNLOAD_LABEL)}</button>
+      <p class="tiny" style="margin-top:8px;color:#A85A44">${esc(ICS_NOW_WARN)}</p>` : ''}
+    <p class="sect" style="margin-top:16px">${esc(ICS_SUB_TITLE)}</p>
+    <p class="tiny" style="margin-top:4px">${esc(ICS_SUB_NOT_READY)}</p>
   </div>`;
 }
 function listsAll() {
