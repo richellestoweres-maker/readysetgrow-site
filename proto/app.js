@@ -3389,7 +3389,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3807,6 +3807,13 @@ function initControls() {
          everybody, so the row is a toggle rather than a trap. */
       store.calWho = (store.calWho === t.dataset.calfilter && t.dataset.calfilter !== 'all')
         ? 'all' : t.dataset.calfilter;
+    } else if (t.dataset.ics) {
+      /* Share and download both leave the page alone, so neither one
+         re-renders. A screen that flickers while the share sheet is
+         opening looks like it went wrong. */
+      if (t.dataset.ics === 'share') icsShare();
+      else icsDownload();
+      return;
     } else if (t.dataset.calmeal) {
       store.mealEdit = t.dataset.calmeal;
     } else if (t.dataset.mealpick) {
@@ -19380,21 +19387,90 @@ function calDelete(id) {
    a server function that is in the next deploy, so this says what it
    will do and does not pretend to hand over something that does not
    work. A dead Copy button is worse than an honest "not yet". */
+/* ==================================================================
+   PUTTING THE CALENDAR ON SOMEBODY ELSE'S PHONE
+
+   This card used to be four steps for iPhone, Android and Outlook,
+   all of which began "copy the link", above a quiet line admitting
+   there was no link yet. She followed the iPhone steps. Of course
+   she did. The steps were the loudest thing on the card.
+
+   So the order is reversed. The thing that works is at the top with a
+   button on it, and the thing that is not built says so in one line
+   and offers nothing to try.
+   ================================================================== */
+function icsEventsForExport() {
+  /* Only what the family typed. The feeds are estimates and private
+     facts, and this file can be forwarded to anybody. */
+  const from = calToday();
+  const to = calAddDays(from, ICS_AHEAD_DAYS);
+  return calEvents().filter((e) => {
+    if (!e || !e.date || !e.title) return false;
+    if (e.repeat) return e.date <= to;
+    return e.date >= from && e.date <= to;
+  });
+}
+
+function icsHouseName() {
+  const n = ((store.parent || {}).name || '').trim().split(/\s+/)[0];
+  return n ? n + "'s family" : 'Our family';
+}
+
+/* The share sheet where there is one, a download where there is not.
+   Both end at the same place: a .ics on somebody's phone. */
+async function icsShare() {
+  const list = icsEventsForExport();
+  if (!list.length) return;
+  const text = icsBuild(list, icsHouseName());
+  const blob = new Blob([text], { type: 'text/calendar;charset=utf-8' });
+
+  try {
+    if (navigator.share && typeof File === 'function') {
+      const file = new File([blob], ICS_FILENAME, { type: 'text/calendar' });
+      if (!navigator.canShare || navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: icsHouseName() });
+        return;
+      }
+    }
+  } catch (err) {
+    /* A share the person cancelled is not a failure and must not fall
+       through to downloading a file they did not ask for. */
+    if (err && err.name === 'AbortError') return;
+  }
+  icsDownload(blob);
+}
+
+function icsDownload(blob) {
+  const b = blob || new Blob([icsBuild(icsEventsForExport(), icsHouseName())],
+    { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(b);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = ICS_FILENAME;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
 function calSubscribeBlock() {
-  const open = !!store.calSubOpen;
+  const n = icsEventsForExport().length;
   return `
   <div class="card flat" style="margin-top:14px">
-    <p class="eyebrow">${icon('calendar', 11, 'var(--sage)')} ${esc(CAL_SUBSCRIBE.title)}</p>
-    ${CAL_SUBSCRIBE.body.map((x) => `<p class="tiny" style="margin-top:6px">${esc(x)}</p>`).join('')}
-    <button class="btn ghost sm" style="width:100%;margin-top:10px" data-calsub="${open ? 'close' : 'open'}">
-      ${open ? 'Hide the steps' : 'How it works'}</button>
-    ${open ? `
-      ${CAL_SUBSCRIBE.steps.map((s) => `
-        <p class="tiny" style="margin-top:8px"><strong style="color:var(--ink)">${esc(s.who)}.</strong>
-        ${esc(s.how)}</p>`).join('')}
-      <p class="tiny" style="margin-top:8px;color:#A85A44">${esc(CAL_SUBSCRIBE.warn)}</p>
-      <p class="tiny" style="margin-top:8px">Your link is being set up. It arrives with the next
-      update, and this is where it will be.</p>` : ''}
+    <p class="eyebrow">${icon('calendar', 11, 'var(--sage)')} ${esc(ICS_TITLE)}</p>
+
+    <p class="sect" style="margin-top:10px">${esc(ICS_NOW_TITLE)}</p>
+    <p class="tiny" style="margin-top:4px">${esc(ICS_NOW_BODY)}</p>
+    <button class="btn" style="width:100%;margin-top:10px;justify-content:center"
+      data-ics="share" ${n ? '' : 'disabled'}>
+      ${icon('calendar', 14, '#fff')} ${esc(n ? ICS_SHARE_LABEL : ICS_EMPTY)}</button>
+    ${n ? `
+      <button class="btn ghost sm" style="width:100%;margin-top:8px;justify-content:center"
+        data-ics="download">${esc(ICS_DOWNLOAD_LABEL)}</button>
+      <p class="tiny" style="margin-top:8px;color:#A85A44">${esc(ICS_NOW_WARN)}</p>` : ''}
+
+    <p class="sect" style="margin-top:16px">${esc(ICS_SUB_TITLE)}</p>
+    <p class="tiny" style="margin-top:4px">${esc(ICS_SUB_NOT_READY)}</p>
   </div>`;
 }
 
