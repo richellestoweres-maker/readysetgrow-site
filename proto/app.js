@@ -3389,7 +3389,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-chorepat],[data-choreevery],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -4151,7 +4151,24 @@ function initControls() {
     } else if (t.dataset.chore === 'donepick') {
       store.chorePick = null;
     } else if (t.dataset.chore === 'add') {
-      choreAdd(t.dataset.id, t.dataset.who, Number(t.dataset.day));
+      choreAdd(t.dataset.id, t.dataset.who,
+        String(t.dataset.days || '').split(',').filter((x) => x !== '').map(Number));
+    } else if (t.dataset.chorepat) {
+      if (!store.chorePick) store.chorePick = {};
+      store.chorePick.pattern = t.dataset.chorepat;
+    } else if (t.dataset.choreevery) {
+      /* One button for the whole week on a job that already exists.
+         Pressed again when it is already every day, it goes back to
+         the single day she is looking at rather than to nothing,
+         because a job on no days gets deleted and that would be a
+         surprising thing for an undo to do. */
+      const job = choreJobs().filter((j) => j.id === t.dataset.choreevery)[0];
+      if (job) {
+        const all = chorePatternOf(job.days) === 'every';
+        choreSetDays(job.id, all
+          ? [typeof store.choreDay === 'number' ? store.choreDay : choreTodayIndex()]
+          : chorePatternDays('every'));
+      }
     } else if (t.dataset.chore === 'offday') {
       choreSetDay(t.dataset.id, Number(t.dataset.day), false);
     } else if (t.dataset.chore === 'toggleday') {
@@ -27281,16 +27298,40 @@ function choreStars(personId, sinceDays) {
   return total;
 }
 
-function choreAdd(choreId, personId, day) {
+/* days is a list now rather than one number, so "every day" is one
+   call rather than seven. Adding a job that is already there is
+   treated as a correction to its days, not as a second copy, and
+   tapping it again when it already matches takes it off, which is
+   what an already filled in checkbox means everywhere else. */
+function choreAdd(choreId, personId, days) {
   if (!Array.isArray(store.choreJobs)) store.choreJobs = [];
-  /* The same job twice for the same person is never what anybody
-     meant, so an existing one gains the day instead. */
+  const want = (Array.isArray(days) ? days : [days]).map(Number).sort((a, b) => a - b);
   const found = store.choreJobs.filter((j) => j.choreId === choreId && j.personId === personId)[0];
   if (found) {
-    if ((found.days || []).indexOf(day) === -1) found.days = (found.days || []).concat([day]);
+    const have = (found.days || []).slice().sort((a, b) => a - b);
+    if (have.join(',') === want.join(',')) {
+      store.choreJobs = choreJobs().filter((j) => j.id !== found.id);
+    } else {
+      const merged = have.slice();
+      want.forEach((d) => { if (merged.indexOf(d) === -1) merged.push(d); });
+      found.days = merged.sort((a, b) => a - b);
+    }
   } else {
-    store.choreJobs.push({ id: choreNewId(), choreId: choreId, personId: personId, days: [day] });
+    store.choreJobs.push({ id: choreNewId(), choreId: choreId, personId: personId, days: want });
   }
+  store.parentUpdatedAt = Date.now();
+  saveStore();
+}
+
+/* Set a job's whole week at once, for the Every day button on a job
+   that already exists. */
+function choreSetDays(jobId, days) {
+  const job = choreJobs().filter((j) => j.id === jobId)[0];
+  if (!job) return;
+  const want = (days || []).map(Number).sort((a, b) => a - b);
+  if (!want.length) { store.choreJobs = choreJobs().filter((j) => j.id !== jobId); }
+  else job.days = want;
+  store.parentUpdatedAt = Date.now();
   saveStore();
 }
 
@@ -27381,24 +27422,38 @@ function listJoin(arr) {
 
 /* ---------------- THE BOARD ---------------- */
 function screenChores() {
-  const tab = store.choreTab || 'today';
+  /* TWO TABS, NOT FOUR.
+
+     Today, The week, Who does what and How to start were four screens
+     for one idea, and three of them were the same list sorted
+     differently. Her note was that the whole thing is complicated,
+     and four tabs on a chore chart is most of why.
+
+     Today is the one anybody opens. Set up is where jobs are added
+     and changed, which is a thing you do once a month. The week view
+     is gone: the week is already on the calendar, in colour, and
+     having it in two places was the duplication that made the
+     calendar unreadable in the first place. How to start moved to the
+     bottom of Set up, where somebody setting up will actually see it,
+     rather than being a tab you have to decide to press. */
+  const tab = store.choreTab === 'who' || store.choreTab === 'week' || store.choreTab === 'how'
+    ? 'who' : (store.choreTab || 'today');
   const tabs = [
     { id: 'today', label: 'Today' },
-    { id: 'week', label: 'The week' },
-    { id: 'who', label: 'Who does what' },
-    { id: 'how', label: 'How to start' },
+    { id: 'who', label: 'Set up' },
   ];
-  const body = tab === 'week' ? choreWeekTab()
-    : tab === 'who' ? choreWhoTab()
-      : tab === 'how' ? choreHowTab()
-        : choreTodayTab();
+  const body = tab === 'who' ? choreWhoTab() : choreTodayTab();
 
   return `
   ${cornerLeaves()}
   <div class="sc-head">
     <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
     <h1 class="title">Jobs</h1>
-    <p class="sub">${esc(CHORE_INTRO)}</p>
+    ${/* The paragraph about what a chart is for belongs where somebody
+          is deciding whether to build one, not above the list they
+          open every morning. On Today it was three lines of reading
+          between her and a tick. */''}
+    ${tab === 'who' ? `<p class="sub">${esc(CHORE_INTRO)}</p>` : ''}
   </div>
   <div class="sc">
     ${store.chorePick ? '' : subTabs('choreTab', tab, tabs)}
@@ -27441,20 +27496,36 @@ function choreTodayTab() {
     </div>` : ''}`;
 }
 
+/* THE JOB, AS SOMETHING A CHILD WANTS TO TAP.
+
+   It was a grey row with a checkbox and a line of small print, which
+   is a form. This is the same information as a card: a picture in a
+   coloured circle so a child who cannot read yet still knows which
+   one is the teeth one, the job in a size you can read across a
+   kitchen, the stars it is worth, and a tick target big enough for a
+   four year old's finger rather than a cursor.
+
+   Done is the whole card filling with its colour, not a small mark
+   appearing in a box. That is the bit that feels like something. */
 function choreTickRow(job, key) {
   const ch = choreById(job.choreId);
   if (!ch) return '';
   const done = choreIsDone(job.id, key);
+  const look = choreLook(ch.area);
+  const col = calColor(look.color);
   return `
-  <button class="chrow${done ? ' done' : ''}" data-chore="tick" data-id="${esc(job.id)}">
-    <span class="chbox">${done ? icon('check', 13, '#fff') : ''}</span>
-    <span class="grow">
-      <span class="chlabel">${esc(ch.label)}</span>
-      <span class="tiny" style="display:block;margin-top:2px">
-        ${esc(ch.minutes + ' min')}${ch.withYou ? ', with you' : ''}${ch.note ? '' : ''}
-      </span>
+  <button class="jrow${done ? ' done' : ''}" data-chore="tick" data-id="${esc(job.id)}"
+    style="background:${esc(done ? col.dot : col.soft)};color:${esc(done ? '#fff' : col.ink)}"
+    aria-pressed="${done}">
+    <span class="jface" style="background:${esc(done ? 'rgba(255,255,255,.22)' : '#fff')}">
+      ${icon(look.icon, 19, done ? '#fff' : col.dot)}
     </span>
-    ${choreStarRow(ch.stars)}
+    <span class="jtext">
+      <span class="jname">${esc(ch.label)}</span>
+      <span class="jsub">${esc(choreUnder(ch))}${choreStarsOn() && ch.stars
+        ? esc(', ' + ch.stars + (ch.stars === 1 ? ' star' : ' stars')) : ''}</span>
+    </span>
+    <span class="jtick${done ? ' on' : ''}">${done ? icon('check', 16, col.dot) : ''}</span>
   </button>`;
 }
 
@@ -27534,6 +27605,19 @@ function choreWhoTab() {
             <button class="chx" data-chore="remove" data-id="${esc(j.id)}"
               aria-label="Take ${esc(ch.label)} off the chart">${icon('close', 12, 'var(--muted)')}</button>
           </div>
+          ${/* The seven buttons stay, because somebody does want bins
+                on a Tuesday. What they did not have was a way to say
+                the common thing, so Every day sits next to them and
+                fills or clears the row in one press. The line above
+                says the answer in words, since seven abbreviations
+                is a control rather than a sentence. */''}
+          <div class="chsched">
+            <span class="tiny chsched-l">${esc(choreDaysLine(j.days))}</span>
+            <button class="chevery${chorePatternOf(j.days) === 'every' ? ' on' : ''}"
+              data-choreevery="${esc(j.id)}"
+              aria-pressed="${chorePatternOf(j.days) === 'every'}">
+              ${esc(CHORE_EVERY_DAY_LABEL)}</button>
+          </div>
           <div class="chdays sm">
             ${CHORE_DAYS.map((d) => `
               <button class="chday${(j.days || []).indexOf(d.id) !== -1 ? ' on' : ''}"
@@ -27565,6 +27649,8 @@ function choreWhoTab() {
     </div>
   </div>
 
+  ${choreLiveJobs().length ? '' : choreHowTab()}
+
   <div class="dsec">
     <h4>Stars</h4>
     <button class="lrow" data-chore="stars">
@@ -27584,8 +27670,23 @@ function chorePicker() {
   const p = chorePerson(pick.personId);
   if (!p) { store.chorePick = null; return choreTodayTab(); }
   const day = typeof pick.day === 'number' ? pick.day : choreTodayIndex();
+  /* EVERY DAY IS THE DEFAULT NOW.
+
+     Nearly every job a family puts on a chart is a daily one, teeth,
+     bed, plate, pet, and the old default of "just this day" made the
+     common case the slowest one and the rare case free. Backwards.
+     The other patterns are one tap away and nothing is hidden. */
+  const pat = pick.pattern || 'every';
+  const wantDays = chorePatternDays(pat, day);
+  /* A chore counts as already on only if it covers every day the
+     chosen pattern asks for. Otherwise tapping "every day" on a job
+     that currently runs on Mondays would show as done when it is
+     not. */
   const have = {};
-  choreJobsFor(p.id, day).forEach((j) => { have[j.choreId] = true; });
+  choreJobsFor(p.id).forEach((j) => {
+    const d = j.days || [];
+    have[j.choreId] = wantDays.every((x) => d.indexOf(x) !== -1);
+  });
 
   const pool = p.kind === 'adult'
     ? adultChores()
@@ -27609,7 +27710,7 @@ function chorePicker() {
   </button>
   <div class="card leafy">
     <p class="bodytext" style="margin:0">
-      A job for ${esc(p.name)} on ${esc(CHORE_DAYS[day].label)}.
+      A job for ${esc(p.name)}, ${esc(choreDaysLine(wantDays).toLowerCase())}.
       ${p.kind === 'child' && p.months != null
     ? esc('Everything here is something a ' + childAgeWord(p.months) + ' can have a go at. It will not be done well and that is the job being done.')
     : esc('The work that is already yours, written down so it is on the chart with everybody else’s.')}
@@ -27617,12 +27718,30 @@ function chorePicker() {
   </div>
   ${p.kind === 'child' && p.months == null ? `
     <div class="card flat"><p class="bodytext">Add their birthday on their profile and this fills up.</p></div>` : ''}
+
+  ${/* HOW OFTEN, BEFORE WHAT.
+
+        This row is the whole fix for the thing she found. Pick the
+        pattern once, then every job tapped below lands on it, so
+        "these four, every day" is five taps rather than thirty five.
+        It stays where it was by default, on the day she came in from,
+        because changing what an existing button does without being
+        asked is its own kind of rude. */''}
+  <p class="sect" style="margin-top:4px">How often</p>
+  <p class="tiny" style="margin:0 0 8px">${esc(CHORE_PATTERN_NOTE)}</p>
+  <div class="fcscroll" style="padding-bottom:10px">
+    ${CHORE_PATTERNS.map((pt) => `
+      <button class="chip${pat === pt.id ? ' on' : ''}" data-chorepat="${esc(pt.id)}"
+        aria-pressed="${pat === pt.id}">${esc(pt.id === 'day'
+    ? 'Just ' + CHORE_DAYS[day].label : pt.label)}</button>`).join('')}
+  </div>
+
   ${groups.map((g) => `
     <div class="dsec">
       <h4>${esc(g.area.label)}</h4>
       ${g.items.map((ch) => `
         <button class="chrow pick${have[ch.id] ? ' has' : ''}" data-chore="add"
-          data-id="${esc(ch.id)}" data-who="${esc(p.id)}" data-day="${esc(String(day))}">
+          data-id="${esc(ch.id)}" data-who="${esc(p.id)}" data-days="${esc(wantDays.join(','))}">
           <span class="chbox plus">${have[ch.id] ? icon('check', 13, '#fff') : icon('plus', 13, 'var(--deep)')}</span>
           <span class="grow">
             <span class="chlabel">${esc(ch.label)}</span>
