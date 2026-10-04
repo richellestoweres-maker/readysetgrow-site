@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-03 23:37">
+<meta name="rsg-build" content="2026-10-04 00:20">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -1455,7 +1455,32 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 /* the seven days. they must fit across a 320px phone without scrolling,
    which is why the label is three letters and the count sits under it. */
 .chdays{display:flex;gap:4px;margin:0 0 10px}
-.chdays.sm{margin:10px 0 0}
+.chdays.sm{margin:6px 0 0}
+/* The schedule in words, with the one button that covers the case
+   nearly everybody wants, above the seven that cover the rest. */
+/* THE JOB CARD.
+   Big enough to tap without aiming, coloured by what kind of job it
+   is, and it fills in when it is done rather than growing a small
+   mark in a corner. */
+.jrow{appearance:none;border:0;width:100%;display:flex;align-items:center;gap:11px;
+  border-radius:16px;padding:11px 12px;margin:0 0 8px;cursor:pointer;text-align:left;
+  transition:background .16s ease,color .16s ease}
+.jface{width:38px;height:38px;min-width:38px;border-radius:50%;display:flex;
+  align-items:center;justify-content:center;flex:none}
+.jtext{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.jname{font-size:15px;font-weight:700;line-height:1.25}
+.jrow.done .jname{text-decoration:line-through;text-decoration-thickness:1.5px;opacity:.85}
+.jsub{font-size:11.5px;opacity:.72;line-height:1.2}
+.jtick{width:28px;height:28px;min-width:28px;border-radius:50%;flex:none;
+  border:2px solid currentColor;opacity:.4;display:flex;align-items:center;justify-content:center}
+.jtick.on{background:#fff;border-color:#fff;opacity:1}
+
+.chsched{display:flex;align-items:center;gap:8px;margin:9px 0 0}
+.chsched-l{flex:1;min-width:0;color:var(--muted)}
+.chevery{appearance:none;flex:none;border:1px solid var(--line2);background:var(--surface);
+  border-radius:999px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--deep);
+  cursor:pointer;line-height:1.3}
+.chevery.on{background:var(--deep);border-color:var(--deep);color:#fff}
 .chday{
   flex:1 1 0;min-width:0;padding:7px 2px;border-radius:11px;
   border:1px solid var(--line2);background:var(--surface2);
@@ -2219,7 +2244,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-03 23:37';
+const BUILD_STAMP = '2026-10-04 00:20';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -21730,6 +21755,25 @@ const CHORE_AREAS = [
     { id: 'self', label: 'Looking after themselves' },
     { id: 'house', label: 'Running the house' },
 ];
+const CHORE_AREA_LOOK = {
+    tidy: { icon: 'bag', color: 'plum' },
+    kitchen: { icon: 'utensils', color: 'clay' },
+    laundry: { icon: 'drop', color: 'sky' },
+    bathroom: { icon: 'potty', color: 'moss' },
+    floors: { icon: 'hand', color: 'honey' },
+    pets: { icon: 'heart', color: 'rose' },
+    outside: { icon: 'sun', color: 'sage' },
+    self: { icon: 'user', color: 'slate' },
+    house: { icon: 'home', color: 'honey' },
+};
+function choreLook(areaId) {
+    return CHORE_AREA_LOOK[areaId] || { icon: 'leaf', color: 'sage' };
+}
+function choreUnder(ch) {
+    if (!ch)
+        return '';
+    return String(ch.minutes) + ' min' + (ch.withYou ? ', with you' : '');
+}
 const CHORES = [
     { id: 'toys-in-basket', label: 'Put toys in the basket', area: 'tidy', minMonths: 16, minutes: 5, stars: 1, withYou: true },
     { id: 'nappy-in-bin', label: 'Put their diaper in the trash', area: 'self', minMonths: 16, minutes: 1, stars: 1 },
@@ -21880,6 +21924,44 @@ const CHORE_DAYS = [
     { id: 5, label: 'Friday', short: 'Fri' },
     { id: 6, label: 'Saturday', short: 'Sat' },
 ];
+const CHORE_PATTERNS = [
+    { id: 'day', label: 'Just this day', days: null },
+    { id: 'every', label: 'Every day', days: [0, 1, 2, 3, 4, 5, 6] },
+    { id: 'weekdays', label: 'School days', days: [1, 2, 3, 4, 5] },
+    { id: 'weekends', label: 'Weekends', days: [0, 6] },
+];
+const CHORE_PATTERN_NOTE = 'Pick how often first, then tap the jobs. You can change any of it afterwards.';
+function chorePatternDays(patternId, oneDay) {
+    const p = CHORE_PATTERNS.filter((x) => x.id === patternId)[0];
+    if (!p || !p.days)
+        return [Number(oneDay) || 0];
+    return p.days.slice();
+}
+function chorePatternOf(days) {
+    const d = (days || []).slice().sort((a, b) => a - b).join(',');
+    for (let i = 0; i < CHORE_PATTERNS.length; i += 1) {
+        const p = CHORE_PATTERNS[i];
+        if (p.days && p.days.slice().sort((a, b) => a - b).join(',') === d)
+            return p.id;
+    }
+    return '';
+}
+const CHORE_EVERY_DAY_LABEL = 'Every day';
+function choreDaysLine(days) {
+    const d = (days || []).slice().sort((a, b) => a - b);
+    if (!d.length)
+        return 'No days yet';
+    const pat = chorePatternOf(d);
+    if (pat === 'every')
+        return 'Every day';
+    if (pat === 'weekdays')
+        return 'School days';
+    if (pat === 'weekends')
+        return 'Weekends';
+    if (d.length === 1)
+        return CHORE_DAYS[d[0]].label + 's';
+    return d.map((x) => CHORE_DAYS[x].short).join(', ');
+}
 function choreById(id) {
     return CHORES.filter((c) => c.id === id)[0] || null;
 }
@@ -51430,7 +51512,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-chorepat],[data-choreevery],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -52473,7 +52555,21 @@ function initControls() {
             store.chorePick = null;
         }
         else if (t.dataset.chore === 'add') {
-            choreAdd(t.dataset.id, t.dataset.who, Number(t.dataset.day));
+            choreAdd(t.dataset.id, t.dataset.who, String(t.dataset.days || '').split(',').filter((x) => x !== '').map(Number));
+        }
+        else if (t.dataset.chorepat) {
+            if (!store.chorePick)
+                store.chorePick = {};
+            store.chorePick.pattern = t.dataset.chorepat;
+        }
+        else if (t.dataset.choreevery) {
+            const job = choreJobs().filter((j) => j.id === t.dataset.choreevery)[0];
+            if (job) {
+                const all = chorePatternOf(job.days) === 'every';
+                choreSetDays(job.id, all
+                    ? [typeof store.choreDay === 'number' ? store.choreDay : choreTodayIndex()]
+                    : chorePatternDays('every'));
+            }
         }
         else if (t.dataset.chore === 'offday') {
             choreSetDay(t.dataset.id, Number(t.dataset.day), false);
@@ -71446,17 +71542,40 @@ function choreStars(personId, sinceDays) {
     });
     return total;
 }
-function choreAdd(choreId, personId, day) {
+function choreAdd(choreId, personId, days) {
     if (!Array.isArray(store.choreJobs))
         store.choreJobs = [];
+    const want = (Array.isArray(days) ? days : [days]).map(Number).sort((a, b) => a - b);
     const found = store.choreJobs.filter((j) => j.choreId === choreId && j.personId === personId)[0];
     if (found) {
-        if ((found.days || []).indexOf(day) === -1)
-            found.days = (found.days || []).concat([day]);
+        const have = (found.days || []).slice().sort((a, b) => a - b);
+        if (have.join(',') === want.join(',')) {
+            store.choreJobs = choreJobs().filter((j) => j.id !== found.id);
+        }
+        else {
+            const merged = have.slice();
+            want.forEach((d) => { if (merged.indexOf(d) === -1)
+                merged.push(d); });
+            found.days = merged.sort((a, b) => a - b);
+        }
     }
     else {
-        store.choreJobs.push({ id: choreNewId(), choreId: choreId, personId: personId, days: [day] });
+        store.choreJobs.push({ id: choreNewId(), choreId: choreId, personId: personId, days: want });
     }
+    store.parentUpdatedAt = Date.now();
+    saveStore();
+}
+function choreSetDays(jobId, days) {
+    const job = choreJobs().filter((j) => j.id === jobId)[0];
+    if (!job)
+        return;
+    const want = (days || []).map(Number).sort((a, b) => a - b);
+    if (!want.length) {
+        store.choreJobs = choreJobs().filter((j) => j.id !== jobId);
+    }
+    else
+        job.days = want;
+    store.parentUpdatedAt = Date.now();
     saveStore();
 }
 function choreSetDay(jobId, day, on) {
@@ -71539,23 +71658,20 @@ function listJoin(arr) {
     return a.join(', ') + ' and ' + last;
 }
 function screenChores() {
-    const tab = store.choreTab || 'today';
+    const tab = store.choreTab === 'who' || store.choreTab === 'week' || store.choreTab === 'how'
+        ? 'who' : (store.choreTab || 'today');
     const tabs = [
         { id: 'today', label: 'Today' },
-        { id: 'week', label: 'The week' },
-        { id: 'who', label: 'Who does what' },
-        { id: 'how', label: 'How to start' },
+        { id: 'who', label: 'Set up' },
     ];
-    const body = tab === 'week' ? choreWeekTab()
-        : tab === 'who' ? choreWhoTab()
-            : tab === 'how' ? choreHowTab()
-                : choreTodayTab();
+    const body = tab === 'who' ? choreWhoTab() : choreTodayTab();
     return `
   ${cornerLeaves()}
   <div class="sc-head">
     <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
     <h1 class="title">Jobs</h1>
-    <p class="sub">${esc(CHORE_INTRO)}</p>
+    ${''}
+    ${tab === 'who' ? `<p class="sub">${esc(CHORE_INTRO)}</p>` : ''}
   </div>
   <div class="sc">
     ${store.chorePick ? '' : subTabs('choreTab', tab, tabs)}
@@ -71601,16 +71717,21 @@ function choreTickRow(job, key) {
     if (!ch)
         return '';
     const done = choreIsDone(job.id, key);
+    const look = choreLook(ch.area);
+    const col = calColor(look.color);
     return `
-  <button class="chrow${done ? ' done' : ''}" data-chore="tick" data-id="${esc(job.id)}">
-    <span class="chbox">${done ? icon('check', 13, '#fff') : ''}</span>
-    <span class="grow">
-      <span class="chlabel">${esc(ch.label)}</span>
-      <span class="tiny" style="display:block;margin-top:2px">
-        ${esc(ch.minutes + ' min')}${ch.withYou ? ', with you' : ''}${ch.note ? '' : ''}
-      </span>
+  <button class="jrow${done ? ' done' : ''}" data-chore="tick" data-id="${esc(job.id)}"
+    style="background:${esc(done ? col.dot : col.soft)};color:${esc(done ? '#fff' : col.ink)}"
+    aria-pressed="${done}">
+    <span class="jface" style="background:${esc(done ? 'rgba(255,255,255,.22)' : '#fff')}">
+      ${icon(look.icon, 19, done ? '#fff' : col.dot)}
     </span>
-    ${choreStarRow(ch.stars)}
+    <span class="jtext">
+      <span class="jname">${esc(ch.label)}</span>
+      <span class="jsub">${esc(choreUnder(ch))}${choreStarsOn() && ch.stars
+        ? esc(', ' + ch.stars + (ch.stars === 1 ? ' star' : ' stars')) : ''}</span>
+    </span>
+    <span class="jtick${done ? ' on' : ''}">${done ? icon('check', 16, col.dot) : ''}</span>
   </button>`;
 }
 function choreEmpty() {
@@ -71687,6 +71808,14 @@ function choreWhoTab() {
             <button class="chx" data-chore="remove" data-id="${esc(j.id)}"
               aria-label="Take ${esc(ch.label)} off the chart">${icon('close', 12, 'var(--muted)')}</button>
           </div>
+          ${''}
+          <div class="chsched">
+            <span class="tiny chsched-l">${esc(choreDaysLine(j.days))}</span>
+            <button class="chevery${chorePatternOf(j.days) === 'every' ? ' on' : ''}"
+              data-choreevery="${esc(j.id)}"
+              aria-pressed="${chorePatternOf(j.days) === 'every'}">
+              ${esc(CHORE_EVERY_DAY_LABEL)}</button>
+          </div>
           <div class="chdays sm">
             ${CHORE_DAYS.map((d) => `
               <button class="chday${(j.days || []).indexOf(d.id) !== -1 ? ' on' : ''}"
@@ -71716,6 +71845,7 @@ function choreWhoTab() {
       <button class="btn" data-chore="addadult" style="flex:none">Add</button>
     </div>
   </div>
+  ${choreLiveJobs().length ? '' : choreHowTab()}
   <div class="dsec">
     <h4>Stars</h4>
     <button class="lrow" data-chore="stars">
@@ -71737,8 +71867,13 @@ function chorePicker() {
         return choreTodayTab();
     }
     const day = typeof pick.day === 'number' ? pick.day : choreTodayIndex();
+    const pat = pick.pattern || 'every';
+    const wantDays = chorePatternDays(pat, day);
     const have = {};
-    choreJobsFor(p.id, day).forEach((j) => { have[j.choreId] = true; });
+    choreJobsFor(p.id).forEach((j) => {
+        const d = j.days || [];
+        have[j.choreId] = wantDays.every((x) => d.indexOf(x) !== -1);
+    });
     const pool = p.kind === 'adult'
         ? adultChores()
         : (p.months == null ? [] : choresForMonths(p.months));
@@ -71749,7 +71884,7 @@ function chorePicker() {
   </button>
   <div class="card leafy">
     <p class="bodytext" style="margin:0">
-      A job for ${esc(p.name)} on ${esc(CHORE_DAYS[day].label)}.
+      A job for ${esc(p.name)}, ${esc(choreDaysLine(wantDays).toLowerCase())}.
       ${p.kind === 'child' && p.months != null
         ? esc('Everything here is something a ' + childAgeWord(p.months) + ' can have a go at. It will not be done well and that is the job being done.')
         : esc('The work that is already yours, written down so it is on the chart with everybody else’s.')}
@@ -71757,12 +71892,21 @@ function chorePicker() {
   </div>
   ${p.kind === 'child' && p.months == null ? `
     <div class="card flat"><p class="bodytext">Add their birthday on their profile and this fills up.</p></div>` : ''}
+  ${''}
+  <p class="sect" style="margin-top:4px">How often</p>
+  <p class="tiny" style="margin:0 0 8px">${esc(CHORE_PATTERN_NOTE)}</p>
+  <div class="fcscroll" style="padding-bottom:10px">
+    ${CHORE_PATTERNS.map((pt) => `
+      <button class="chip${pat === pt.id ? ' on' : ''}" data-chorepat="${esc(pt.id)}"
+        aria-pressed="${pat === pt.id}">${esc(pt.id === 'day'
+        ? 'Just ' + CHORE_DAYS[day].label : pt.label)}</button>`).join('')}
+  </div>
   ${groups.map((g) => `
     <div class="dsec">
       <h4>${esc(g.area.label)}</h4>
       ${g.items.map((ch) => `
         <button class="chrow pick${have[ch.id] ? ' has' : ''}" data-chore="add"
-          data-id="${esc(ch.id)}" data-who="${esc(p.id)}" data-day="${esc(String(day))}">
+          data-id="${esc(ch.id)}" data-who="${esc(p.id)}" data-days="${esc(wantDays.join(','))}">
           <span class="chbox plus">${have[ch.id] ? icon('check', 13, '#fff') : icon('plus', 13, 'var(--deep)')}</span>
           <span class="grow">
             <span class="chlabel">${esc(ch.label)}</span>
