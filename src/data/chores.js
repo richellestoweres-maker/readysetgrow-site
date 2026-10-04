@@ -47,6 +47,49 @@ export const CHORE_AREAS = [
   { id: 'house', label: 'Running the house' },
 ];
 
+/* ------------------------------------------------------------------
+   WHAT A JOB LOOKS LIKE
+
+   Her note, and it is the right one: the chart reads like a form. A
+   list of grey rows with a checkbox is how you file an expense claim,
+   not how you ask a six year old to feed the cat.
+
+   What makes the versions children actually use look friendly is not
+   decoration, it is that every job has a PICTURE and a COLOUR, and
+   that both are consistent, so a child who cannot read yet still
+   knows which row is the teeth one. The colour here comes from the
+   area rather than from the individual job, which means nine colours
+   to learn rather than sixty, and the same job is the same colour on
+   every child's chart forever.
+
+   Colours are the calendar's, deliberately. One palette for the whole
+   app, so a mint circle means the same kind of thing wherever it
+   turns up.
+   ------------------------------------------------------------------ */
+export const CHORE_AREA_LOOK = {
+  tidy:     { icon: 'bag',      color: 'plum' },
+  kitchen:  { icon: 'utensils', color: 'clay' },
+  laundry:  { icon: 'drop',     color: 'sky' },
+  bathroom: { icon: 'potty',    color: 'moss' },
+  floors:   { icon: 'hand',     color: 'honey' },
+  pets:     { icon: 'heart',    color: 'rose' },
+  outside:  { icon: 'sun',      color: 'sage' },
+  self:     { icon: 'user',     color: 'slate' },
+  house:    { icon: 'home',     color: 'honey' },
+};
+
+export function choreLook(areaId) {
+  return CHORE_AREA_LOOK[areaId] || { icon: 'leaf', color: 'sage' };
+}
+
+/* What the row says under the name. Minutes and "with you" are the
+   two things that change whether a parent says yes to a job, and
+   everything else belongs on the job itself rather than in a list. */
+export function choreUnder(ch) {
+  if (!ch) return '';
+  return String(ch.minutes) + ' min' + (ch.withYou ? ', with you' : '');
+}
+
 export const CHORES = [
   /* ---------------- AROUND EIGHTEEN MONTHS ----------------
      The age almost every list skips, and the age a child most wants
@@ -232,6 +275,68 @@ export const CHORE_DAYS = [
   { id: 5, label: 'Friday', short: 'Fri' },
   { id: 6, label: 'Saturday', short: 'Sat' },
 ];
+
+/* ------------------------------------------------------------------
+   HOW OFTEN, ASKED ONCE
+
+   Adding a chore used to put it on exactly one day, the day you
+   happened to be looking at, and the only way to get "brush teeth,
+   every morning" onto the chart was to go to another tab afterwards
+   and tap seven little day buttons. For one chore. For one child.
+   A house with three people and four daily jobs was eighty four taps
+   to say a thing that takes four words to say out loud.
+
+   So the question is asked once, before anything is picked, and then
+   every chore tapped after it lands on that pattern. Set it to every
+   day, tap your four jobs, done.
+
+   The four patterns below are the ones families actually mean.
+   Anything more specific than these is still possible by hand on the
+   day buttons, which is where that belongs: the common case should be
+   one tap and the rare case should be possible.
+   ------------------------------------------------------------------ */
+export const CHORE_PATTERNS = [
+  { id: 'day', label: 'Just this day', days: null },
+  { id: 'every', label: 'Every day', days: [0, 1, 2, 3, 4, 5, 6] },
+  { id: 'weekdays', label: 'School days', days: [1, 2, 3, 4, 5] },
+  { id: 'weekends', label: 'Weekends', days: [0, 6] },
+];
+
+export const CHORE_PATTERN_NOTE =
+  'Pick how often first, then tap the jobs. You can change any of it afterwards.';
+
+export function chorePatternDays(patternId, oneDay) {
+  const p = CHORE_PATTERNS.filter((x) => x.id === patternId)[0];
+  if (!p || !p.days) return [Number(oneDay) || 0];
+  return p.days.slice();
+}
+
+/* Which preset a job's days match, so the chart can say "every day"
+   instead of listing seven abbreviations, and so the button for the
+   pattern it is already on shows as on. */
+export function chorePatternOf(days) {
+  const d = (days || []).slice().sort((a, b) => a - b).join(',');
+  for (let i = 0; i < CHORE_PATTERNS.length; i += 1) {
+    const p = CHORE_PATTERNS[i];
+    if (p.days && p.days.slice().sort((a, b) => a - b).join(',') === d) return p.id;
+  }
+  return '';
+}
+
+export const CHORE_EVERY_DAY_LABEL = 'Every day';
+
+/* A job's schedule in words, for the line under its name. Seven
+   checkboxes is a control, not an answer to "when does this happen". */
+export function choreDaysLine(days) {
+  const d = (days || []).slice().sort((a, b) => a - b);
+  if (!d.length) return 'No days yet';
+  const pat = chorePatternOf(d);
+  if (pat === 'every') return 'Every day';
+  if (pat === 'weekdays') return 'School days';
+  if (pat === 'weekends') return 'Weekends';
+  if (d.length === 1) return CHORE_DAYS[d[0]].label + 's';
+  return d.map((x) => CHORE_DAYS[x].short).join(', ');
+}
 
 export function choreById(id) {
   return CHORES.filter((c) => c.id === id)[0] || null;
