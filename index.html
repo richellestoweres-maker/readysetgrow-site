@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-05 21:51">
+<meta name="rsg-build" content="2026-10-05 22:18">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -2537,7 +2537,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-05 21:51';
+const BUILD_STAMP = '2026-10-05 22:18';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -27554,12 +27554,33 @@ const BP_WHY = {
         + 'side of one page is what the people receiving it ask for.',
 };
 const BP_FIELDS = [
-    { id: 'name', label: 'Your name', ph: 'The name you want to be called' },
-    { id: 'baby', label: 'Baby is called', ph: 'Or whatever you have been calling them' },
-    { id: 'support', label: 'With me', ph: 'Who is coming in with you' },
-    { id: 'provider', label: 'My midwife or doctor', ph: 'Name or practice' },
-    { id: 'place', label: 'Where', ph: 'Hospital or birth centre' },
+    { id: 'name', g: 'you', label: 'Your name', ph: 'The name you want to be called' },
+    { id: 'baby', g: 'you', label: 'Baby is called', ph: 'Or whatever you have been calling them' },
+    { id: 'place', g: 'you', label: 'Where', ph: 'Hospital or birth centre' },
+    { id: 'provider', g: 'you', label: 'My midwife or doctor', ph: 'Name or practice' },
+    { id: 'support', g: 'people', label: 'With me', ph: 'Who is coming in with you' },
+    { id: 'supportPhone', g: 'people', label: 'Their number', ph: 'Phone', tel: true },
+    { id: 'doula', g: 'people', label: 'My doula', ph: 'Name, if you have one' },
+    { id: 'doulaPhone', g: 'people', label: 'Doula number', ph: 'Phone', tel: true },
+    { id: 'allergies', g: 'health', label: 'Allergies', ph: 'Medicines, latex, foods' },
+    { id: 'meds', g: 'health', label: 'Medicines I take', ph: 'Anything regular' },
+    { id: 'gbs', g: 'health', label: 'Group B Strep', ph: 'Positive, negative, or not tested yet' },
+    { id: 'blood', g: 'health', label: 'Blood type', ph: 'If you know it' },
+    { id: 'history', g: 'health', label: 'Worth knowing', ph: 'Previous cesarean, a condition, anything relevant' },
 ];
+const BP_GROUPS = [
+    { id: 'you', label: 'The details at the top' },
+    { id: 'people', label: 'Who is coming with you',
+        hint: 'A doula has to be named for the hospital to let her in, and she is usually the first '
+            + 'call when labor starts, so the number earns its place.' },
+    { id: 'health', label: 'What they need to know',
+        hint: 'Only what a room full of strangers would want on the page in front of them. Leave any '
+            + 'of it blank. All of it stays on this baby\'s profile and goes nowhere else.' },
+];
+function bpFieldsIn(groupId) {
+    return BP_FIELDS.filter((f) => f.g === groupId);
+}
+const BP_DOULA_LINK = 'What a doula actually does, and what the trials found';
 const BP_NOTE_LABEL = 'Anything else they should know';
 const BP_NOTE_PH = 'Previous birth, something you are frightened of, a word you would rather they did not use';
 const BP_NOTE_MAX = 400;
@@ -27616,6 +27637,25 @@ const BP_ROWS = [
             { v: 'sips', label: 'Water and ice chips are enough' },
             { v: 'ask', label: 'Tell me what is allowed here' },
         ] },
+    { id: 'comfort', sec: 'labor', q: 'What I would like available', multi: true,
+        options: [
+            { v: 'ball', label: 'A birth ball' },
+            { v: 'shower', label: 'The shower or bath' },
+            { v: 'heat', label: 'Heat packs' },
+            { v: 'massage', label: 'Massage and counterpressure' },
+            { v: 'tens', label: 'A TENS machine' },
+            { v: 'breath', label: 'Breathing or hypnobirthing' },
+            { v: 'music', label: 'My own music' },
+            { v: 'oils', label: 'Aromatherapy' },
+            { v: 'stool', label: 'A birth stool or squat bar' },
+        ] },
+    { id: 'photos', sec: 'labor', q: 'Photos and video',
+        options: [
+            { v: 'yes', label: 'My partner will take photos' },
+            { v: 'after', label: 'Photos afterwards, not during' },
+            { v: 'pro', label: 'We have a birth photographer coming' },
+            { v: 'none', label: 'No photos or filming, please' },
+        ] },
     { id: 'pushhow', sec: 'push', q: 'How I push',
         options: [
             { v: 'own', label: 'Let me follow my own body if it is safe' },
@@ -27639,6 +27679,13 @@ const BP_ROWS = [
             { v: 'mirror', label: 'I would like a mirror, or to reach down' },
             { v: 'tell', label: 'Tell me what is happening as it happens' },
             { v: 'quiet', label: 'I would rather just be left to it' },
+        ] },
+    { id: 'announce', sec: 'push', q: 'Who says whether it is a boy or a girl',
+        options: [
+            { v: 'us', label: 'Let us see for ourselves' },
+            { v: 'partner', label: 'My partner would like to say it' },
+            { v: 'any', label: 'Whoever, we do not mind' },
+            { v: 'known', label: 'We already know' },
         ] },
     { id: 'after', sec: 'after', q: 'The first few minutes',
         options: [
@@ -27684,6 +27731,12 @@ const BP_ROWS = [
             { v: 'any', label: 'Whenever suits you' },
             { v: 'me', label: 'I would like to be there for it' },
         ] },
+    { id: 'weigh', sec: 'baby', q: 'Weighing and the first checks',
+        options: [
+            { v: 'wait', label: 'After we have had a while together' },
+            { v: 'any', label: 'Whenever you normally would' },
+            { v: 'room', label: 'In the room where I can see' },
+        ] },
     { id: 'vitk', sec: 'baby', q: 'Vitamin K and the newborn checks',
         options: [
             { v: 'yes', label: 'Yes to all of it' },
@@ -27695,6 +27748,15 @@ const BP_ROWS = [
             { v: 'gentle', label: 'Awake, partner in, baby on my chest in the operating room' },
             { v: 'quiet', label: 'Keep it calm and tell me what is happening' },
             { v: 'see', label: 'I would rather not think about that' },
+        ] },
+    { id: 'caesroom', sec: 'change', q: 'In the operating room, if we get there', multi: true,
+        options: [
+            { v: 'screen', label: 'Lower the screen so I can see them born' },
+            { v: 'arms', label: 'Both arms free if you can' },
+            { v: 'skin', label: 'Skin to skin in the room' },
+            { v: 'quiet', label: 'Keep the talking down' },
+            { v: 'explain', label: 'Talk me through what is happening' },
+            { v: 'photo', label: 'My partner may take a photo' },
         ] },
     { id: 'nicu', sec: 'change', q: 'If the baby needs to leave the room',
         options: [
@@ -27716,8 +27778,38 @@ function bpAnswerLabel(rowId, value) {
     const row = BP_ROWS.filter((r) => r.id === rowId)[0];
     if (!row)
         return '';
-    const opt = (row.options || []).filter((o) => o.v === value)[0];
-    return opt ? opt.label : '';
+    const pick = (v) => {
+        const opt = (row.options || []).filter((o) => o.v === v)[0];
+        return opt ? opt.label : '';
+    };
+    if (row.multi) {
+        const vals = Array.isArray(value) ? value : [];
+        const labels = vals.map(pick).filter(Boolean);
+        if (!labels.length)
+            return '';
+        return labels.map((t, i) => (i === 0 ? t : t.charAt(0).toLowerCase() + t.slice(1))).join(', ');
+    }
+    return pick(value);
+}
+function bpIsOn(row, stored, v) {
+    if (!row)
+        return false;
+    if (row.multi)
+        return Array.isArray(stored) && stored.indexOf(v) !== -1;
+    return stored === v;
+}
+function bpToggle(row, stored, v) {
+    if (!row)
+        return undefined;
+    if (!row.multi)
+        return stored === v ? undefined : v;
+    const cur = Array.isArray(stored) ? stored.slice() : [];
+    const at = cur.indexOf(v);
+    if (at === -1)
+        cur.push(v);
+    else
+        cur.splice(at, 1);
+    return cur.length ? cur : undefined;
 }
 function bpChosen(prefs) {
     const p = (prefs && typeof prefs === 'object') ? prefs : {};
@@ -27750,6 +27842,31 @@ const BP_TALK = {
         + 'through is. Ask at your next visit whether anything on it would be difficult where you are '
         + 'giving birth, because that answer is worth more than the page.',
 };
+const BP_LINES_PER_PAGE = 46;
+function bpPageLines(prefs, meta) {
+    const m = (meta && typeof meta === 'object') ? meta : {};
+    const secs = bpSectionsWithAnswers(prefs);
+    let n = 3;
+    BP_FIELDS.forEach((f) => { if (f.id !== 'name' && m[f.id])
+        n += 1; });
+    secs.forEach((sec) => {
+        n += 2;
+        sec.lines.forEach((l) => {
+            n += 2 + Math.floor(String(l.a || '').length / 52);
+        });
+    });
+    if (m.note)
+        n += 3 + Math.floor(String(m.note).length / 52);
+    if (m.flex !== false)
+        n += 3;
+    return n;
+}
+function bpPages(prefs, meta) {
+    return Math.max(1, Math.ceil(bpPageLines(prefs, meta) / BP_LINES_PER_PAGE));
+}
+const BP_ONE_PAGE = 'Fits on one page.';
+const BP_OVER_PAGE = 'This is running onto a second page. It still prints, but one side is what tends to get read, so '
+    + 'it is worth dropping the ones you do not feel strongly about.';
 const BP_SOURCES = [
     { org: 'Cochrane',
         label: 'Written birth plans, and why discussion with a provider is the part that helps',
@@ -54395,10 +54512,13 @@ function initControls() {
             if (kid) {
                 if (!kid.birthPrefs || typeof kid.birthPrefs !== 'object')
                     kid.birthPrefs = {};
-                if (kid.birthPrefs[t.dataset.bppick] === t.dataset.val)
-                    delete kid.birthPrefs[t.dataset.bppick];
+                const rowId = t.dataset.bppick;
+                const row = BP_ROWS.filter((r) => r.id === rowId)[0];
+                const next = bpToggle(row, kid.birthPrefs[rowId], t.dataset.val);
+                if (next === undefined)
+                    delete kid.birthPrefs[rowId];
                 else
-                    kid.birthPrefs[t.dataset.bppick] = t.dataset.val;
+                    kid.birthPrefs[rowId] = next;
                 kid.updatedAt = Date.now();
             }
         }
@@ -60308,6 +60428,14 @@ function bpSet(field, value) {
     kid.birthPlan[field] = value;
     kid.updatedAt = Date.now();
 }
+function bpPeopleLines(meta) {
+    const out = [];
+    if (meta.support)
+        out.push(meta.support + (meta.supportPhone ? ', ' + meta.supportPhone : ''));
+    if (meta.doula)
+        out.push('Doula: ' + meta.doula + (meta.doulaPhone ? ', ' + meta.doulaPhone : ''));
+    return out;
+}
 function bpPlainText() {
     const kid = bpKid();
     if (!kid)
@@ -60317,12 +60445,24 @@ function bpPlainText() {
     const out = ['BIRTH PLAN'];
     if (meta.name)
         out.push(meta.name);
-    BP_FIELDS.forEach((f) => {
+    bpFieldsIn('you').forEach((f) => {
         if (f.id === 'name')
             return;
         if (meta[f.id])
             out.push(f.label + ': ' + meta[f.id]);
     });
+    const people = bpPeopleLines(meta);
+    if (people.length) {
+        out.push('');
+        out.push('WITH ME');
+        people.forEach((x) => out.push('  ' + x));
+    }
+    const health = bpFieldsIn('health').filter((f) => meta[f.id]);
+    if (health.length) {
+        out.push('');
+        out.push('WHAT YOU NEED TO KNOW');
+        health.forEach((f) => out.push('  ' + f.label + ': ' + meta[f.id]));
+    }
     out.push('');
     secs.forEach((sec) => {
         out.push(sec.label.toUpperCase());
@@ -60379,7 +60519,9 @@ function bpSheet(kid) {
     const meta = bpMeta(kid);
     const secs = bpSectionsWithAnswers(bpPrefs(kid));
     const who = meta.name || (store.parent && store.parent.name) || '';
-    const details = BP_FIELDS.filter((f) => f.id !== 'name' && meta[f.id]);
+    const details = bpFieldsIn('you').filter((f) => f.id !== 'name' && meta[f.id]);
+    const people = bpPeopleLines(meta);
+    const health = bpFieldsIn('health').filter((f) => meta[f.id]);
     return `
   <div class="bpsheet">
     <p class="bpsheet-k">Birth plan</p>
@@ -60387,6 +60529,17 @@ function bpSheet(kid) {
     ${details.length ? `
     <div class="bpsheet-meta">
       ${details.map((f) => `<p><span>${esc(f.label)}</span> ${esc(meta[f.id])}</p>`).join('')}
+    </div>` : ''}
+    ${people.length ? `
+    <div class="bpsheet-sec">
+      <p class="bpsheet-h">With me</p>
+      ${people.map((x) => `<p class="bpsheet-l">${esc(x)}</p>`).join('')}
+    </div>` : ''}
+    ${health.length ? `
+    <div class="bpsheet-sec">
+      <p class="bpsheet-h">What you need to know</p>
+      ${health.map((f) => `
+        <p class="bpsheet-l"><span>${esc(f.label)}</span>${esc(meta[f.id])}</p>`).join('')}
     </div>` : ''}
     ${secs.length ? secs.map((sec) => `
       <div class="bpsheet-sec">
@@ -60419,6 +60572,7 @@ function screenBirthPlan() {
     const prefs = bpPrefs(kid);
     const meta = bpMeta(kid);
     const chosen = bpChosen(prefs);
+    const pages = bpPages(prefs, meta);
     const tab = state.bpTab || 'build';
     return `
   <div class="sc-head">
@@ -60445,8 +60599,9 @@ function screenBirthPlan() {
           <div class="hhalf-h"><span class="hhalf-ic">${icon('note', 14, 'var(--deep)')}</span>
             <span class="hhalf-t">Your page</span></div>
           <div class="hhalf-b">
-            <p class="hhalf-free">${chosen
-        ? 'Ready to print or send.' : 'Nothing on it yet.'}</p>
+            <p class="szbig">${pages}<span class="szbig-u">${pages === 1 ? ' page' : ' pages'}</span></p>
+            <p class="hhalf-free">${esc(chosen || meta.note
+        ? (pages === 1 ? BP_ONE_PAGE : 'Worth trimming.') : 'Nothing on it yet.')}</p>
           </div>
           <button class="hhalf-go" data-sub="bpTab" data-val="page">
             See it ${icon('chev', 12, 'var(--deep)')}</button>
@@ -60459,25 +60614,36 @@ function screenBirthPlan() {
         </div>
         <p class="bodytext" style="margin:0">${esc(BP_WHY.body)}</p>
       </div>
-      <p class="sect" style="margin-top:16px">The details at the top</p>
+      ${BP_GROUPS.map((g) => `
+      <p class="sect" style="margin-top:16px">${esc(g.label)}</p>
       <div class="card">
-        ${BP_FIELDS.map((f) => `
+        ${g.hint ? `<p class="tiny" style="margin:0 0 11px">${esc(g.hint)}</p>` : ''}
+        ${bpFieldsIn(g.id).map((f) => `
         <div style="margin-bottom:10px">
           <p class="tiny" style="margin:0 0 4px">${esc(f.label)}</p>
           <input class="inp" id="bpf-${esc(f.id)}" data-bpfield="${esc(f.id)}"
+            ${f.tel ? 'type="tel" inputmode="tel"' : ''}
             value="${esc(meta[f.id] || '')}" placeholder="${esc(f.ph)}" maxlength="60">
         </div>`).join('')}
-      </div>
+        ${g.id === 'people' ? `
+        <button class="hhalf-go" style="width:100%;justify-content:center"
+          data-go="btopic" data-id="who:doula">
+          ${esc(BP_DOULA_LINK)} ${icon('chev', 12, 'var(--deep)')}</button>` : ''}
+      </div>`).join('')}
       ${BP_SECTIONS.map((sec) => `
         <p class="sect" style="margin-top:18px">${esc(sec.label)}</p>
         ${bpRowsIn(sec.id).map((r) => `
           <div class="card" style="margin-bottom:9px">
             <p class="eyebrow">${esc(r.q)}</p>
+            ${r.multi ? '<p class="tiny" style="margin:4px 0 0">Pick as many as you like.</p>' : ''}
             <div class="chips" style="margin-top:9px">
-              ${r.options.map((o) => `
-                <button class="chip${prefs[r.id] === o.v ? ' on' : ''}"
+              ${r.options.map((o) => {
+        const on = bpIsOn(r, prefs[r.id], o.v);
+        return `
+                <button class="chip${on ? ' on' : ''}"
                   data-bppick="${esc(r.id)}" data-val="${esc(o.v)}"
-                  aria-pressed="${prefs[r.id] === o.v}">${esc(o.label)}</button>`).join('')}
+                  aria-pressed="${on}">${esc(o.label)}</button>`;
+    }).join('')}
             </div>
           </div>`).join('')}
       `).join('')}
@@ -60509,6 +60675,14 @@ function screenBirthPlan() {
           ${icon('chat', 14, 'var(--deep)')} ${esc(BP_SHARE)}</button>
       </div>
       <p class="tiny" style="margin:8px 2px 0">${esc(BP_PRINT_HINT)}</p>
+      ${pages > 1 ? `
+      <div class="szcard blush" style="margin-top:11px">
+        <div class="szcard-h">
+          <span class="szcard-ic">${icon('info', 15, '#8A5F54')}</span>
+          <span class="szcard-t">${pages} pages</span>
+        </div>
+        <p class="bodytext" style="margin:0">${esc(BP_OVER_PAGE)}</p>
+      </div>` : ''}
       ${bpSheet(kid)}
       ${dsec(BP_TALK.title, `<p class="bodytext">${esc(BP_TALK.body)}</p>`)}`}
     `}
