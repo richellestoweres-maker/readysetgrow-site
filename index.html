@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-05 20:23">
+<meta name="rsg-build" content="2026-10-05 20:54">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -2091,6 +2091,98 @@ body.calpage .mark-holder{margin-bottom:-20px}
 .szcard-t{font-size:13.5px;font-weight:700;color:var(--ink)}
 .szcard.blush .szcard-t{color:#6E4740}
 
+/* ------------------------------------------------------------------
+   THE HOSPITAL BAG
+
+   Her note: the whole app should be structured like an app and not a
+   blog, with the words still there. So the bag keeps every word it had
+   and changes what they sit in. The tips were a bulleted paragraph and
+   are now cards you tap to pack the thing, which is the difference
+   between reading advice and acting on it.
+   ------------------------------------------------------------------ */
+.bagtop{display:flex;align-items:center;gap:15px;background:var(--leaf3);
+  border:1px solid rgba(74,103,65,.16);border-radius:20px;padding:14px 16px;margin-top:12px}
+.bagdial{position:relative;flex:none;width:78px;height:78px;display:flex;
+  align-items:center;justify-content:center}
+.bagdial-n{position:absolute;font-size:19px;font-weight:700;color:var(--ink);
+  font-variant-numeric:tabular-nums}
+.bagdial-u{font-size:11px;font-weight:600;color:var(--muted)}
+.bagtop-t{min-width:0}
+.bagtop-h{margin:0;font-size:17px;font-weight:700;color:var(--ink);line-height:1.2}
+.bagtop-s{margin:5px 0 0;font-size:12.5px;color:var(--muted);line-height:1.4}
+
+.bagrow{display:flex;align-items:flex-start;gap:4px;border-bottom:1px solid var(--line2)}
+.bagrow:last-child{border-bottom:0}
+.bagtick{appearance:none;border:0;background:none;padding:11px 2px;cursor:pointer;
+  display:flex;align-items:flex-start;gap:11px;text-align:left;flex:1;min-width:0}
+.bagbox{width:22px;height:22px;border-radius:7px;margin-top:1px;flex:none;display:flex;
+  align-items:center;justify-content:center;border:1.5px solid var(--line);background:transparent}
+.bagrow.on .bagbox{background:var(--sage);border-color:var(--sage)}
+.baggrow{flex:1;min-width:0}
+.bagname{display:block;font-size:14px;line-height:1.4;color:var(--ink)}
+.bagrow.on .bagname{color:var(--faint);text-decoration:line-through}
+.bagnote{display:block;margin-top:4px;font-size:11.5px;line-height:1.45;color:var(--muted)}
+.tag.yours{background:var(--blush2);color:#8A5F54}
+.bagaddbtn{appearance:none;width:100%;margin-top:9px;padding:9px 0 2px;border:0;
+  border-top:1px solid var(--line2);background:none;font:inherit;font-size:12px;
+  font-weight:600;color:var(--deep);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;gap:5px}
+.bagadd{margin-top:11px;padding-top:11px;border-top:1px solid var(--line2)}
+.bagremx{appearance:none;width:100%;margin-top:13px;padding:10px 12px;border:1px solid var(--line2);
+  border-radius:14px;background:var(--paper);font:inherit;font-size:12.5px;font-weight:600;
+  color:var(--faint);cursor:pointer;display:flex;align-items:center;gap:7px}
+
+/* The tips, as a panel of cards rather than a bulleted paragraph. */
+.tipwrap{margin-top:14px;background:var(--blush2);border:1px solid rgba(168,112,107,.22);
+  border-radius:20px;padding:14px 13px 15px}
+.tipwrap-h{display:flex;align-items:flex-start;gap:10px;margin-bottom:11px}
+.tipwrap-ic{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.72);
+  flex:none;display:flex;align-items:center;justify-content:center}
+.tipwrap-t{display:block;font-size:15px;font-weight:700;color:#6E4740;line-height:1.2}
+.tipwrap-s{display:block;margin-top:3px;font-size:11.5px;color:#8A6159;line-height:1.4}
+.tipgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.bagtip{appearance:none;text-align:left;font:inherit;cursor:pointer;background:#fff;
+  border:1px solid rgba(168,112,107,.2);border-radius:15px;padding:11px 11px 12px;
+  display:flex;flex-direction:column;gap:5px}
+.bagtip-n{width:21px;height:21px;border-radius:50%;background:var(--blush2);color:#8A5F54;
+  font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+.bagtip.on{background:rgba(255,255,255,.55);border-color:rgba(74,103,65,.2)}
+.bagtip.on .bagtip-n{background:var(--sage)}
+.bagtip-t{font-size:13px;font-weight:700;color:var(--ink);line-height:1.25}
+.bagtip.on .bagtip-t{color:var(--faint);text-decoration:line-through}
+.bagtip-b{font-size:11px;line-height:1.45;color:var(--muted)}
+.bagtip:focus-visible{outline:2px solid var(--deep);outline-offset:2px}
+@media (max-width:360px){.tipgrid{grid-template-columns:1fr}}
+
+/* ------------------------------------------------------------------
+   LOOKING AFTER YOURSELF
+
+   Her note: she wants CMV, syphilis, herpes and group B strep side by
+   side as widgets you tap to read the whole thing, bigger where they
+   need to be. These are a two column grid rather than a stack of link
+   rows, so the four that matter most are all on the screen at once
+   instead of four scrolls apart.
+   ------------------------------------------------------------------ */
+.infgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.infcard{position:relative;appearance:none;text-align:left;font:inherit;cursor:pointer;
+  background:#fff;border:1px solid rgba(74,103,65,.14);border-radius:18px;
+  padding:13px 12px 11px;display:flex;flex-direction:column;gap:6px}
+.infcard.urgent{background:#FCF2EE;border-color:#E6BFB3}
+.infcard-ic{width:34px;height:34px;border-radius:50%;background:var(--leaf3);flex:none;
+  display:flex;align-items:center;justify-content:center}
+.infcard.urgent .infcard-ic{background:rgba(255,255,255,.75)}
+.infcard-t{font-size:15px;font-weight:700;color:var(--ink);line-height:1.2}
+.infcard.urgent .infcard-t{color:#8A4433}
+.infcard-b{font-size:11.5px;line-height:1.45;color:var(--muted);flex:1}
+.infcard-tag{align-self:flex-start;font-size:10px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;color:#A85A44;background:rgba(255,255,255,.8);
+  border-radius:999px;padding:3px 8px}
+.infcard-go{display:flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;
+  color:var(--deep);padding-top:8px;border-top:1px solid var(--line2)}
+.infcard.urgent .infcard-go{color:#8A4433;border-top-color:rgba(168,90,68,.2)}
+.infcard:focus-visible{outline:2px solid var(--deep);outline-offset:2px}
+@media (max-width:360px){.infgrid{grid-template-columns:1fr}}
+
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 <!--
@@ -2392,7 +2484,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-05 20:23';
+const BUILD_STAMP = '2026-10-05 20:54';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -13002,6 +13094,8 @@ const PREP_TOPIC_IDS = PREP_TOPICS.map((t) => t.id);
 const INFECTIONS = [
     {
         id: 'cmv',
+        short: 'CMV',
+        ic: 'drop',
         label: 'CMV, cytomegalovirus',
         priority: 100,
         headline: 'The most common infectious cause of birth defects, and almost nobody has heard of it',
@@ -13051,6 +13145,8 @@ const INFECTIONS = [
     },
     {
         id: 'hsv',
+        short: 'Herpes, HSV',
+        ic: 'shield',
         label: 'Herpes, HSV',
         priority: 92,
         headline: 'The timing of a first infection matters enormously, and it is manageable',
@@ -13088,6 +13184,8 @@ const INFECTIONS = [
     },
     {
         id: 'syphilis',
+        short: 'Syphilis',
+        ic: 'pill',
         label: 'Syphilis',
         priority: 94,
         headline: 'Cases have risen more than tenfold, and it is completely treatable when caught',
@@ -13122,6 +13220,8 @@ const INFECTIONS = [
     },
     {
         id: 'gbs',
+        short: 'Group B Strep',
+        ic: 'circle',
         label: 'Group B strep',
         priority: 88,
         headline: 'Routine, common, and handled with antibiotics during labor',
@@ -13151,6 +13251,8 @@ const INFECTIONS = [
     },
     {
         id: 'listeria',
+        short: 'Listeria',
+        ic: 'utensils',
         label: 'Listeria and food safety',
         priority: 82,
         headline: 'Pregnant people are about 10 times more likely to get listeria',
@@ -13180,6 +13282,8 @@ const INFECTIONS = [
     },
     {
         id: 'toxoplasmosis',
+        short: 'Toxoplasmosis',
+        ic: 'heart',
         label: 'Toxoplasmosis',
         priority: 78,
         headline: 'The cat litter one, though undercooked meat is the bigger risk',
@@ -13208,6 +13312,8 @@ const INFECTIONS = [
     },
     {
         id: 'routine-panel',
+        short: 'The routine panel',
+        ic: 'note',
         label: 'The routine screening panel',
         priority: 74,
         headline: 'What is already being tested, so you know what has been covered',
@@ -13724,6 +13830,22 @@ function getBagProgress(checkedIds) {
         essentialsComplete: essentials.length > 0 && essentialsDone === essentials.length,
     };
 }
+const BAG_OWN_CAT = {
+    id: 'own',
+    label: 'Yours',
+    order: 99,
+    intro: 'The things only you know you need. Nobody else\'s list has these on it.',
+};
+const BAG_ADD_TITLE = 'Add something of your own';
+const BAG_ADD_PLACEHOLDER = 'What else goes in the bag';
+const BAG_ADD_WHERE = 'Which part of the bag';
+const BAG_REMOVED_TITLE = 'Taken off your list';
+const BAG_REMOVED_NOTE = 'Still here if you change your mind. Nothing is ever deleted for good.';
+const BAG_PUT_BACK = 'Put it back';
+const BAG_OWN_EMPTY = 'Nothing of your own yet. Your own pillow, the charger that actually reaches, a snack somebody '
+    + 'smuggles in. Whatever this list does not know about you.';
+const BAG_TIPS_TITLE = 'Things people wish they had known';
+const BAG_TIPS_INTRO = 'The items that surprise people. Tap one to pack it.';
 const BAG_ITEM_IDS = getAllItems().map((i) => i.id);
 const HOSPITAL_BAG_SOURCES = [
     {
@@ -50841,6 +50963,10 @@ const store = {
     liftUsed: 0,
     liftDate: '',
     bagChecked: [],
+    bagOwn: [],
+    bagHidden: [],
+    bagAdd: null,
+    bagRemovedOpen: false,
     outChecked: [],
     outTrip: 'day',
     daycareHours: 0,
@@ -50902,7 +51028,7 @@ const state = {};
             k[key] = v; },
     });
 });
-['parent', 'children', 'activeChildId', 'bagChecked', 'outChecked', 'outTrip', 'daycareHours', 'birthdaySeen', 'profileWho', 'posts', 'postDraft',
+['parent', 'children', 'activeChildId', 'bagChecked', 'bagOwn', 'bagHidden', 'bagAdd', 'bagRemovedOpen', 'outChecked', 'outTrip', 'daycareHours', 'birthdaySeen', 'profileWho', 'posts', 'postDraft',
     'postOpen', 'menuOpen', 'calMonth',
     'profileEdit', 'msEdit', 'ciEdit', 'ciOpen', 'photoBusy', 'photoError',
     'liftUsed', 'liftDate', 'pumpTab', 'pumpGoal',
@@ -50930,6 +51056,8 @@ function flushStore() {
             children: store.children,
             activeChildId: store.activeChildId,
             bagChecked: store.bagChecked,
+            bagOwn: store.bagOwn,
+            bagHidden: store.bagHidden,
             outChecked: store.outChecked,
             outTrip: store.outTrip,
             daycareHours: store.daycareHours,
@@ -51076,6 +51204,8 @@ function loadStore() {
         store.parent.lastPeriod = sanitizeStoredDate(store.parent.lastPeriod, 0);
         store.parent.situation = normalizeSituation(store.parent.situation);
         store.bagChecked = Array.isArray(saved.bagChecked) ? saved.bagChecked : [];
+        store.bagOwn = Array.isArray(saved.bagOwn) ? saved.bagOwn : [];
+        store.bagHidden = Array.isArray(saved.bagHidden) ? saved.bagHidden : [];
         store.outChecked = Array.isArray(saved.outChecked) ? saved.outChecked : [];
         store.outTrip = typeof saved.outTrip === 'string' ? saved.outTrip : 'day';
         store.daycareHours = Number(saved.daycareHours) || 0;
@@ -52543,7 +52673,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -53924,6 +54054,46 @@ function initControls() {
                 state.bagChecked.push(id);
             else
                 state.bagChecked.splice(i, 1);
+        }
+        else if (t.dataset.bagadd) {
+            store.bagAdd = t.dataset.bagadd === 'open' ? (t.dataset.cat || 'own') : null;
+        }
+        else if (t.dataset.bagaddsave) {
+            const f = document.getElementById('bagaddin');
+            const label = String(f ? f.value : '').replace(/\s+/g, ' ').trim().slice(0, 60);
+            if (!label) {
+                store.bagAdd = null;
+                render();
+                return;
+            }
+            if (!Array.isArray(store.bagOwn))
+                store.bagOwn = [];
+            store.bagOwn = store.bagOwn.concat([{
+                    id: 'bo' + Date.now() + Math.floor(Math.random() * 1000),
+                    label: label, cat: store.bagAdd || 'own', own: true, updatedAt: Date.now(),
+                }]);
+            store.bagAdd = null;
+            store.parentUpdatedAt = Date.now();
+        }
+        else if (t.dataset.bagdel) {
+            const id = t.dataset.bagdel;
+            if (bagOwn().some((o) => o.id === id)) {
+                store.bagOwn = bagOwn().filter((o) => o.id !== id);
+            }
+            else if (bagHidden().indexOf(id) === -1) {
+                store.bagHidden = bagHidden().concat([id]);
+            }
+            const ci = state.bagChecked.indexOf(id);
+            if (ci !== -1)
+                state.bagChecked.splice(ci, 1);
+            store.parentUpdatedAt = Date.now();
+        }
+        else if (t.dataset.bagback) {
+            store.bagHidden = bagHidden().filter((x) => x !== t.dataset.bagback);
+            store.parentUpdatedAt = Date.now();
+        }
+        else if (t.dataset.bagremoved) {
+            store.bagRemovedOpen = !store.bagRemovedOpen;
         }
         else if (t.dataset.routine) {
             const id = t.dataset.routine;
@@ -60643,27 +60813,84 @@ function screenSafety(c) {
     </p>
   </div>`;
 }
+function bagOwn() {
+    return Array.isArray(store.bagOwn) ? store.bagOwn : [];
+}
+function bagHidden() {
+    return Array.isArray(store.bagHidden) ? store.bagHidden : [];
+}
+function bagCats() {
+    const own = bagOwn();
+    const cats = getCategories().map((c) => ({
+        id: c.id,
+        label: c.label,
+        intro: c.intro,
+        items: (c.items || []).filter((i) => bagHidden().indexOf(i.id) === -1)
+            .concat(own.filter((o) => o.cat === c.id)),
+    }));
+    const loose = own.filter((o) => !o.cat || o.cat === 'own');
+    if (loose.length || store.bagAdd) {
+        cats.push({ id: 'own', label: BAG_OWN_CAT.label, intro: BAG_OWN_CAT.intro, items: loose });
+    }
+    return cats;
+}
+function bagAllItems() {
+    const out = [];
+    bagCats().forEach((c) => c.items.forEach((i) => out.push(i)));
+    return out;
+}
+function bagProgress() {
+    const checked = state.bagChecked || [];
+    const has = (id) => checked.indexOf(id) !== -1;
+    const categories = bagCats().map((c) => ({
+        id: c.id, label: c.label, total: c.items.length,
+        done: c.items.filter((i) => has(i.id)).length,
+        complete: c.items.length > 0 && c.items.every((i) => has(i.id)),
+    }));
+    const all = bagAllItems();
+    const ess = all.filter((i) => i.essential);
+    const total = all.length;
+    const done = all.filter((i) => has(i.id)).length;
+    const essDone = ess.filter((i) => has(i.id)).length;
+    return {
+        total: total, done: done,
+        percent: total === 0 ? 0 : Math.round((done / total) * 100),
+        categories: categories,
+        essentialsTotal: ess.length, essentialsDone: essDone,
+        essentialsComplete: ess.length > 0 && essDone === ess.length,
+    };
+}
+function bagRemovedItems() {
+    const hid = bagHidden();
+    if (!hid.length)
+        return [];
+    return getAllItems().filter((i) => hid.indexOf(i.id) !== -1);
+}
+function bagTipsLive() {
+    const hid = bagHidden();
+    return getInsiderTips().filter((t) => hid.indexOf(t.id) === -1);
+}
 function screenBag() {
-    const prog = getBagProgress(state.bagChecked);
-    const tips = getInsiderTips();
+    const prog = bagProgress();
+    const tips = bagTipsLive();
+    const removed = bagRemovedItems();
     const item = (it) => {
         const on = state.bagChecked.indexOf(it.id) !== -1;
         return `
-    <button class="lrow" data-bag="${esc(it.id)}" style="align-items:flex-start;padding:11px 6px">
-      <span style="width:22px;height:22px;border-radius:6px;margin-top:1px;flex:0 0 auto;
-        display:flex;align-items:center;justify-content:center;
-        background:${on ? 'var(--sage)' : 'transparent'};
-        border:${on ? 'none' : '1.5px solid var(--line)'}">
-        ${on ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>' : ''}
-      </span>
-      <span class="grow" style="margin-left:11px">
-        <span style="display:block;font-size:14px;line-height:1.4;
-          color:${on ? 'var(--faint)' : 'var(--ink)'};
-          text-decoration:${on ? 'line-through' : 'none'}">${esc(it.label)}
-          ${it.essential ? '<span class="tag" style="margin-left:6px">Essential</span>' : ''}</span>
-        ${it.note ? `<span class="tiny" style="display:block;margin-top:4px;line-height:1.45">${esc(it.note)}</span>` : ''}
-      </span>
-    </button>`;
+    <div class="bagrow${on ? ' on' : ''}">
+      <button class="bagtick" data-bag="${esc(it.id)}"
+        aria-pressed="${on}" aria-label="${esc(it.label)}">
+        <span class="bagbox">${on ? icon('check', 13, '#fff') : ''}</span>
+        <span class="baggrow">
+          <span class="bagname">${esc(it.label)}${it.essential
+            ? ' <span class="tag">Essential</span>' : ''}${it.own
+            ? ' <span class="tag yours">Yours</span>' : ''}</span>
+          ${it.note ? `<span class="bagnote">${esc(it.note)}</span>` : ''}
+        </span>
+      </button>
+      <button class="rewx" data-bagdel="${esc(it.id)}"
+        aria-label="Take ${esc(it.label)} off the list">${icon('close', 13, 'var(--faint)')}</button>
+    </div>`;
     };
     return `
   <div class="sc-head">
@@ -60672,27 +60899,65 @@ function screenBag() {
     <p class="sub">Packed by 36 weeks, so it is one thing you never have to think about again.</p>
   </div>
   <div class="sc">
-    <div class="card">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="flex:1">
-          <p style="margin:0;font-size:16px;font-weight:600;color:var(--ink)">${prog.done} of ${prog.total} packed</p>
-          <p class="tiny" style="margin-top:3px">${prog.essentialsComplete
-        ? 'Every essential is in the bag.'
-        : esc((prog.essentialsTotal - prog.essentialsDone) + ' of the ' + prog.essentialsTotal + ' essentials still to go.')}</p>
-        </div>
-        <span style="font-size:24px;color:var(--deep)">${prog.percent}%</span>
+    <div class="bagtop">
+      <div class="bagdial">
+        <svg width="78" height="78" viewBox="0 0 78 78" aria-hidden="true">
+          <circle cx="39" cy="39" r="32" fill="none" stroke="var(--line2)" stroke-width="8"/>
+          <circle cx="39" cy="39" r="32" fill="none" stroke="var(--sage)" stroke-width="8"
+            stroke-linecap="round" stroke-dasharray="${(prog.percent / 100) * 201} 201"
+            transform="rotate(-90 39 39)"/>
+        </svg>
+        <span class="bagdial-n">${prog.percent}<span class="bagdial-u">%</span></span>
       </div>
-      <div class="bar" style="margin-top:11px"><i style="width:${prog.percent}%"></i></div>
+      <div class="bagtop-t">
+        <p class="bagtop-h">${prog.done} of ${prog.total} packed</p>
+        <p class="bagtop-s">${prog.essentialsComplete
+        ? 'Every essential is in the bag.'
+        : esc((prog.essentialsTotal - prog.essentialsDone) + ' of the ' + prog.essentialsTotal
+            + ' essentials still to go.')}</p>
+      </div>
     </div>
-    <div class="card leafy">
+    <div class="hpair">
+      ${prog.categories.slice(0, 2).map((c) => `
+      <div class="hhalf">
+        <div class="hhalf-h">
+          <span class="hhalf-ic">${icon('bag', 14, 'var(--deep)')}</span>
+          <span class="hhalf-t">${esc(c.label)}</span>
+        </div>
+        <div class="hhalf-b">
+          <p class="szbig">${c.done}<span class="szbig-u">/${c.total}</span></p>
+          <div class="szbar"><span style="width:${c.total ? (c.done / c.total) * 100 : 0}%"></span></div>
+          <p class="hhalf-free">${c.complete ? 'All in' : 'Still packing'}</p>
+        </div>
+      </div>`).join('')}
+    </div>
+    <div class="card leafy" style="margin-top:12px">
       <p class="eyebrow">${icon('clock', 11, 'var(--sage)')} ${esc(PACKING_TIMELINE.headline)}</p>
       <p class="bodytext" style="margin-top:5px">${esc(PACKING_TIMELINE.body)}</p>
       ${steps(PACKING_TIMELINE.steps)}
       <div class="callout">${esc(PACKING_TIMELINE.note)}</div>
     </div>
-    ${dsec('Things people wish they had known', `<p class="tiny" style="margin-bottom:9px">${tips.length} items on this list come with a note that changes what you pack. They are marked throughout, and here they are together.</p>` +
-        list(tips.map((t) => t.label + '. ' + t.note)))}
-    ${getCategories().map((cat) => {
+    <div class="tipwrap">
+      <div class="tipwrap-h">
+        <span class="tipwrap-ic">${icon('bulb', 17, '#8A5F54')}</span>
+        <span>
+          <span class="tipwrap-t">${esc(BAG_TIPS_TITLE)}</span>
+          <span class="tipwrap-s">${esc(BAG_TIPS_INTRO)}</span>
+        </span>
+      </div>
+      <div class="tipgrid">
+        ${tips.map((t, n) => {
+        const on = state.bagChecked.indexOf(t.id) !== -1;
+        return `
+        <button class="bagtip${on ? ' on' : ''}" data-bag="${esc(t.id)}" aria-pressed="${on}">
+          <span class="bagtip-n">${on ? icon('check', 12, '#fff') : String(n + 1)}</span>
+          <span class="bagtip-t">${esc(t.label)}</span>
+          <span class="bagtip-b">${esc(t.note)}</span>
+        </button>`;
+    }).join('')}
+      </div>
+    </div>
+    ${bagCats().map((cat) => {
         const cp = prog.categories.filter((x) => x.id === cat.id)[0];
         return `
       <p class="sect">${esc(cat.label)}</p>
@@ -60702,10 +60967,41 @@ function screenBag() {
           <span class="tiny" style="color:${cp && cp.complete ? 'var(--deep)' : 'var(--faint)'}">${cp ? cp.done + '/' + cp.total : ''}</span>
         </div>
         <div style="margin-top:8px;border-top:1px solid var(--line2)">
-          ${cat.items.map(item).join('')}
+          ${cat.items.length ? cat.items.map(item).join('')
+            : `<p class="tiny" style="padding:11px 2px;margin:0">${esc(BAG_OWN_EMPTY)}</p>`}
         </div>
+        ${store.bagAdd === cat.id ? `
+        <div class="bagadd">
+          <input id="bagaddin" class="inp" placeholder="${esc(BAG_ADD_PLACEHOLDER)}" maxlength="60">
+          <div style="display:flex;gap:8px;margin-top:9px">
+            <button class="btn grow" data-bagaddsave="1" style="justify-content:center">Add it</button>
+            <button class="btn ghost" data-bagadd="close">Cancel</button>
+          </div>
+        </div>` : `
+        <button class="bagaddbtn" data-bagadd="open" data-cat="${esc(cat.id)}">
+          ${icon('plus', 13, 'var(--deep)')} Add something to ${esc(cat.label.toLowerCase())}
+        </button>`}
       </div>`;
     }).join('')}
+    ${!bagCats().some((c) => c.id === 'own') ? `
+      <button class="btn ghost" style="width:100%;margin-top:11px" data-bagadd="open" data-cat="own">
+        ${icon('plus', 14, 'var(--deep)')} ${esc(BAG_ADD_TITLE)}
+      </button>` : ''}
+    ${removed.length ? `
+      <button class="bagremx" data-bagremoved="1" aria-expanded="${!!store.bagRemovedOpen}">
+        ${icon(store.bagRemovedOpen ? 'chevdown' : 'chev', 14, 'var(--faint)')}
+        ${esc(BAG_REMOVED_TITLE)} (${removed.length})
+      </button>
+      ${store.bagRemovedOpen ? `
+      <div class="card flat" style="margin-top:8px">
+        <p class="tiny" style="margin:0 0 8px">${esc(BAG_REMOVED_NOTE)}</p>
+        ${removed.map((r) => `
+          <div class="bagrow">
+            <span class="baggrow" style="padding:8px 2px"><span class="bagname"
+              style="color:var(--faint)">${esc(r.label)}</span></span>
+            <button class="chip sm" data-bagback="${esc(r.id)}">${esc(BAG_PUT_BACK)}</button>
+          </div>`).join('')}
+      </div>` : ''}` : ''}
     ${dsec('If your birth goes a different way', `<p class="tiny" style="margin-bottom:10px">None of these are worst cases. They are common outcomes, and packing for them costs almost nothing.</p>` +
         BAG_ADDITIONS.map((a) => `
         <div class="card flat" style="margin-bottom:9px">
@@ -61148,15 +61444,17 @@ function screenPregHealth() {
     <p class="sub">Preventable, treatable, and mostly never mentioned. That is the only reason these are here.</p>
   </div>
   <div class="sc">
-    ${getInfectionsSorted().map((i) => `
-      <button class="lrow" data-go="infection" data-id="${esc(i.id)}" style="align-items:flex-start">
-        <span class="licon">${icon('search', 17)}</span>
-        <span class="grow">
-          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3">${esc(i.label)}</span>
-          <span class="tiny" style="display:block;margin-top:3px;line-height:1.4">${esc(i.headline)}</span>
-        </span>
-        <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+    <div class="infgrid">
+      ${getInfectionsSorted().map((i) => `
+      <button class="infcard${i.timeCritical ? ' urgent' : ''}"
+        data-go="infection" data-id="${esc(i.id)}">
+        <span class="infcard-ic">${icon(i.ic || 'search', 17, i.timeCritical ? '#A85A44' : 'var(--deep)')}</span>
+        <span class="infcard-t">${esc(i.short || i.label)}</span>
+        <span class="infcard-b">${esc(i.headline)}</span>
+        ${i.timeCritical ? '<span class="infcard-tag">Has a deadline</span>' : ''}
+        <span class="infcard-go">Read it ${icon('chev', 12, 'var(--deep)')}</span>
       </button>`).join('')}
+    </div>
     <p class="sect">${esc(PREGNANCY_VACCINES.label)}</p>
     <div class="card leafy"><p class="bodytext">${esc(PREGNANCY_VACCINES.body)}</p></div>
     ${PREGNANCY_VACCINES.during.map((v) => `
@@ -70928,6 +71226,8 @@ function parentPayload() {
     return JSON.parse(JSON.stringify({
         parent: store.parent,
         bagChecked: store.bagChecked || [],
+        bagOwn: store.bagOwn || [],
+        bagHidden: store.bagHidden || [],
         choreJobs: store.choreJobs || [],
         choreDone: store.choreDone || {},
         choreAdults: store.choreAdults || [],
@@ -71162,6 +71462,14 @@ async function cloudFirstSync() {
         store.parent.situation = normalizeSituation(store.parent.situation);
         store.posts = Array.isArray(remoteUser.posts) ? remoteUser.posts : (store.posts || []);
         store.bagChecked = Array.isArray(remoteUser.bagChecked) ? remoteUser.bagChecked : [];
+        if (Array.isArray(remoteUser.bagOwn)) {
+            const seen = {};
+            store.bagOwn = (store.bagOwn || []).concat(remoteUser.bagOwn)
+                .filter((o) => o && o.id && !seen[o.id] && (seen[o.id] = true));
+        }
+        if (Array.isArray(remoteUser.bagHidden)) {
+            store.bagHidden = Array.from(new Set((store.bagHidden || []).concat(remoteUser.bagHidden)));
+        }
         store.choreJobs = Array.isArray(remoteUser.choreJobs) ? remoteUser.choreJobs : [];
         store.choreDone = (remoteUser.choreDone && typeof remoteUser.choreDone === 'object')
             ? remoteUser.choreDone : {};
