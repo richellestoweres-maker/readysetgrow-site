@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-05 20:54">
+<meta name="rsg-build" content="2026-10-05 21:14">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -652,6 +652,7 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 .findchip.icon span{display:none}
 
 .hpair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 0;align-items:stretch}
+.hpair.one{grid-template-columns:1fr}
 .hhalf{display:flex;flex-direction:column;background:#fff;border:1px solid rgba(74,103,65,.14);
   border-radius:18px;padding:11px 10px 8px;min-height:160px}
 .hhalf-h{display:flex;align-items:center;gap:7px;margin-bottom:9px}
@@ -2163,25 +2164,25 @@ body.calpage .mark-holder{margin-bottom:-20px}
    rows, so the four that matter most are all on the screen at once
    instead of four scrolls apart.
    ------------------------------------------------------------------ */
-.infgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-.infcard{position:relative;appearance:none;text-align:left;font:inherit;cursor:pointer;
+.pickgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.pickcard{position:relative;appearance:none;text-align:left;font:inherit;cursor:pointer;
   background:#fff;border:1px solid rgba(74,103,65,.14);border-radius:18px;
   padding:13px 12px 11px;display:flex;flex-direction:column;gap:6px}
-.infcard.urgent{background:#FCF2EE;border-color:#E6BFB3}
-.infcard-ic{width:34px;height:34px;border-radius:50%;background:var(--leaf3);flex:none;
+.pickcard.urgent{background:#FCF2EE;border-color:#E6BFB3}
+.pickcard-ic{width:34px;height:34px;border-radius:50%;background:var(--leaf3);flex:none;
   display:flex;align-items:center;justify-content:center}
-.infcard.urgent .infcard-ic{background:rgba(255,255,255,.75)}
-.infcard-t{font-size:15px;font-weight:700;color:var(--ink);line-height:1.2}
-.infcard.urgent .infcard-t{color:#8A4433}
-.infcard-b{font-size:11.5px;line-height:1.45;color:var(--muted);flex:1}
-.infcard-tag{align-self:flex-start;font-size:10px;font-weight:700;letter-spacing:.04em;
+.pickcard.urgent .pickcard-ic{background:rgba(255,255,255,.75)}
+.pickcard-t{font-size:15px;font-weight:700;color:var(--ink);line-height:1.2}
+.pickcard.urgent .pickcard-t{color:#8A4433}
+.pickcard-b{font-size:11.5px;line-height:1.45;color:var(--muted);flex:1}
+.pickcard-tag{align-self:flex-start;font-size:10px;font-weight:700;letter-spacing:.04em;
   text-transform:uppercase;color:#A85A44;background:rgba(255,255,255,.8);
   border-radius:999px;padding:3px 8px}
-.infcard-go{display:flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;
+.pickcard-go{display:flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;
   color:var(--deep);padding-top:8px;border-top:1px solid var(--line2)}
-.infcard.urgent .infcard-go{color:#8A4433;border-top-color:rgba(168,90,68,.2)}
-.infcard:focus-visible{outline:2px solid var(--deep);outline-offset:2px}
-@media (max-width:360px){.infgrid{grid-template-columns:1fr}}
+.pickcard.urgent .pickcard-go{color:#8A4433;border-top-color:rgba(168,90,68,.2)}
+.pickcard:focus-visible{outline:2px solid var(--deep);outline-offset:2px}
+@media (max-width:360px){.pickgrid{grid-template-columns:1fr}}
 
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
@@ -2484,7 +2485,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-05 20:54';
+const BUILD_STAMP = '2026-10-05 21:14';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -51590,7 +51591,36 @@ let lastWillowHTML = null;
 let settingsJump = null;
 const NAV_MAX = 12;
 let navStack = [];
+const navScroll = {};
+const NAV_SCROLL_MAX = 60;
+let navWantY = null;
+function navScrollY() {
+    const scr = document.getElementById('screen');
+    const a = scr ? scr.scrollTop : 0;
+    const b = (typeof window !== 'undefined' && window.scrollY) || 0;
+    return Math.max(a, b);
+}
+function navRemember() {
+    try {
+        const y = navScrollY();
+        const keys = Object.keys(navScroll);
+        if (keys.length > NAV_SCROLL_MAX)
+            delete navScroll[keys[0]];
+        navScroll[routeKey()] = y;
+    }
+    catch (err) { }
+}
+function navWant() {
+    try {
+        const y = navScroll[routeKey()];
+        navWantY = (typeof y === 'number' && y > 0) ? y : null;
+    }
+    catch (err) {
+        navWantY = null;
+    }
+}
 function navPush() {
+    navRemember();
     navStack.push({ tab: state.tab, view: state.view });
     if (navStack.length > NAV_MAX)
         navStack.shift();
@@ -51599,10 +51629,12 @@ function navBack() {
     const prev = navStack.pop();
     if (!prev) {
         state.view = null;
+        navWant();
         return;
     }
     state.tab = prev.tab;
     state.view = prev.view;
+    navWant();
 }
 function navClear() {
     navStack = [];
@@ -52157,6 +52189,8 @@ function render() {
         html = viewLens(c, v.id);
     else if (v && v.type === 'infection')
         html = viewInfection(v.id);
+    else if (v && v.type === 'btopic')
+        html = viewBTopic(v.id);
     else if (v && v.type === 'screen' && v.id === 'now')
         html = screenNow(c);
     else if (v && v.type === 'screen' && v.id === 'momnow')
@@ -52275,6 +52309,26 @@ function render() {
     const sameRoute = nowRoute === lastRoute;
     lastRoute = nowRoute;
     screen.scrollTop = (keepId || sameRoute) ? keepScroll : 0;
+    if (navWantY != null) {
+        const want = navWantY;
+        navWantY = null;
+        try {
+            screen.scrollTop = want;
+            if (typeof window !== 'undefined' && window.scrollTo)
+                window.scrollTo(0, want);
+            if (typeof requestAnimationFrame === 'function') {
+                requestAnimationFrame(() => {
+                    try {
+                        screen.scrollTop = want;
+                        if (window.scrollTo)
+                            window.scrollTo(0, want);
+                    }
+                    catch (err) { }
+                });
+            }
+        }
+        catch (err) { }
+    }
     if (settingsJump) {
         const target = document.getElementById(settingsJump);
         settingsJump = null;
@@ -54323,10 +54377,17 @@ function initControls() {
                 store.profileEdit = null;
                 state.tab = 'home';
                 state.view = null;
+                navWant();
                 navClear();
             }
             else if (to && to !== '1') {
+                if (state.view && state.view.type === 'btopic') {
+                    const tp = btopicFind(state.view.id);
+                    if (tp && tp.set.tab)
+                        state[tp.set.tab[0]] = tp.set.tab[1];
+                }
                 state.view = { type: 'screen', id: to };
+                navWant();
                 navClear();
             }
             else {
@@ -59795,6 +59856,141 @@ function birthReduceBlock(r) {
     ${r.honest ? `<p class="tiny" style="margin-top:9px">${esc(r.honest)}</p>` : ''}
   </div>`;
 }
+const BIRTH_TOPICS = {
+    pain: {
+        back: 'birth', tab: ['birthTab', 'pain'],
+        list: () => PAIN_OPTIONS,
+        name: (o) => o.name,
+        sub: (o) => (PAIN_KINDS && PAIN_KINDS[o.kind]) || '',
+        ic: (o) => (o.kind === 'drug' ? 'pill' : o.kind === 'gas' ? 'drop' : 'hand'),
+        body: (o) => `
+      ${o.what ? `<div class="card leafy"><p class="eyebrow">${icon('info', 11, 'var(--sage)')} What it is</p>
+        <p class="bodytext" style="margin-top:6px">${esc(o.what)}</p></div>` : ''}
+      <div class="hpair">
+        <div class="hhalf"><div class="hhalf-h"><span class="hhalf-ic">${icon('check', 14, 'var(--deep)')}</span>
+          <span class="hhalf-t">What it gives</span></div>
+          <div class="hhalf-b"><p class="bodytext" style="margin:0;font-size:12.5px">${esc(o.gives || '')}</p></div></div>
+        <div class="hhalf"><div class="hhalf-h"><span class="hhalf-ic">${icon('info', 14, 'var(--deep)')}</span>
+          <span class="hhalf-t">What it costs</span></div>
+          <div class="hhalf-b"><p class="bodytext" style="margin:0;font-size:12.5px">${esc(o.costs || '')}</p></div></div>
+      </div>
+      ${o.myth ? `<div class="szcard blush"><div class="szcard-h">
+        <span class="szcard-ic">${icon('bulb', 15, '#8A5F54')}</span>
+        <span class="szcard-t">What people get wrong</span></div>
+        <p class="bodytext" style="margin:0">${esc(o.myth)}</p></div>` : ''}
+      ${o.where ? `<p class="tiny" style="margin-top:10px">${esc(o.where)}</p>` : ''}
+      ${o.numbers ? dsec('The numbers', list(o.numbers)
+            + `<p class="tiny" style="margin-top:6px">${esc(o.numbersFrom || '')}</p>`) : ''}`,
+    },
+    who: {
+        back: 'birth', tab: ['birthTab', 'who'],
+        list: () => WHO_ROLES,
+        name: (o) => o.name,
+        sub: (o) => o.what || '',
+        ic: () => 'people',
+        body: (o) => `
+      ${o.what ? `<div class="card leafy"><p class="bodytext" style="margin:0">${esc(o.what)}</p></div>` : ''}
+      ${o.does ? dsec('What the evidence says they do', `<p class="bodytext">${esc(o.does)}</p>`) : ''}
+      ${o.worth ? `<div class="bpbox surrender"><p class="bpbox-t">Worth knowing</p>
+        <p class="bodytext" style="margin-top:8px">${esc(o.worth)}</p></div>` : ''}
+      ${o.cost ? dsec('What it costs', `<p class="bodytext">${esc(o.cost)}</p>`) : ''}`,
+    },
+    tear: {
+        back: 'birth', tab: ['birthTab', 'body'],
+        list: () => TEAR_DEGREES,
+        name: (o) => o.label,
+        sub: (o) => o.what || '',
+        ic: () => 'shield',
+        body: (o) => `
+      ${o.what ? `<div class="card leafy"><p class="eyebrow">${icon('info', 11, 'var(--sage)')} What it is</p>
+        <p class="bodytext" style="margin-top:6px">${esc(o.what)}</p></div>` : ''}
+      ${o.fix ? dsec('How it is repaired', `<p class="bodytext">${esc(o.fix)}</p>`) : ''}
+      ${o.after ? dsec('Afterwards', `<p class="bodytext">${esc(o.after)}</p>`) : ''}`,
+    },
+    wrong: {
+        back: 'birth', tab: ['birthTab', 'wrong'],
+        list: () => WRONG_EVENTS,
+        name: (o) => o.name,
+        sub: (o) => o.rate || '',
+        ic: () => 'heart',
+        body: (o) => `
+      ${o.rate ? `<div class="card leafy"><p class="eyebrow">${icon('chart', 11, 'var(--sage)')} How common</p>
+        <p class="bodytext" style="margin-top:6px">${esc(o.rate)}</p></div>` : ''}
+      ${o.what ? dsec('What happens', `<p class="bodytext">${esc(o.what)}</p>`) : ''}
+      ${o.does ? dsec('What they do about it', `<p class="bodytext">${esc(o.does)}</p>`) : ''}
+      ${o.honest ? `<div class="szcard blush"><div class="szcard-h">
+        <span class="szcard-ic">${icon('bulb', 15, '#8A5F54')}</span>
+        <span class="szcard-t">Said straight</span></div>
+        <p class="bodytext" style="margin:0">${esc(o.honest)}</p></div>` : ''}
+      ${o.after ? dsec('Afterwards', `<p class="bodytext">${esc(o.after)}</p>`) : ''}`,
+    },
+    ripen: {
+        back: 'induction', tab: ['indTab', 'ripen'],
+        list: () => RIPEN_METHODS,
+        name: (o) => o.name,
+        sub: (o) => o.also || '',
+        ic: (o) => (o.id === 'balloon' ? 'circle' : o.id === 'sweep' ? 'hand' : 'pill'),
+        body: (o) => `
+      ${o.also ? `<p class="tiny" style="margin-top:2px">Also called ${esc(o.also)}.</p>` : ''}
+      ${o.how ? `<div class="card leafy"><p class="eyebrow">${icon('info', 11, 'var(--sage)')} How it works</p>
+        <p class="bodytext" style="margin-top:6px">${esc(o.how)}</p></div>` : ''}
+      ${o.time ? `<div class="szcard"><div class="szcard-h">
+        <span class="szcard-ic">${icon('clock', 15, 'var(--deep)')}</span>
+        <span class="szcard-t">How long it takes</span></div>
+        <p class="bodytext" style="margin:0">${esc(o.time)}</p></div>` : ''}
+      ${o.evidence ? dsec('What the evidence says', `<p class="bodytext">${esc(o.evidence)}</p>`) : ''}
+      ${o.worth ? `<div class="bpbox surrender"><p class="bpbox-t">Worth asking about</p>
+        <p class="bodytext" style="margin-top:8px">${esc(o.worth)}</p></div>` : ''}`,
+    },
+};
+function btopicFind(key) {
+    const bits = String(key || '').split(':');
+    const set = BIRTH_TOPICS[bits[0]];
+    if (!set)
+        return null;
+    const items = set.list() || [];
+    const item = items.filter((x) => x.id === bits[1])[0];
+    return item ? { set: set, item: item, setId: bits[0] } : null;
+}
+function btopicGrid(setId) {
+    const set = BIRTH_TOPICS[setId];
+    if (!set)
+        return '';
+    return `
+  <div class="pickgrid">
+    ${(set.list() || []).map((o) => `
+    <button class="pickcard" data-go="btopic" data-id="${esc(setId + ':' + o.id)}">
+      <span class="pickcard-ic">${icon(set.ic(o), 17, 'var(--deep)')}</span>
+      <span class="pickcard-t">${esc(set.name(o))}</span>
+      <span class="pickcard-b">${esc(set.sub(o))}</span>
+      <span class="pickcard-go">Read it ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>`).join('')}
+  </div>`;
+}
+function viewBTopic(key) {
+    const found = btopicFind(key);
+    if (!found)
+        return emptyScreen('That could not be found.');
+    const set = found.set;
+    const o = found.item;
+    const others = (set.list() || []).filter((x) => x.id !== o.id);
+    return `
+  <div class="sc-head">
+    <button class="back" data-back="${esc(set.back)}">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(set.name(o))}</h1>
+    ${set.sub(o) ? `<p class="sub">${esc(set.sub(o))}</p>` : ''}
+  </div>
+  <div class="sc">
+    ${set.body(o)}
+    ${others.length ? `
+    <p class="sect" style="margin-top:18px">The others</p>
+    <div class="chips">
+      ${others.map((x) => `
+        <button class="chip" data-go="btopic" data-id="${esc(found.setId + ':' + x.id)}">
+          ${esc(set.name(x))}</button>`).join('')}
+    </div>` : ''}
+  </div>`;
+}
 function screenBirth(c) {
     const kid = activeChild();
     const seed = kid && isExpecting(kid) ? kid : null;
@@ -59877,7 +60073,7 @@ function screenBirth(c) {
       </div>
       <div class="dsec">
         <h4>Who that can be</h4>
-        ${WHO_ROLES.map(birthRoleBlock).join('')}
+        ${btopicGrid('who')}
       </div>
       <div class="dsec">
         <h4>${esc(WHO_PRETERM.title)}</h4>
@@ -59934,7 +60130,7 @@ function screenBirth(c) {
       </div>
       <div class="dsec">
         <h4>Every option</h4>
-        ${PAIN_OPTIONS.map(birthPainBlock).join('')}
+        ${btopicGrid('pain')}
       </div>
       <div class="dsec">
         <h4>${esc(PAIN_POSITION.title)}</h4>
@@ -59965,12 +60161,7 @@ function screenBirth(c) {
       </div>
       <div class="dsec">
         <h4>The four degrees</h4>
-        ${TEAR_DEGREES.map((d) => `
-          <div class="quote">
-            <p class="sit">${esc(d.label)}</p>
-            <p class="why" style="margin-top:4px">${esc(d.what)}</p>
-            <p class="tiny" style="margin-top:6px">${esc(d.fix)}</p>
-          </div>`).join('')}
+        ${btopicGrid('tear')}
         <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(TEAR_OASI)}</p></div>
       </div>
       <div class="dsec">
@@ -60091,7 +60282,7 @@ function screenBirth(c) {
         </div>
         <div class="dsec">
           <h4>The things people are frightened of</h4>
-          ${WRONG_EVENTS.map(birthEventBlock).join('')}
+          ${btopicGrid('wrong')}
         </div>
         <div class="dsec">
           <h4>${esc(WRONG_VBAC.title)}</h4>
@@ -60284,7 +60475,7 @@ function screenInduction(c) {
       </div>
       <div class="dsec">
         <h4>What can be used</h4>
-        ${RIPEN_METHODS.map(indMethodBlock).join('')}
+        ${btopicGrid('ripen')}
       </div>
       <div class="dsec">
         <h4>${esc(RIPEN_COMBO.title)}</h4>
@@ -61444,15 +61635,15 @@ function screenPregHealth() {
     <p class="sub">Preventable, treatable, and mostly never mentioned. That is the only reason these are here.</p>
   </div>
   <div class="sc">
-    <div class="infgrid">
+    <div class="pickgrid">
       ${getInfectionsSorted().map((i) => `
-      <button class="infcard${i.timeCritical ? ' urgent' : ''}"
+      <button class="pickcard${i.timeCritical ? ' urgent' : ''}"
         data-go="infection" data-id="${esc(i.id)}">
-        <span class="infcard-ic">${icon(i.ic || 'search', 17, i.timeCritical ? '#A85A44' : 'var(--deep)')}</span>
-        <span class="infcard-t">${esc(i.short || i.label)}</span>
-        <span class="infcard-b">${esc(i.headline)}</span>
-        ${i.timeCritical ? '<span class="infcard-tag">Has a deadline</span>' : ''}
-        <span class="infcard-go">Read it ${icon('chev', 12, 'var(--deep)')}</span>
+        <span class="pickcard-ic">${icon(i.ic || 'search', 17, i.timeCritical ? '#A85A44' : 'var(--deep)')}</span>
+        <span class="pickcard-t">${esc(i.short || i.label)}</span>
+        <span class="pickcard-b">${esc(i.headline)}</span>
+        ${i.timeCritical ? '<span class="pickcard-tag">Has a deadline</span>' : ''}
+        <span class="pickcard-go">Read it ${icon('chev', 12, 'var(--deep)')}</span>
       </button>`).join('')}
     </div>
     <p class="sect">${esc(PREGNANCY_VACCINES.label)}</p>
@@ -67745,6 +67936,24 @@ function homeJobsWidget(whoId, title) {
       The chart ${icon('chev', 12, 'var(--deep)')}</button>
   </div>`;
 }
+function homeJobsOnly(whoId, jobTitle, months) {
+    if (!choreOldEnough(months))
+        return '';
+    const jobs = homeJobsWidget(whoId, jobTitle);
+    return `
+  <div class="hpair one">
+    ${jobs || `
+      <div class="hhalf">
+        <div class="hhalf-h">
+          <span class="hhalf-ic">${icon('check', 15, 'var(--deep)')}</span>
+          <span class="hhalf-t">${esc(jobTitle || 'Jobs')}</span>
+        </div>
+        <div class="hhalf-b"><span class="hhalf-free">Nothing on the chart yet</span></div>
+        <button class="hhalf-go" data-go="screen" data-id="chores">
+          Set one up ${icon('chev', 12, 'var(--deep)')}</button>
+      </div>`}
+  </div>`;
+}
 function homeDayPair(whoId, jobTitle) {
     const jobs = homeJobsWidget(whoId, jobTitle);
     return `
@@ -68956,7 +69165,7 @@ function screenChild(c) {
     const ciHtml = body.checkin ? body.checkin() : '';
     tiles.sort((x, y) => TILE_IDS.indexOf(x.id) - TILE_IDS.indexOf(y.id));
     const sections = ageNewCard(months, kid, first) + monthTopCard(kid) + daily
-        + (kid ? homeDayPair(kid.id, first + "'s jobs") : '')
+        + (kid ? homeJobsOnly(kid.id, first + "'s jobs", months) : '')
         + (kid ? rewProfileBlock(kid, months) : '') + (tiles.length ? `
     <p class="sect" style="margin-top:18px">Everything about ${esc(first)}</p>
     <div class="kidtiles">${tiles.map((t) => kidTile(t.id, t.html)).join('')}</div>` : '')
