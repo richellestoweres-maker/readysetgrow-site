@@ -3419,7 +3419,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3819,7 +3819,19 @@ function initControls() {
       d.remind = t.dataset.calremind;
       d.remindTouched = true;
     } else if (t.dataset.calrepeat != null && t.hasAttribute('data-calrepeat')) {
-      calDraft().repeat = t.dataset.calrepeat || '';
+      const d = calDraft();
+      d.repeat = t.dataset.calrepeat || '';
+      /* Days only mean something on a weekly or fortnightly repeat, so
+         switching to monthly, yearly or once drops them rather than
+         leaving a set of weekdays attached to a yearly birthday. */
+      if (d.repeat !== 'weekly' && d.repeat !== 'fortnightly') d.days = [];
+    } else if (t.dataset.caldaypick != null && t.hasAttribute('data-caldaypick')) {
+      const d = calDraft();
+      const n = Number(t.dataset.caldaypick);
+      const have = Array.isArray(d.days) ? d.days.slice() : [];
+      const at = have.indexOf(n);
+      if (at === -1) have.push(n); else have.splice(at, 1);
+      d.days = have.sort((a, b) => a - b);
     } else if (t.dataset.calclear) {
       calDraft().time = '';
       /* A reminder counted back from a time cannot survive the time
@@ -19784,6 +19796,28 @@ function calEditor() {
           aria-pressed="${(r.id || '') === (d.repeat || '')}">${esc(r.label)}</button>`).join('')}
     </div>
 
+    ${/* WHICH DAYS, NOT JUST HOW OFTEN.
+
+          Her report: she could choose weekly and then had no way to
+          say which days, so swimming on Tuesdays and Thursdays meant
+          entering it twice. The seven buttons only appear for the two
+          repeats where they mean anything, and they are the same
+          seven buttons as the chore chart on purpose. */''}
+    ${(d.repeat === 'weekly' || d.repeat === 'fortnightly') ? `
+      <div class="card flat" style="margin-bottom:10px">
+        <p class="eyebrow">Which days</p>
+        <div class="chdays" style="margin-top:8px">
+          ${CAL_DAY_PICK.map((x) => {
+    const picked = Array.isArray(d.days) && d.days.indexOf(x.id) !== -1;
+    return `
+            <button class="chday${picked ? ' on' : ''}" data-caldaypick="${esc(String(x.id))}"
+              aria-pressed="${picked}"><span class="chday-l">${esc(x.label)}</span></button>`;
+  }).join('')}
+        </div>
+        <p class="tiny" style="margin:9px 0 0">${esc((Array.isArray(d.days) && d.days.length)
+    ? calRepeatLine(d) : CAL_DAYS_NOTE)}</p>
+      </div>` : ''}
+
     <div class="card flat" style="margin-bottom:10px">
       <p class="eyebrow">Anything to remember</p>
       <textarea class="inp" id="cal_notes" data-calfield="notes" rows="2"
@@ -27864,6 +27898,10 @@ function calNewEvent() {
     mins: CAL_DEFAULT_MINS,
     remind: '1d',
     repeat: '',
+    /* Which weekdays a weekly or fortnightly thing lands on. Empty
+       means the day it starts on, which is how every entry made
+       before this behaved. */
+    days: [],
     createdAt: new Date().toISOString(),
     updatedAt: Date.now(),
   };
