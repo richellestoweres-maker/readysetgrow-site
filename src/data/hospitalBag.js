@@ -486,6 +486,53 @@ export function getBagProgress(checkedIds) {
   };
 }
 
+/* ------------------------------------------------------------------
+ * HER OWN ITEMS
+ *
+ * Every published bag list is somebody else's bag. The person packing
+ * knows things this file cannot: that she cannot sleep without her own
+ * pillow, that the hospital is 40 minutes away so the car needs a
+ * blanket, that her mother is bringing the camera. A list you cannot
+ * add to is a list you stop using and write out again on paper.
+ *
+ * So the built in list is a starting point rather than the bag. She
+ * adds, and she removes, and removing is reversible because taking
+ * something off a packing list at 35 weeks and not being able to find
+ * it again is its own small cruelty.
+ *
+ * Built in items are HIDDEN rather than deleted, so if the list is
+ * ever updated her choices survive it.
+ * ------------------------------------------------------------------ */
+
+export const BAG_OWN_CAT = {
+  id: 'own',
+  label: 'Yours',
+  order: 99,
+  intro: 'The things only you know you need. Nobody else\'s list has these on it.',
+};
+
+export const BAG_ADD_TITLE = 'Add something of your own';
+
+export const BAG_ADD_PLACEHOLDER = 'What else goes in the bag';
+
+export const BAG_ADD_WHERE = 'Which part of the bag';
+
+export const BAG_REMOVED_TITLE = 'Taken off your list';
+
+export const BAG_REMOVED_NOTE =
+  'Still here if you change your mind. Nothing is ever deleted for good.';
+
+export const BAG_PUT_BACK = 'Put it back';
+
+export const BAG_OWN_EMPTY =
+  'Nothing of your own yet. Your own pillow, the charger that actually reaches, a snack somebody '
+  + 'smuggles in. Whatever this list does not know about you.';
+
+export const BAG_TIPS_TITLE = 'Things people wish they had known';
+
+export const BAG_TIPS_INTRO =
+  'The items that surprise people. Tap one to pack it.';
+
 export const BAG_ITEM_IDS = getAllItems().map((i) => i.id);
 
 export const HOSPITAL_BAG_SOURCES = [

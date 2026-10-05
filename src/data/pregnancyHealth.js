@@ -35,6 +35,8 @@
 export const INFECTIONS = [
   {
     id: 'cmv',
+    short: 'CMV',
+    ic: 'drop',
     label: 'CMV, cytomegalovirus',
     priority: 100,
     headline: 'The most common infectious cause of birth defects, and almost nobody has heard of it',
@@ -103,6 +105,8 @@ export const INFECTIONS = [
 
   {
     id: 'hsv',
+    short: 'Herpes, HSV',
+    ic: 'shield',
     label: 'Herpes, HSV',
     priority: 92,
     headline: 'The timing of a first infection matters enormously, and it is manageable',
@@ -143,6 +147,8 @@ export const INFECTIONS = [
 
   {
     id: 'syphilis',
+    short: 'Syphilis',
+    ic: 'pill',
     label: 'Syphilis',
     priority: 94,
     headline: 'Cases have risen more than tenfold, and it is completely treatable when caught',
@@ -180,6 +186,8 @@ export const INFECTIONS = [
 
   {
     id: 'gbs',
+    short: 'Group B Strep',
+    ic: 'circle',
     label: 'Group B strep',
     priority: 88,
     headline: 'Routine, common, and handled with antibiotics during labor',
@@ -211,6 +219,8 @@ export const INFECTIONS = [
 
   {
     id: 'listeria',
+    short: 'Listeria',
+    ic: 'utensils',
     label: 'Listeria and food safety',
     priority: 82,
     headline: 'Pregnant people are about 10 times more likely to get listeria',
@@ -242,6 +252,8 @@ export const INFECTIONS = [
 
   {
     id: 'toxoplasmosis',
+    short: 'Toxoplasmosis',
+    ic: 'heart',
     label: 'Toxoplasmosis',
     priority: 78,
     headline: 'The cat litter one, though undercooked meat is the bigger risk',
@@ -272,6 +284,8 @@ export const INFECTIONS = [
 
   {
     id: 'routine-panel',
+    short: 'The routine panel',
+    ic: 'note',
     label: 'The routine screening panel',
     priority: 74,
     headline: 'What is already being tested, so you know what has been covered',
