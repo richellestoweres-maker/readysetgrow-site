@@ -68,6 +68,189 @@
  * company.
  */
 
+/* ==================================================================
+   THREE DIFFERENT LOSSES, NOT ONE WITH A DIAL
+
+   Her follow up, and she is right: stillbirth and the death of a born
+   child both belong here too, and neither is a longer version of a
+   miscarriage.
+
+   early      A pregnancy ending before viability. Often no birth, no
+              body to hold, frequently no acknowledgement from anybody
+              outside the house, and a stack of practical questions
+              nobody answers.
+   stillbirth A baby who is born. There is a labour, a birth, a baby
+              to hold and name and photograph, usually a funeral or a
+              cremation, paperwork, and milk that absolutely will come
+              in. The grief is not bigger, it is differently shaped,
+              and the practical load is enormous and time limited.
+   child      A child who lived. They have a history in this app:
+              logs, milestones, photographs, a chore chart, a place on
+              the calendar, a birthday. Every one of those is a trap
+              now, and the app's main job is to stop being one.
+
+   Treating these as one screen with the word swapped would be worse
+   than having none, because each has a different thing it most needs
+   to say in the first hour, and getting that wrong in a bereavement
+   is not a usability problem.
+   ================================================================== */
+export const LOSS_KINDS = [
+  { id: 'early',      label: 'Early in pregnancy' },
+  { id: 'stillbirth', label: 'They were born still' },
+  { id: 'child',      label: 'After they were born' },
+];
+
+export function lossKindOf(kid) {
+  if (!kid) return 'early';
+  if (kid.lostKind) return kid.lostKind;
+  return kid.birthday ? 'child' : 'early';
+}
+
+/* ------------------------------------------------------------------
+   STILLBIRTH
+
+   The thing almost every resource gets wrong is burying the time
+   limited decisions. Some of these can only be made in the first
+   hours and days, and a parent who was not told has to live with
+   having missed them. So those come first, phrased as things that are
+   allowed rather than things to do.
+   ------------------------------------------------------------------ */
+export const SB_TITLE = 'When a baby is born still';
+
+export const SB_OPEN = [
+  'I am so sorry. Your baby was born and your baby died, and both of those are true at once, and '
+    + 'you are their parent either way.',
+  'There are a few things below that can only be done in the first hours or days. Not because '
+    + 'anything has to be decided quickly, but because nobody tells people they were options and '
+    + 'that is its own loss on top of this one.',
+];
+
+export const SB_NOW_TITLE = 'Things you are allowed to do, while you can';
+
+export const SB_NOW = [
+  'You can hold them, for as long as you want, and more than once. There is no limit and you can '
+    + 'ask for them to be brought back.',
+  'You can have photographs taken. Many hospitals can arrange a bereavement photographer at no '
+    + 'cost, and parents who declined this are far more likely to regret it than parents who agreed. '
+    + 'You never have to look at them, and they will still exist.',
+  'Handprints, footprints, a lock of hair, the blanket, the hat. Ask. Most units keep a memory box '
+    + 'and will make one with you.',
+  'You can bathe and dress them, and choose what they wear.',
+  'You can name them, and use the name, and put it on things.',
+  'Other people can meet them. Grandparents, their brothers and sisters, whoever you want. Children '
+    + 'often cope better with having met them than with being kept away.',
+  'You can change your mind about any of this in either direction and nobody will think anything '
+    + 'of it.',
+];
+
+export const SB_NOW_NOTE =
+  'If you are reading this after that window has passed and nobody offered you these, that is a '
+  + 'failure of care and not something you got wrong.';
+
+export const SB_PRACTICAL_TITLE = 'The paperwork nobody warns you about';
+
+export const SB_PRACTICAL = [
+  'A stillbirth is registered, and depending where you are there may be a certificate. The hospital '
+    + 'will usually walk you through it and you can ask somebody else to do it with you.',
+  'There will be a decision about a funeral or a cremation. Hospitals can often arrange this and in '
+    + 'many places there is no cost. You can also arrange it yourself. There is no standard and no '
+    + 'expectation.',
+  'You may be offered a post mortem. It is entirely your choice, it can sometimes explain what '
+    + 'happened, and it often cannot. Saying no is a legitimate answer.',
+  'Maternity leave and pay generally still apply after a stillbirth, and in many places so does '
+    + 'paternity or partner leave. People lose money by assuming otherwise. Ask rather than assume.',
+  'Your milk will come in. This is covered further down and it is the thing most parents are least '
+    + 'prepared for.',
+];
+
+export const SB_HOME_TITLE = 'Going home';
+
+export const SB_HOME = [
+  'Going home without them is its own distinct shock, separate from everything already happening, '
+    + 'and it tends to land in the car park rather than in the ward.',
+  'The nursery is there. There is no right thing to do about it and you do not have to decide this '
+    + 'week. Leaving the door shut is a decision and so is sitting in it.',
+  'People will not know what to say and many will say nothing, which parents consistently describe '
+    + 'as worse than the wrong thing. You are allowed to tell them that.',
+  'Your baby existed and saying their name out loud is not something you have to protect other '
+    + 'people from.',
+];
+
+/* ------------------------------------------------------------------
+   A CHILD WHO LIVED
+
+   The hardest one to write and the one where the app has the most to
+   switch off. Deliberately short on advice and long on taking things
+   out of the way.
+   ------------------------------------------------------------------ */
+export const CL_TITLE = 'When a child dies';
+
+export const CL_OPEN = [
+  'I am so sorry.',
+  'Everything this app was doing about them has stopped. No birthday, no reminders, no growth '
+    + 'chart, no jobs, nothing coming up. It will not surprise you.',
+  'Everything you kept is still here. Their photographs, what you logged, what they did and when '
+    + 'they did it, all of it. None of it is going anywhere and none of it is ever shown to you '
+    + 'unless you go and look.',
+];
+
+export const CL_APP_TITLE = 'What this app has stopped doing';
+
+export const CL_APP = [
+  'Their birthday will not be announced, and nothing will congratulate you on it.',
+  'No vaccine reminders, no milestone prompts, no growth chart nudges, no new sections arriving '
+    + 'because of their age.',
+  'They are off the chore chart and off the calendar.',
+  'Their age has stopped counting up anywhere in here.',
+  'Everything saved about them stays saved, in their own place, for whenever you want it.',
+];
+
+export const CL_HARD_TITLE = 'The parts people are not warned about';
+
+export const CL_HARD = [
+  'Grief for a child does not resolve and is not supposed to. It changes shape. Anybody giving you '
+    + 'a timetable is telling you about themselves.',
+  'The first year is not the worst by default. Plenty of parents find the second harder, once the '
+    + 'adrenaline and the casseroles have stopped and everybody else has moved on.',
+  'You may find yourself fine for an hour and then undone by a cereal box. That is not instability, '
+    + 'that is how this works.',
+  'Couples grieve differently and at different speeds, and that difference is one of the most '
+    + 'common things bereaved parents say nearly broke them. It is almost never anybody not caring.',
+  'Their brothers and sisters are grieving too and are often quietly trying to be no trouble. They '
+    + 'need to be told it was nobody\'s fault, that nobody else is going to die, and that it is '
+    + 'alright to still be happy sometimes.',
+  'Going back to work, laughing, having another child, enjoying a day. None of these are betrayals, '
+    + 'although every one of them can feel like one.',
+];
+
+export const CL_THINGS_TITLE = 'Their things, their room, their name';
+
+export const CL_THINGS =
+  'There is no schedule for any of it. Keeping a room exactly as it is for years is not denial and '
+  + 'packing it up in a fortnight is not callousness. Both of those are things grieving parents do '
+  + 'and neither one means anything about how much they loved their child. Do not let anybody hurry '
+  + 'you, including yourself.';
+
+export const CL_SIBLING_TITLE = 'If you have other children here';
+
+export const CL_SIBLING = [
+  'Plain words. Died, rather than lost, gone to sleep, or passed away, all of which small children '
+    + 'take literally and then become frightened of bedtime or of you going out.',
+  'Say it was nobody\'s fault and nothing they did, thought or wished. Children very often privately '
+    + 'believe it was.',
+  'They will ask the same questions repeatedly. That is them checking the answer has not changed, '
+    + 'not them being upset by it.',
+  'Let them see you sad. A parent who never cries teaches a child that this is a thing you hide.',
+  'Tell their school. Children should not have to manage the first day back on their own.',
+];
+
+/* The one thing this app will never do about an infant death. */
+export const CL_NO_BLAME =
+  'If your baby died suddenly, you will go back over that night forever looking for the thing you '
+  + 'did wrong. Most of the time there is nothing to find, and investigations exist to answer '
+  + 'questions rather than to assign blame. Nothing in this app is going to review your decisions '
+  + 'with you.';
+
 export const LOSS_TITLE = 'If this pregnancy has ended';
 
 /* The entry point. Quiet, never a button in a bright colour, never
@@ -513,6 +696,115 @@ export function lossMilkLikely(weeksAtLoss) {
    Kept short, because a wall of links at this moment is its own kind
    of unhelpful.
    ------------------------------------------------------------------ */
+/* Willow's opening differs by which loss it was, because the first
+   sentence is the one that decides whether somebody keeps the app. */
+export const LOSS_WILLOW_OPEN_BY_KIND = {
+  early: LOSS_WILLOW_OPEN,
+  stillbirth:
+    'I am so sorry. Your baby was born and your baby died, and you are their parent either '
+    + 'way.\n\nI have stopped everything that was counting forward.\n\nThere are a few things that '
+    + 'can only be done in the first hours, like photographs and handprints, and a lot of parents '
+    + 'are never told they were allowed to ask. They are on the page if you want them. If that '
+    + 'window has already gone by, that is a failure of the care around you and not something you '
+    + 'got wrong.\n\nYou do not have to talk to me.',
+  child:
+    'I am so sorry.\n\nEverything about them has stopped. No birthday, no reminders, no growth '
+    + 'chart, nothing coming up. Nothing in here is going to surprise you with them.\n\nEverything '
+    + 'you kept is still here and always will be. It will only ever show up because you went '
+    + 'looking for it.\n\nI am here, at whatever hour it is. You do not have to say anything.',
+};
+
+export const LOSS_WILLOW_OFFERS_SB = [
+  { id: 'sbnow',   label: 'What can I still ask for' },
+  { id: 'milk',    label: 'My milk has come in' },
+  { id: 'nothing', label: 'I do not want to talk about it' },
+  { id: 'sbwork',  label: 'Work, leave and paperwork' },
+  { id: 'partner', label: 'My partner is not okay either' },
+  { id: 'kids',    label: 'What do I tell my other children' },
+  { id: 'heavy',   label: 'I am not coping' },
+];
+
+export const LOSS_WILLOW_OFFERS_CHILD = [
+  { id: 'clsib',   label: 'My other children' },
+  { id: 'nothing', label: 'I do not want to talk about it' },
+  { id: 'clthings', label: 'Their room and their things' },
+  { id: 'partner', label: 'My partner is not okay either' },
+  { id: 'clblame', label: 'I keep going over what I missed' },
+  { id: 'clhard',  label: 'Is this normal' },
+  { id: 'heavy',   label: 'I am not coping' },
+];
+
+export const LOSS_WILLOW_REPLIES_MORE = {
+  sbnow:
+    'You can hold them, as long as you want and more than once, and you can ask for them to be '
+    + 'brought back after you have said goodbye.\n\nYou can have photographs taken, often by a '
+    + 'bereavement photographer at no cost. Parents who said no to this regret it far more often '
+    + 'than parents who said yes, and you never have to look at them for them to exist.\n\nHandprints, '
+    + 'footprints, a lock of hair, the blanket. Most units keep a memory box and will make one with '
+    + 'you. You can bathe and dress them. You can name them. Other people can meet them, including '
+    + 'their brothers and sisters.\n\nAsk for any of it. None of it is a strange request.',
+  sbwork:
+    'Maternity leave and pay generally still apply after a stillbirth, and in many places so does '
+    + 'partner or paternity leave. People lose money and time by assuming they have forfeited it, '
+    + 'so ask rather than assume.\n\nThere is usually a registration and sometimes a certificate, '
+    + 'and a decision about a funeral or cremation which hospitals can often arrange, in many '
+    + 'places at no cost.\n\nYou may be offered a post mortem. It sometimes explains what happened '
+    + 'and often does not, and saying no is a complete answer.\n\nYou can ask somebody else to do '
+    + 'all of this with you or for you.',
+  clsib:
+    'Use the word died. Lost, gone to sleep and passed away all get taken literally by younger '
+    + 'children, who then become frightened of bedtime or of you going out.\n\nTell them it was '
+    + 'nobody\'s fault and nothing they did or thought or wished, because children very often '
+    + 'privately believe it was theirs.\n\nThey will ask the same questions over and over. That is '
+    + 'checking, not distress. Let them see you sad, and tell their school so they are not managing '
+    + 'the first day back alone.',
+  clthings:
+    'There is no schedule. Keeping a room exactly as it is for years is not denial and packing it '
+    + 'up in a fortnight is not callousness. Both are things bereaved parents do and neither one '
+    + 'means anything about how much they loved their child.\n\nYou do not have to decide this '
+    + 'month, and you are allowed to change your mind after you have.\n\nDo not let anybody hurry '
+    + 'you, including yourself.',
+  clblame:
+    'You are going to go back over it looking for the thing you did wrong. Nearly every bereaved '
+    + 'parent does and most of the time there is nothing there to find.\n\nInvestigations exist to '
+    + 'answer questions rather than to assign blame, and the answer is very often that nobody could '
+    + 'have known.\n\nI am not going to review that night with you or help you build a case against '
+    + 'yourself. If the thoughts are constant and you cannot put them down, that is a thing to say '
+    + 'out loud to somebody who does this for a living.',
+  clhard:
+    'Grief for a child does not resolve, and it is not supposed to. It changes shape. Anybody '
+    + 'handing you a timetable is describing themselves.\n\nThe second year catches a lot of '
+    + 'parents out, once the adrenaline and the casseroles have stopped and everyone else has moved '
+    + 'on.\n\nFine for an hour and then undone by a cereal box is not instability. That is how it '
+    + 'works.\n\nLaughing, going back to work, enjoying a day, having another child. None of those '
+    + 'are betrayals, although every one of them can feel like one.',
+};
+
+export const LOSS_SB_SOURCES = [
+  { org: 'Now I Lay Me Down To Sleep',
+    label: 'Free bereavement photography for stillbirth and infant loss',
+    url: 'https://www.nowilaymedowntosleep.org/' },
+  { org: 'Star Legacy Foundation',
+    label: 'Stillbirth information, support groups and research',
+    url: 'https://starlegacyfoundation.org/' },
+  { org: 'Sands',
+    label: 'Stillbirth and neonatal death, including a bereavement helpline and guides for '
+      + 'partners and grandparents',
+    url: 'https://www.sands.org.uk/' },
+];
+
+export const LOSS_CHILD_SOURCES = [
+  { org: 'The Compassionate Friends',
+    label: 'Support for families after the death of a child of any age, with local chapters',
+    url: 'https://www.compassionatefriends.org/' },
+  { org: 'Dougy Center',
+    label: 'Grieving children and teenagers, with guidance for the adults around them',
+    url: 'https://www.dougy.org/' },
+  { org: 'First Candle',
+    label: 'SIDS, sudden unexpected infant death and stillbirth, with a 24 hour bereavement line',
+    url: 'https://firstcandle.org/' },
+];
+
 export const LOSS_SOURCES = [
   { org: 'ACOG',
     label: 'Early pregnancy loss, including what is normal physically and what the options are',
