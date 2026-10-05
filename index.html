@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-05 18:43">
+<meta name="rsg-build" content="2026-10-05 19:31">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -2344,7 +2344,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-05 18:43';
+const BUILD_STAMP = '2026-10-05 19:31';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -19457,6 +19457,30 @@ const CAL_REPEAT = [
     { id: 'monthly', label: 'Every month on this date' },
     { id: 'yearly', label: 'Every year' },
 ];
+const CAL_DAY_PICK = [
+    { id: 0, label: 'Sun' }, { id: 1, label: 'Mon' }, { id: 2, label: 'Tue' },
+    { id: 3, label: 'Wed' }, { id: 4, label: 'Thu' }, { id: 5, label: 'Fri' },
+    { id: 6, label: 'Sat' },
+];
+const CAL_DAYS_NOTE = 'Tap the days it happens on. Leave it and it repeats on the day you '
+    + 'picked above.';
+function calRepeatLine(ev) {
+    if (!ev || !ev.repeat)
+        return '';
+    const days = Array.isArray(ev.days) ? ev.days.slice().sort((a, b) => a - b) : [];
+    const names = days.map((d) => CAL_DAY_PICK[d] ? CAL_DAY_PICK[d].label : '').filter(Boolean);
+    if (ev.repeat === 'weekly') {
+        return names.length ? 'Every ' + names.join(', ') : 'Every week';
+    }
+    if (ev.repeat === 'fortnightly') {
+        return names.length ? 'Every other week, ' + names.join(', ') : 'Every 2 weeks';
+    }
+    if (ev.repeat === 'monthly')
+        return 'Every month';
+    if (ev.repeat === 'yearly')
+        return 'Every year';
+    return '';
+}
 function two(n) { return (n < 10 ? '0' : '') + n; }
 function calDateString(d) {
     const x = d instanceof Date ? d : new Date(d);
@@ -19576,17 +19600,36 @@ function calMonthGrid(year, month) {
 function calOccursOn(ev, date) {
     if (!ev || !ev.date)
         return false;
-    if (ev.date === date)
-        return true;
+    const picked = (ev.repeat === 'weekly' || ev.repeat === 'fortnightly')
+        && Array.isArray(ev.days) && ev.days.length;
+    if (ev.date === date) {
+        if (!picked)
+            return true;
+        const sd = calParse(date);
+        return !!sd && ev.days.map(Number).indexOf(sd.getDay()) !== -1;
+    }
     if (!ev.repeat)
         return false;
     const diff = calDaysBetween(ev.date, date);
     if (diff <= 0)
         return false;
-    if (ev.repeat === 'weekly')
-        return diff % 7 === 0;
-    if (ev.repeat === 'fortnightly')
-        return diff % 14 === 0;
+    if (ev.repeat === 'weekly' || ev.repeat === 'fortnightly') {
+        const every = ev.repeat === 'weekly' ? 7 : 14;
+        const days = Array.isArray(ev.days) ? ev.days.map(Number).filter((n) => n >= 0 && n <= 6) : [];
+        if (!days.length)
+            return diff % every === 0;
+        const d = calParse(date);
+        if (!d || days.indexOf(d.getDay()) === -1)
+            return false;
+        if (every === 7)
+            return true;
+        const start = calParse(ev.date);
+        if (!start)
+            return false;
+        const startSunday = calAddDays(ev.date, -start.getDay());
+        const weeks = Math.floor(calDaysBetween(startSunday, date) / 7);
+        return weeks % 2 === 0;
+    }
     const a = calParse(ev.date);
     const b = calParse(date);
     if (!a || !b)
@@ -52147,7 +52190,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -52710,7 +52753,21 @@ function initControls() {
             d.remindTouched = true;
         }
         else if (t.dataset.calrepeat != null && t.hasAttribute('data-calrepeat')) {
-            calDraft().repeat = t.dataset.calrepeat || '';
+            const d = calDraft();
+            d.repeat = t.dataset.calrepeat || '';
+            if (d.repeat !== 'weekly' && d.repeat !== 'fortnightly')
+                d.days = [];
+        }
+        else if (t.dataset.caldaypick != null && t.hasAttribute('data-caldaypick')) {
+            const d = calDraft();
+            const n = Number(t.dataset.caldaypick);
+            const have = Array.isArray(d.days) ? d.days.slice() : [];
+            const at = have.indexOf(n);
+            if (at === -1)
+                have.push(n);
+            else
+                have.splice(at, 1);
+            d.days = have.sort((a, b) => a - b);
         }
         else if (t.dataset.calclear) {
             calDraft().time = '';
@@ -66082,6 +66139,21 @@ function calEditor() {
         <button class="chip${(r.id || '') === (d.repeat || '') ? ' on' : ''}" data-calrepeat="${esc(r.id)}"
           aria-pressed="${(r.id || '') === (d.repeat || '')}">${esc(r.label)}</button>`).join('')}
     </div>
+    ${''}
+    ${(d.repeat === 'weekly' || d.repeat === 'fortnightly') ? `
+      <div class="card flat" style="margin-bottom:10px">
+        <p class="eyebrow">Which days</p>
+        <div class="chdays" style="margin-top:8px">
+          ${CAL_DAY_PICK.map((x) => {
+        const picked = Array.isArray(d.days) && d.days.indexOf(x.id) !== -1;
+        return `
+            <button class="chday${picked ? ' on' : ''}" data-caldaypick="${esc(String(x.id))}"
+              aria-pressed="${picked}"><span class="chday-l">${esc(x.label)}</span></button>`;
+    }).join('')}
+        </div>
+        <p class="tiny" style="margin:9px 0 0">${esc((Array.isArray(d.days) && d.days.length)
+        ? calRepeatLine(d) : CAL_DAYS_NOTE)}</p>
+      </div>` : ''}
     <div class="card flat" style="margin-bottom:10px">
       <p class="eyebrow">Anything to remember</p>
       <textarea class="inp" id="cal_notes" data-calfield="notes" rows="2"
@@ -72464,6 +72536,7 @@ function calNewEvent() {
         mins: CAL_DEFAULT_MINS,
         remind: '1d',
         repeat: '',
+        days: [],
         createdAt: new Date().toISOString(),
         updatedAt: Date.now(),
     };
