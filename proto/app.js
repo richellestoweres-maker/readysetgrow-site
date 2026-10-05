@@ -967,6 +967,12 @@ function newChildRecord(name, birthday) {
     lost: false,
     lostAt: null,
     lostNote: '',
+    /* Whether Willow has already said her piece, so she says it once
+       and then waits to be spoken to. */
+    lostSaid: false,
+    /* Set if they told her they did not want to talk about it. She
+       takes that at its word and does not offer again. */
+    lostQuiet: false,
     /* none, quiet or warn. Default none: a reminder nobody asked for
        about the hardest day of their year is the worst thing a
        calendar can do. */
@@ -3407,7 +3413,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -4171,6 +4177,8 @@ function initControls() {
     } else if (t.dataset.chore === 'add') {
       choreAdd(t.dataset.id, t.dataset.who,
         String(t.dataset.days || '').split(',').filter((x) => x !== '').map(Number));
+    } else if (t.dataset.lossask) {
+      lossWillowReply(t.dataset.lossask);
     } else if (t.dataset.loss) {
       const kid = activeChild();
       const how = t.dataset.loss;
@@ -4179,6 +4187,9 @@ function initControls() {
            nothing is removed. */
         kid.lost = true;
         kid.updatedAt = Date.now();
+        /* And Willow comes out, once, to say she is sorry, rather
+           than the app handing over a page and going quiet. */
+        lossWillowNudge(kid);
         flushStore();
       } else if (kid && how === 'save') {
         const d = document.getElementById('lossDateIn');
@@ -9954,6 +9965,66 @@ function isLost(k) {
   return !!(k && k.lost);
 }
 
+/* How many weeks they were, used only to decide whether Willow raises
+   the milk question unprompted. Needs both dates, and when it cannot
+   be worked out the answer is "do not raise it", never a guess. */
+function lossWeeksAt(kid) {
+  if (!kid || !kid.dueDate || !kid.lostAt) return null;
+  const w = expWhere(kid.dueDate, kid.lostAt);
+  return w && typeof w.week === 'number' ? w.week : null;
+}
+
+/* ==================================================================
+   WILLOW AFTER A LOSS
+
+   Her brief: Willow should come out with condolences and stay with
+   them, rather than the app handing them a reference page and going
+   quiet.
+
+   Once. The moment it is recorded, and never again on a schedule. A
+   grief feature that checks in every morning is a grief feature
+   people uninstall, and the uninstall takes the rest of the app with
+   it.
+   ================================================================== */
+function lossWillowNudge(kid) {
+  const n = nudgeState();
+  /* Marked on the child, not on the nudge, so it cannot fire twice
+     for the same pregnancy even across devices. */
+  if (!kid || kid.lostSaid) return;
+  kid.lostSaid = true;
+  n.text = LOSS_WILLOW_OPEN;
+  n.at = Date.now();
+  n.gone = false;
+  n.kind = 'loss';
+  n.opener = '';
+  flushStore();
+}
+
+/* The taps she offers instead of asking a question, because somebody
+   who has just recorded this does not owe an assistant an answer. */
+function lossWillowOffers(kid) {
+  const weeks = lossWeeksAt(kid);
+  const milk = lossMilkLikely(weeks);
+  return LOSS_WILLOW_OFFERS.filter((o) => !o.needsMilk || milk);
+}
+
+function lossWillowReply(id) {
+  const key = willowThreadKey();
+  const text = LOSS_WILLOW_REPLIES[id];
+  if (!text) return;
+  const label = (LOSS_WILLOW_OFFERS.filter((o) => o.id === id)[0] || {}).label || '';
+  if (label) willowSay('you', label, [], '', key);
+  willowSay('willow', text, id === 'milk' ? LOSS_MILK_SOURCES : [], '', key);
+  if (id === 'nothing') {
+    /* Taken at their word. The offers come down and she does not put
+       them back up. */
+    const kid = activeChild();
+    if (kid) { kid.lostQuiet = true; kid.updatedAt = Date.now(); }
+  }
+  willow.open = true;
+  flushStore();
+}
+
 function isExpecting(k) {
   /* A pregnancy that has ended is not an expecting pregnancy. This
      one line is the whole feature: every screen that asks this
@@ -10342,6 +10413,23 @@ function screenLoss() {
           <p class="bodytext" style="margin:9px 0 0">${esc(LOSS_BODY_ASK_NOTE)}</p>
         </div>
       </div>
+
+      ${lossMilkLikely(lossWeeksAt(kid)) ? `
+      <div class="dsec">
+        <h4>${esc(LOSS_MILK_TITLE)}</h4>
+        <p class="bodytext" style="margin:0 0 9px">${esc(LOSS_MILK_WARN)}</p>
+        <p class="bodytext" style="margin:0 0 11px">${esc(LOSS_MILK_CHOICE)}</p>
+        <div class="card flat">
+          <p class="eyebrow">${esc(LOSS_MILK_STOP_TITLE)}</p>
+          <ul class="bul" style="margin-top:7px">${LOSS_MILK_STOP.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+        </div>
+        <div class="card flat" style="margin-top:9px">
+          <p class="eyebrow">${esc(LOSS_MILK_GIVE_TITLE)}</p>
+          <ul class="bul" style="margin-top:7px">${LOSS_MILK_GIVE.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+        </div>
+        <p class="tiny" style="margin-top:9px">${esc(LOSS_MILK_EITHER)}</p>
+        ${dsec('', sourceRows(LOSS_MILK_SOURCES))}
+      </div>` : ''}
 
       <div class="dsec">
         <h4>${esc(LOSS_OTHERS_TITLE)}</h4>
@@ -24754,6 +24842,8 @@ function normalizeChild(k) {
     lost: !!k.lost,
     lostAt: k.lostAt || null,
     lostNote: typeof k.lostNote === 'string' ? k.lostNote : '',
+    lostSaid: !!k.lostSaid,
+    lostQuiet: !!k.lostQuiet,
     lostDates: ['none', 'quiet', 'warn'].indexOf(k.lostDates) !== -1 ? k.lostDates : 'none',
     starsOn: !!k.starsOn,
     routineInclude: Array.isArray(k.routineInclude) ? k.routineInclude : [],
@@ -30001,6 +30091,28 @@ function willowPanel() {
       }).join('')}
 
       ${thinking ? `<div class="wmsg her thinking"><span></span><span></span><span></span></div>` : ''}
+
+      ${/* AFTER A LOSS, THINGS TO TAP INSTEAD OF A QUESTION.
+
+            Willow's opening message deliberately asks nothing, so
+            these are the way back in for somebody who does not have
+            the words to type anything. They sit under the thread
+            rather than above it, so her condolence is the first thing
+            read and not a menu.
+
+            They disappear for good if the parent says they do not
+            want to talk about it. Taking that at its word is the
+            whole difference between company and pestering. */''}
+      ${(() => {
+        const kid = activeChild();
+        if (!isLost(kid) || kid.lostQuiet || !msgs.length) return '';
+        return `
+        <p class="tiny" style="margin:10px 2px 6px">Only if you want to</p>
+        <div class="chips" style="gap:6px">
+          ${lossWillowOffers(kid).map((o) => `
+            <button class="chip" data-lossask="${esc(o.id)}">${esc(o.label)}</button>`).join('')}
+        </div>`;
+      })()}
     </div>
 
     <div class="wfoot">
