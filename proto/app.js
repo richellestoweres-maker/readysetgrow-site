@@ -4569,10 +4569,14 @@ function initControls() {
       const kid = bpKid();
       if (kid) {
         if (!kid.birthPrefs || typeof kid.birthPrefs !== 'object') kid.birthPrefs = {};
+        const rowId = t.dataset.bppick;
+        const row = BP_ROWS.filter((r) => r.id === rowId)[0];
         /* Tapping the one already on turns it off, so a question can be
-           un answered without clearing the whole plan. */
-        if (kid.birthPrefs[t.dataset.bppick] === t.dataset.val) delete kid.birthPrefs[t.dataset.bppick];
-        else kid.birthPrefs[t.dataset.bppick] = t.dataset.val;
+           un answered without clearing the whole plan. On a multi row
+           the same tap takes that one option back out of the list. */
+        const next = bpToggle(row, kid.birthPrefs[rowId], t.dataset.val);
+        if (next === undefined) delete kid.birthPrefs[rowId];
+        else kid.birthPrefs[rowId] = next;
         kid.updatedAt = Date.now();
       }
     } else if (t.dataset.bpflex) {
@@ -11620,6 +11624,15 @@ function bpSet(field, value) {
 /* The printed page, as plain text, for the share sheet. Same content
    and same order as the printed one, so a partner reading the text
    message and a midwife reading the paper are reading the same thing. */
+/* A name and a number belong on one line. Two lines for one person
+   costs paper and reads as two people. */
+function bpPeopleLines(meta) {
+  const out = [];
+  if (meta.support) out.push(meta.support + (meta.supportPhone ? ', ' + meta.supportPhone : ''));
+  if (meta.doula) out.push('Doula: ' + meta.doula + (meta.doulaPhone ? ', ' + meta.doulaPhone : ''));
+  return out;
+}
+
 function bpPlainText() {
   const kid = bpKid();
   if (!kid) return '';
@@ -11627,10 +11640,18 @@ function bpPlainText() {
   const secs = bpSectionsWithAnswers(bpPrefs(kid));
   const out = ['BIRTH PLAN'];
   if (meta.name) out.push(meta.name);
-  BP_FIELDS.forEach((f) => {
+  bpFieldsIn('you').forEach((f) => {
     if (f.id === 'name') return;
     if (meta[f.id]) out.push(f.label + ': ' + meta[f.id]);
   });
+  const people = bpPeopleLines(meta);
+  if (people.length) { out.push(''); out.push('WITH ME'); people.forEach((x) => out.push('  ' + x)); }
+  const health = bpFieldsIn('health').filter((f) => meta[f.id]);
+  if (health.length) {
+    out.push('');
+    out.push('WHAT YOU NEED TO KNOW');
+    health.forEach((f) => out.push('  ' + f.label + ': ' + meta[f.id]));
+  }
   out.push('');
   secs.forEach((sec) => {
     out.push(sec.label.toUpperCase());
@@ -11682,7 +11703,9 @@ function bpSheet(kid) {
   const meta = bpMeta(kid);
   const secs = bpSectionsWithAnswers(bpPrefs(kid));
   const who = meta.name || (store.parent && store.parent.name) || '';
-  const details = BP_FIELDS.filter((f) => f.id !== 'name' && meta[f.id]);
+  const details = bpFieldsIn('you').filter((f) => f.id !== 'name' && meta[f.id]);
+  const people = bpPeopleLines(meta);
+  const health = bpFieldsIn('health').filter((f) => meta[f.id]);
   return `
   <div class="bpsheet">
     <p class="bpsheet-k">Birth plan</p>
@@ -11690,6 +11713,19 @@ function bpSheet(kid) {
     ${details.length ? `
     <div class="bpsheet-meta">
       ${details.map((f) => `<p><span>${esc(f.label)}</span> ${esc(meta[f.id])}</p>`).join('')}
+    </div>` : ''}
+
+    ${people.length ? `
+    <div class="bpsheet-sec">
+      <p class="bpsheet-h">With me</p>
+      ${people.map((x) => `<p class="bpsheet-l">${esc(x)}</p>`).join('')}
+    </div>` : ''}
+
+    ${health.length ? `
+    <div class="bpsheet-sec">
+      <p class="bpsheet-h">What you need to know</p>
+      ${health.map((f) => `
+        <p class="bpsheet-l"><span>${esc(f.label)}</span>${esc(meta[f.id])}</p>`).join('')}
     </div>` : ''}
 
     ${secs.length ? secs.map((sec) => `
@@ -11726,6 +11762,7 @@ function screenBirthPlan() {
   const prefs = bpPrefs(kid);
   const meta = bpMeta(kid);
   const chosen = bpChosen(prefs);
+  const pages = bpPages(prefs, meta);
   const tab = state.bpTab || 'build';
 
   return `
@@ -11754,8 +11791,9 @@ function screenBirthPlan() {
           <div class="hhalf-h"><span class="hhalf-ic">${icon('note', 14, 'var(--deep)')}</span>
             <span class="hhalf-t">Your page</span></div>
           <div class="hhalf-b">
-            <p class="hhalf-free">${chosen
-    ? 'Ready to print or send.' : 'Nothing on it yet.'}</p>
+            <p class="szbig">${pages}<span class="szbig-u">${pages === 1 ? ' page' : ' pages'}</span></p>
+            <p class="hhalf-free">${esc(chosen || meta.note
+    ? (pages === 1 ? BP_ONE_PAGE : 'Worth trimming.') : 'Nothing on it yet.')}</p>
           </div>
           <button class="hhalf-go" data-sub="bpTab" data-val="page">
             See it ${icon('chev', 12, 'var(--deep)')}</button>
@@ -11770,26 +11808,37 @@ function screenBirthPlan() {
         <p class="bodytext" style="margin:0">${esc(BP_WHY.body)}</p>
       </div>
 
-      <p class="sect" style="margin-top:16px">The details at the top</p>
+      ${BP_GROUPS.map((g) => `
+      <p class="sect" style="margin-top:16px">${esc(g.label)}</p>
       <div class="card">
-        ${BP_FIELDS.map((f) => `
+        ${g.hint ? `<p class="tiny" style="margin:0 0 11px">${esc(g.hint)}</p>` : ''}
+        ${bpFieldsIn(g.id).map((f) => `
         <div style="margin-bottom:10px">
           <p class="tiny" style="margin:0 0 4px">${esc(f.label)}</p>
           <input class="inp" id="bpf-${esc(f.id)}" data-bpfield="${esc(f.id)}"
+            ${f.tel ? 'type="tel" inputmode="tel"' : ''}
             value="${esc(meta[f.id] || '')}" placeholder="${esc(f.ph)}" maxlength="60">
         </div>`).join('')}
-      </div>
+        ${g.id === 'people' ? `
+        <button class="hhalf-go" style="width:100%;justify-content:center"
+          data-go="btopic" data-id="who:doula">
+          ${esc(BP_DOULA_LINK)} ${icon('chev', 12, 'var(--deep)')}</button>` : ''}
+      </div>`).join('')}
 
       ${BP_SECTIONS.map((sec) => `
         <p class="sect" style="margin-top:18px">${esc(sec.label)}</p>
         ${bpRowsIn(sec.id).map((r) => `
           <div class="card" style="margin-bottom:9px">
             <p class="eyebrow">${esc(r.q)}</p>
+            ${r.multi ? '<p class="tiny" style="margin:4px 0 0">Pick as many as you like.</p>' : ''}
             <div class="chips" style="margin-top:9px">
-              ${r.options.map((o) => `
-                <button class="chip${prefs[r.id] === o.v ? ' on' : ''}"
+              ${r.options.map((o) => {
+    const on = bpIsOn(r, prefs[r.id], o.v);
+    return `
+                <button class="chip${on ? ' on' : ''}"
                   data-bppick="${esc(r.id)}" data-val="${esc(o.v)}"
-                  aria-pressed="${prefs[r.id] === o.v}">${esc(o.label)}</button>`).join('')}
+                  aria-pressed="${on}">${esc(o.label)}</button>`;
+  }).join('')}
             </div>
           </div>`).join('')}
       `).join('')}
@@ -11825,6 +11874,14 @@ function screenBirthPlan() {
           ${icon('chat', 14, 'var(--deep)')} ${esc(BP_SHARE)}</button>
       </div>
       <p class="tiny" style="margin:8px 2px 0">${esc(BP_PRINT_HINT)}</p>
+      ${pages > 1 ? `
+      <div class="szcard blush" style="margin-top:11px">
+        <div class="szcard-h">
+          <span class="szcard-ic">${icon('info', 15, '#8A5F54')}</span>
+          <span class="szcard-t">${pages} pages</span>
+        </div>
+        <p class="bodytext" style="margin:0">${esc(BP_OVER_PAGE)}</p>
+      </div>` : ''}
       ${bpSheet(kid)}
       ${dsec(BP_TALK.title, `<p class="bodytext">${esc(BP_TALK.body)}</p>`)}`}
     `}
