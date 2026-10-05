@@ -380,6 +380,82 @@ export function choresForMonths(months) {
   return CHORES.filter((c) => !c.adult && m >= c.minMonths);
 }
 
+/* ------------------------------------------------------------------
+   THE FLOOR, WHICH I DID NOT HAVE AND SHOULD HAVE
+
+   choresForMonths above has no bottom, only a top, which is correct
+   as a statement about what a child CAN do and wrong as a list to
+   hand a parent. She went to set up jobs for her thirteen year old
+   and the list opened with "Put their diaper in the trash", because
+   that chore is cleared at sixteen months and a thirteen year old is
+   past sixteen months. Sixty five chores, every group led by toddler
+   work.
+
+   The principle I had was right and the application was lazy. Keeping
+   the easy jobs available matters, so a teenager is not left with
+   only the horrible ones. But "available" is not the same as "first
+   thing you see", and a job from eleven years ago is not an easy job
+   any more, it is a baby job, and offering it to a thirteen year old
+   reads as an insult to both of them.
+
+   So there are two lists. The main one is jobs that are roughly of
+   their age, and the rest are still there behind one tap for the
+   parent who genuinely wants their twelve year old on cat duty.
+
+   The floor scales rather than being fixed, because the gap that
+   matters changes. For a two year old, everything is new and there is
+   no floor at all. For a thirteen year old, anything cleared before
+   about seven belongs in the second list. Roughly the most recent
+   half of their life, which is also about how far back a child
+   themselves would consider recent.
+   ------------------------------------------------------------------ */
+export function choreAgeFloor(months) {
+  const m = Number(months);
+  /* Under two and a half there is no floor, because everything on the
+     list is still new to them. The first version put the cut at four,
+     which left a four year old being offered "Put their diaper in the
+     trash" as the top of their list, and most four year olds are long
+     out of diapers. */
+  if (!isFinite(m) || m <= 30) return 0;
+  return Math.round(m * 0.55);
+}
+
+/* The ones to put in front of a parent: of their age, newest first,
+   so the jobs they have most recently become capable of are the ones
+   they are offered. */
+export function choresAtAge(months) {
+  const m = Number(months);
+  if (!isFinite(m)) return [];
+  const floor = choreAgeFloor(m);
+  return choresForMonths(m).filter((c) => c.minMonths >= floor);
+}
+
+/* Everything else they are still allowed to do, kept rather than
+   deleted, behind a tap. */
+export function choresBelowAge(months) {
+  const m = Number(months);
+  if (!isFinite(m)) return [];
+  const floor = choreAgeFloor(m);
+  if (!floor) return [];
+  return choresForMonths(m).filter((c) => c.minMonths < floor);
+}
+
+export const CHORE_YOUNGER_LABEL = 'Jobs from when they were smaller';
+
+export const CHORE_YOUNGER_NOTE =
+  'Still perfectly fine to give them, they are just not what most families reach for at this age.';
+
+/* Said on the picker so a parent knows why the list is the length it
+   is, rather than wondering what happened to the rest. */
+export function choreAgeLine(months, name) {
+  const m = Number(months);
+  if (!isFinite(m)) return '';
+  const who = name || 'them';
+  if (m < 48) return 'Everything here is something ' + who + ' can have a go at.';
+  return 'Jobs that suit ' + who + ' at this age. It will not all be done well and that is the job '
+    + 'being done.';
+}
+
 /* The ones that have come into range recently, for the nudge that says
    they are old enough for this now. Six months is wide enough that a
    parent who opens the app once a month still sees it. */
