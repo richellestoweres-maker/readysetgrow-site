@@ -2239,16 +2239,71 @@ let settingsJump = null;
 const NAV_MAX = 12;
 let navStack = [];
 
+/* ------------------------------------------------------------------
+   BACK PUTS YOU BACK WHERE YOU WERE
+
+   Her note: Back took her to the top of the page every time. It did,
+   because render replaces the whole screen and a fresh element starts
+   at scroll zero. So if she was 2 screens down the infection list,
+   opened CMV, read it and came back, she landed at the title and had
+   to find her place again. Over a long list that is the difference
+   between a list you use and one you give up on.
+
+   So every time she goes DEEPER, where she was standing is written
+   down against the screen she is leaving, and coming back to that
+   screen puts her at the same place. Only back restores: tapping into
+   something new still starts at the top, which is what anybody expects
+   when they open a thing they have not read yet.
+
+   Keyed by routeKey, the same string render already uses to decide
+   whether a repaint is the same screen, so a remembered position can
+   never be applied to the wrong page. Capped, because this is a
+   convenience and not a reason to hold memory forever.
+   ------------------------------------------------------------------ */
+const navScroll = {};
+const NAV_SCROLL_MAX = 60;
+let navWantY = null;
+
+/* Two things can be the scroller depending on the build. The phone
+   shell scrolls the window, the desktop chrome scrolls #screen, so
+   both are read and the larger one is the real one. */
+function navScrollY() {
+  const scr = document.getElementById('screen');
+  const a = scr ? scr.scrollTop : 0;
+  const b = (typeof window !== 'undefined' && window.scrollY) || 0;
+  return Math.max(a, b);
+}
+
+function navRemember() {
+  try {
+    const y = navScrollY();
+    const keys = Object.keys(navScroll);
+    if (keys.length > NAV_SCROLL_MAX) delete navScroll[keys[0]];
+    navScroll[routeKey()] = y;
+  } catch (err) {}
+}
+
+/* Called once the destination view is set, so routeKey describes where
+   she is going rather than where she was. */
+function navWant() {
+  try {
+    const y = navScroll[routeKey()];
+    navWantY = (typeof y === 'number' && y > 0) ? y : null;
+  } catch (err) { navWantY = null; }
+}
+
 function navPush() {
+  navRemember();
   navStack.push({ tab: state.tab, view: state.view });
   if (navStack.length > NAV_MAX) navStack.shift();
 }
 
 function navBack() {
   const prev = navStack.pop();
-  if (!prev) { state.view = null; return; }
+  if (!prev) { state.view = null; navWant(); return; }
   state.tab = prev.tab;
   state.view = prev.view;
+  navWant();
 }
 
 /* Anything that jumps sideways rather than deeper, such as a tab, makes
@@ -2842,6 +2897,7 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'understand') html = screenUnderstand(c);
   else if (v && v.type === 'lens') html = viewLens(c, v.id);
   else if (v && v.type === 'infection') html = viewInfection(v.id);
+  else if (v && v.type === 'btopic') html = viewBTopic(v.id);
   else if (v && v.type === 'screen' && v.id === 'now') html = screenNow(c);
   else if (v && v.type === 'screen' && v.id === 'momnow') html = screenMomNow();
   /* There used to be a second screen listing her logs, reached from
@@ -3012,6 +3068,30 @@ function render() {
   const sameRoute = nowRoute === lastRoute;
   lastRoute = nowRoute;
   screen.scrollTop = (keepId || sameRoute) ? keepScroll : 0;
+
+  /* A position remembered on the way in wins over the reset above, but
+     only for this one repaint. The window scroll is set as well as the
+     element's, since which of the two is the scroller depends on the
+     build. Done after the HTML is in place so the page is tall enough
+     to scroll to, and clamped by the browser if it is not. */
+  if (navWantY != null) {
+    const want = navWantY;
+    navWantY = null;
+    try {
+      screen.scrollTop = want;
+      if (typeof window !== 'undefined' && window.scrollTo) window.scrollTo(0, want);
+      /* One more go after layout, for a screen whose height arrives
+         with an image or a font rather than with the markup. */
+      if (typeof requestAnimationFrame === 'function') {
+        requestAnimationFrame(() => {
+          try {
+            screen.scrollTop = want;
+            if (window.scrollTo) window.scrollTo(0, want);
+          } catch (err) {}
+        });
+      }
+    } catch (err) {}
+  }
 
   if (settingsJump) {
     const target = document.getElementById(settingsJump);
@@ -4688,11 +4768,19 @@ function initControls() {
         store.profileEdit = null;
         state.tab = 'home';
         state.view = null;
+        navWant();
         navClear();
       } else if (to && to !== '1') {
         /* A screen that names where Back should land still wins, since
-           it knows something the stack does not. */
+           it knows something the stack does not. A topic page also
+           knows WHICH sub tab it came off, so Back lands on the tab
+           that holds it rather than the screen's first one. */
+        if (state.view && state.view.type === 'btopic') {
+          const tp = btopicFind(state.view.id);
+          if (tp && tp.set.tab) state[tp.set.tab[0]] = tp.set.tab[1];
+        }
         state.view = { type: 'screen', id: to };
+        navWant();
         navClear();
       } else {
         navBack();
@@ -11301,6 +11389,167 @@ function birthReduceBlock(r) {
   </div>`;
 }
 
+/* ==================================================================
+   TOPIC WIDGETS
+
+   Her note on Birth and Induction: more widgets, more app, still every
+   word, and tappable to learn about one particular thing.
+
+   These two screens hold the longest writing in the app, and both of
+   them laid it out as one thing after another down a page, which is a
+   chapter rather than a screen. The lists people actually arrive
+   wanting are small: 7 kinds of pain relief, 4 degrees of tearing, 4
+   ways to ripen a cervix, the handful of things that can go wrong. So
+   each of those becomes a grid of cards with the one line that
+   distinguishes it, and a card opens the whole entry on its own page.
+
+   Nothing is cut. Every field each entry had is still printed, it is
+   just printed on the page you asked for rather than all of them at
+   once underneath each other.
+
+   One registry drives the cards and the pages, so a card can never
+   open an entry that does not exist, and adding a topic is a row here
+   rather than a new screen.
+   ================================================================== */
+const BIRTH_TOPICS = {
+  pain: {
+    back: 'birth', tab: ['birthTab', 'pain'],
+    list: () => PAIN_OPTIONS,
+    name: (o) => o.name,
+    sub: (o) => (PAIN_KINDS && PAIN_KINDS[o.kind]) || '',
+    ic: (o) => (o.kind === 'drug' ? 'pill' : o.kind === 'gas' ? 'drop' : 'hand'),
+    body: (o) => `
+      ${o.what ? `<div class="card leafy"><p class="eyebrow">${icon('info', 11, 'var(--sage)')} What it is</p>
+        <p class="bodytext" style="margin-top:6px">${esc(o.what)}</p></div>` : ''}
+      <div class="hpair">
+        <div class="hhalf"><div class="hhalf-h"><span class="hhalf-ic">${icon('check', 14, 'var(--deep)')}</span>
+          <span class="hhalf-t">What it gives</span></div>
+          <div class="hhalf-b"><p class="bodytext" style="margin:0;font-size:12.5px">${esc(o.gives || '')}</p></div></div>
+        <div class="hhalf"><div class="hhalf-h"><span class="hhalf-ic">${icon('info', 14, 'var(--deep)')}</span>
+          <span class="hhalf-t">What it costs</span></div>
+          <div class="hhalf-b"><p class="bodytext" style="margin:0;font-size:12.5px">${esc(o.costs || '')}</p></div></div>
+      </div>
+      ${o.myth ? `<div class="szcard blush"><div class="szcard-h">
+        <span class="szcard-ic">${icon('bulb', 15, '#8A5F54')}</span>
+        <span class="szcard-t">What people get wrong</span></div>
+        <p class="bodytext" style="margin:0">${esc(o.myth)}</p></div>` : ''}
+      ${o.where ? `<p class="tiny" style="margin-top:10px">${esc(o.where)}</p>` : ''}
+      ${o.numbers ? dsec('The numbers', list(o.numbers)
+    + `<p class="tiny" style="margin-top:6px">${esc(o.numbersFrom || '')}</p>`) : ''}`,
+  },
+  who: {
+    back: 'birth', tab: ['birthTab', 'who'],
+    list: () => WHO_ROLES,
+    name: (o) => o.name,
+    sub: (o) => o.what || '',
+    ic: () => 'people',
+    body: (o) => `
+      ${o.what ? `<div class="card leafy"><p class="bodytext" style="margin:0">${esc(o.what)}</p></div>` : ''}
+      ${o.does ? dsec('What the evidence says they do', `<p class="bodytext">${esc(o.does)}</p>`) : ''}
+      ${o.worth ? `<div class="bpbox surrender"><p class="bpbox-t">Worth knowing</p>
+        <p class="bodytext" style="margin-top:8px">${esc(o.worth)}</p></div>` : ''}
+      ${o.cost ? dsec('What it costs', `<p class="bodytext">${esc(o.cost)}</p>`) : ''}`,
+  },
+  tear: {
+    back: 'birth', tab: ['birthTab', 'body'],
+    list: () => TEAR_DEGREES,
+    name: (o) => o.label,
+    sub: (o) => o.what || '',
+    ic: () => 'shield',
+    body: (o) => `
+      ${o.what ? `<div class="card leafy"><p class="eyebrow">${icon('info', 11, 'var(--sage)')} What it is</p>
+        <p class="bodytext" style="margin-top:6px">${esc(o.what)}</p></div>` : ''}
+      ${o.fix ? dsec('How it is repaired', `<p class="bodytext">${esc(o.fix)}</p>`) : ''}
+      ${o.after ? dsec('Afterwards', `<p class="bodytext">${esc(o.after)}</p>`) : ''}`,
+  },
+  wrong: {
+    back: 'birth', tab: ['birthTab', 'wrong'],
+    list: () => WRONG_EVENTS,
+    name: (o) => o.name,
+    sub: (o) => o.rate || '',
+    ic: () => 'heart',
+    body: (o) => `
+      ${o.rate ? `<div class="card leafy"><p class="eyebrow">${icon('chart', 11, 'var(--sage)')} How common</p>
+        <p class="bodytext" style="margin-top:6px">${esc(o.rate)}</p></div>` : ''}
+      ${o.what ? dsec('What happens', `<p class="bodytext">${esc(o.what)}</p>`) : ''}
+      ${o.does ? dsec('What they do about it', `<p class="bodytext">${esc(o.does)}</p>`) : ''}
+      ${o.honest ? `<div class="szcard blush"><div class="szcard-h">
+        <span class="szcard-ic">${icon('bulb', 15, '#8A5F54')}</span>
+        <span class="szcard-t">Said straight</span></div>
+        <p class="bodytext" style="margin:0">${esc(o.honest)}</p></div>` : ''}
+      ${o.after ? dsec('Afterwards', `<p class="bodytext">${esc(o.after)}</p>`) : ''}`,
+  },
+  ripen: {
+    back: 'induction', tab: ['indTab', 'ripen'],
+    list: () => RIPEN_METHODS,
+    name: (o) => o.name,
+    sub: (o) => o.also || '',
+    ic: (o) => (o.id === 'balloon' ? 'circle' : o.id === 'sweep' ? 'hand' : 'pill'),
+    body: (o) => `
+      ${o.also ? `<p class="tiny" style="margin-top:2px">Also called ${esc(o.also)}.</p>` : ''}
+      ${o.how ? `<div class="card leafy"><p class="eyebrow">${icon('info', 11, 'var(--sage)')} How it works</p>
+        <p class="bodytext" style="margin-top:6px">${esc(o.how)}</p></div>` : ''}
+      ${o.time ? `<div class="szcard"><div class="szcard-h">
+        <span class="szcard-ic">${icon('clock', 15, 'var(--deep)')}</span>
+        <span class="szcard-t">How long it takes</span></div>
+        <p class="bodytext" style="margin:0">${esc(o.time)}</p></div>` : ''}
+      ${o.evidence ? dsec('What the evidence says', `<p class="bodytext">${esc(o.evidence)}</p>`) : ''}
+      ${o.worth ? `<div class="bpbox surrender"><p class="bpbox-t">Worth asking about</p>
+        <p class="bodytext" style="margin-top:8px">${esc(o.worth)}</p></div>` : ''}`,
+  },
+};
+
+function btopicFind(key) {
+  const bits = String(key || '').split(':');
+  const set = BIRTH_TOPICS[bits[0]];
+  if (!set) return null;
+  const items = set.list() || [];
+  const item = items.filter((x) => x.id === bits[1])[0];
+  return item ? { set: set, item: item, setId: bits[0] } : null;
+}
+
+/* The grid. Same component as the infections page, so the whole app
+   has one shape for "pick one of these and read it". */
+function btopicGrid(setId) {
+  const set = BIRTH_TOPICS[setId];
+  if (!set) return '';
+  return `
+  <div class="pickgrid">
+    ${(set.list() || []).map((o) => `
+    <button class="pickcard" data-go="btopic" data-id="${esc(setId + ':' + o.id)}">
+      <span class="pickcard-ic">${icon(set.ic(o), 17, 'var(--deep)')}</span>
+      <span class="pickcard-t">${esc(set.name(o))}</span>
+      <span class="pickcard-b">${esc(set.sub(o))}</span>
+      <span class="pickcard-go">Read it ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>`).join('')}
+  </div>`;
+}
+
+function viewBTopic(key) {
+  const found = btopicFind(key);
+  if (!found) return emptyScreen('That could not be found.');
+  const set = found.set;
+  const o = found.item;
+  const others = (set.list() || []).filter((x) => x.id !== o.id);
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="${esc(set.back)}">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(set.name(o))}</h1>
+    ${set.sub(o) ? `<p class="sub">${esc(set.sub(o))}</p>` : ''}
+  </div>
+  <div class="sc">
+    ${set.body(o)}
+
+    ${others.length ? `
+    <p class="sect" style="margin-top:18px">The others</p>
+    <div class="chips">
+      ${others.map((x) => `
+        <button class="chip" data-go="btopic" data-id="${esc(found.setId + ':' + x.id)}">
+          ${esc(set.name(x))}</button>`).join('')}
+    </div>` : ''}
+  </div>`;
+}
+
 function screenBirth(c) {
   const kid = activeChild();
   const seed = kid && isExpecting(kid) ? kid : null;
@@ -11394,7 +11643,7 @@ function screenBirth(c) {
 
       <div class="dsec">
         <h4>Who that can be</h4>
-        ${WHO_ROLES.map(birthRoleBlock).join('')}
+        ${btopicGrid('who')}
       </div>
 
       <div class="dsec">
@@ -11462,7 +11711,7 @@ function screenBirth(c) {
 
       <div class="dsec">
         <h4>Every option</h4>
-        ${PAIN_OPTIONS.map(birthPainBlock).join('')}
+        ${btopicGrid('pain')}
       </div>
 
       <div class="dsec">
@@ -11498,12 +11747,7 @@ function screenBirth(c) {
 
       <div class="dsec">
         <h4>The four degrees</h4>
-        ${TEAR_DEGREES.map((d) => `
-          <div class="quote">
-            <p class="sit">${esc(d.label)}</p>
-            <p class="why" style="margin-top:4px">${esc(d.what)}</p>
-            <p class="tiny" style="margin-top:6px">${esc(d.fix)}</p>
-          </div>`).join('')}
+        ${btopicGrid('tear')}
         <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(TEAR_OASI)}</p></div>
       </div>
 
@@ -11643,7 +11887,7 @@ function screenBirth(c) {
 
         <div class="dsec">
           <h4>The things people are frightened of</h4>
-          ${WRONG_EVENTS.map(birthEventBlock).join('')}
+          ${btopicGrid('wrong')}
         </div>
 
         <div class="dsec">
@@ -11884,7 +12128,7 @@ function screenInduction(c) {
       </div>
       <div class="dsec">
         <h4>What can be used</h4>
-        ${RIPEN_METHODS.map(indMethodBlock).join('')}
+        ${btopicGrid('ripen')}
       </div>
       <div class="dsec">
         <h4>${esc(RIPEN_COMBO.title)}</h4>
@@ -13241,16 +13485,16 @@ function screenPregHealth() {
     <p class="sub">Preventable, treatable, and mostly never mentioned. That is the only reason these are here.</p>
   </div>
   <div class="sc">
-    <div class="infgrid">
+    <div class="pickgrid">
       ${getInfectionsSorted().map((i) => `
-      <button class="infcard${i.timeCritical ? ' urgent' : ''}"
+      <button class="pickcard${i.timeCritical ? ' urgent' : ''}"
         data-go="infection" data-id="${esc(i.id)}">
-        <span class="infcard-ic">${icon(i.ic || 'search', 17,
+        <span class="pickcard-ic">${icon(i.ic || 'search', 17,
     i.timeCritical ? '#A85A44' : 'var(--deep)')}</span>
-        <span class="infcard-t">${esc(i.short || i.label)}</span>
-        <span class="infcard-b">${esc(i.headline)}</span>
-        ${i.timeCritical ? '<span class="infcard-tag">Has a deadline</span>' : ''}
-        <span class="infcard-go">Read it ${icon('chev', 12, 'var(--deep)')}</span>
+        <span class="pickcard-t">${esc(i.short || i.label)}</span>
+        <span class="pickcard-b">${esc(i.headline)}</span>
+        ${i.timeCritical ? '<span class="pickcard-tag">Has a deadline</span>' : ''}
+        <span class="pickcard-go">Read it ${icon('chev', 12, 'var(--deep)')}</span>
       </button>`).join('')}
     </div>
 
@@ -21277,6 +21521,44 @@ function homeJobsWidget(whoId, title) {
 /* The pair. If one half has nothing it still draws, because two
    boxes of different heights side by side looks like a mistake and
    an empty day is information. */
+/* ------------------------------------------------------------------
+   JOBS ON A CHILD'S OWN PAGE
+
+   Her note, October 2026, and both halves of it are right.
+
+   First: a baby was being offered a chore chart. Tripp and Sage are
+   not old enough to have jobs and the widget was showing on their
+   pages anyway, which makes the app look like it does not know how old
+   they are. The chart does not appear now until the age the library
+   itself starts at, which is 2. The first real jobs, putting toys in
+   a basket and carrying a cup to the sink, land between 18 months and
+   2 years, so 2 is the honest floor rather than a guess.
+
+   Second: their day was on their page as well, and the app has a whole
+   calendar now. A one day strip on 4 separate children's pages is the
+   same information printed 4 times. So their page carries the thing
+   that is only theirs, which is the chart, and the day lives on the
+   calendar. Her own Home keeps both, because Home is where she runs
+   the house from.
+   ------------------------------------------------------------------ */
+function homeJobsOnly(whoId, jobTitle, months) {
+  if (!choreOldEnough(months)) return '';
+  const jobs = homeJobsWidget(whoId, jobTitle);
+  return `
+  <div class="hpair one">
+    ${jobs || `
+      <div class="hhalf">
+        <div class="hhalf-h">
+          <span class="hhalf-ic">${icon('check', 15, 'var(--deep)')}</span>
+          <span class="hhalf-t">${esc(jobTitle || 'Jobs')}</span>
+        </div>
+        <div class="hhalf-b"><span class="hhalf-free">Nothing on the chart yet</span></div>
+        <button class="hhalf-go" data-go="screen" data-id="chores">
+          Set one up ${icon('chev', 12, 'var(--deep)')}</button>
+      </div>`}
+  </div>`;
+}
+
 function homeDayPair(whoId, jobTitle) {
   const jobs = homeJobsWidget(whoId, jobTitle);
   return `
@@ -22995,7 +23277,7 @@ function screenChild(c) {
      bottom half is what she reads, and the jobs belong at the bottom
      of the doing half rather than in front of it. */
   const sections = ageNewCard(months, kid, first) + monthTopCard(kid) + daily
-    + (kid ? homeDayPair(kid.id, first + "'s jobs") : '')
+    + (kid ? homeJobsOnly(kid.id, first + "'s jobs", months) : '')
     + (kid ? rewProfileBlock(kid, months) : '') + (tiles.length ? `
     <p class="sect" style="margin-top:18px">Everything about ${esc(first)}</p>
     <div class="kidtiles">${tiles.map((t) => kidTile(t.id, t.html)).join('')}</div>` : '')

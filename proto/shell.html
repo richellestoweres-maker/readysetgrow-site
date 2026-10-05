@@ -729,6 +729,7 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 .findchip.icon span{display:none}
 
 .hpair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 0;align-items:stretch}
+.hpair.one{grid-template-columns:1fr}
 .hhalf{display:flex;flex-direction:column;background:#fff;border:1px solid rgba(74,103,65,.14);
   border-radius:18px;padding:11px 10px 8px;min-height:160px}
 .hhalf-h{display:flex;align-items:center;gap:7px;margin-bottom:9px}
@@ -2240,25 +2241,25 @@ body.calpage .mark-holder{margin-bottom:-20px}
    rows, so the four that matter most are all on the screen at once
    instead of four scrolls apart.
    ------------------------------------------------------------------ */
-.infgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-.infcard{position:relative;appearance:none;text-align:left;font:inherit;cursor:pointer;
+.pickgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.pickcard{position:relative;appearance:none;text-align:left;font:inherit;cursor:pointer;
   background:#fff;border:1px solid rgba(74,103,65,.14);border-radius:18px;
   padding:13px 12px 11px;display:flex;flex-direction:column;gap:6px}
-.infcard.urgent{background:#FCF2EE;border-color:#E6BFB3}
-.infcard-ic{width:34px;height:34px;border-radius:50%;background:var(--leaf3);flex:none;
+.pickcard.urgent{background:#FCF2EE;border-color:#E6BFB3}
+.pickcard-ic{width:34px;height:34px;border-radius:50%;background:var(--leaf3);flex:none;
   display:flex;align-items:center;justify-content:center}
-.infcard.urgent .infcard-ic{background:rgba(255,255,255,.75)}
-.infcard-t{font-size:15px;font-weight:700;color:var(--ink);line-height:1.2}
-.infcard.urgent .infcard-t{color:#8A4433}
-.infcard-b{font-size:11.5px;line-height:1.45;color:var(--muted);flex:1}
-.infcard-tag{align-self:flex-start;font-size:10px;font-weight:700;letter-spacing:.04em;
+.pickcard.urgent .pickcard-ic{background:rgba(255,255,255,.75)}
+.pickcard-t{font-size:15px;font-weight:700;color:var(--ink);line-height:1.2}
+.pickcard.urgent .pickcard-t{color:#8A4433}
+.pickcard-b{font-size:11.5px;line-height:1.45;color:var(--muted);flex:1}
+.pickcard-tag{align-self:flex-start;font-size:10px;font-weight:700;letter-spacing:.04em;
   text-transform:uppercase;color:#A85A44;background:rgba(255,255,255,.8);
   border-radius:999px;padding:3px 8px}
-.infcard-go{display:flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;
+.pickcard-go{display:flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;
   color:var(--deep);padding-top:8px;border-top:1px solid var(--line2)}
-.infcard.urgent .infcard-go{color:#8A4433;border-top-color:rgba(168,90,68,.2)}
-.infcard:focus-visible{outline:2px solid var(--deep);outline-offset:2px}
-@media (max-width:360px){.infgrid{grid-template-columns:1fr}}
+.pickcard.urgent .pickcard-go{color:#8A4433;border-top-color:rgba(168,90,68,.2)}
+.pickcard:focus-visible{outline:2px solid var(--deep);outline-offset:2px}
+@media (max-width:360px){.pickgrid{grid-template-columns:1fr}}
 
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
