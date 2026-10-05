@@ -1334,6 +1334,10 @@ const store = {
 
   /* Parent scoped. These follow the mother, not any child. */
   bagChecked: [],
+  bagOwn: [],
+  bagHidden: [],
+  bagAdd: null,
+  bagRemovedOpen: false,
   outChecked: [],   // the packing checklist, ticked per trip and per child
   outTrip: 'day',   // which kind of trip she is packing for
   daycareHours: 0,  // hours in daycare, for the diaper estimate
@@ -1438,7 +1442,7 @@ const state = {};
   });
 });
 
-['parent', 'children', 'activeChildId', 'bagChecked', 'outChecked', 'outTrip', 'daycareHours', 'birthdaySeen', 'profileWho', 'posts', 'postDraft',
+['parent', 'children', 'activeChildId', 'bagChecked', 'bagOwn', 'bagHidden', 'bagAdd', 'bagRemovedOpen', 'outChecked', 'outTrip', 'daycareHours', 'birthdaySeen', 'profileWho', 'posts', 'postDraft',
  'postOpen', 'menuOpen', 'calMonth',
  'profileEdit', 'msEdit', 'ciEdit', 'ciOpen', 'photoBusy', 'photoError',
  'liftUsed', 'liftDate', 'pumpTab', 'pumpGoal',
@@ -1479,6 +1483,8 @@ function flushStore() {
       children: store.children,
       activeChildId: store.activeChildId,
       bagChecked: store.bagChecked,
+      bagOwn: store.bagOwn,
+      bagHidden: store.bagHidden,
       outChecked: store.outChecked,
       outTrip: store.outTrip,
       daycareHours: store.daycareHours,
@@ -1662,6 +1668,8 @@ function loadStore() {
     store.parent.lastPeriod = sanitizeStoredDate(store.parent.lastPeriod, 0);
     store.parent.situation = normalizeSituation(store.parent.situation);
     store.bagChecked = Array.isArray(saved.bagChecked) ? saved.bagChecked : [];
+    store.bagOwn = Array.isArray(saved.bagOwn) ? saved.bagOwn : [];
+    store.bagHidden = Array.isArray(saved.bagHidden) ? saved.bagHidden : [];
     store.outChecked = Array.isArray(saved.outChecked) ? saved.outChecked : [];
     store.outTrip = typeof saved.outTrip === 'string' ? saved.outTrip : 'day';
     store.daycareHours = Number(saved.daycareHours) || 0;
@@ -3419,7 +3427,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -4461,6 +4469,37 @@ function initControls() {
       const id = t.dataset.bag;
       const i = state.bagChecked.indexOf(id);
       if (i === -1) state.bagChecked.push(id); else state.bagChecked.splice(i, 1);
+    } else if (t.dataset.bagadd) {
+      store.bagAdd = t.dataset.bagadd === 'open' ? (t.dataset.cat || 'own') : null;
+    } else if (t.dataset.bagaddsave) {
+      const f = document.getElementById('bagaddin');
+      const label = String(f ? f.value : '').replace(/\s+/g, ' ').trim().slice(0, 60);
+      if (!label) { store.bagAdd = null; render(); return; }
+      if (!Array.isArray(store.bagOwn)) store.bagOwn = [];
+      store.bagOwn = store.bagOwn.concat([{
+        id: 'bo' + Date.now() + Math.floor(Math.random() * 1000),
+        label: label, cat: store.bagAdd || 'own', own: true, updatedAt: Date.now(),
+      }]);
+      store.bagAdd = null;
+      store.parentUpdatedAt = Date.now();
+    } else if (t.dataset.bagdel) {
+      /* Hers are deleted outright, since she typed them and can type
+         them again. A built in one is hidden, so it survives the list
+         being updated and can be put back without hunting for it. */
+      const id = t.dataset.bagdel;
+      if (bagOwn().some((o) => o.id === id)) {
+        store.bagOwn = bagOwn().filter((o) => o.id !== id);
+      } else if (bagHidden().indexOf(id) === -1) {
+        store.bagHidden = bagHidden().concat([id]);
+      }
+      const ci = state.bagChecked.indexOf(id);
+      if (ci !== -1) state.bagChecked.splice(ci, 1);
+      store.parentUpdatedAt = Date.now();
+    } else if (t.dataset.bagback) {
+      store.bagHidden = bagHidden().filter((x) => x !== t.dataset.bagback);
+      store.parentUpdatedAt = Date.now();
+    } else if (t.dataset.bagremoved) {
+      store.bagRemovedOpen = !store.bagRemovedOpen;
     } else if (t.dataset.routine) {
       const id = t.dataset.routine;
       const i = state.routineInclude.indexOf(id);
@@ -12481,28 +12520,105 @@ function screenSafety(c) {
    HOSPITAL BAG
    ----------------------------------------------------------------- */
 
+/* ------------------------------------------------------------------
+   THE BAG, ONCE SHE HAS HAD HER SAY
+
+   The published list is the starting point. These merge in what she
+   added and take out what she removed, and every count on the screen
+   runs through them so the percentage means HER bag rather than the
+   one in the data file.
+   ------------------------------------------------------------------ */
+function bagOwn() {
+  return Array.isArray(store.bagOwn) ? store.bagOwn : [];
+}
+
+function bagHidden() {
+  return Array.isArray(store.bagHidden) ? store.bagHidden : [];
+}
+
+function bagCats() {
+  const own = bagOwn();
+  const cats = getCategories().map((c) => ({
+    id: c.id,
+    label: c.label,
+    intro: c.intro,
+    items: (c.items || []).filter((i) => bagHidden().indexOf(i.id) === -1)
+      .concat(own.filter((o) => o.cat === c.id)),
+  }));
+  /* Her own category only appears once there is something in it, or
+     while she is in the middle of adding to it. An empty section with
+     a hopeful heading is clutter. */
+  const loose = own.filter((o) => !o.cat || o.cat === 'own');
+  if (loose.length || store.bagAdd) {
+    cats.push({ id: 'own', label: BAG_OWN_CAT.label, intro: BAG_OWN_CAT.intro, items: loose });
+  }
+  return cats;
+}
+
+function bagAllItems() {
+  const out = [];
+  bagCats().forEach((c) => c.items.forEach((i) => out.push(i)));
+  return out;
+}
+
+/* Same shape getBagProgress returns, worked out from her list. */
+function bagProgress() {
+  const checked = state.bagChecked || [];
+  const has = (id) => checked.indexOf(id) !== -1;
+  const categories = bagCats().map((c) => ({
+    id: c.id, label: c.label, total: c.items.length,
+    done: c.items.filter((i) => has(i.id)).length,
+    complete: c.items.length > 0 && c.items.every((i) => has(i.id)),
+  }));
+  const all = bagAllItems();
+  const ess = all.filter((i) => i.essential);
+  const total = all.length;
+  const done = all.filter((i) => has(i.id)).length;
+  const essDone = ess.filter((i) => has(i.id)).length;
+  return {
+    total: total, done: done,
+    percent: total === 0 ? 0 : Math.round((done / total) * 100),
+    categories: categories,
+    essentialsTotal: ess.length, essentialsDone: essDone,
+    essentialsComplete: ess.length > 0 && essDone === ess.length,
+  };
+}
+
+/* The built in items she has taken off, so putting one back is a tap
+   rather than a reinstall. */
+function bagRemovedItems() {
+  const hid = bagHidden();
+  if (!hid.length) return [];
+  return getAllItems().filter((i) => hid.indexOf(i.id) !== -1);
+}
+
+function bagTipsLive() {
+  const hid = bagHidden();
+  return getInsiderTips().filter((t) => hid.indexOf(t.id) === -1);
+}
+
 function screenBag() {
-  const prog = getBagProgress(state.bagChecked);
-  const tips = getInsiderTips();
+  const prog = bagProgress();
+  const tips = bagTipsLive();
+  const removed = bagRemovedItems();
 
   const item = (it) => {
     const on = state.bagChecked.indexOf(it.id) !== -1;
     return `
-    <button class="lrow" data-bag="${esc(it.id)}" style="align-items:flex-start;padding:11px 6px">
-      <span style="width:22px;height:22px;border-radius:6px;margin-top:1px;flex:0 0 auto;
-        display:flex;align-items:center;justify-content:center;
-        background:${on ? 'var(--sage)' : 'transparent'};
-        border:${on ? 'none' : '1.5px solid var(--line)'}">
-        ${on ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>' : ''}
-      </span>
-      <span class="grow" style="margin-left:11px">
-        <span style="display:block;font-size:14px;line-height:1.4;
-          color:${on ? 'var(--faint)' : 'var(--ink)'};
-          text-decoration:${on ? 'line-through' : 'none'}">${esc(it.label)}
-          ${it.essential ? '<span class="tag" style="margin-left:6px">Essential</span>' : ''}</span>
-        ${it.note ? `<span class="tiny" style="display:block;margin-top:4px;line-height:1.45">${esc(it.note)}</span>` : ''}
-      </span>
-    </button>`;
+    <div class="bagrow${on ? ' on' : ''}">
+      <button class="bagtick" data-bag="${esc(it.id)}"
+        aria-pressed="${on}" aria-label="${esc(it.label)}">
+        <span class="bagbox">${on ? icon('check', 13, '#fff') : ''}</span>
+        <span class="baggrow">
+          <span class="bagname">${esc(it.label)}${it.essential
+            ? ' <span class="tag">Essential</span>' : ''}${it.own
+            ? ' <span class="tag yours">Yours</span>' : ''}</span>
+          ${it.note ? `<span class="bagnote">${esc(it.note)}</span>` : ''}
+        </span>
+      </button>
+      <button class="rewx" data-bagdel="${esc(it.id)}"
+        aria-label="Take ${esc(it.label)} off the list">${icon('close', 13, 'var(--faint)')}</button>
+    </div>`;
   };
 
   return `
@@ -12512,33 +12628,72 @@ function screenBag() {
     <p class="sub">Packed by 36 weeks, so it is one thing you never have to think about again.</p>
   </div>
   <div class="sc">
-    <div class="card">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="flex:1">
-          <p style="margin:0;font-size:16px;font-weight:600;color:var(--ink)">${prog.done} of ${prog.total} packed</p>
-          <p class="tiny" style="margin-top:3px">${prog.essentialsComplete
-            ? 'Every essential is in the bag.'
-            : esc((prog.essentialsTotal - prog.essentialsDone) + ' of the ' + prog.essentialsTotal + ' essentials still to go.')}</p>
-        </div>
-        <span style="font-size:24px;color:var(--deep)">${prog.percent}%</span>
+
+    <div class="bagtop">
+      <div class="bagdial">
+        <svg width="78" height="78" viewBox="0 0 78 78" aria-hidden="true">
+          <circle cx="39" cy="39" r="32" fill="none" stroke="var(--line2)" stroke-width="8"/>
+          <circle cx="39" cy="39" r="32" fill="none" stroke="var(--sage)" stroke-width="8"
+            stroke-linecap="round" stroke-dasharray="${(prog.percent / 100) * 201} 201"
+            transform="rotate(-90 39 39)"/>
+        </svg>
+        <span class="bagdial-n">${prog.percent}<span class="bagdial-u">%</span></span>
       </div>
-      <div class="bar" style="margin-top:11px"><i style="width:${prog.percent}%"></i></div>
+      <div class="bagtop-t">
+        <p class="bagtop-h">${prog.done} of ${prog.total} packed</p>
+        <p class="bagtop-s">${prog.essentialsComplete
+    ? 'Every essential is in the bag.'
+    : esc((prog.essentialsTotal - prog.essentialsDone) + ' of the ' + prog.essentialsTotal
+      + ' essentials still to go.')}</p>
+      </div>
     </div>
 
-    <div class="card leafy">
+    <div class="hpair">
+      ${prog.categories.slice(0, 2).map((c) => `
+      <div class="hhalf">
+        <div class="hhalf-h">
+          <span class="hhalf-ic">${icon('bag', 14, 'var(--deep)')}</span>
+          <span class="hhalf-t">${esc(c.label)}</span>
+        </div>
+        <div class="hhalf-b">
+          <p class="szbig">${c.done}<span class="szbig-u">/${c.total}</span></p>
+          <div class="szbar"><span style="width:${c.total ? (c.done / c.total) * 100 : 0}%"></span></div>
+          <p class="hhalf-free">${c.complete ? 'All in' : 'Still packing'}</p>
+        </div>
+      </div>`).join('')}
+    </div>
+
+    <div class="card leafy" style="margin-top:12px">
       <p class="eyebrow">${icon('clock', 11, 'var(--sage)')} ${esc(PACKING_TIMELINE.headline)}</p>
       <p class="bodytext" style="margin-top:5px">${esc(PACKING_TIMELINE.body)}</p>
       ${steps(PACKING_TIMELINE.steps)}
       <div class="callout">${esc(PACKING_TIMELINE.note)}</div>
     </div>
 
-    ${dsec('Things people wish they had known',
-      `<p class="tiny" style="margin-bottom:9px">${tips.length} items on this list come with a note that changes what you pack. They are marked throughout, and here they are together.</p>` +
-      list(tips.map((t) => t.label + '. ' + t.note)))}
+    <div class="tipwrap">
+      <div class="tipwrap-h">
+        <span class="tipwrap-ic">${icon('bulb', 17, '#8A5F54')}</span>
+        <span>
+          <span class="tipwrap-t">${esc(BAG_TIPS_TITLE)}</span>
+          <span class="tipwrap-s">${esc(BAG_TIPS_INTRO)}</span>
+        </span>
+      </div>
+      <div class="tipgrid">
+        ${tips.map((t, n) => {
+    const on = state.bagChecked.indexOf(t.id) !== -1;
+    return `
+        <button class="bagtip${on ? ' on' : ''}" data-bag="${esc(t.id)}" aria-pressed="${on}">
+          <span class="bagtip-n">${on ? icon('check', 12, '#fff') : String(n + 1)}</span>
+          <span class="bagtip-t">${esc(t.label)}</span>
+          <span class="bagtip-b">${esc(t.note)}</span>
+        </button>`;
+  }).join('')}
+      </div>
+    </div>
 
-    ${getCategories().map((cat) => {
-      const cp = prog.categories.filter((x) => x.id === cat.id)[0];
-      return `
+    ${bagCats().map((cat) => {
+    const cp = prog.categories.filter((x) => x.id === cat.id)[0];
+    return `
       <p class="sect">${esc(cat.label)}</p>
       <div class="card" style="padding:12px 14px">
         <div style="display:flex;gap:12px;align-items:flex-start">
@@ -12546,10 +12701,43 @@ function screenBag() {
           <span class="tiny" style="color:${cp && cp.complete ? 'var(--deep)' : 'var(--faint)'}">${cp ? cp.done + '/' + cp.total : ''}</span>
         </div>
         <div style="margin-top:8px;border-top:1px solid var(--line2)">
-          ${cat.items.map(item).join('')}
+          ${cat.items.length ? cat.items.map(item).join('')
+    : `<p class="tiny" style="padding:11px 2px;margin:0">${esc(BAG_OWN_EMPTY)}</p>`}
         </div>
+        ${store.bagAdd === cat.id ? `
+        <div class="bagadd">
+          <input id="bagaddin" class="inp" placeholder="${esc(BAG_ADD_PLACEHOLDER)}" maxlength="60">
+          <div style="display:flex;gap:8px;margin-top:9px">
+            <button class="btn grow" data-bagaddsave="1" style="justify-content:center">Add it</button>
+            <button class="btn ghost" data-bagadd="close">Cancel</button>
+          </div>
+        </div>` : `
+        <button class="bagaddbtn" data-bagadd="open" data-cat="${esc(cat.id)}">
+          ${icon('plus', 13, 'var(--deep)')} Add something to ${esc(cat.label.toLowerCase())}
+        </button>`}
       </div>`;
-    }).join('')}
+  }).join('')}
+
+    ${!bagCats().some((c) => c.id === 'own') ? `
+      <button class="btn ghost" style="width:100%;margin-top:11px" data-bagadd="open" data-cat="own">
+        ${icon('plus', 14, 'var(--deep)')} ${esc(BAG_ADD_TITLE)}
+      </button>` : ''}
+
+    ${removed.length ? `
+      <button class="bagremx" data-bagremoved="1" aria-expanded="${!!store.bagRemovedOpen}">
+        ${icon(store.bagRemovedOpen ? 'chevdown' : 'chev', 14, 'var(--faint)')}
+        ${esc(BAG_REMOVED_TITLE)} (${removed.length})
+      </button>
+      ${store.bagRemovedOpen ? `
+      <div class="card flat" style="margin-top:8px">
+        <p class="tiny" style="margin:0 0 8px">${esc(BAG_REMOVED_NOTE)}</p>
+        ${removed.map((r) => `
+          <div class="bagrow">
+            <span class="baggrow" style="padding:8px 2px"><span class="bagname"
+              style="color:var(--faint)">${esc(r.label)}</span></span>
+            <button class="chip sm" data-bagback="${esc(r.id)}">${esc(BAG_PUT_BACK)}</button>
+          </div>`).join('')}
+      </div>` : ''}` : ''}
 
     ${dsec('If your birth goes a different way',
       `<p class="tiny" style="margin-bottom:10px">None of these are worst cases. They are common outcomes, and packing for them costs almost nothing.</p>` +
@@ -13053,15 +13241,18 @@ function screenPregHealth() {
     <p class="sub">Preventable, treatable, and mostly never mentioned. That is the only reason these are here.</p>
   </div>
   <div class="sc">
-    ${getInfectionsSorted().map((i) => `
-      <button class="lrow" data-go="infection" data-id="${esc(i.id)}" style="align-items:flex-start">
-        <span class="licon">${icon('search', 17)}</span>
-        <span class="grow">
-          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3">${esc(i.label)}</span>
-          <span class="tiny" style="display:block;margin-top:3px;line-height:1.4">${esc(i.headline)}</span>
-        </span>
-        <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+    <div class="infgrid">
+      ${getInfectionsSorted().map((i) => `
+      <button class="infcard${i.timeCritical ? ' urgent' : ''}"
+        data-go="infection" data-id="${esc(i.id)}">
+        <span class="infcard-ic">${icon(i.ic || 'search', 17,
+    i.timeCritical ? '#A85A44' : 'var(--deep)')}</span>
+        <span class="infcard-t">${esc(i.short || i.label)}</span>
+        <span class="infcard-b">${esc(i.headline)}</span>
+        ${i.timeCritical ? '<span class="infcard-tag">Has a deadline</span>' : ''}
+        <span class="infcard-go">Read it ${icon('chev', 12, 'var(--deep)')}</span>
       </button>`).join('')}
+    </div>
 
     <p class="sect">${esc(PREGNANCY_VACCINES.label)}</p>
     <div class="card leafy"><p class="bodytext">${esc(PREGNANCY_VACCINES.body)}</p></div>
@@ -25559,6 +25750,8 @@ function parentPayload() {
   return JSON.parse(JSON.stringify({
     parent: store.parent,
     bagChecked: store.bagChecked || [],
+    bagOwn: store.bagOwn || [],
+    bagHidden: store.bagHidden || [],
     /* THE CHORE CHART SYNCS AT THE HOUSEHOLD LEVEL.
        Two parents sharing a child have to be looking at the same
        chart, or one of them ticks the bins on her phone and the other
@@ -25851,6 +26044,16 @@ async function cloudFirstSync() {
     store.parent.situation = normalizeSituation(store.parent.situation);
     store.posts = Array.isArray(remoteUser.posts) ? remoteUser.posts : (store.posts || []);
     store.bagChecked = Array.isArray(remoteUser.bagChecked) ? remoteUser.bagChecked : [];
+    if (Array.isArray(remoteUser.bagOwn)) {
+      /* Merged rather than replaced, so a thing she added on her phone
+         and a thing he added on his both end up in the one bag. */
+      const seen = {};
+      store.bagOwn = (store.bagOwn || []).concat(remoteUser.bagOwn)
+        .filter((o) => o && o.id && !seen[o.id] && (seen[o.id] = true));
+    }
+    if (Array.isArray(remoteUser.bagHidden)) {
+      store.bagHidden = Array.from(new Set((store.bagHidden || []).concat(remoteUser.bagHidden)));
+    }
     store.choreJobs = Array.isArray(remoteUser.choreJobs) ? remoteUser.choreJobs : [];
     store.choreDone = (remoteUser.choreDone && typeof remoteUser.choreDone === 'object')
       ? remoteUser.choreDone : {};

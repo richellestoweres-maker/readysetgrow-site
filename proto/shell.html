@@ -2168,6 +2168,98 @@ body.calpage .mark-holder{margin-bottom:-20px}
 .szcard-t{font-size:13.5px;font-weight:700;color:var(--ink)}
 .szcard.blush .szcard-t{color:#6E4740}
 
+/* ------------------------------------------------------------------
+   THE HOSPITAL BAG
+
+   Her note: the whole app should be structured like an app and not a
+   blog, with the words still there. So the bag keeps every word it had
+   and changes what they sit in. The tips were a bulleted paragraph and
+   are now cards you tap to pack the thing, which is the difference
+   between reading advice and acting on it.
+   ------------------------------------------------------------------ */
+.bagtop{display:flex;align-items:center;gap:15px;background:var(--leaf3);
+  border:1px solid rgba(74,103,65,.16);border-radius:20px;padding:14px 16px;margin-top:12px}
+.bagdial{position:relative;flex:none;width:78px;height:78px;display:flex;
+  align-items:center;justify-content:center}
+.bagdial-n{position:absolute;font-size:19px;font-weight:700;color:var(--ink);
+  font-variant-numeric:tabular-nums}
+.bagdial-u{font-size:11px;font-weight:600;color:var(--muted)}
+.bagtop-t{min-width:0}
+.bagtop-h{margin:0;font-size:17px;font-weight:700;color:var(--ink);line-height:1.2}
+.bagtop-s{margin:5px 0 0;font-size:12.5px;color:var(--muted);line-height:1.4}
+
+.bagrow{display:flex;align-items:flex-start;gap:4px;border-bottom:1px solid var(--line2)}
+.bagrow:last-child{border-bottom:0}
+.bagtick{appearance:none;border:0;background:none;padding:11px 2px;cursor:pointer;
+  display:flex;align-items:flex-start;gap:11px;text-align:left;flex:1;min-width:0}
+.bagbox{width:22px;height:22px;border-radius:7px;margin-top:1px;flex:none;display:flex;
+  align-items:center;justify-content:center;border:1.5px solid var(--line);background:transparent}
+.bagrow.on .bagbox{background:var(--sage);border-color:var(--sage)}
+.baggrow{flex:1;min-width:0}
+.bagname{display:block;font-size:14px;line-height:1.4;color:var(--ink)}
+.bagrow.on .bagname{color:var(--faint);text-decoration:line-through}
+.bagnote{display:block;margin-top:4px;font-size:11.5px;line-height:1.45;color:var(--muted)}
+.tag.yours{background:var(--blush2);color:#8A5F54}
+.bagaddbtn{appearance:none;width:100%;margin-top:9px;padding:9px 0 2px;border:0;
+  border-top:1px solid var(--line2);background:none;font:inherit;font-size:12px;
+  font-weight:600;color:var(--deep);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;gap:5px}
+.bagadd{margin-top:11px;padding-top:11px;border-top:1px solid var(--line2)}
+.bagremx{appearance:none;width:100%;margin-top:13px;padding:10px 12px;border:1px solid var(--line2);
+  border-radius:14px;background:var(--paper);font:inherit;font-size:12.5px;font-weight:600;
+  color:var(--faint);cursor:pointer;display:flex;align-items:center;gap:7px}
+
+/* The tips, as a panel of cards rather than a bulleted paragraph. */
+.tipwrap{margin-top:14px;background:var(--blush2);border:1px solid rgba(168,112,107,.22);
+  border-radius:20px;padding:14px 13px 15px}
+.tipwrap-h{display:flex;align-items:flex-start;gap:10px;margin-bottom:11px}
+.tipwrap-ic{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.72);
+  flex:none;display:flex;align-items:center;justify-content:center}
+.tipwrap-t{display:block;font-size:15px;font-weight:700;color:#6E4740;line-height:1.2}
+.tipwrap-s{display:block;margin-top:3px;font-size:11.5px;color:#8A6159;line-height:1.4}
+.tipgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.bagtip{appearance:none;text-align:left;font:inherit;cursor:pointer;background:#fff;
+  border:1px solid rgba(168,112,107,.2);border-radius:15px;padding:11px 11px 12px;
+  display:flex;flex-direction:column;gap:5px}
+.bagtip-n{width:21px;height:21px;border-radius:50%;background:var(--blush2);color:#8A5F54;
+  font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+.bagtip.on{background:rgba(255,255,255,.55);border-color:rgba(74,103,65,.2)}
+.bagtip.on .bagtip-n{background:var(--sage)}
+.bagtip-t{font-size:13px;font-weight:700;color:var(--ink);line-height:1.25}
+.bagtip.on .bagtip-t{color:var(--faint);text-decoration:line-through}
+.bagtip-b{font-size:11px;line-height:1.45;color:var(--muted)}
+.bagtip:focus-visible{outline:2px solid var(--deep);outline-offset:2px}
+@media (max-width:360px){.tipgrid{grid-template-columns:1fr}}
+
+/* ------------------------------------------------------------------
+   LOOKING AFTER YOURSELF
+
+   Her note: she wants CMV, syphilis, herpes and group B strep side by
+   side as widgets you tap to read the whole thing, bigger where they
+   need to be. These are a two column grid rather than a stack of link
+   rows, so the four that matter most are all on the screen at once
+   instead of four scrolls apart.
+   ------------------------------------------------------------------ */
+.infgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.infcard{position:relative;appearance:none;text-align:left;font:inherit;cursor:pointer;
+  background:#fff;border:1px solid rgba(74,103,65,.14);border-radius:18px;
+  padding:13px 12px 11px;display:flex;flex-direction:column;gap:6px}
+.infcard.urgent{background:#FCF2EE;border-color:#E6BFB3}
+.infcard-ic{width:34px;height:34px;border-radius:50%;background:var(--leaf3);flex:none;
+  display:flex;align-items:center;justify-content:center}
+.infcard.urgent .infcard-ic{background:rgba(255,255,255,.75)}
+.infcard-t{font-size:15px;font-weight:700;color:var(--ink);line-height:1.2}
+.infcard.urgent .infcard-t{color:#8A4433}
+.infcard-b{font-size:11.5px;line-height:1.45;color:var(--muted);flex:1}
+.infcard-tag{align-self:flex-start;font-size:10px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;color:#A85A44;background:rgba(255,255,255,.8);
+  border-radius:999px;padding:3px 8px}
+.infcard-go{display:flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;
+  color:var(--deep);padding-top:8px;border-top:1px solid var(--line2)}
+.infcard.urgent .infcard-go{color:#8A4433;border-top-color:rgba(168,90,68,.2)}
+.infcard:focus-visible{outline:2px solid var(--deep);outline-offset:2px}
+@media (max-width:360px){.infgrid{grid-template-columns:1fr}}
+
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 
