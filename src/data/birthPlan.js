@@ -56,12 +56,38 @@ export const BP_WHY = {
    holding it knows who to let into the room.
    ------------------------------------------------------------------ */
 export const BP_FIELDS = [
-  { id: 'name', label: 'Your name', ph: 'The name you want to be called' },
-  { id: 'baby', label: 'Baby is called', ph: 'Or whatever you have been calling them' },
-  { id: 'support', label: 'With me', ph: 'Who is coming in with you' },
-  { id: 'provider', label: 'My midwife or doctor', ph: 'Name or practice' },
-  { id: 'place', label: 'Where', ph: 'Hospital or birth centre' },
+  { id: 'name', g: 'you', label: 'Your name', ph: 'The name you want to be called' },
+  { id: 'baby', g: 'you', label: 'Baby is called', ph: 'Or whatever you have been calling them' },
+  { id: 'place', g: 'you', label: 'Where', ph: 'Hospital or birth centre' },
+  { id: 'provider', g: 'you', label: 'My midwife or doctor', ph: 'Name or practice' },
+
+  { id: 'support', g: 'people', label: 'With me', ph: 'Who is coming in with you' },
+  { id: 'supportPhone', g: 'people', label: 'Their number', ph: 'Phone', tel: true },
+  { id: 'doula', g: 'people', label: 'My doula', ph: 'Name, if you have one' },
+  { id: 'doulaPhone', g: 'people', label: 'Doula number', ph: 'Phone', tel: true },
+
+  { id: 'allergies', g: 'health', label: 'Allergies', ph: 'Medicines, latex, foods' },
+  { id: 'meds', g: 'health', label: 'Medicines I take', ph: 'Anything regular' },
+  { id: 'gbs', g: 'health', label: 'Group B Strep', ph: 'Positive, negative, or not tested yet' },
+  { id: 'blood', g: 'health', label: 'Blood type', ph: 'If you know it' },
+  { id: 'history', g: 'health', label: 'Worth knowing', ph: 'Previous cesarean, a condition, anything relevant' },
 ];
+
+export const BP_GROUPS = [
+  { id: 'you', label: 'The details at the top' },
+  { id: 'people', label: 'Who is coming with you',
+    hint: 'A doula has to be named for the hospital to let her in, and she is usually the first '
+      + 'call when labor starts, so the number earns its place.' },
+  { id: 'health', label: 'What they need to know',
+    hint: 'Only what a room full of strangers would want on the page in front of them. Leave any '
+      + 'of it blank. All of it stays on this baby\'s profile and goes nowhere else.' },
+];
+
+export function bpFieldsIn(groupId) {
+  return BP_FIELDS.filter((f) => f.g === groupId);
+}
+
+export const BP_DOULA_LINK = 'What a doula actually does, and what the trials found';
 
 export const BP_NOTE_LABEL = 'Anything else they should know';
 
@@ -142,6 +168,28 @@ export const BP_ROWS = [
       { v: 'sips', label: 'Water and ice chips are enough' },
       { v: 'ask', label: 'Tell me what is allowed here' },
     ] },
+  /* The one row where picking several is the honest answer, because
+     nobody uses one comfort measure for twelve hours. It prints as a
+     single comma separated line so it still costs one line of paper. */
+  { id: 'comfort', sec: 'labor', q: 'What I would like available', multi: true,
+    options: [
+      { v: 'ball', label: 'A birth ball' },
+      { v: 'shower', label: 'The shower or bath' },
+      { v: 'heat', label: 'Heat packs' },
+      { v: 'massage', label: 'Massage and counterpressure' },
+      { v: 'tens', label: 'A TENS machine' },
+      { v: 'breath', label: 'Breathing or hypnobirthing' },
+      { v: 'music', label: 'My own music' },
+      { v: 'oils', label: 'Aromatherapy' },
+      { v: 'stool', label: 'A birth stool or squat bar' },
+    ] },
+  { id: 'photos', sec: 'labor', q: 'Photos and video',
+    options: [
+      { v: 'yes', label: 'My partner will take photos' },
+      { v: 'after', label: 'Photos afterwards, not during' },
+      { v: 'pro', label: 'We have a birth photographer coming' },
+      { v: 'none', label: 'No photos or filming, please' },
+    ] },
 
   /* --- pushing and birth -------------------------------------- */
   { id: 'pushhow', sec: 'push', q: 'How I push',
@@ -170,6 +218,14 @@ export const BP_ROWS = [
     ] },
 
   /* --- straight after ----------------------------------------- */
+  { id: 'announce', sec: 'push', q: 'Who says whether it is a boy or a girl',
+    options: [
+      { v: 'us', label: 'Let us see for ourselves' },
+      { v: 'partner', label: 'My partner would like to say it' },
+      { v: 'any', label: 'Whoever, we do not mind' },
+      { v: 'known', label: 'We already know' },
+    ] },
+
   { id: 'after', sec: 'after', q: 'The first few minutes',
     options: [
       { v: 'skin', label: 'Baby on my chest, cord left alone a minute' },
@@ -216,6 +272,12 @@ export const BP_ROWS = [
       { v: 'any', label: 'Whenever suits you' },
       { v: 'me', label: 'I would like to be there for it' },
     ] },
+  { id: 'weigh', sec: 'baby', q: 'Weighing and the first checks',
+    options: [
+      { v: 'wait', label: 'After we have had a while together' },
+      { v: 'any', label: 'Whenever you normally would' },
+      { v: 'room', label: 'In the room where I can see' },
+    ] },
   { id: 'vitk', sec: 'baby', q: 'Vitamin K and the newborn checks',
     options: [
       { v: 'yes', label: 'Yes to all of it' },
@@ -229,6 +291,15 @@ export const BP_ROWS = [
       { v: 'gentle', label: 'Awake, partner in, baby on my chest in the operating room' },
       { v: 'quiet', label: 'Keep it calm and tell me what is happening' },
       { v: 'see', label: 'I would rather not think about that' },
+    ] },
+  { id: 'caesroom', sec: 'change', q: 'In the operating room, if we get there', multi: true,
+    options: [
+      { v: 'screen', label: 'Lower the screen so I can see them born' },
+      { v: 'arms', label: 'Both arms free if you can' },
+      { v: 'skin', label: 'Skin to skin in the room' },
+      { v: 'quiet', label: 'Keep the talking down' },
+      { v: 'explain', label: 'Talk me through what is happening' },
+      { v: 'photo', label: 'My partner may take a photo' },
     ] },
   { id: 'nicu', sec: 'change', q: 'If the baby needs to leave the room',
     options: [
@@ -248,11 +319,42 @@ export function bpRowsIn(secId) {
   return BP_ROWS.filter((r) => r.sec === secId);
 }
 
+/* A single choice row stores a string, a multi row stores an array.
+   Both come back as one printed line, because the page is measured in
+   lines of paper rather than in answers. */
 export function bpAnswerLabel(rowId, value) {
   const row = BP_ROWS.filter((r) => r.id === rowId)[0];
   if (!row) return '';
-  const opt = (row.options || []).filter((o) => o.v === value)[0];
-  return opt ? opt.label : '';
+  const pick = (v) => {
+    const opt = (row.options || []).filter((o) => o.v === v)[0];
+    return opt ? opt.label : '';
+  };
+  if (row.multi) {
+    const vals = Array.isArray(value) ? value : [];
+    const labels = vals.map(pick).filter(Boolean);
+    if (!labels.length) return '';
+    /* Lower cased after the first, so a list reads as a sentence
+       rather than as a row of headlines. */
+    return labels.map((t, i) => (i === 0 ? t : t.charAt(0).toLowerCase() + t.slice(1))).join(', ');
+  }
+  return pick(value);
+}
+
+export function bpIsOn(row, stored, v) {
+  if (!row) return false;
+  if (row.multi) return Array.isArray(stored) && stored.indexOf(v) !== -1;
+  return stored === v;
+}
+
+/* Toggling one option. Returns what should be stored, or undefined to
+   mean the row goes back to unanswered. */
+export function bpToggle(row, stored, v) {
+  if (!row) return undefined;
+  if (!row.multi) return stored === v ? undefined : v;
+  const cur = Array.isArray(stored) ? stored.slice() : [];
+  const at = cur.indexOf(v);
+  if (at === -1) cur.push(v); else cur.splice(at, 1);
+  return cur.length ? cur : undefined;
 }
 
 /* How many she has actually answered, so the screen can say something
@@ -301,6 +403,47 @@ export const BP_TALK = {
     + 'through is. Ask at your next visit whether anything on it would be difficult where you are '
     + 'giving birth, because that answer is worth more than the page.',
 };
+
+/* ------------------------------------------------------------------
+   HOW LONG THE PAGE IS
+
+   The whole argument for this feature is that one side of one page is
+   what gets read. Adding more questions is only safe if she can see
+   when she has gone past that, so the screen says so rather than
+   quietly printing three pages she will hand over at the desk.
+
+   Worked out in printed lines rather than in answers, since a section
+   heading and a long multi select line both cost paper. Roughly 46
+   lines fit on a side at the printed size.
+   ------------------------------------------------------------------ */
+export const BP_LINES_PER_PAGE = 46;
+
+export function bpPageLines(prefs, meta) {
+  const m = (meta && typeof meta === 'object') ? meta : {};
+  const secs = bpSectionsWithAnswers(prefs);
+  let n = 3;
+  BP_FIELDS.forEach((f) => { if (f.id !== 'name' && m[f.id]) n += 1; });
+  secs.forEach((sec) => {
+    n += 2;
+    sec.lines.forEach((l) => {
+      /* A long answer wraps, and a wrapped line is still a line. */
+      n += 2 + Math.floor(String(l.a || '').length / 52);
+    });
+  });
+  if (m.note) n += 3 + Math.floor(String(m.note).length / 52);
+  if (m.flex !== false) n += 3;
+  return n;
+}
+
+export function bpPages(prefs, meta) {
+  return Math.max(1, Math.ceil(bpPageLines(prefs, meta) / BP_LINES_PER_PAGE));
+}
+
+export const BP_ONE_PAGE = 'Fits on one page.';
+
+export const BP_OVER_PAGE =
+  'This is running onto a second page. It still prints, but one side is what tends to get read, so '
+  + 'it is worth dropping the ones you do not feel strongly about.';
 
 export const BP_SOURCES = [
   { org: 'Cochrane',
