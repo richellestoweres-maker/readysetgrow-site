@@ -123,6 +123,35 @@ export const CAL_REPEAT = [
   { id: 'yearly', label: 'Every year' },
 ];
 
+/* Shown under a weekly or fortnightly repeat, so "every week" can be
+   "every week on Tuesday and Thursday". The same seven buttons as the
+   chore chart, deliberately, because one idea should look the same
+   wherever it turns up in this app. */
+export const CAL_DAY_PICK = [
+  { id: 0, label: 'Sun' }, { id: 1, label: 'Mon' }, { id: 2, label: 'Tue' },
+  { id: 3, label: 'Wed' }, { id: 4, label: 'Thu' }, { id: 5, label: 'Fri' },
+  { id: 6, label: 'Sat' },
+];
+
+export const CAL_DAYS_NOTE = 'Tap the days it happens on. Leave it and it repeats on the day you '
+  + 'picked above.';
+
+/* The repeat in words, for the line under a saved entry. */
+export function calRepeatLine(ev) {
+  if (!ev || !ev.repeat) return '';
+  const days = Array.isArray(ev.days) ? ev.days.slice().sort((a, b) => a - b) : [];
+  const names = days.map((d) => CAL_DAY_PICK[d] ? CAL_DAY_PICK[d].label : '').filter(Boolean);
+  if (ev.repeat === 'weekly') {
+    return names.length ? 'Every ' + names.join(', ') : 'Every week';
+  }
+  if (ev.repeat === 'fortnightly') {
+    return names.length ? 'Every other week, ' + names.join(', ') : 'Every 2 weeks';
+  }
+  if (ev.repeat === 'monthly') return 'Every month';
+  if (ev.repeat === 'yearly') return 'Every year';
+  return '';
+}
+
 /* ==================================================================
    DATES
 
@@ -304,12 +333,55 @@ export function calMonthGrid(year, month) {
    ================================================================== */
 export function calOccursOn(ev, date) {
   if (!ev || !ev.date) return false;
-  if (ev.date === date) return true;
+  /* THE START DATE IS NOT AUTOMATICALLY AN OCCURRENCE.
+
+     It used to be, unconditionally. Once a weekly repeat can name its
+     own weekdays that is wrong: picking today, Sunday, and then
+     saying it happens on Tuesdays and Thursdays would still leave it
+     sitting on today. The date she picked is when the pattern starts,
+     not an extra occurrence of it. */
+  const picked = (ev.repeat === 'weekly' || ev.repeat === 'fortnightly')
+    && Array.isArray(ev.days) && ev.days.length;
+  if (ev.date === date) {
+    if (!picked) return true;
+    const sd = calParse(date);
+    return !!sd && ev.days.map(Number).indexOf(sd.getDay()) !== -1;
+  }
   if (!ev.repeat) return false;
   const diff = calDaysBetween(ev.date, date);
   if (diff <= 0) return false;
-  if (ev.repeat === 'weekly') return diff % 7 === 0;
-  if (ev.repeat === 'fortnightly') return diff % 14 === 0;
+  /* ----------------------------------------------------------------
+     WHICH DAYS, NOT JUST HOW OFTEN
+
+     "Every week" used to mean the same weekday the thing started on,
+     full stop. So swimming on Tuesdays and Thursdays was impossible:
+     you entered it twice, or you gave up, which is what she did.
+
+     A weekly entry can now carry its own set of weekdays. Empty or
+     missing means the day it started on, so every entry made before
+     this behaves exactly as it did.
+
+     Fortnightly counts from the start date, so the chosen weekdays
+     only land on the on weeks. A fortnightly thing on Tuesday and
+     Thursday happens on both of those days, every other week, which
+     is what people mean by it.
+     ---------------------------------------------------------------- */
+  if (ev.repeat === 'weekly' || ev.repeat === 'fortnightly') {
+    const every = ev.repeat === 'weekly' ? 7 : 14;
+    const days = Array.isArray(ev.days) ? ev.days.map(Number).filter((n) => n >= 0 && n <= 6) : [];
+    if (!days.length) return diff % every === 0;
+    const d = calParse(date);
+    if (!d || days.indexOf(d.getDay()) === -1) return false;
+    if (every === 7) return true;
+    /* Which fortnight this date falls in, measured in whole weeks
+       from the Sunday of the week the entry started, so every chosen
+       day inside an on week counts and none inside an off week does. */
+    const start = calParse(ev.date);
+    if (!start) return false;
+    const startSunday = calAddDays(ev.date, -start.getDay());
+    const weeks = Math.floor(calDaysBetween(startSunday, date) / 7);
+    return weeks % 2 === 0;
+  }
   const a = calParse(ev.date); const b = calParse(date);
   if (!a || !b) return false;
   if (ev.repeat === 'monthly') {
