@@ -969,6 +969,9 @@ function newChildRecord(name, birthday) {
     lostNote: '',
     /* Whether Willow has already said her piece, so she says it once
        and then waits to be spoken to. */
+    /* early, stillbirth or child. Decides what Willow says first and
+       which sections the page carries. */
+    lostKind: '',
     lostSaid: false,
     /* Set if they told her they did not want to talk about it. She
        takes that at its word and does not offer again. */
@@ -3413,7 +3416,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -4177,6 +4180,9 @@ function initControls() {
     } else if (t.dataset.chore === 'add') {
       choreAdd(t.dataset.id, t.dataset.who,
         String(t.dataset.days || '').split(',').filter((x) => x !== '').map(Number));
+    } else if (t.dataset.losskind) {
+      const kid = activeChild();
+      if (kid) { kid.lostKind = t.dataset.losskind; kid.updatedAt = Date.now(); flushStore(); }
     } else if (t.dataset.lossask) {
       lossWillowReply(t.dataset.lossask);
     } else if (t.dataset.loss) {
@@ -4186,6 +4192,10 @@ function initControls() {
         /* One tap and the updates stop. Nothing else is required and
            nothing is removed. */
         kid.lost = true;
+        /* Pinned at the moment it is recorded so it never changes
+           under them later. A child with a birthday was born, which
+           needs no asking. */
+        if (!kid.lostKind) kid.lostKind = kid.birthday ? 'child' : 'early';
         kid.updatedAt = Date.now();
         /* And Willow comes out, once, to say she is sorry, rather
            than the app handing over a page and going quiet. */
@@ -9965,6 +9975,26 @@ function isLost(k) {
   return !!(k && k.lost);
 }
 
+/* ==================================================================
+   THE MUTE
+
+   A pregnancy that ends has one surface to switch off, because
+   isExpecting already gates all of it. A child who dies has dozens.
+   They have a birthday, vaccine doses coming due, milestones, a
+   growth chart, a chore chart, a place on the calendar and an age
+   that ticks up on the home screen. Every one of those is now a trap,
+   and the confetti birthday scrim is the worst thing this app could
+   possibly do to somebody.
+
+   So there is one question, asked everywhere that produces a prompt
+   about a child, and the answer is final. Nothing is deleted and
+   nothing is hidden from somebody who goes looking. The rule is only
+   that the app never raises them first.
+   ================================================================== */
+function lossMutes(k) {
+  return !!(k && k.lost);
+}
+
 /* How many weeks they were, used only to decide whether Willow raises
    the milk question unprompted. Needs both dates, and when it cannot
    be worked out the answer is "do not raise it", never a guess. */
@@ -9992,7 +10022,7 @@ function lossWillowNudge(kid) {
      for the same pregnancy even across devices. */
   if (!kid || kid.lostSaid) return;
   kid.lostSaid = true;
-  n.text = LOSS_WILLOW_OPEN;
+  n.text = LOSS_WILLOW_OPEN_BY_KIND[lossKindOf(kid)] || LOSS_WILLOW_OPEN;
   n.at = Date.now();
   n.gone = false;
   n.kind = 'loss';
@@ -10003,16 +10033,25 @@ function lossWillowNudge(kid) {
 /* The taps she offers instead of asking a question, because somebody
    who has just recorded this does not owe an assistant an answer. */
 function lossWillowOffers(kid) {
-  const weeks = lossWeeksAt(kid);
-  const milk = lossMilkLikely(weeks);
+  const kind = lossKindOf(kid);
+  if (kind === 'child') return LOSS_WILLOW_OFFERS_CHILD.slice();
+  if (kind === 'stillbirth') return LOSS_WILLOW_OFFERS_SB.slice();
+  const milk = lossMilkLikely(lossWeeksAt(kid));
   return LOSS_WILLOW_OFFERS.filter((o) => !o.needsMilk || milk);
+}
+
+/* One lookup across both tables, so adding a topic never means
+   remembering to wire it in two places. */
+function lossReplyText(id) {
+  return LOSS_WILLOW_REPLIES[id] || LOSS_WILLOW_REPLIES_MORE[id] || '';
 }
 
 function lossWillowReply(id) {
   const key = willowThreadKey();
-  const text = LOSS_WILLOW_REPLIES[id];
+  const text = lossReplyText(id);
   if (!text) return;
-  const label = (LOSS_WILLOW_OFFERS.filter((o) => o.id === id)[0] || {}).label || '';
+  const all = LOSS_WILLOW_OFFERS.concat(LOSS_WILLOW_OFFERS_SB, LOSS_WILLOW_OFFERS_CHILD);
+  const label = (all.filter((o) => o.id === id)[0] || {}).label || '';
   if (label) willowSay('you', label, [], '', key);
   willowSay('willow', text, id === 'milk' ? LOSS_MILK_SOURCES : [], '', key);
   if (id === 'nothing') {
@@ -10336,18 +10375,36 @@ function screenLoss() {
 
   const done = isLost(kid);
   const name = lossLabel(kid.name);
+  const kind = lossKindOf(kid);
 
   return `
   ${cornerLeaves()}
   <div class="sc-head tight">
     <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
-    <h1 class="title sm">${esc(LOSS_TITLE)}</h1>
+    <h1 class="title sm">${esc(kind === 'child' ? CL_TITLE
+    : kind === 'stillbirth' ? SB_TITLE : LOSS_TITLE)}</h1>
   </div>
   <div class="sc">
 
     ${!done ? `
+      ${/* WHICH LOSS, ASKED ONCE AND ONLY WHEN IT IS NOT OBVIOUS.
+
+            A child with a birthday has been born, so there is nothing
+            to ask. A pregnancy could have ended either way, and the
+            difference decides what the next screen has to say in the
+            first hour, so it is worth one tap. */''}
+      ${kid.birthday ? '' : `
+        <div class="card flat">
+          <p class="eyebrow">So I say the right things</p>
+          <div class="chips" style="gap:7px;margin-top:9px">
+            ${LOSS_KINDS.filter((x) => x.id !== 'child').map((x) => `
+              <button class="chip${kind === x.id ? ' on' : ''}" data-losskind="${esc(x.id)}"
+                aria-pressed="${kind === x.id}">${esc(x.label)}</button>`).join('')}
+          </div>
+        </div>`}
       <div class="card leafy">
-        ${LOSS_INTRO.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        ${(kind === 'child' ? CL_OPEN : kind === 'stillbirth' ? SB_OPEN : LOSS_INTRO)
+    .map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
       </div>
       <div class="card">
         <p class="bodytext" style="margin:0 0 11px">${esc(LOSS_CONFIRM_NOTE)}</p>
@@ -10357,11 +10414,44 @@ function screenLoss() {
       </div>
     ` : `
       <div class="card leafy">
-        <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(LOSS_WHAT_NOW_TITLE)}</p>
+        <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(kind === 'child'
+    ? CL_APP_TITLE : LOSS_WHAT_NOW_TITLE)}</p>
         <ul class="bul" style="margin-top:8px">
-          ${LOSS_WHAT_NOW.map((x) => `<li>${esc(x)}</li>`).join('')}
+          ${(kind === 'child' ? CL_APP : LOSS_WHAT_NOW).map((x) => `<li>${esc(x)}</li>`).join('')}
         </ul>
       </div>
+
+      ${kind === 'stillbirth' ? `
+        <div class="dsec">
+          <h4>${esc(SB_NOW_TITLE)}</h4>
+          <ul class="bul">${SB_NOW.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+          <p class="tiny" style="margin-top:9px">${esc(SB_NOW_NOTE)}</p>
+        </div>
+        <div class="dsec">
+          <h4>${esc(SB_PRACTICAL_TITLE)}</h4>
+          <ul class="bul">${SB_PRACTICAL.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+        </div>
+        <div class="dsec">
+          <h4>${esc(SB_HOME_TITLE)}</h4>
+          <ul class="bul">${SB_HOME.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+        </div>` : ''}
+
+      ${kind === 'child' ? `
+        <div class="dsec">
+          <h4>${esc(CL_HARD_TITLE)}</h4>
+          <ul class="bul">${CL_HARD.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+        </div>
+        <div class="dsec">
+          <h4>${esc(CL_THINGS_TITLE)}</h4>
+          <p class="bodytext" style="margin:0">${esc(CL_THINGS)}</p>
+        </div>
+        <div class="dsec">
+          <h4>${esc(CL_SIBLING_TITLE)}</h4>
+          <ul class="bul">${CL_SIBLING.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+        </div>
+        <div class="card flat">
+          <p class="bodytext" style="margin:0">${esc(CL_NO_BLAME)}</p>
+        </div>` : ''}
 
       <div class="dsec">
         <h4>${esc(LOSS_OPTIONAL_TITLE)}</h4>
@@ -10403,6 +10493,7 @@ function screenLoss() {
         <p class="tiny" style="margin-top:8px">${esc(LOSS_DATES_CHANGE)}</p>
       </div>
 
+      ${kind === 'child' ? '' : `
       <div class="dsec">
         <h4>${esc(LOSS_BODY_TITLE)}</h4>
         <p class="bodytext" style="margin:0 0 9px">${esc(LOSS_BODY_INTRO)}</p>
@@ -10412,9 +10503,9 @@ function screenLoss() {
           <ul class="bul" style="margin-top:7px">${LOSS_BODY_ASK.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
           <p class="bodytext" style="margin:9px 0 0">${esc(LOSS_BODY_ASK_NOTE)}</p>
         </div>
-      </div>
+      </div>`}
 
-      ${lossMilkLikely(lossWeeksAt(kid)) ? `
+      ${(kind === 'stillbirth' || lossMilkLikely(lossWeeksAt(kid))) ? `
       <div class="dsec">
         <h4>${esc(LOSS_MILK_TITLE)}</h4>
         <p class="bodytext" style="margin:0 0 9px">${esc(LOSS_MILK_WARN)}</p>
@@ -10442,13 +10533,15 @@ function screenLoss() {
         <p class="tiny">${esc(LOSS_HEAVY_NOTE)}</p>
       </div>
 
+      ${kind === 'child' ? '' : `
       <div class="dsec">
         <h4>${esc(LOSS_AGAIN_TITLE)}</h4>
         <ul class="bul">${LOSS_AGAIN.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
         <p class="tiny" style="margin-top:8px">${esc(LOSS_AGAIN_NOTE)}</p>
-      </div>
+      </div>`}
 
-      ${dsec('Where to go', sourceRows(LOSS_SOURCES))}
+      ${dsec('Where to go', sourceRows(kind === 'child' ? LOSS_CHILD_SOURCES
+    : kind === 'stillbirth' ? LOSS_SB_SOURCES.concat(LOSS_SOURCES.slice(3)) : LOSS_SOURCES))}
 
       <p class="tiny" style="margin-top:12px">${esc(LOSS_PRIVACY)}</p>
 
@@ -15318,6 +15411,11 @@ function childAgeLabel(k) {
   /* A baby who is not born yet shows how far along rather than an age,
      which is the one place the seed stage has to reach outside its own
      screen. Everywhere else reads `birthday`, which is empty for them. */
+  /* An age that keeps counting up is the quietest cruelty on this
+     screen, so it stops. The child stays visible, because hiding
+     somebody's baby without being asked is its own harm, but nothing
+     about them moves any more. */
+  if (lossMutes(k)) return lossCardLine(k);
   if (isExpecting(k)) return expChipLabel(k);
   const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
   return sum && sum.label ? sum.label : 'No birthday yet';
@@ -16417,7 +16515,12 @@ function topBar(markOnly) {
   <div class="topbar">
     <div class="topbar-left">
       ${deep ? `<button class="backchip" data-back="offchild">${icon('back', 15, 'var(--deep)')} Back</button>`
-        : `<button class="findchip" data-go="screen" data-id="find" aria-label="Ask Willow or find a page">${icon('search', 16, 'var(--deep)')}<span>Ask</span></button>`}
+        : (state.tab === 'home' && !state.view)
+    ? `${/* Home already has the full width Ask Willow field, so the
+             pill in the corner was the same door twice, 300 pixels
+             apart. It stays on every other screen, where it is the
+             only way in. */''}`
+    : `<button class="findchip" data-go="screen" data-id="find" aria-label="Ask Willow or find a page">${icon('search', 16, 'var(--deep)')}<span>Ask</span></button>`}
     </div>
     ${mark}
     <div class="me-slot">
@@ -16552,7 +16655,7 @@ function cornerMenu(who) {
    all of them. */
 function pendingNotices() {
   const out = [];
-  store.children.filter((k) => !isExampleChild(k)).forEach((k) => {
+  store.children.filter((k) => !isExampleChild(k) && !lossMutes(k)).forEach((k) => {
     if (!ciSavedFor(k)) {
       out.push({
         icon: 'sun',
@@ -17555,7 +17658,7 @@ function situation() {
 /* Every child's age in months, so the switches can be right about
    somebody who has told the app nothing at all. */
 function childAges() {
-  return store.children.filter((k) => !isExampleChild(k)).map((k) => {
+  return store.children.filter((k) => !isExampleChild(k) && !lossMutes(k)).map((k) => {
     const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
     return sum && sum.age ? sum.age.totalMonths : null;
   }).filter((m) => m != null);
@@ -17858,7 +17961,7 @@ function liftWrite(kind, context, onDone) {
 }
 
 function liftContext() {
-  const kids = store.children.filter((k) => !isExampleChild(k)).map((k) => {
+  const kids = store.children.filter((k) => !isExampleChild(k) && !lossMutes(k)).map((k) => {
     const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
     return (k.name || 'a child') + (sum && sum.shortLabel ? ', ' + sum.shortLabel : '');
   });
@@ -20141,14 +20244,23 @@ function rewDayBlock(kid, months) {
       ${on ? `<button class="chip" data-go="screen" data-id="rewards">Rewards</button>` : ''}
     </div>
 
+    ${/* HER NOTE: SIXTEEN JOBS UNROLLED IS NOT A GLANCE.
+
+          Every job for the day was printed on the profile, so a
+          child with a full chart turned their own page into a wall.
+          Four, and then a line for the rest. The whole list is one
+          tap away on the Jobs screen, where it belongs. */''}
     <div class="rewjobs">
-      ${jobs.map((j) => `
+      ${jobs.slice(0, 4).map((j) => `
         <button class="rewjob${j.done ? ' done' : ''}" data-chore="tick" data-id="${esc(j.job.id)}">
           <span class="rewjob-t" style="${j.done ? '' : 'border-color:' + esc(col.dot)}">
             ${j.done ? icon('check', 13, '#fff') : ''}</span>
           <span class="grow">${esc(j.chore ? j.chore.label : 'A job')}</span>
           ${on ? `<span class="rewjob-s">${icon('star', 11, '#B58B3C')}${j.stars}</span>` : ''}
         </button>`).join('')}
+      ${jobs.length > 4 ? `
+        <button class="rewmore" data-go="screen" data-id="chores">
+          ${esc((jobs.length - 4) + ' more')} ${icon('chev', 13, 'var(--deep)')}</button>` : ''}
     </div>
 
     ${!on && rewShows(months) ? `
@@ -20161,7 +20273,7 @@ function rewDayBlock(kid, months) {
    THE REWARDS SCREEN
    ------------------------------------------------------------------ */
 function screenRewards(c) {
-  const kids = (store.children || []).filter((k) => !isExampleChild(k) && rewOn(k));
+  const kids = (store.children || []).filter((k) => !isExampleChild(k) && !lossMutes(k) && rewOn(k));
   const who = store.rewKid && kids.some((k) => k.id === store.rewKid)
     ? store.rewKid : (kids[0] ? kids[0].id : '');
   const kid = (store.children || []).filter((k) => k.id === who)[0] || null;
@@ -20583,6 +20695,91 @@ function screenCalendar(c) {
   </div>`;
 }
 
+/* ==================================================================
+   THE HOME TILES
+
+   Same grid as a child's profile, deliberately, so the app has one
+   shape rather than two. Every tile is the same size, says one thing,
+   and opens the real screen. Nothing on here is an article.
+
+   The blush is here on purpose. The palette had sage, cream and sand
+   and nothing else, which is calm and also slightly relentless, and
+   she asked for a pop of a neutral blush pink. It is in the app's
+   own tokens already and was used exactly once in the whole build.
+   So it carries the two tiles that are about HER rather than about a
+   child, which is also a quiet way of marking them as hers.
+   ================================================================== */
+function homeTile(opt) {
+  const tone = opt.tone === 'blush' ? ' blush' : opt.tone === 'leaf' ? ' leaf' : '';
+  const go = opt.go || '';
+  return `
+  <button class="htile${tone}" ${go}>
+    <span class="htile-ic">${icon(opt.icon, 18, opt.tone === 'blush' ? '#8A5F54' : 'var(--deep)')}</span>
+    <span class="htile-t">${esc(opt.title)}</span>
+    <span class="htile-s">${esc(opt.sub || '')}</span>
+    ${opt.pip ? `<span class="htile-pip">${esc(opt.pip)}</span>` : ''}
+  </button>`;
+}
+
+function homeTiles(c, l) {
+  const tiles = [];
+
+  /* What is coming up, from the calendar she already keeps. */
+  const soon = calAllIn(calToday(), calAddDays(calToday(), 7), 'all');
+  tiles.push(homeTile({
+    icon: 'calendar', tone: 'leaf',
+    title: 'Coming up',
+    sub: soon.length
+      ? calDayLabel(soon[0].date, calToday()) + ', ' + (soon[0].title || 'something')
+      : 'Nothing in the next week',
+    pip: soon.length > 1 ? String(soon.length) : '',
+    go: 'data-tab="calendar"',
+  }));
+
+  /* Jobs, as a number rather than as a list. Her note: sixteen jobs
+     unrolled on a page is the opposite of a glance. */
+  const jobsLeft = choreLiveJobs().length ? choreOutstanding().length : null;
+  const ready = chorePeople().filter((x) => x.kind === 'child').length;
+  if (jobsLeft !== null || ready) {
+    tiles.push(homeTile({
+      icon: 'check', tone: 'leaf',
+      title: 'Jobs',
+      sub: jobsLeft === null ? 'Start a chart for the week'
+        : jobsLeft === 0 ? "Today's chart is done"
+          : jobsLeft === 1 ? 'One left today' : jobsLeft + ' left today',
+      pip: jobsLeft ? String(jobsLeft) : '',
+      go: 'data-go="screen" data-id="chores"',
+    }));
+  }
+
+  /* Hers. Both in blush, because these two are about her. */
+  const ciDone = !!momCiSaved();
+  tiles.push(homeTile({
+    icon: 'sun', tone: 'blush',
+    title: 'How today went',
+    sub: ciDone ? 'Logged for today' : '30 seconds, about the day',
+    go: 'data-go="screen" data-id="momlogs"',
+  }));
+
+  const learn = parentLearnForDay(l.day);
+  tiles.push(homeTile({
+    icon: 'bulb', tone: 'blush',
+    title: learn.kind || 'For you',
+    sub: learn.title,
+    go: 'data-go="learn" data-id="' + esc(learn.id) + '"',
+  }));
+
+  /* Tiles first, then the line for the day. The affirmation is lovely
+     and it is a thing you read, so it goes under the things you
+     glance at rather than in front of them. */
+  return `
+  <div class="htiles">${tiles.join('')}</div>
+  <div class="card liftcard">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Today</p>
+    <p class="liftline">${esc(liftAffirmation())}</p>
+  </div>`;
+}
+
 function screenHome(c) {
   if (homeCalm()) return screenHomeCalm(c);
   const hour = new Date().getHours();
@@ -20605,8 +20802,16 @@ function screenHome(c) {
     ${calmSwitchChip()}
     ${findBar()}
     ${installBanner()}
-    ${calHomeStrip()}
-    ${choreCard()}
+    ${/* WIDGETS, NOT A COLUMN OF ARTICLES.
+
+          Her note and it was right. Home was one full width card
+          stacked on another all the way down, which reads as a blog.
+          The child profile already solved this with a two across
+          tile grid, and she pointed at it herself.
+
+          So the glanceable things are that same grid, two across,
+          equal size, one fact each, above everything you read. */''}
+    ${homeTiles(c, l)}
 
     <div class="kidrow home">
       ${parentCircle()}
@@ -20621,6 +20826,19 @@ function screenHome(c) {
     </div>
     ${cycleNudge()}
 
+    ${/* WIDGETS, NOT A COLUMN OF ARTICLES.
+
+          Her note, and it was the right one. Home was one full width
+          card stacked on another all the way down, which reads as a
+          blog. The child profile already solved this with a two
+          across tile grid, and she pointed at it herself: Today's
+          rhythm and Today's plan side by side, then the next pair
+          under them.
+
+          So the things that are a GLANCE live in that same grid, two
+          across, same size, same shape. The only things still full
+          width are the ones that genuinely need the room: something
+          she writes in, and the one urgent button. */''}
     ${kids.length ? '' : `
     <div class="card flat" style="margin-top:2px">
       <p class="bodytext">
@@ -20628,11 +20846,6 @@ function screenHome(c) {
         to say at bedtime. Add as many as you like. Each one keeps their own notes.
       </p>
     </div>`}
-
-    <div class="card liftcard">
-      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Today</p>
-      <p class="liftline">${esc(affirmation)}</p>
-    </div>
 
     ${postComposer()}
     ${store.justPosted ? `
@@ -20669,10 +20882,6 @@ function screenHome(c) {
           house this is written for. */ ''}
     ${needHelpRow()}
 
-    <p class="sect">Logs for you</p>
-    ${momCheckinCard()}
-    ${momLogCard()}
-
     ${bodyCareBlock()}
 
     ${memOnThisDay()}
@@ -20683,13 +20892,7 @@ function screenHome(c) {
 
     ${caretakerCards()}
 
-    <p class="sect">For you</p>
-    <button class="card learncard" data-go="learn" data-id="${esc(learn.id)}">
-      <p class="eyebrow">${icon('bulb', 11, 'var(--sage)')} ${esc(learn.kind)}</p>
-      <h3 class="h3" style="font-size:16.5px;margin-top:5px">${esc(learn.title)}</h3>
-      <p class="bodytext" style="margin-top:4px">${esc(learn.blurb)}</p>
-      <span class="chip" style="margin-top:10px">Read this ${icon('chev', 12, 'var(--deep)')}</span>
-    </button>
+
     <button class="btn ghost sm" style="width:100%;margin-top:2px" data-go="screen" data-id="learnall">
       Everything written for you
     </button>
@@ -20944,7 +21147,7 @@ const MOM_URG_COLOR = {
    the part that matters: a one month old who was adopted did not
    arrive through the body of the person holding the phone. */
 function youngestChild() {
-  const real = store.children.filter((k) => !isExampleChild(k) && k.birthday);
+  const real = store.children.filter((k) => !isExampleChild(k) && !lossMutes(k) && k.birthday);
   if (!real.length) return null;
   let best = null;
   let bestMonths = null;
@@ -21519,6 +21722,8 @@ function ageNewLabel(id, months) {
 
 function ageNewList(months, kid) {
   if (!kid || typeof months !== 'number') return [];
+  /* No section ever "arrives" for a child who died. */
+  if (lossMutes(kid)) return [];
   return Object.keys(AGE_NEW_LABEL).filter((id) => ageIsNew(id, months, kid));
 }
 
@@ -22325,7 +22530,8 @@ function ciPopKid() {
   const today = ciToday();
   const p = store.parent || {};
   const skip = p.ciPopSkip && p.ciPopSkip.day === today ? (p.ciPopSkip.ids || []) : [];
-  return store.children.filter((k) => !isExampleChild(k) && !isExpecting(k) && k.birthday
+  return store.children.filter((k) => !isExampleChild(k) && !isExpecting(k) && !lossMutes(k)
+    && k.birthday
     && !(k.checkins && k.checkins[today]) && skip.indexOf(k.id) === -1)[0] || null;
 }
 
@@ -24842,6 +25048,7 @@ function normalizeChild(k) {
     lost: !!k.lost,
     lostAt: k.lostAt || null,
     lostNote: typeof k.lostNote === 'string' ? k.lostNote : '',
+    lostKind: ['early', 'stillbirth', 'child'].indexOf(k.lostKind) !== -1 ? k.lostKind : '',
     lostSaid: !!k.lostSaid,
     lostQuiet: !!k.lostQuiet,
     lostDates: ['none', 'quiet', 'warn'].indexOf(k.lostDates) !== -1 ? k.lostDates : 'none',
@@ -27229,7 +27436,7 @@ function chorePeople() {
   (store.choreAdults || []).forEach((a) => {
     out.push({ id: a.id, name: a.name || 'Someone', kind: 'adult', months: null });
   });
-  store.children.filter((k) => !isExampleChild(k)).forEach((k) => {
+  store.children.filter((k) => !isExampleChild(k) && !lossMutes(k)).forEach((k) => {
     const s = getAgeSummary({ name: k.name, birthday: k.birthday });
     const months = s.age ? s.age.totalMonths : null;
     /* THE AGE FLOOR, AND WHY A MISSING BIRTHDAY IS ALSO A NO.
@@ -27389,6 +27596,7 @@ function calFeedBirthdays(fromDate, toDate) {
   const p = store.parent || {};
   if (p.birthday) add('me', p.name || 'You', p.birthday, true);
   (store.children || []).forEach((k) => {
+    if (lossMutes(k)) return;
     if (k.birthday && !isExpecting(k)) add(k.id, k.name || 'Your child', k.birthday, false);
   });
   return out;
@@ -27418,7 +27626,7 @@ function calFeedDue(fromDate, toDate) {
 function calFeedVaccines(fromDate, toDate) {
   const out = [];
   (store.children || []).forEach((k) => {
-    if (isExpecting(k) || !k.birthday) return;
+    if (lossMutes(k) || isExpecting(k) || !k.birthday) return;
     const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
     const months = sum && sum.age ? sum.age.totalMonths : null;
     if (months === null) return;
@@ -27598,7 +27806,10 @@ function calWhoName(who) {
 function calWhoOptions() {
   const out = [{ id: CAL_WHO_HOUSE_ID, label: CAL_WHO_HOUSE }];
   out.push({ id: 'me', label: (store.parent && store.parent.name) || 'You' });
-  (store.children || []).forEach((k) => out.push({ id: k.id, label: k.name || 'Your child' }));
+  (store.children || []).forEach((k) => {
+    if (lossMutes(k)) return;
+    out.push({ id: k.id, label: k.name || 'Your child' });
+  });
   return out;
 }
 
@@ -28964,6 +29175,20 @@ function showInstallBanner() {
   /* Something of their own in here. An example child does not count. */
   const real = store.children.filter((k) => !isExampleChild(k)).length;
   if (!real) return false;
+  /* AND THEY HAVE ACTUALLY USED IT.
+
+     Adding a child is the first thing anybody does, so "has a child"
+     fired this on somebody's first minute, before they had any reason
+     to want the app on their home screen. Asking somebody to commit
+     before they have seen anything is how a prompt gets dismissed
+     forever. A few days, or something logged, is a real signal. */
+  const used = (store.parent && store.parent.checkins
+    && Object.keys(store.parent.checkins).length)
+    || store.children.some((k) => k.checkins && Object.keys(k.checkins).length)
+    || (store.posts || []).length
+    || (store.events || []).length
+    || (store.choreJobs || []).length;
+  if (!used) return false;
   const hidden = store.installHidden || '';
   if (hidden) {
     const days = (Date.now() - Date.parse(hidden + 'T00:00:00')) / 86400000;
@@ -29790,6 +30015,10 @@ function birthdaysToday() {
   }
 
   (store.children || []).forEach((k) => {
+    /* THE ONE THAT WOULD HAVE BEEN UNFORGIVABLE.
+       Confetti, a balloon and "they got here on your watch", fired
+       automatically on a dead child's birthday. */
+    if (lossMutes(k)) return;
     if (!k.birthday || !isBirthdayToday(k.birthday)) return;
     const key = birthdaySeenKey(k.id);
     if (seen[key]) return;

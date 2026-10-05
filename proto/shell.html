@@ -688,6 +688,33 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 }
 .todaycard.toptile .todaycard-s{display:block}
 
+/* HOME TILES.
+   The same grid as a child's profile, on purpose. Two across, equal
+   size, one thing each. The blush ones are the two that are about
+   her rather than about a child, which is both the pop of colour she
+   asked for and a quiet way of marking whose they are. */
+.rewmore{appearance:none;border:0;background:transparent;width:100%;padding:9px 0 4px;
+  font-size:12.5px;font-weight:600;color:var(--deep);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:5px}
+
+.htiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 4px}
+.htile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:5px;
+  text-align:left;cursor:pointer;font:inherit;background:#fff;
+  border:1px solid rgba(74,103,65,.14);border-radius:18px;padding:13px 12px;min-height:112px}
+.htile.leaf{background:var(--leaf3);border-color:rgba(74,103,65,.16)}
+.htile.blush{background:var(--blush2);border-color:rgba(168,112,107,.22)}
+.htile-ic{width:34px;height:34px;border-radius:50%;background:#fff;display:flex;
+  align-items:center;justify-content:center;flex:none;margin-bottom:2px}
+.htile.blush .htile-ic{background:rgba(255,255,255,.72)}
+.htile-t{font-size:14px;font-weight:700;color:var(--ink);line-height:1.2}
+.htile.blush .htile-t{color:#6E4740}
+.htile-s{font-size:11.5px;color:var(--muted);line-height:1.3;overflow:hidden}
+.htile.blush .htile-s{color:#8A6159}
+.htile-pip{position:absolute;top:10px;right:10px;min-width:20px;height:20px;padding:0 6px;
+  border-radius:10px;background:var(--blush);color:#fff;font-size:11px;font-weight:700;
+  line-height:20px;text-align:center}
+.htile:focus-visible{outline:2px solid var(--deep);outline-offset:2px}
+
 .kidtiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .kidtile{
   display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;cursor:pointer;
