@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-05 17:28">
+<meta name="rsg-build" content="2026-10-05 18:18">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -619,6 +619,70 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 .rewmore{appearance:none;border:0;background:transparent;width:100%;padding:9px 0 4px;
   font-size:12.5px;font-weight:600;color:var(--deep);cursor:pointer;
   display:flex;align-items:center;justify-content:center;gap:5px}
+
+/* THE PAIR.
+   Jobs and today, side by side, equal height. On a 390 wide phone
+   each is about 170, which is enough for a tick circle and a short
+   name but not for a sentence, so everything in here is clipped
+   rather than wrapped into a wall. */
+/* THE QUIET WEEK.
+   What a week with nothing timed on it looks like, instead of fifty
+   six empty cells of ruled paper. */
+.fcagenda{background:var(--surface);border:1px solid var(--line2);border-radius:14px;
+  overflow:hidden}
+.fcag{appearance:none;border:0;background:transparent;width:100%;display:flex;
+  align-items:center;gap:11px;padding:11px 12px;cursor:pointer;text-align:left;
+  border-bottom:1px solid var(--line2)}
+.fcag:last-child{border-bottom:0}
+.fcag-d{width:44px;min-width:44px;flex:none;display:flex;flex-direction:column;align-items:center;
+  gap:1px}
+.fcag-dw{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);line-height:1}
+.fcag-dn{font-size:17px;font-weight:700;color:var(--ink);line-height:1.1;
+  font-variant-numeric:tabular-nums}
+.fcag-d.today .fcag-dw,.fcag-d.today .fcag-dn{color:var(--deep2)}
+.fcag-b{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.fcag-e{border-radius:8px;padding:4px 8px;font-size:11.5px;font-weight:700;max-width:100%;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fcag-m{border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;
+  background:var(--blush2);color:#7A3B27}
+.fcag-free{font-size:11.5px;color:var(--faint)}
+.fcag-add{flex:none;opacity:.5}
+
+.hpair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 0;align-items:stretch}
+.hhalf{display:flex;flex-direction:column;background:#fff;border:1px solid rgba(74,103,65,.14);
+  border-radius:18px;padding:11px 10px 8px;min-height:160px}
+.hhalf-h{display:flex;align-items:center;gap:7px;margin-bottom:9px}
+.hhalf-ic{width:26px;height:26px;border-radius:50%;background:var(--leaf3);flex:none;
+  display:flex;align-items:center;justify-content:center}
+.hhalf-t{font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.15;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hhalf-b{flex:1;display:flex;flex-direction:column;gap:5px;min-width:0}
+.hhalf-free{font-size:11.5px;color:var(--faint);line-height:1.3}
+.hhalf-go{appearance:none;border:0;background:transparent;padding:8px 0 2px;margin-top:4px;
+  font-size:11.5px;font-weight:600;color:var(--deep);cursor:pointer;display:flex;
+  align-items:center;gap:4px;border-top:1px solid var(--line2)}
+.hhalf-ring{width:28px;height:28px;border-radius:50%;flex:none;display:flex;
+  align-items:center;justify-content:center}
+.hhalf-ring-in{width:21px;height:21px;border-radius:50%;background:#fff;display:flex;
+  align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--deep2)}
+.hhalf-ring-of{font-size:8px;color:var(--muted)}
+
+/* A job you can tick without leaving the page. */
+.hjob{appearance:none;border:0;background:transparent;padding:0;cursor:pointer;width:100%;
+  display:flex;align-items:flex-start;gap:7px;text-align:left}
+.hjob-t{width:18px;height:18px;min-width:18px;border-radius:50%;border:2px solid var(--line2);
+  display:flex;align-items:center;justify-content:center;margin-top:1px;flex:none}
+.hjob.done .hjob-t{background:var(--sage);border-color:var(--sage)}
+.hjob-n{display:block;font-size:11.5px;font-weight:600;color:var(--ink);line-height:1.25;
+  overflow:hidden}
+.hjob.done .hjob-n{text-decoration:line-through;color:var(--muted)}
+.hjob-w{display:block;font-size:10px;margin-top:1px;opacity:.85}
+
+/* One of their things today. */
+.hday-e{display:block;border-radius:9px;padding:5px 7px;min-width:0}
+.hday-n{display:block;font-size:11px;font-weight:700;line-height:1.2;overflow:hidden}
+.hday-w{display:block;font-size:9.5px;opacity:.78;margin-top:1px;font-variant-numeric:tabular-nums}
+.hday-more{font-size:10.5px;color:var(--muted);padding:2px 1px}
 
 .htiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 4px}
 .htile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:5px;
@@ -2271,7 +2335,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-05 17:28';
+const BUILD_STAMP = '2026-10-05 18:18';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -22355,6 +22419,29 @@ const CHORES = [
     { id: 'a-yard', label: 'Garden and yard', area: 'outside', adult: true, minutes: 60, stars: 0 },
     { id: 'a-car', label: 'Car, fuel and servicing', area: 'outside', adult: true, minutes: 30, stars: 0 },
     { id: 'a-tidy-round', label: 'The evening tidy round', area: 'tidy', adult: true, minutes: 15, stars: 0 },
+    { id: 'a-kitchen-clean', label: 'Clean the kitchen properly', area: 'kitchen', adult: true, minutes: 40, stars: 0 },
+    { id: 'a-fridge-out', label: 'Clear out the fridge', area: 'kitchen', adult: true, minutes: 25, stars: 0,
+        note: 'Easiest the night before the food shop, when it is emptiest and you find out what you actually need.' },
+    { id: 'a-living-room', label: 'Clean the living room', area: 'floors', adult: true, minutes: 30, stars: 0 },
+    { id: 'a-our-room', label: 'Clean our bedroom', area: 'tidy', adult: true, minutes: 25, stars: 0 },
+    { id: 'a-kids-rooms', label: "Clean the children's rooms", area: 'tidy', adult: true, minutes: 35, stars: 0 },
+    { id: 'a-sheets', label: 'Change the beds', area: 'laundry', adult: true, minutes: 25, stars: 0 },
+    { id: 'a-towels', label: 'Fresh towels out', area: 'laundry', adult: true, minutes: 10, stars: 0 },
+    { id: 'a-meal-prep', label: 'Meal prep for the week', area: 'kitchen', adult: true, minutes: 90, stars: 0,
+        note: 'Usually a Sunday. The single biggest difference to a weeknight, and the single most skipped.' },
+    { id: 'a-lunches', label: 'Make the lunches', area: 'kitchen', adult: true, minutes: 20, stars: 0 },
+    { id: 'a-grocery-order', label: 'Put the grocery order in', area: 'house', adult: true, minutes: 20, stars: 0 },
+    { id: 'a-windows', label: 'Windows and mirrors', area: 'floors', adult: true, minutes: 30, stars: 0 },
+    { id: 'a-declutter', label: 'One drawer or cupboard', area: 'tidy', adult: true, minutes: 20, stars: 0,
+        note: 'One at a time, on a repeat. Whole house decluttering days are how nobody declutters.' },
+    { id: 'a-sizes', label: 'Check what still fits and what to size up', area: 'house', adult: true, minutes: 30, stars: 0 },
+    { id: 'a-gifts', label: 'Birthdays, presents and cards', area: 'house', adult: true, minutes: 30, stars: 0 },
+    { id: 'a-health-admin', label: 'Checkups, prescriptions and the dentist', area: 'house', adult: true, minutes: 25, stars: 0 },
+    { id: 'a-plan-week', label: 'Work out who is doing what this week', area: 'house', adult: true, minutes: 20, stars: 0,
+        note: 'Fifteen minutes on a Sunday prevents most of the week\'s arguments about who was supposed to.' },
+    { id: 'a-activities', label: 'Clubs, sign ups and kit', area: 'house', adult: true, minutes: 20, stars: 0 },
+    { id: 'a-holidays', label: 'Holidays, childcare and cover', area: 'house', adult: true, minutes: 40, stars: 0 },
+    { id: 'a-restock', label: 'Notice what is running out', area: 'house', adult: true, minutes: 15, stars: 0 },
 ];
 const CHORE_INTRO = 'A chart is not really about getting the house clean. It is about a child knowing that this '
     + 'house runs on somebody doing things, that they are somebody, and that what they did is seen.';
@@ -50298,6 +50385,7 @@ const store = {
     choreTab: 'today',
     choreDay: null,
     chorePick: null,
+    choreWho: '',
     choreOlder: false,
     meals: {},
     mealEdit: null,
@@ -52050,7 +52138,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -53139,6 +53227,11 @@ function initControls() {
                 kid.updatedAt = Date.now();
                 flushStore();
             }
+        }
+        else if (t.hasAttribute('data-choreon')) {
+            store.choreWho = t.dataset.choreon || '';
+            if (t.dataset.choreon)
+                store.choreTab = 'who';
         }
         else if (t.dataset.choreolder) {
             store.choreOlder = t.dataset.choreolder === 'on';
@@ -65618,6 +65711,43 @@ function calTimeGrid(who) {
         .filter((e) => !calSpan(e))
         .filter((e) => String(e.id || '').indexOf('chore:') !== 0);
     const step = wide ? 7 : 1;
+    const timed = all.filter((e) => calSpan(e)).length;
+    if (!timed) {
+        return `
+    <div class="fchead">
+      <button class="fcnav" data-calstep="${-step}"
+        aria-label="${wide ? 'Previous week' : 'Previous day'}">${icon('chev', 15, 'var(--deep)')}</button>
+      <span class="fcmonth">${esc(wide ? calWeekLabel(days) : calDayLabel(sel, today))}</span>
+      <button class="fcnav next" data-calstep="${step}"
+        aria-label="${wide ? 'Next week' : 'Next day'}">${icon('chev', 15, 'var(--deep)')}</button>
+    </div>
+    ${sel !== today ? `
+      <button class="chip" style="margin:0 auto 10px;display:block" data-calstep="today">Back to today</button>` : ''}
+    <div class="fcagenda">
+      ${days.map((d) => {
+            const p = calParse(d);
+            const list = byDay[d] || [];
+            const meal = mealFor(d);
+            return `
+        <button class="fcag" data-calgoday="${esc(d)}">
+          <span class="fcag-d${d === today ? ' today' : ''}">
+            <span class="fcag-dw">${esc(d === today ? 'Today' : CAL_DOW[p.getDay()])}</span>
+            <span class="fcag-dn">${p.getDate()}</span>
+          </span>
+          <span class="fcag-b">
+            ${list.length ? list.map((e) => {
+                const col = calColorOf(e.who);
+                return `<span class="fcag-e" style="background:${esc(col.soft)};color:${esc(col.ink)}"
+                  >${esc(e.title)}</span>`;
+            }).join('') : ''}
+            ${meal ? `<span class="fcag-m">${esc(meal)}</span>` : ''}
+            ${!list.length && !meal ? '<span class="fcag-free">Nothing on</span>' : ''}
+          </span>
+          <span class="fcag-add">${icon('plus', 14, 'var(--faint)')}</span>
+        </button>`;
+        }).join('')}
+    </div>`;
+    }
     let firstMin = null;
     all.forEach((e) => {
         const sp = calSpan(e);
@@ -66349,6 +66479,41 @@ function rewDayBlock(kid, months) {
         ${icon('star', 13, 'var(--deep)')} ${esc(REW_ON_LABEL)} ${esc(first)}</button>` : ''}
   </div>`;
 }
+function rewProfileBlock(kid, months) {
+    if (!kid || !rewShows(months))
+        return '';
+    const first = (kid.name || 'They').split(/\s+/)[0];
+    const on = rewOn(kid);
+    const day = choreTodayIndex();
+    const jobs = choreJobsFor(kid.id, day);
+    if (!on) {
+        if (!jobs.length)
+            return '';
+        return `
+    <button class="lrow" data-rewon="${esc(kid.id)}" style="align-items:flex-start;margin-top:10px">
+      <span class="licon">${icon('star', 17, '#B58B3C')}</span>
+      <span class="grow">
+        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(REW_ON_LABEL)} ${esc(first)}</span>
+        <span class="tiny" style="display:block;margin-top:2px">${esc(REW_SUB)}</span>
+      </span>
+    </button>`;
+    }
+    const key = ciToday();
+    const earnedToday = jobs.filter((j) => choreIsDone(j.id, key))
+        .reduce((a, j) => { const c = choreById(j.choreId); return a + ((c && c.stars) ? c.stars : 1); }, 0);
+    return `
+  <button class="lrow" data-go="screen" data-id="rewards" style="align-items:center;margin-top:10px">
+    <span class="licon">${icon('star', 17, '#B58B3C')}</span>
+    <span class="grow">
+      <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">
+        ${esc(rewBalance(kid.id) + (rewBalance(kid.id) === 1 ? ' star saved up' : ' stars saved up'))}</span>
+      <span class="tiny" style="display:block;margin-top:2px">${esc(earnedToday
+        ? earnedToday + ' earned today. Tap to see what they are working towards.'
+        : 'Tap to see what they are working towards.')}</span>
+    </span>
+    <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+  </button>`;
+}
 function screenRewards(c) {
     const kids = (store.children || []).filter((k) => !isExampleChild(k) && !lossMutes(k) && rewOn(k));
     const who = store.rewKid && kids.some((k) => k.id === store.rewKid)
@@ -66692,28 +66857,110 @@ function homeTile(opt) {
     ${opt.pip ? `<span class="htile-pip">${esc(opt.pip)}</span>` : ''}
   </button>`;
 }
+function homeJobsWidget(whoId, title) {
+    const day = choreTodayIndex();
+    const key = ciToday();
+    const people = chorePeople()
+        .filter((p) => (!whoId || whoId === 'all' || p.id === whoId) && choreJobsFor(p.id, day).length);
+    if (!people.length)
+        return '';
+    const all = [];
+    people.forEach((p) => { choreJobsFor(p.id, day).forEach((j) => all.push(j)); });
+    const doneN = all.filter((j) => choreIsDone(j.id, key)).length;
+    const pct = all.length ? Math.round((doneN / all.length) * 100) : 0;
+    const rows = [];
+    people.forEach((p) => {
+        choreJobsFor(p.id, day).forEach((j) => {
+            rows.push({ job: j, person: p, done: choreIsDone(j.id, key) });
+        });
+    });
+    const undone = rows.filter((r) => !r.done);
+    const show = undone.concat(rows.filter((r) => r.done)).slice(0, 5);
+    return `
+  <div class="hhalf">
+    <div class="hhalf-h">
+      <span class="hhalf-ring" style="background:conic-gradient(var(--sage) ${pct}%,var(--leaf2) 0)">
+        <span class="hhalf-ring-in">${doneN}<span class="hhalf-ring-of">/${all.length}</span></span>
+      </span>
+      <span class="hhalf-t">${esc(title || 'Jobs')}</span>
+    </div>
+    <div class="hhalf-b">
+      ${show.map((r) => {
+        const ch = choreById(r.job.choreId);
+        if (!ch)
+            return '';
+        const look = choreLook(ch.area);
+        const col = calColor(look.color);
+        return `
+        <button class="hjob${r.done ? ' done' : ''}" data-chore="tick" data-id="${esc(r.job.id)}"
+          aria-pressed="${r.done}">
+          <span class="hjob-t" style="${r.done ? '' : 'border-color:' + esc(col.dot)}">
+            ${r.done ? icon('check', 12, '#fff') : ''}</span>
+          <span class="grow">
+            <span class="hjob-n">${esc(ch.label)}</span>
+            ${(!whoId || whoId === 'all') ? `
+              <span class="hjob-w" style="color:${esc(col.ink)}">${esc(r.person.name)}</span>` : ''}
+          </span>
+        </button>`;
+    }).join('')}
+      ${rows.length > show.length ? `
+        <span class="hday-more">and ${rows.length - show.length} more</span>` : ''}
+    </div>
+    <button class="hhalf-go" data-go="screen" data-id="chores">
+      The chart ${icon('chev', 12, 'var(--deep)')}</button>
+  </div>`;
+}
+function homeDayPair(whoId, jobTitle) {
+    const jobs = homeJobsWidget(whoId, jobTitle);
+    return `
+  <div class="hpair">
+    ${jobs || `
+      <div class="hhalf">
+        <div class="hhalf-h">
+          <span class="hhalf-ic">${icon('check', 15, 'var(--deep)')}</span>
+          <span class="hhalf-t">${esc(jobTitle || 'Jobs')}</span>
+        </div>
+        <div class="hhalf-b"><span class="hhalf-free">Nothing on the chart</span></div>
+        <button class="hhalf-go" data-go="screen" data-id="chores">
+          Set one up ${icon('chev', 12, 'var(--deep)')}</button>
+      </div>`}
+    ${homeDayWidget(whoId, 'Today')}
+  </div>`;
+}
+function homeDayWidget(whoId, title) {
+    const today = calToday();
+    const list = calAllIn(today, today, whoId || 'all')
+        .filter((e) => String(e.id || '').indexOf('chore:') !== 0);
+    const shown = list.slice(0, 4);
+    const more = list.length - shown.length;
+    return `
+  <div class="hhalf">
+    <div class="hhalf-h">
+      <span class="hhalf-ic">${icon('calendar', 15, 'var(--deep)')}</span>
+      <span class="hhalf-t">${esc(title || 'Today')}</span>
+    </div>
+    <div class="hhalf-b">
+      ${shown.length ? shown.map((e) => {
+        const col = calColorOf(e.who);
+        return `
+        <span class="hday-e" style="background:${esc(col.soft)};color:${esc(col.ink)}">
+          <span class="hday-n">${esc(e.title)}</span>
+          ${e.time ? `<span class="hday-w">${esc(calTimeLabel(e.time))}</span>` : ''}
+        </span>`;
+    }).join('') + (more > 0 ? `<span class="hday-more">and ${more} more</span>` : '')
+        : '<span class="hhalf-free">Nothing on today</span>'}
+    </div>
+    <button class="hhalf-go" data-tab="calendar">
+      ${esc(list.length ? 'The whole week' : 'Add something')} ${icon('chev', 12, 'var(--deep)')}</button>
+  </div>`;
+}
 function homeTiles(c, l) {
     const tiles = [];
-    const soon = calAllIn(calToday(), calAddDays(calToday(), 7), 'all');
-    tiles.push(homeTile({
-        icon: 'calendar', tone: 'leaf',
-        title: 'Coming up',
-        sub: soon.length
-            ? calDayLabel(soon[0].date, calToday()) + ', ' + (soon[0].title || 'something')
-            : 'Nothing in the next week',
-        pip: soon.length > 1 ? String(soon.length) : '',
-        go: 'data-tab="calendar"',
-    }));
-    const jobsLeft = choreLiveJobs().length ? choreOutstanding().length : null;
-    const ready = chorePeople().filter((x) => x.kind === 'child').length;
-    if (jobsLeft !== null || ready) {
+    if (!choreLiveJobs().length && chorePeople().some((x) => x.kind === 'child')) {
         tiles.push(homeTile({
             icon: 'check', tone: 'leaf',
             title: 'Jobs',
-            sub: jobsLeft === null ? 'Start a chart for the week'
-                : jobsLeft === 0 ? "Today's chart is done"
-                    : jobsLeft === 1 ? 'One left today' : jobsLeft + ' left today',
-            pip: jobsLeft ? String(jobsLeft) : '',
+            sub: 'Start a chart for the week',
             go: 'data-go="screen" data-id="chores"',
         }));
     }
@@ -66724,6 +66971,12 @@ function homeTiles(c, l) {
         sub: ciDone ? 'Logged for today' : '30 seconds, about the day',
         go: 'data-go="screen" data-id="momlogs"',
     }));
+    tiles.push(homeTile({
+        icon: 'note', tone: 'blush',
+        title: 'Everything logged for you',
+        sub: 'Your body, your mood, and where the numbers have moved',
+        go: 'data-go="screen" data-id="momlogs"',
+    }));
     const learn = parentLearnForDay(l.day);
     tiles.push(homeTile({
         icon: 'bulb', tone: 'blush',
@@ -66732,6 +66985,7 @@ function homeTiles(c, l) {
         go: 'data-go="learn" data-id="' + esc(learn.id) + '"',
     }));
     return `
+  ${homeDayPair('all', "Today's jobs")}
   <div class="htiles">${tiles.join('')}</div>
   <div class="card liftcard">
     <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Today</p>
@@ -66760,6 +67014,8 @@ function screenHome(c) {
     ${calmSwitchChip()}
     ${findBar()}
     ${installBanner()}
+    ${''}
+    ${profileWeekBlock()}
     ${''}
     ${homeTiles(c, l)}
     <div class="kidrow home">
@@ -67717,17 +67973,6 @@ function screenMyProfile() {
       <button class="chip" style="margin-top:9px" data-feed="errok">Close</button>
     </div>` : ''}
     ${''}
-    <button class="lrow" data-go="screen" data-id="momlogs" style="align-items:center;margin-top:14px">
-      <span class="licon">${icon('note', 17)}</span>
-      <span class="grow">
-        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Everything logged for you</span>
-        <span class="tiny" style="display:block;margin-top:2px">Feeding, your body, your mood, and
-          where the numbers have moved</span>
-      </span>
-      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-    </button>
-    ${''}
-    ${profileWeekBlock()}
     ${''}
     ${posts.length ? '' : `
     <p class="tiny" style="text-align:center;padding:4px 0 2px">
@@ -67794,7 +68039,7 @@ function screenChild(c) {
       ${c.topics.length ? ageRow('topics', months, kid, 'bulb', 'Care topics', esc(c.topics.slice(0, 4).map((t) => t.label).join(', ')), 'data-go="screen" data-id="topics"') : ''}`,
         together: () => {
             const jobs = kid ? choreJobsFor(kid.id).length : 0;
-            const canDo = months == null ? 0 : choresForMonths(months).length;
+            const canDo = months == null ? 0 : choresAtAge(months).length;
             const fresh = months == null ? [] : choresNewlyPossible(months);
             return `
       ${sectHead('together', months, 'Things to do together')}
@@ -67803,7 +68048,7 @@ function screenChild(c) {
                 ? jobs + (jobs === 1 ? ' job on the family chart' : ' jobs on the family chart')
                 : (fresh.length
                     ? 'Old enough now for ' + fresh[0].label.toLowerCase()
-                    : canDo + ' things they are old enough to have a go at')), 'data-go="screen" data-id="chores"') : ''}`;
+                    : canDo + ' things they are old enough to have a go at')), 'data-go="screen" data-id="chores" data-choreon="' + esc(kid ? kid.id : '') + '"') : ''}`;
         },
         where: () => {
             const rows = [
@@ -67868,8 +68113,8 @@ function screenChild(c) {
     const ciHtml = body.checkin ? body.checkin() : '';
     tiles.sort((x, y) => TILE_IDS.indexOf(x.id) - TILE_IDS.indexOf(y.id));
     const sections = ageNewCard(months, kid, first) + monthTopCard(kid)
-        + (kid ? profileDayBlock(kid.id) : '') + daily
-        + (kid ? rewDayBlock(kid, months) : '') + (tiles.length ? `
+        + (kid ? homeDayPair(kid.id, first + "'s jobs") : '')
+        + (kid ? rewProfileBlock(kid, months) : '') + daily + (tiles.length ? `
     <p class="sect" style="margin-top:18px">Everything about ${esc(first)}</p>
     <div class="kidtiles">${tiles.map((t) => kidTile(t.id, t.html)).join('')}</div>` : '')
         + (ciHtml ? `<p class="sect" style="margin-top:18px">How today went</p>` + ciHtml : '')
@@ -72142,6 +72387,9 @@ function choreLiveJobs() {
 function calColorOf(who) {
     if (who === 'me')
         return calColorFor('me', (store.parent || {}).calColor);
+    const a = (store.choreAdults || []).filter((x) => x.id === who)[0];
+    if (a)
+        return calColorFor(who, a.calColor || '');
     const k = (store.children || []).filter((x) => x.id === who)[0];
     return calColorFor(who, k ? k.calColor : '');
 }
@@ -72150,6 +72398,9 @@ function calInitial(who) {
         return '\u00B7';
     if (who === 'me')
         return ((store.parent || {}).name || 'You').trim().charAt(0).toUpperCase();
+    const ad = (store.choreAdults || []).filter((x) => x.id === who)[0];
+    if (ad)
+        return (ad.name || '?').trim().charAt(0).toUpperCase();
     const k = (store.children || []).filter((x) => x.id === who)[0];
     return ((k && k.name) || '?').trim().charAt(0).toUpperCase();
 }
@@ -72376,12 +72627,18 @@ function calWhoName(who) {
         return CAL_WHO_HOUSE;
     if (who === 'me')
         return (store.parent && store.parent.name) || 'You';
+    const a = (store.choreAdults || []).filter((x) => x.id === who)[0];
+    if (a)
+        return a.name || 'Someone';
     const k = (store.children || []).filter((x) => x.id === who)[0];
     return k ? (k.name || 'Your child') : CAL_WHO_HOUSE;
 }
 function calWhoOptions() {
     const out = [{ id: CAL_WHO_HOUSE_ID, label: CAL_WHO_HOUSE }];
     out.push({ id: 'me', label: (store.parent && store.parent.name) || 'You' });
+    (store.choreAdults || []).forEach((a) => {
+        out.push({ id: a.id, label: a.name || 'Someone' });
+    });
     (store.children || []).forEach((k) => {
         if (lossMutes(k))
             return;
@@ -72708,8 +72965,12 @@ function choreWeekTab() {
     }).join('')}`;
 }
 function choreWhoTab() {
-    const people = chorePeople();
+    const only = store.choreWho && chorePerson(store.choreWho) ? store.choreWho : '';
+    const people = only ? chorePeople().filter((p) => p.id === only) : chorePeople();
     return `
+  ${only ? `
+    <button class="chip" style="margin:0 0 12px" data-choreon="">
+      ${icon('people', 12, 'var(--deep)')} Show everybody</button>` : ''}
   ${people.map((p) => {
         const jobs = choreJobsFor(p.id);
         return `
