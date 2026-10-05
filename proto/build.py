@@ -101,6 +101,7 @@ order = [
     ('consent',             SRC/'data/consent.js'),
     ('expecting',           SRC/'data/expecting.js'),
     ('pregnancyWeeks',      SRC/'data/pregnancyWeeks.js'),
+    ('birthPlan',           SRC/'data/birthPlan.js'),
     ('sizeArt',             SRC/'data/sizeArt.js'),
     ('conceive',            SRC/'data/conceive.js'),
     ('induction',           SRC/'data/induction.js'),

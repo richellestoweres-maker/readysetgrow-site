@@ -1046,6 +1046,7 @@ function newChildRecord(name, birthday) {
        rows in src/data/birth.js. On the baby's record for the same
        reason as everything else here: it syncs by itself. */
     birthPrefs: {},
+    birthPlan: {},
     /* How a day felt, keyed YYYY-MM-DD. See src/data/cycleLog.js. On
        her own record, so it syncs with everything else about her. */
     cycleDays: {},
@@ -1456,7 +1457,7 @@ const state = {};
     and nothing throws. That is exactly what happened to the Learning
     tabs, and to Jobs, Growth and the vaccine record with them. The
     build now refuses to finish if a data-sub key is not here. */
- 'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'sexedTab',
+ 'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'bpTab', 'sexedTab',
  'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab', 'crTab', 'calTab',
  'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift', 'lists', 'deletedListIds', 'listOpen', 'rewards', 'rewardLog', 'rewKid', 'rewOwnOpen',
  'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
@@ -2898,6 +2899,7 @@ function render() {
   else if (v && v.type === 'lens') html = viewLens(c, v.id);
   else if (v && v.type === 'infection') html = viewInfection(v.id);
   else if (v && v.type === 'btopic') html = viewBTopic(v.id);
+  else if (v && v.type === 'screen' && v.id === 'birthplan') html = screenBirthPlan();
   else if (v && v.type === 'screen' && v.id === 'now') html = screenNow(c);
   else if (v && v.type === 'screen' && v.id === 'momnow') html = screenMomNow();
   /* There used to be a second screen listing her logs, reached from
@@ -3208,6 +3210,14 @@ function initControls() {
     state.name = e.target.value; render();
   });
   document.addEventListener('input', (e) => {
+    if (e.target.matches && e.target.matches('[data-bpfield]')) {
+      /* Saved as she types, with no repaint, because a page that
+         redraws on every keystroke loses the caret and she would have
+         to tap back into the box after every letter. */
+      bpSet(e.target.dataset.bpfield, String(e.target.value || '').slice(0, BP_NOTE_MAX));
+      saveStore();
+      return;
+    }
     if (e.target.id === 'askIn') { state.askQuery = e.target.value; }
     else if (e.target.id === 'willowIn') { willow.input = e.target.value; }
     else if (e.target.matches('[data-fbtext]')) {
@@ -3507,7 +3517,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -4549,6 +4559,25 @@ function initControls() {
       const id = t.dataset.bag;
       const i = state.bagChecked.indexOf(id);
       if (i === -1) state.bagChecked.push(id); else state.bagChecked.splice(i, 1);
+    } else if (t.dataset.bp) {
+      /* Neither of these changes the screen, and a page that repaints
+         while the print sheet or the share sheet is opening looks to
+         her like something went wrong. */
+      if (t.dataset.bp === 'print') bpPrint(); else bpShare();
+      return;
+    } else if (t.dataset.bppick) {
+      const kid = bpKid();
+      if (kid) {
+        if (!kid.birthPrefs || typeof kid.birthPrefs !== 'object') kid.birthPrefs = {};
+        /* Tapping the one already on turns it off, so a question can be
+           un answered without clearing the whole plan. */
+        if (kid.birthPrefs[t.dataset.bppick] === t.dataset.val) delete kid.birthPrefs[t.dataset.bppick];
+        else kid.birthPrefs[t.dataset.bppick] = t.dataset.val;
+        kid.updatedAt = Date.now();
+      }
+    } else if (t.dataset.bpflex) {
+      const kid = bpKid();
+      if (kid) bpSet('flex', bpMeta(kid).flex === false);
     } else if (t.dataset.bagadd) {
       store.bagAdd = t.dataset.bagadd === 'open' ? (t.dataset.cat || 'own') : null;
     } else if (t.dataset.bagaddsave) {
@@ -11550,6 +11579,258 @@ function viewBTopic(key) {
   </div>`;
 }
 
+/* ==================================================================
+   THE BIRTH PLAN
+
+   Her idea, and the right one: she could already say what mattered to
+   her, and then it lived in the app where nobody delivering the baby
+   would ever see it. So it gets a page of its own, a print, and a file
+   she can text to whoever is coming with her.
+
+   Everything about why it is one page, why the lines are preferences
+   rather than demands, and why the "I know plans change" line matters
+   is in src/data/birthPlan.js.
+
+   Saved against the baby's own profile, same as the answers always
+   were, so nothing anybody has already picked is lost. The older set
+   of 8 questions kept its ids inside the bigger set for exactly that
+   reason.
+   ================================================================== */
+function bpKid() {
+  const kid = activeChild();
+  return (kid && isExpecting(kid)) ? kid : null;
+}
+
+function bpPrefs(kid) {
+  return (kid && kid.birthPrefs && typeof kid.birthPrefs === 'object') ? kid.birthPrefs : {};
+}
+
+function bpMeta(kid) {
+  return (kid && kid.birthPlan && typeof kid.birthPlan === 'object') ? kid.birthPlan : {};
+}
+
+function bpSet(field, value) {
+  const kid = bpKid();
+  if (!kid) return;
+  if (!kid.birthPlan || typeof kid.birthPlan !== 'object') kid.birthPlan = {};
+  kid.birthPlan[field] = value;
+  kid.updatedAt = Date.now();
+}
+
+/* The printed page, as plain text, for the share sheet. Same content
+   and same order as the printed one, so a partner reading the text
+   message and a midwife reading the paper are reading the same thing. */
+function bpPlainText() {
+  const kid = bpKid();
+  if (!kid) return '';
+  const meta = bpMeta(kid);
+  const secs = bpSectionsWithAnswers(bpPrefs(kid));
+  const out = ['BIRTH PLAN'];
+  if (meta.name) out.push(meta.name);
+  BP_FIELDS.forEach((f) => {
+    if (f.id === 'name') return;
+    if (meta[f.id]) out.push(f.label + ': ' + meta[f.id]);
+  });
+  out.push('');
+  secs.forEach((sec) => {
+    out.push(sec.label.toUpperCase());
+    sec.lines.forEach((l) => out.push('  ' + l.q + ': ' + l.a));
+    out.push('');
+  });
+  if (meta.note) { out.push('ANYTHING ELSE'); out.push('  ' + meta.note); out.push(''); }
+  if (meta.flex !== false) out.push(BP_FLEX_LINE);
+  return out.join('\n');
+}
+
+async function bpShare() {
+  const text = bpPlainText();
+  if (!text) return;
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  try {
+    if (navigator.share && typeof File === 'function') {
+      const file = new File([blob], BP_FILENAME, { type: 'text/plain' });
+      if (!navigator.canShare || navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Birth plan' });
+        return;
+      }
+    }
+    if (navigator.share) { await navigator.share({ title: 'Birth plan', text: text }); return; }
+  } catch (err) {
+    if (err && err.name === 'AbortError') return;
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = BP_FILENAME;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+/* Printing works off a stylesheet rather than a second window, because
+   a popup is blocked on half of iOS and a blocked popup looks to her
+   like the button is broken. The page is already on screen, marked
+   with .bpsheet, and print hides everything that is not it. */
+function bpPrint() {
+  try { window.print(); } catch (err) {}
+}
+
+/* The sheet. This is the thing that comes out of the printer, so it
+   carries no app chrome, no icons and no colour that costs ink. */
+function bpSheet(kid) {
+  const meta = bpMeta(kid);
+  const secs = bpSectionsWithAnswers(bpPrefs(kid));
+  const who = meta.name || (store.parent && store.parent.name) || '';
+  const details = BP_FIELDS.filter((f) => f.id !== 'name' && meta[f.id]);
+  return `
+  <div class="bpsheet">
+    <p class="bpsheet-k">Birth plan</p>
+    ${who ? `<p class="bpsheet-n">${esc(who)}</p>` : ''}
+    ${details.length ? `
+    <div class="bpsheet-meta">
+      ${details.map((f) => `<p><span>${esc(f.label)}</span> ${esc(meta[f.id])}</p>`).join('')}
+    </div>` : ''}
+
+    ${secs.length ? secs.map((sec) => `
+      <div class="bpsheet-sec">
+        <p class="bpsheet-h">${esc(sec.label)}</p>
+        ${sec.lines.map((l) => `
+          <p class="bpsheet-l"><span>${esc(l.q)}</span>${esc(l.a)}</p>`).join('')}
+      </div>`).join('') : `
+      <p class="bpsheet-l" style="margin-top:14px">${esc(BP_EMPTY.body)}</p>`}
+
+    ${meta.note ? `
+      <div class="bpsheet-sec">
+        <p class="bpsheet-h">${esc(BP_NOTE_LABEL)}</p>
+        <p class="bpsheet-l"><span style="display:none"></span>${esc(meta.note)}</p>
+      </div>` : ''}
+
+    ${meta.flex !== false ? `<p class="bpsheet-flex">${esc(BP_FLEX_LINE)}</p>` : ''}
+  </div>`;
+}
+
+function screenBirthPlan() {
+  const kid = bpKid();
+  if (!kid) {
+    return `
+    <div class="sc-head">
+      <button class="back" data-back="birth">${icon('back', 15, 'var(--deep)')} Back</button>
+      <h1 class="title sm" style="margin-top:6px">${esc(BP_TITLE)}</h1>
+    </div>
+    <div class="sc">
+      <div class="card flat"><p class="bodytext">Open this from the profile of the baby you are
+        expecting, and the plan is kept there.</p></div>
+    </div>`;
+  }
+  const prefs = bpPrefs(kid);
+  const meta = bpMeta(kid);
+  const chosen = bpChosen(prefs);
+  const tab = state.bpTab || 'build';
+
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="birth">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(BP_TITLE)}</h1>
+    <p class="sub">${esc(BP_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('bpTab', tab, [
+    { id: 'build', label: 'Build it' },
+    { id: 'page', label: 'The page' },
+  ])}
+
+    ${tab === 'build' ? `
+      <div class="hpair">
+        <div class="hhalf">
+          <div class="hhalf-h"><span class="hhalf-ic">${icon('check', 14, 'var(--deep)')}</span>
+            <span class="hhalf-t">Chosen</span></div>
+          <div class="hhalf-b">
+            <p class="szbig">${chosen}<span class="szbig-u">/${BP_ROWS.length}</span></p>
+            <p class="hhalf-free">Answer only what you have a view on.</p>
+          </div>
+        </div>
+        <div class="hhalf">
+          <div class="hhalf-h"><span class="hhalf-ic">${icon('note', 14, 'var(--deep)')}</span>
+            <span class="hhalf-t">Your page</span></div>
+          <div class="hhalf-b">
+            <p class="hhalf-free">${chosen
+    ? 'Ready to print or send.' : 'Nothing on it yet.'}</p>
+          </div>
+          <button class="hhalf-go" data-sub="bpTab" data-val="page">
+            See it ${icon('chev', 12, 'var(--deep)')}</button>
+        </div>
+      </div>
+
+      <div class="szcard blush">
+        <div class="szcard-h">
+          <span class="szcard-ic">${icon('bulb', 15, '#8A5F54')}</span>
+          <span class="szcard-t">${esc(BP_WHY.title)}</span>
+        </div>
+        <p class="bodytext" style="margin:0">${esc(BP_WHY.body)}</p>
+      </div>
+
+      <p class="sect" style="margin-top:16px">The details at the top</p>
+      <div class="card">
+        ${BP_FIELDS.map((f) => `
+        <div style="margin-bottom:10px">
+          <p class="tiny" style="margin:0 0 4px">${esc(f.label)}</p>
+          <input class="inp" id="bpf-${esc(f.id)}" data-bpfield="${esc(f.id)}"
+            value="${esc(meta[f.id] || '')}" placeholder="${esc(f.ph)}" maxlength="60">
+        </div>`).join('')}
+      </div>
+
+      ${BP_SECTIONS.map((sec) => `
+        <p class="sect" style="margin-top:18px">${esc(sec.label)}</p>
+        ${bpRowsIn(sec.id).map((r) => `
+          <div class="card" style="margin-bottom:9px">
+            <p class="eyebrow">${esc(r.q)}</p>
+            <div class="chips" style="margin-top:9px">
+              ${r.options.map((o) => `
+                <button class="chip${prefs[r.id] === o.v ? ' on' : ''}"
+                  data-bppick="${esc(r.id)}" data-val="${esc(o.v)}"
+                  aria-pressed="${prefs[r.id] === o.v}">${esc(o.label)}</button>`).join('')}
+            </div>
+          </div>`).join('')}
+      `).join('')}
+
+      <p class="sect" style="margin-top:18px">${esc(BP_NOTE_LABEL)}</p>
+      <div class="card">
+        <textarea class="inp" id="bpf-note" data-bpfield="note" rows="3"
+          maxlength="${BP_NOTE_MAX}" placeholder="${esc(BP_NOTE_PH)}">${esc(meta.note || '')}</textarea>
+      </div>
+
+      <div class="card" style="margin-top:10px">
+        ${tickRow(meta.flex !== false, BP_FLEX_LABEL, BP_FLEX_LINE, 'data-bpflex="1"')}
+      </div>
+
+      ${Object.keys(prefs).length ? `
+        <button class="btn ghost" style="width:100%;margin-top:12px" data-birth="prefclear">
+          Clear every answer</button>` : ''}
+
+      ${dsec(BP_TALK.title, `<p class="bodytext">${esc(BP_TALK.body)}</p>`)}
+      ${dsec('Sources', sourceRows(BP_SOURCES))}
+    ` : `
+      ${!chosen && !meta.note ? `
+      <div class="card flat">
+        <p class="eyebrow">${esc(BP_EMPTY.title)}</p>
+        <p class="bodytext" style="margin-top:6px">${esc(BP_EMPTY.body)}</p>
+        <button class="btn" style="width:100%;margin-top:11px" data-sub="bpTab" data-val="build">
+          Start picking</button>
+      </div>` : `
+      <div class="bpbar">
+        <button class="btn" data-bp="print">
+          ${icon('note', 14, '#fff')} ${esc(BP_PRINT)}</button>
+        <button class="btn ghost" data-bp="share">
+          ${icon('chat', 14, 'var(--deep)')} ${esc(BP_SHARE)}</button>
+      </div>
+      <p class="tiny" style="margin:8px 2px 0">${esc(BP_PRINT_HINT)}</p>
+      ${bpSheet(kid)}
+      ${dsec(BP_TALK.title, `<p class="bodytext">${esc(BP_TALK.body)}</p>`)}`}
+    `}
+  </div>`;
+}
+
 function screenBirth(c) {
   const kid = activeChild();
   const seed = kid && isExpecting(kid) ? kid : null;
@@ -11594,6 +11875,13 @@ function screenBirth(c) {
       </div>
 
       ${seed ? `
+        <button class="pickcard" style="width:100%;margin-bottom:12px"
+          data-go="screen" data-id="birthplan">
+          <span class="pickcard-ic">${icon('note', 17, 'var(--deep)')}</span>
+          <span class="pickcard-t">${esc(BP_TITLE)}</span>
+          <span class="pickcard-b">${esc(BP_SUB)}</span>
+          <span class="pickcard-go">Build it, print it ${icon('chev', 12, 'var(--deep)')}</span>
+        </button>
         ${PREF_ROWS.map((r) => birthPrefRow(r, prefs[r.id])).join('')}
         <div class="card" style="border-left:3px solid var(--sage)">
           <p class="eyebrow">What you have said matters to you</p>
@@ -26016,6 +26304,7 @@ function normalizeChild(k) {
     logs: Array.isArray(k.logs) ? k.logs : [],
     bishop: Array.isArray(k.bishop) ? k.bishop : [],
     birthPrefs: k.birthPrefs && typeof k.birthPrefs === 'object' ? k.birthPrefs : {},
+    birthPlan: k.birthPlan && typeof k.birthPlan === 'object' ? k.birthPlan : {},
     cycleDays: k.cycleDays && typeof k.cycleDays === 'object' ? k.cycleDays : {},
     monthNotes: k.monthNotes && typeof k.monthNotes === 'object' ? k.monthNotes : {},
     monthSeen: typeof k.monthSeen === 'string' ? k.monthSeen : '',
