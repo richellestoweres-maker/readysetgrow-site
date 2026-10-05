@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-04 00:20">
+<meta name="rsg-build" content="2026-10-05 14:38">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -2244,7 +2244,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-04 00:20';
+const BUILD_STAMP = '2026-10-05 14:38';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -20072,6 +20072,146 @@ function icsBuild(events, name, now) {
     lines.push('END:VCALENDAR');
     return lines.map(icsFold).join('\r\n') + '\r\n';
 }
+const LOSS_TITLE = 'If this pregnancy has ended';
+const LOSS_ENTRY = 'This pregnancy has ended';
+const LOSS_ENTRY_SUB = 'However it happened, and whenever. This stops the weekly updates and the countdown straight away.';
+const LOSS_INTRO = [
+    'I am very sorry.',
+    'Whatever you want to do next in here is allowed. You can stop the weekly updates and leave '
+        + 'everything else exactly where it is, you can keep as much of the record as you want, and you '
+        + 'can change any of it later.',
+    'Nothing is deleted by doing this.',
+];
+const LOSS_CONFIRM = 'Stop the updates';
+const LOSS_CONFIRM_NOTE = 'The week by week pages, the countdown, the birth and hospital pages and the nesting list all '
+    + 'stop now and do not come back.';
+const LOSS_CANCEL = 'Not now';
+const LOSS_OPTIONAL_TITLE = 'Anything you want to keep';
+const LOSS_OPTIONAL_NOTE = 'All of this is optional and you can come back to it, or never. There is no wrong answer here and '
+    + 'nothing is shared with anybody.';
+const LOSS_DATE_LABEL = 'The day it happened';
+const LOSS_DATE_NOTE = 'Leave it blank if you would rather not, or if you are not sure.';
+const LOSS_NAME_LABEL = 'If you gave them a name';
+const LOSS_NAME_NOTE = 'Some families name their baby and some do not, and both are completely normal. If you have, it '
+    + 'stays on the record.';
+const LOSS_NOTE_LABEL = 'Anything you want written down';
+const LOSS_NOTE_PLACEHOLDER = 'Only for you. Nobody else sees this.';
+const LOSS_DATES_TITLE = 'The hard days';
+const LOSS_DATES_BODY = 'The due date and the day it happened both tend to come round harder than people expect. Some '
+    + 'parents want them marked so they are not ambushed. Some want them never mentioned again.';
+const LOSS_DATES_ASK = 'Would you like these marked on your calendar?';
+const LOSS_DATES_OPTIONS = [
+    { id: 'none', label: 'No, never show me these', note: 'Nothing goes on the calendar.' },
+    { id: 'quiet', label: 'Mark them quietly', note: 'They appear on the calendar with no reminder '
+            + 'and no notification. Only you see them.' },
+    { id: 'warn', label: 'Give me a few days warning', note: 'A quiet note three days before, so the '
+            + 'day itself is not a surprise.' },
+];
+const LOSS_DATES_CHANGE = 'You can change this whenever you like.';
+const LOSS_BODY_TITLE = 'What happens to your body';
+const LOSS_BODY_INTRO = 'Nobody tends to tell you this part, and not knowing makes it frightening on top of everything '
+    + 'else. This is general information about what is common, not a prediction about you.';
+const LOSS_BODY_POINTS = [
+    'Bleeding and cramping can carry on for days to a couple of weeks, and are often heavier than a '
+        + 'period. How long varies enormously between people and between pregnancies.',
+    'Pregnancy hormones take time to clear, so a pregnancy test can stay positive for days or weeks '
+        + 'afterwards. That is not a sign anything was missed.',
+    'Periods usually return within about four to six weeks, though later is common and is not a '
+        + 'problem on its own.',
+    'After a later loss your milk can come in, which is physically painful and emotionally brutal and '
+        + 'almost nobody is warned about it. There are things that help and it is worth asking for them '
+        + 'rather than waiting it out.',
+    'Feeling physically fine quickly is also normal and is not a sign you are not grieving properly.',
+];
+const LOSS_BODY_ASK_TITLE = 'Worth a call rather than a search';
+const LOSS_BODY_ASK = [
+    'Soaking through a pad an hour for more than two hours, or passing clots larger than a golf ball',
+    'A fever, chills, or discharge that smells wrong',
+    'Severe pain that is not easing, or pain concentrated on one side',
+    'Feeling faint, dizzy, or short of breath',
+];
+const LOSS_BODY_ASK_NOTE = 'Any of these are a reason to call your provider or go in now rather than wait. Heavy bleeding '
+    + 'and infection after a loss are both treatable and both are time sensitive.';
+const LOSS_AGAIN_TITLE = 'If you are already wondering about trying again';
+const LOSS_AGAIN = [
+    'Wanting to know this immediately is common and is not a sign you are not grieving. Not wanting '
+        + 'to think about it for a long time is just as common.',
+    'The old advice to wait three months is not well supported by the evidence, and guidance in most '
+        + 'places now is that there is no required waiting period once bleeding has settled and you feel '
+        + 'ready, unless your own clinician has told you otherwise for a specific reason.',
+    'One loss does not usually mean anything about the next pregnancy. Most people who have had one '
+        + 'go on to have a healthy pregnancy.',
+    'Recurrent loss, usually counted as two or three, is worth investigating rather than enduring, '
+        + 'and you are allowed to ask for that referral yourself.',
+];
+const LOSS_AGAIN_NOTE = 'Your own clinician knows your history and this app does not. Anything here is general '
+    + 'information, not advice about your situation.';
+const LOSS_OTHERS_TITLE = 'The other people in this';
+const LOSS_OTHERS = [
+    'A partner has usually lost the same thing and is very often asked only how you are doing. That '
+        + 'gap is one of the most common things couples say damaged them afterwards.',
+    'People will say unhelpful things. Almost all of them are frightened and reaching for anything. '
+        + 'You do not owe anybody a gracious response.',
+    'You do not have to tell anyone, and you do not have to keep it private either. Both are fine and '
+        + 'you can change your mind.',
+    'If you had already told other children, they tend to need less detail and more certainty than '
+        + 'adults expect: that it was nobody\'s fault, that nobody else is ill, and that it is alright to '
+        + 'ask again later.',
+];
+const LOSS_HEAVY_TITLE = 'If it is sitting heavier than that';
+const LOSS_HEAVY_BODY = 'Grief after a loss is not a condition and it does not need treating. But loss also raises the '
+    + 'chance of depression and anxiety, and those do respond to help. If weeks are going by and you '
+    + 'cannot function, if the anxiety is constant, or if you are having thoughts of harming yourself, '
+    + 'that is worth telling a professional about. It is a common thing to need and asking for it is '
+    + 'not a failure of grieving properly.';
+const LOSS_HEAVY_NOTE = 'If you are in immediate danger, or thinking about harming yourself, contact your local emergency '
+    + 'number or a crisis line now rather than waiting for an appointment.';
+const LOSS_WHAT_NOW_TITLE = 'What this app will do now';
+const LOSS_WHAT_NOW = [
+    'The week by week pages, the size comparisons and the countdown have stopped and will not come '
+        + 'back for this pregnancy.',
+    'The hospital bag, the birth plan, the induction pages and the nesting list have gone with them.',
+    'Everything you had already saved stays exactly where it is, including the name if you gave one '
+        + 'and any photos.',
+    'Nothing about this is ever posted anywhere, suggested to the community, or shown to anybody you '
+        + 'have shared a child with.',
+    'If you ever want the record removed completely, that is on their page and it is yours to do.',
+];
+const LOSS_REVERSIBLE = 'If you recorded this by mistake, you can undo it on their page and everything comes straight '
+    + 'back.';
+const LOSS_UNDO = 'I recorded this by mistake';
+const LOSS_CHIP = 'Pregnancy ended';
+function lossLabel(name) {
+    return (name && String(name).trim()) ? String(name).trim() : 'Your baby';
+}
+function lossCardLine(rec) {
+    const named = rec && rec.name && String(rec.name).trim();
+    return named ? 'Remembered' : 'Pregnancy ended';
+}
+const LOSS_PRIVACY = 'This is on your account only. It is never shared with the community, never used to choose what '
+    + 'you are shown, and nobody you share a child with can see it.';
+const LOSS_SOURCES = [
+    { org: 'ACOG',
+        label: 'Early pregnancy loss, including what is normal physically and what the options are',
+        url: 'https://www.acog.org/womens-health/faqs/early-pregnancy-loss' },
+    { org: 'NHS',
+        label: 'Miscarriage: symptoms, what happens, and afterwards',
+        url: 'https://www.nhs.uk/conditions/miscarriage/' },
+    { org: 'March of Dimes',
+        label: 'Pregnancy loss, and trying again',
+        url: 'https://www.marchofdimes.org/find-support/topics/miscarriage-loss-grief' },
+    { org: 'Share Pregnancy and Infant Loss Support',
+        label: 'Support groups and a helpline, United States',
+        url: 'https://nationalshare.org/' },
+    { org: 'Postpartum Support International',
+        label: 'Help for depression and anxiety after loss, including a helpline',
+        url: 'https://www.postpartum.net/' },
+    { org: 'The Miscarriage Association',
+        label: 'Plain language leaflets, including one written for partners',
+        url: 'https://www.miscarriageassociation.org.uk/' },
+];
+const LOSS_DISCLAIMER = 'General information, not medical advice, and not a substitute for your own clinician. If '
+    + 'something feels wrong physically, call them rather than reading.';
 const FEED_STATUS = {
     live: 'live',
     held: 'held',
@@ -21975,6 +22115,40 @@ function choresForMonths(months) {
     if (!isFinite(m))
         return [];
     return CHORES.filter((c) => !c.adult && m >= c.minMonths);
+}
+function choreAgeFloor(months) {
+    const m = Number(months);
+    if (!isFinite(m) || m <= 30)
+        return 0;
+    return Math.round(m * 0.55);
+}
+function choresAtAge(months) {
+    const m = Number(months);
+    if (!isFinite(m))
+        return [];
+    const floor = choreAgeFloor(m);
+    return choresForMonths(m).filter((c) => c.minMonths >= floor);
+}
+function choresBelowAge(months) {
+    const m = Number(months);
+    if (!isFinite(m))
+        return [];
+    const floor = choreAgeFloor(m);
+    if (!floor)
+        return [];
+    return choresForMonths(m).filter((c) => c.minMonths < floor);
+}
+const CHORE_YOUNGER_LABEL = 'Jobs from when they were smaller';
+const CHORE_YOUNGER_NOTE = 'Still perfectly fine to give them, they are just not what most families reach for at this age.';
+function choreAgeLine(months, name) {
+    const m = Number(months);
+    if (!isFinite(m))
+        return '';
+    const who = name || 'them';
+    if (m < 48)
+        return 'Everything here is something ' + who + ' can have a go at.';
+    return 'Jobs that suit ' + who + ' at this age. It will not all be done well and that is the job '
+        + 'being done.';
 }
 function choresNewlyPossible(months, windowMonths = 6) {
     const m = Number(months);
@@ -49679,6 +49853,10 @@ function newChildRecord(name, birthday) {
         photo: '',
         calColor: '',
         starsOn: false,
+        lost: false,
+        lostAt: null,
+        lostNote: '',
+        lostDates: 'none',
         lenses: [],
         lensOptions: {},
         lensNumbers: {},
@@ -49763,6 +49941,7 @@ const store = {
     choreTab: 'today',
     choreDay: null,
     chorePick: null,
+    choreOlder: false,
     meals: {},
     mealEdit: null,
     learnBand: '',
@@ -50909,6 +51088,8 @@ function render() {
         html = screenRewards(c);
     else if (v && v.type === 'screen' && v.id === 'kids')
         html = screenKids();
+    else if (v && v.type === 'screen' && v.id === 'loss')
+        html = screenLoss();
     else if (v && v.type === 'screen' && v.id === 'chores')
         html = screenChores();
     else if (v && v.type === 'screen' && v.id === 'learning')
@@ -51512,7 +51693,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-chorepat],[data-choreevery],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -52556,6 +52737,40 @@ function initControls() {
         }
         else if (t.dataset.chore === 'add') {
             choreAdd(t.dataset.id, t.dataset.who, String(t.dataset.days || '').split(',').filter((x) => x !== '').map(Number));
+        }
+        else if (t.dataset.loss) {
+            const kid = activeChild();
+            const how = t.dataset.loss;
+            if (kid && how === 'confirm') {
+                kid.lost = true;
+                kid.updatedAt = Date.now();
+                flushStore();
+            }
+            else if (kid && how === 'save') {
+                const d = document.getElementById('lossDateIn');
+                const n = document.getElementById('lossNameIn');
+                const note = document.getElementById('lossNoteIn');
+                kid.lostAt = (d && d.value && d.value <= ciToday()) ? d.value : null;
+                if (n)
+                    kid.name = String(n.value || '').trim();
+                if (note)
+                    kid.lostNote = String(note.value || '');
+                kid.updatedAt = Date.now();
+                flushStore();
+            }
+            else if (kid && how === 'dates') {
+                kid.lostDates = t.dataset.id;
+                kid.updatedAt = Date.now();
+                flushStore();
+            }
+            else if (kid && how === 'undo') {
+                kid.lost = false;
+                kid.updatedAt = Date.now();
+                flushStore();
+            }
+        }
+        else if (t.dataset.choreolder) {
+            store.choreOlder = t.dataset.choreolder === 'on';
         }
         else if (t.dataset.chorepat) {
             if (!store.chorePick)
@@ -57479,8 +57694,11 @@ function safetyMoreBtn(all, key) {
   ${open ? '' : `<p class="tiny" style="margin-top:7px;text-align:center">The child in front of you is not
     always yours. Every age is still here.</p>`}`;
 }
+function isLost(k) {
+    return !!(k && k.lost);
+}
 function isExpecting(k) {
-    return !!(k && k.expecting && k.dueDate);
+    return !!(k && k.expecting && k.dueDate && !k.lost);
 }
 function expWhereFor(k) {
     return isExpecting(k) ? expWhere(k.dueDate, ciToday()) : null;
@@ -57710,7 +57928,123 @@ function screenExpecting(c) {
           ${icon('star', 14, '#fff')} ${esc(EXP_BORN_BTN)}
         </button>`}
     </div>
+    ${''}
+    <div class="dsec">
+      <button class="lrow" data-go="screen" data-id="loss" style="align-items:flex-start">
+        <span class="licon">${icon('heart', 18, 'var(--muted)')}</span>
+        <span class="grow">
+          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(LOSS_ENTRY)}</span>
+          <span class="tiny" style="display:block;margin-top:2px">${esc(LOSS_ENTRY_SUB)}</span>
+        </span>
+        <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+      </button>
+    </div>
     <p class="disclaimer">${esc(EXP_DISCLAIMER)}</p>
+  </div>`;
+}
+function screenLoss() {
+    const kid = activeChild();
+    if (!kid)
+        return `
+    ${cornerLeaves()}
+    <div class="sc-head tight">
+      <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    </div>
+    <div class="sc"><div class="card flat"><p class="bodytext">Nothing selected.</p></div></div>`;
+    const done = isLost(kid);
+    const name = lossLabel(kid.name);
+    return `
+  ${cornerLeaves()}
+  <div class="sc-head tight">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(LOSS_TITLE)}</h1>
+  </div>
+  <div class="sc">
+    ${!done ? `
+      <div class="card leafy">
+        ${LOSS_INTRO.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+      <div class="card">
+        <p class="bodytext" style="margin:0 0 11px">${esc(LOSS_CONFIRM_NOTE)}</p>
+        <button class="btn" style="width:100%;justify-content:center" data-loss="confirm">
+          ${esc(LOSS_CONFIRM)}</button>
+        <button class="chip" style="margin-top:10px" data-back="1">${esc(LOSS_CANCEL)}</button>
+      </div>
+    ` : `
+      <div class="card leafy">
+        <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(LOSS_WHAT_NOW_TITLE)}</p>
+        <ul class="bul" style="margin-top:8px">
+          ${LOSS_WHAT_NOW.map((x) => `<li>${esc(x)}</li>`).join('')}
+        </ul>
+      </div>
+      <div class="dsec">
+        <h4>${esc(LOSS_OPTIONAL_TITLE)}</h4>
+        <p class="tiny" style="margin:0 0 10px">${esc(LOSS_OPTIONAL_NOTE)}</p>
+        <div class="card">
+          <p class="eyebrow">${esc(LOSS_DATE_LABEL)}</p>
+          <input class="inp" id="lossDateIn" type="date" max="${esc(ciToday())}"
+            value="${esc(kid.lostAt || '')}" style="width:100%;margin-top:7px">
+          <p class="tiny" style="margin:7px 0 0">${esc(LOSS_DATE_NOTE)}</p>
+          <p class="eyebrow" style="margin-top:14px">${esc(LOSS_NAME_LABEL)}</p>
+          <input class="inp" id="lossNameIn" type="text" autocomplete="off"
+            value="${esc(kid.name || '')}" style="width:100%;margin-top:7px">
+          <p class="tiny" style="margin:7px 0 0">${esc(LOSS_NAME_NOTE)}</p>
+          <p class="eyebrow" style="margin-top:14px">${esc(LOSS_NOTE_LABEL)}</p>
+          <textarea class="inp" id="lossNoteIn" rows="3" style="width:100%;margin-top:7px"
+            placeholder="${esc(LOSS_NOTE_PLACEHOLDER)}">${esc(kid.lostNote || '')}</textarea>
+          <button class="btn ghost" style="width:100%;margin-top:12px;justify-content:center"
+            data-loss="save">Save</button>
+        </div>
+      </div>
+      <div class="dsec">
+        <h4>${esc(LOSS_DATES_TITLE)}</h4>
+        <p class="bodytext" style="margin:0 0 9px">${esc(LOSS_DATES_BODY)}</p>
+        <p class="eyebrow">${esc(LOSS_DATES_ASK)}</p>
+        ${LOSS_DATES_OPTIONS.map((o) => `
+          <button class="lrow${kid.lostDates === o.id ? ' on' : ''}" data-loss="dates" data-id="${esc(o.id)}"
+            style="align-items:flex-start">
+            <span class="licon">${icon(kid.lostDates === o.id ? 'check' : 'circle', 16, kid.lostDates === o.id ? 'var(--deep)' : 'var(--faint)')}</span>
+            <span class="grow">
+              <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(o.label)}</span>
+              <span class="tiny" style="display:block;margin-top:2px">${esc(o.note)}</span>
+            </span>
+          </button>`).join('')}
+        <p class="tiny" style="margin-top:8px">${esc(LOSS_DATES_CHANGE)}</p>
+      </div>
+      <div class="dsec">
+        <h4>${esc(LOSS_BODY_TITLE)}</h4>
+        <p class="bodytext" style="margin:0 0 9px">${esc(LOSS_BODY_INTRO)}</p>
+        <ul class="bul">${LOSS_BODY_POINTS.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+        <div class="card warn" style="margin-top:11px">
+          <p class="eyebrow">${esc(LOSS_BODY_ASK_TITLE)}</p>
+          <ul class="bul" style="margin-top:7px">${LOSS_BODY_ASK.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+          <p class="bodytext" style="margin:9px 0 0">${esc(LOSS_BODY_ASK_NOTE)}</p>
+        </div>
+      </div>
+      <div class="dsec">
+        <h4>${esc(LOSS_OTHERS_TITLE)}</h4>
+        <ul class="bul">${LOSS_OTHERS.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+      </div>
+      <div class="dsec">
+        <h4>${esc(LOSS_HEAVY_TITLE)}</h4>
+        <p class="bodytext" style="margin:0 0 9px">${esc(LOSS_HEAVY_BODY)}</p>
+        <p class="tiny">${esc(LOSS_HEAVY_NOTE)}</p>
+      </div>
+      <div class="dsec">
+        <h4>${esc(LOSS_AGAIN_TITLE)}</h4>
+        <ul class="bul">${LOSS_AGAIN.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+        <p class="tiny" style="margin-top:8px">${esc(LOSS_AGAIN_NOTE)}</p>
+      </div>
+      ${dsec('Where to go', sourceRows(LOSS_SOURCES))}
+      <p class="tiny" style="margin-top:12px">${esc(LOSS_PRIVACY)}</p>
+      <div class="dsec">
+        <p class="tiny" style="margin:0 0 8px">${esc(LOSS_REVERSIBLE)}</p>
+        <button class="tiny" data-loss="undo"
+          style="background:none;border:0;padding:6px 0;color:var(--deep);text-decoration:underline">
+          ${esc(LOSS_UNDO)}</button>
+      </div>
+    `}
+    <p class="disclaimer">${esc(LOSS_DISCLAIMER)}</p>
   </div>`;
 }
 function sexedStiCard(i) {
@@ -65470,7 +65804,7 @@ function rewDayBlock(kid, months) {
     const on = rewOn(kid);
     const first = (kid.name || 'They').split(/\s+/)[0];
     if (!jobs.length) {
-        if (!rewShows(months))
+        if (!choreOldEnough(months))
             return '';
         const any = (store.choreJobs || []).length;
         return `
@@ -65480,7 +65814,7 @@ function rewDayBlock(kid, months) {
             ? 'Nothing on the chart for ' + first + ' today. Put a few jobs on and they turn up here, '
                 + 'ready to tick off.'
             : 'The chore chart is empty. Put a few jobs on it and they turn up here each day, ready to '
-                + 'tick off, with stars if you want them.')}</p>
+                + 'tick off' + (rewShows(months) ? ', with stars if you want them.' : '.'))}</p>
       <button class="btn ghost sm" style="width:100%;margin-top:11px" data-go="screen" data-id="chores">
         ${icon('leaf', 13, 'var(--deep)')} Set up the chart</button>
     </div>`;
@@ -66557,6 +66891,35 @@ const AGE_NEW_LABEL = {
     diapers: 'How many diapers',
     activities: 'Activities',
 };
+const AGE_LABEL_BY_AGE = {
+    online: [
+        { to: 60, label: 'Screens, and how much' },
+        { to: 108, label: 'Screens, games and what they watch' },
+        { to: null, label: 'Phones, games and who is on the other side' },
+    ],
+    consent: [
+        { to: 60, label: 'Body safety and saying no' },
+        { to: null, label: 'Consent and body safety' },
+    ],
+    growingup: [
+        { to: 84, label: 'Their body, in the right words' },
+        { to: null, label: 'Growing up' },
+    ],
+    jobs: [
+        { to: 36, label: 'Little jobs they can help with' },
+        { to: null, label: 'Jobs they can have a go at' },
+    ],
+};
+function ageNewLabel(id, months) {
+    const bands = AGE_LABEL_BY_AGE[id];
+    if (!bands || typeof months !== 'number')
+        return AGE_NEW_LABEL[id];
+    for (let i = 0; i < bands.length; i += 1) {
+        if (bands[i].to === null || months < bands[i].to)
+            return bands[i].label;
+    }
+    return AGE_NEW_LABEL[id];
+}
 function ageNewList(months, kid) {
     if (!kid || typeof months !== 'number')
         return [];
@@ -66585,7 +66948,7 @@ function ageNewCard(months, kid, first) {
     const ids = ageNewList(months, kid);
     if (!ids.length || ageNewSeen(kid, ids))
         return '';
-    const names = ids.map((id) => AGE_NEW_LABEL[id]);
+    const names = ids.map((id) => ageNewLabel(id, months));
     return `
   <div class="card" style="border-left:3px solid var(--sage);position:relative">
     <button class="wnudge-x" data-agenew="hide" aria-label="Not now">&times;</button>
@@ -66594,7 +66957,7 @@ function ageNewCard(months, kid, first) {
     ${names.length === 1 ? 'this now' : 'these now'}, so ${names.length === 1 ? 'it has' : 'they have'}
     just appeared below.</p>
     <div class="chips" style="gap:7px;margin-top:10px">
-      ${ids.map((id) => `<button class="chip" data-agenew="go" data-id="${esc(id)}">${esc(AGE_NEW_LABEL[id])}</button>`).join('')}
+      ${ids.map((id) => `<button class="chip" data-agenew="go" data-id="${esc(id)}">${esc(ageNewLabel(id, months))}</button>`).join('')}
     </div>
     <p class="tiny" style="margin-top:9px">Nothing has been taken away. Things that stop applying at
     ${esc(first)}'s age simply stop taking up room.</p>
@@ -69192,6 +69555,10 @@ function normalizeChild(k) {
         arrival: Array.isArray(k.arrival) ? k.arrival : [],
         photo: k.photo || '',
         calColor: typeof k.calColor === 'string' ? k.calColor : '',
+        lost: !!k.lost,
+        lostAt: k.lostAt || null,
+        lostNote: typeof k.lostNote === 'string' ? k.lostNote : '',
+        lostDates: ['none', 'quiet', 'warn'].indexOf(k.lostDates) !== -1 ? k.lostDates : 'none',
         starsOn: !!k.starsOn,
         routineInclude: Array.isArray(k.routineInclude) ? k.routineInclude : [],
         routineMode: typeof k.routineMode === 'string' ? k.routineMode : '',
@@ -71874,9 +72241,11 @@ function chorePicker() {
         const d = j.days || [];
         have[j.choreId] = wantDays.every((x) => d.indexOf(x) !== -1);
     });
+    const younger = p.kind === 'adult' || p.months == null ? [] : choresBelowAge(p.months);
+    const showOld = !!store.choreOlder;
     const pool = p.kind === 'adult'
         ? adultChores()
-        : (p.months == null ? [] : choresForMonths(p.months));
+        : (p.months == null ? [] : (showOld ? choresForMonths(p.months) : choresAtAge(p.months)));
     const groups = choresByArea(pool);
     return `
   <button class="back" data-chore="donepick" style="margin:0 0 12px">
@@ -71886,7 +72255,7 @@ function chorePicker() {
     <p class="bodytext" style="margin:0">
       A job for ${esc(p.name)}, ${esc(choreDaysLine(wantDays).toLowerCase())}.
       ${p.kind === 'child' && p.months != null
-        ? esc('Everything here is something a ' + childAgeWord(p.months) + ' can have a go at. It will not be done well and that is the job being done.')
+        ? esc(choreAgeLine(p.months, p.name))
         : esc('The work that is already yours, written down so it is on the chart with everybody else’s.')}
     </p>
   </div>
@@ -71915,6 +72284,17 @@ function chorePicker() {
           ${choreStarRow(ch.stars)}
         </button>`).join('')}
     </div>`).join('')}
+  ${younger.length ? `
+    <div class="dsec">
+      <button class="lrow" data-choreolder="${showOld ? 'off' : 'on'}">
+        <span class="licon">${icon(showOld ? 'chevdown' : 'chev', 16)}</span>
+        <span class="grow">
+          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(CHORE_YOUNGER_LABEL)}</span>
+          <span class="tiny" style="display:block;margin-top:2px">${esc(showOld
+        ? CHORE_YOUNGER_NOTE : younger.length + ' more, hidden so they are not the first thing you see')}</span>
+        </span>
+      </button>
+    </div>` : ''}
   <button class="bigbtn" data-chore="donepick">Done</button>`;
 }
 function childAgeWord(months) {
