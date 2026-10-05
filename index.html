@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-05 15:38">
+<meta name="rsg-build" content="2026-10-05 17:28">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -610,6 +610,33 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
   padding:14px 13px;min-height:132px;
 }
 .todaycard.toptile .todaycard-s{display:block}
+
+/* HOME TILES.
+   The same grid as a child's profile, on purpose. Two across, equal
+   size, one thing each. The blush ones are the two that are about
+   her rather than about a child, which is both the pop of colour she
+   asked for and a quiet way of marking whose they are. */
+.rewmore{appearance:none;border:0;background:transparent;width:100%;padding:9px 0 4px;
+  font-size:12.5px;font-weight:600;color:var(--deep);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:5px}
+
+.htiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 4px}
+.htile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:5px;
+  text-align:left;cursor:pointer;font:inherit;background:#fff;
+  border:1px solid rgba(74,103,65,.14);border-radius:18px;padding:13px 12px;min-height:112px}
+.htile.leaf{background:var(--leaf3);border-color:rgba(74,103,65,.16)}
+.htile.blush{background:var(--blush2);border-color:rgba(168,112,107,.22)}
+.htile-ic{width:34px;height:34px;border-radius:50%;background:#fff;display:flex;
+  align-items:center;justify-content:center;flex:none;margin-bottom:2px}
+.htile.blush .htile-ic{background:rgba(255,255,255,.72)}
+.htile-t{font-size:14px;font-weight:700;color:var(--ink);line-height:1.2}
+.htile.blush .htile-t{color:#6E4740}
+.htile-s{font-size:11.5px;color:var(--muted);line-height:1.3;overflow:hidden}
+.htile.blush .htile-s{color:#8A6159}
+.htile-pip{position:absolute;top:10px;right:10px;min-width:20px;height:20px;padding:0 6px;
+  border-radius:10px;background:var(--blush);color:#fff;font-size:11px;font-weight:700;
+  line-height:20px;text-align:center}
+.htile:focus-visible{outline:2px solid var(--deep);outline-offset:2px}
 
 .kidtiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .kidtile{
@@ -2244,7 +2271,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-05 15:38';
+const BUILD_STAMP = '2026-10-05 17:28';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -20072,6 +20099,123 @@ function icsBuild(events, name, now) {
     lines.push('END:VCALENDAR');
     return lines.map(icsFold).join('\r\n') + '\r\n';
 }
+const LOSS_KINDS = [
+    { id: 'early', label: 'Early in pregnancy' },
+    { id: 'stillbirth', label: 'They were born still' },
+    { id: 'child', label: 'After they were born' },
+];
+function lossKindOf(kid) {
+    if (!kid)
+        return 'early';
+    if (kid.lostKind)
+        return kid.lostKind;
+    return kid.birthday ? 'child' : 'early';
+}
+const SB_TITLE = 'When a baby is born still';
+const SB_OPEN = [
+    'I am so sorry. Your baby was born and your baby died, and both of those are true at once, and '
+        + 'you are their parent either way.',
+    'There are a few things below that can only be done in the first hours or days. Not because '
+        + 'anything has to be decided quickly, but because nobody tells people they were options and '
+        + 'that is its own loss on top of this one.',
+];
+const SB_NOW_TITLE = 'Things you are allowed to do, while you can';
+const SB_NOW = [
+    'You can hold them, for as long as you want, and more than once. There is no limit and you can '
+        + 'ask for them to be brought back.',
+    'You can have photographs taken. Many hospitals can arrange a bereavement photographer at no '
+        + 'cost, and parents who declined this are far more likely to regret it than parents who agreed. '
+        + 'You never have to look at them, and they will still exist.',
+    'Handprints, footprints, a lock of hair, the blanket, the hat. Ask. Most units keep a memory box '
+        + 'and will make one with you.',
+    'You can bathe and dress them, and choose what they wear.',
+    'You can name them, and use the name, and put it on things.',
+    'Other people can meet them. Grandparents, their brothers and sisters, whoever you want. Children '
+        + 'often cope better with having met them than with being kept away.',
+    'You can change your mind about any of this in either direction and nobody will think anything '
+        + 'of it.',
+];
+const SB_NOW_NOTE = 'If you are reading this after that window has passed and nobody offered you these, that is a '
+    + 'failure of care and not something you got wrong.';
+const SB_PRACTICAL_TITLE = 'The paperwork nobody warns you about';
+const SB_PRACTICAL = [
+    'A stillbirth is registered, and depending where you are there may be a certificate. The hospital '
+        + 'will usually walk you through it and you can ask somebody else to do it with you.',
+    'There will be a decision about a funeral or a cremation. Hospitals can often arrange this and in '
+        + 'many places there is no cost. You can also arrange it yourself. There is no standard and no '
+        + 'expectation.',
+    'You may be offered a post mortem. It is entirely your choice, it can sometimes explain what '
+        + 'happened, and it often cannot. Saying no is a legitimate answer.',
+    'Maternity leave and pay generally still apply after a stillbirth, and in many places so does '
+        + 'paternity or partner leave. People lose money by assuming otherwise. Ask rather than assume.',
+    'Your milk will come in. This is covered further down and it is the thing most parents are least '
+        + 'prepared for.',
+];
+const SB_HOME_TITLE = 'Going home';
+const SB_HOME = [
+    'Going home without them is its own distinct shock, separate from everything already happening, '
+        + 'and it tends to land in the car park rather than in the ward.',
+    'The nursery is there. There is no right thing to do about it and you do not have to decide this '
+        + 'week. Leaving the door shut is a decision and so is sitting in it.',
+    'People will not know what to say and many will say nothing, which parents consistently describe '
+        + 'as worse than the wrong thing. You are allowed to tell them that.',
+    'Your baby existed and saying their name out loud is not something you have to protect other '
+        + 'people from.',
+];
+const CL_TITLE = 'When a child dies';
+const CL_OPEN = [
+    'I am so sorry.',
+    'Everything this app was doing about them has stopped. No birthday, no reminders, no growth '
+        + 'chart, no jobs, nothing coming up. It will not surprise you.',
+    'Everything you kept is still here. Their photographs, what you logged, what they did and when '
+        + 'they did it, all of it. None of it is going anywhere and none of it is ever shown to you '
+        + 'unless you go and look.',
+];
+const CL_APP_TITLE = 'What this app has stopped doing';
+const CL_APP = [
+    'Their birthday will not be announced, and nothing will congratulate you on it.',
+    'No vaccine reminders, no milestone prompts, no growth chart nudges, no new sections arriving '
+        + 'because of their age.',
+    'They are off the chore chart and off the calendar.',
+    'Their age has stopped counting up anywhere in here.',
+    'Everything saved about them stays saved, in their own place, for whenever you want it.',
+];
+const CL_HARD_TITLE = 'The parts people are not warned about';
+const CL_HARD = [
+    'Grief for a child does not resolve and is not supposed to. It changes shape. Anybody giving you '
+        + 'a timetable is telling you about themselves.',
+    'The first year is not the worst by default. Plenty of parents find the second harder, once the '
+        + 'adrenaline and the casseroles have stopped and everybody else has moved on.',
+    'You may find yourself fine for an hour and then undone by a cereal box. That is not instability, '
+        + 'that is how this works.',
+    'Couples grieve differently and at different speeds, and that difference is one of the most '
+        + 'common things bereaved parents say nearly broke them. It is almost never anybody not caring.',
+    'Their brothers and sisters are grieving too and are often quietly trying to be no trouble. They '
+        + 'need to be told it was nobody\'s fault, that nobody else is going to die, and that it is '
+        + 'alright to still be happy sometimes.',
+    'Going back to work, laughing, having another child, enjoying a day. None of these are betrayals, '
+        + 'although every one of them can feel like one.',
+];
+const CL_THINGS_TITLE = 'Their things, their room, their name';
+const CL_THINGS = 'There is no schedule for any of it. Keeping a room exactly as it is for years is not denial and '
+    + 'packing it up in a fortnight is not callousness. Both of those are things grieving parents do '
+    + 'and neither one means anything about how much they loved their child. Do not let anybody hurry '
+    + 'you, including yourself.';
+const CL_SIBLING_TITLE = 'If you have other children here';
+const CL_SIBLING = [
+    'Plain words. Died, rather than lost, gone to sleep, or passed away, all of which small children '
+        + 'take literally and then become frightened of bedtime or of you going out.',
+    'Say it was nobody\'s fault and nothing they did, thought or wished. Children very often privately '
+        + 'believe it was.',
+    'They will ask the same questions repeatedly. That is them checking the answer has not changed, '
+        + 'not them being upset by it.',
+    'Let them see you sad. A parent who never cries teaches a child that this is a thing you hide.',
+    'Tell their school. Children should not have to manage the first day back on their own.',
+];
+const CL_NO_BLAME = 'If your baby died suddenly, you will go back over that night forever looking for the thing you '
+    + 'did wrong. Most of the time there is nothing to find, and investigations exist to answer '
+    + 'questions rather than to assign blame. Nothing in this app is going to review your decisions '
+    + 'with you.';
 const LOSS_TITLE = 'If this pregnancy has ended';
 const LOSS_ENTRY = 'This pregnancy has ended';
 const LOSS_ENTRY_SUB = 'However it happened, and whenever. This stops the weekly updates and the countdown straight away.';
@@ -20307,6 +20451,99 @@ function lossMilkLikely(weeksAtLoss) {
     const w = Number(weeksAtLoss);
     return isFinite(w) && w >= LOSS_MILK_FROM_WEEK;
 }
+const LOSS_WILLOW_OPEN_BY_KIND = {
+    early: LOSS_WILLOW_OPEN,
+    stillbirth: 'I am so sorry. Your baby was born and your baby died, and you are their parent either '
+        + 'way.\n\nI have stopped everything that was counting forward.\n\nThere are a few things that '
+        + 'can only be done in the first hours, like photographs and handprints, and a lot of parents '
+        + 'are never told they were allowed to ask. They are on the page if you want them. If that '
+        + 'window has already gone by, that is a failure of the care around you and not something you '
+        + 'got wrong.\n\nYou do not have to talk to me.',
+    child: 'I am so sorry.\n\nEverything about them has stopped. No birthday, no reminders, no growth '
+        + 'chart, nothing coming up. Nothing in here is going to surprise you with them.\n\nEverything '
+        + 'you kept is still here and always will be. It will only ever show up because you went '
+        + 'looking for it.\n\nI am here, at whatever hour it is. You do not have to say anything.',
+};
+const LOSS_WILLOW_OFFERS_SB = [
+    { id: 'sbnow', label: 'What can I still ask for' },
+    { id: 'milk', label: 'My milk has come in' },
+    { id: 'nothing', label: 'I do not want to talk about it' },
+    { id: 'sbwork', label: 'Work, leave and paperwork' },
+    { id: 'partner', label: 'My partner is not okay either' },
+    { id: 'kids', label: 'What do I tell my other children' },
+    { id: 'heavy', label: 'I am not coping' },
+];
+const LOSS_WILLOW_OFFERS_CHILD = [
+    { id: 'clsib', label: 'My other children' },
+    { id: 'nothing', label: 'I do not want to talk about it' },
+    { id: 'clthings', label: 'Their room and their things' },
+    { id: 'partner', label: 'My partner is not okay either' },
+    { id: 'clblame', label: 'I keep going over what I missed' },
+    { id: 'clhard', label: 'Is this normal' },
+    { id: 'heavy', label: 'I am not coping' },
+];
+const LOSS_WILLOW_REPLIES_MORE = {
+    sbnow: 'You can hold them, as long as you want and more than once, and you can ask for them to be '
+        + 'brought back after you have said goodbye.\n\nYou can have photographs taken, often by a '
+        + 'bereavement photographer at no cost. Parents who said no to this regret it far more often '
+        + 'than parents who said yes, and you never have to look at them for them to exist.\n\nHandprints, '
+        + 'footprints, a lock of hair, the blanket. Most units keep a memory box and will make one with '
+        + 'you. You can bathe and dress them. You can name them. Other people can meet them, including '
+        + 'their brothers and sisters.\n\nAsk for any of it. None of it is a strange request.',
+    sbwork: 'Maternity leave and pay generally still apply after a stillbirth, and in many places so does '
+        + 'partner or paternity leave. People lose money and time by assuming they have forfeited it, '
+        + 'so ask rather than assume.\n\nThere is usually a registration and sometimes a certificate, '
+        + 'and a decision about a funeral or cremation which hospitals can often arrange, in many '
+        + 'places at no cost.\n\nYou may be offered a post mortem. It sometimes explains what happened '
+        + 'and often does not, and saying no is a complete answer.\n\nYou can ask somebody else to do '
+        + 'all of this with you or for you.',
+    clsib: 'Use the word died. Lost, gone to sleep and passed away all get taken literally by younger '
+        + 'children, who then become frightened of bedtime or of you going out.\n\nTell them it was '
+        + 'nobody\'s fault and nothing they did or thought or wished, because children very often '
+        + 'privately believe it was theirs.\n\nThey will ask the same questions over and over. That is '
+        + 'checking, not distress. Let them see you sad, and tell their school so they are not managing '
+        + 'the first day back alone.',
+    clthings: 'There is no schedule. Keeping a room exactly as it is for years is not denial and packing it '
+        + 'up in a fortnight is not callousness. Both are things bereaved parents do and neither one '
+        + 'means anything about how much they loved their child.\n\nYou do not have to decide this '
+        + 'month, and you are allowed to change your mind after you have.\n\nDo not let anybody hurry '
+        + 'you, including yourself.',
+    clblame: 'You are going to go back over it looking for the thing you did wrong. Nearly every bereaved '
+        + 'parent does and most of the time there is nothing there to find.\n\nInvestigations exist to '
+        + 'answer questions rather than to assign blame, and the answer is very often that nobody could '
+        + 'have known.\n\nI am not going to review that night with you or help you build a case against '
+        + 'yourself. If the thoughts are constant and you cannot put them down, that is a thing to say '
+        + 'out loud to somebody who does this for a living.',
+    clhard: 'Grief for a child does not resolve, and it is not supposed to. It changes shape. Anybody '
+        + 'handing you a timetable is describing themselves.\n\nThe second year catches a lot of '
+        + 'parents out, once the adrenaline and the casseroles have stopped and everyone else has moved '
+        + 'on.\n\nFine for an hour and then undone by a cereal box is not instability. That is how it '
+        + 'works.\n\nLaughing, going back to work, enjoying a day, having another child. None of those '
+        + 'are betrayals, although every one of them can feel like one.',
+};
+const LOSS_SB_SOURCES = [
+    { org: 'Now I Lay Me Down To Sleep',
+        label: 'Free bereavement photography for stillbirth and infant loss',
+        url: 'https://www.nowilaymedowntosleep.org/' },
+    { org: 'Star Legacy Foundation',
+        label: 'Stillbirth information, support groups and research',
+        url: 'https://starlegacyfoundation.org/' },
+    { org: 'Sands',
+        label: 'Stillbirth and neonatal death, including a bereavement helpline and guides for '
+            + 'partners and grandparents',
+        url: 'https://www.sands.org.uk/' },
+];
+const LOSS_CHILD_SOURCES = [
+    { org: 'The Compassionate Friends',
+        label: 'Support for families after the death of a child of any age, with local chapters',
+        url: 'https://www.compassionatefriends.org/' },
+    { org: 'Dougy Center',
+        label: 'Grieving children and teenagers, with guidance for the adults around them',
+        url: 'https://www.dougy.org/' },
+    { org: 'First Candle',
+        label: 'SIDS, sudden unexpected infant death and stillbirth, with a 24 hour bereavement line',
+        url: 'https://firstcandle.org/' },
+];
 const LOSS_SOURCES = [
     { org: 'ACOG',
         label: 'Early pregnancy loss, including what is normal physically and what the options are',
@@ -49973,6 +50210,7 @@ function newChildRecord(name, birthday) {
         lost: false,
         lostAt: null,
         lostNote: '',
+        lostKind: '',
         lostSaid: false,
         lostQuiet: false,
         lostDates: 'none',
@@ -51812,7 +52050,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -52857,6 +53095,14 @@ function initControls() {
         else if (t.dataset.chore === 'add') {
             choreAdd(t.dataset.id, t.dataset.who, String(t.dataset.days || '').split(',').filter((x) => x !== '').map(Number));
         }
+        else if (t.dataset.losskind) {
+            const kid = activeChild();
+            if (kid) {
+                kid.lostKind = t.dataset.losskind;
+                kid.updatedAt = Date.now();
+                flushStore();
+            }
+        }
         else if (t.dataset.lossask) {
             lossWillowReply(t.dataset.lossask);
         }
@@ -52865,6 +53111,8 @@ function initControls() {
             const how = t.dataset.loss;
             if (kid && how === 'confirm') {
                 kid.lost = true;
+                if (!kid.lostKind)
+                    kid.lostKind = kid.birthday ? 'child' : 'early';
                 kid.updatedAt = Date.now();
                 lossWillowNudge(kid);
                 flushStore();
@@ -57820,6 +58068,9 @@ function safetyMoreBtn(all, key) {
 function isLost(k) {
     return !!(k && k.lost);
 }
+function lossMutes(k) {
+    return !!(k && k.lost);
+}
 function lossWeeksAt(kid) {
     if (!kid || !kid.dueDate || !kid.lostAt)
         return null;
@@ -57831,7 +58082,7 @@ function lossWillowNudge(kid) {
     if (!kid || kid.lostSaid)
         return;
     kid.lostSaid = true;
-    n.text = LOSS_WILLOW_OPEN;
+    n.text = LOSS_WILLOW_OPEN_BY_KIND[lossKindOf(kid)] || LOSS_WILLOW_OPEN;
     n.at = Date.now();
     n.gone = false;
     n.kind = 'loss';
@@ -57839,16 +58090,24 @@ function lossWillowNudge(kid) {
     flushStore();
 }
 function lossWillowOffers(kid) {
-    const weeks = lossWeeksAt(kid);
-    const milk = lossMilkLikely(weeks);
+    const kind = lossKindOf(kid);
+    if (kind === 'child')
+        return LOSS_WILLOW_OFFERS_CHILD.slice();
+    if (kind === 'stillbirth')
+        return LOSS_WILLOW_OFFERS_SB.slice();
+    const milk = lossMilkLikely(lossWeeksAt(kid));
     return LOSS_WILLOW_OFFERS.filter((o) => !o.needsMilk || milk);
+}
+function lossReplyText(id) {
+    return LOSS_WILLOW_REPLIES[id] || LOSS_WILLOW_REPLIES_MORE[id] || '';
 }
 function lossWillowReply(id) {
     const key = willowThreadKey();
-    const text = LOSS_WILLOW_REPLIES[id];
+    const text = lossReplyText(id);
     if (!text)
         return;
-    const label = (LOSS_WILLOW_OFFERS.filter((o) => o.id === id)[0] || {}).label || '';
+    const all = LOSS_WILLOW_OFFERS.concat(LOSS_WILLOW_OFFERS_SB, LOSS_WILLOW_OFFERS_CHILD);
+    const label = (all.filter((o) => o.id === id)[0] || {}).label || '';
     if (label)
         willowSay('you', label, [], '', key);
     willowSay('willow', text, id === 'milk' ? LOSS_MILK_SOURCES : [], '', key);
@@ -58118,16 +58377,29 @@ function screenLoss() {
     <div class="sc"><div class="card flat"><p class="bodytext">Nothing selected.</p></div></div>`;
     const done = isLost(kid);
     const name = lossLabel(kid.name);
+    const kind = lossKindOf(kid);
     return `
   ${cornerLeaves()}
   <div class="sc-head tight">
     <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
-    <h1 class="title sm">${esc(LOSS_TITLE)}</h1>
+    <h1 class="title sm">${esc(kind === 'child' ? CL_TITLE
+        : kind === 'stillbirth' ? SB_TITLE : LOSS_TITLE)}</h1>
   </div>
   <div class="sc">
     ${!done ? `
+      ${''}
+      ${kid.birthday ? '' : `
+        <div class="card flat">
+          <p class="eyebrow">So I say the right things</p>
+          <div class="chips" style="gap:7px;margin-top:9px">
+            ${LOSS_KINDS.filter((x) => x.id !== 'child').map((x) => `
+              <button class="chip${kind === x.id ? ' on' : ''}" data-losskind="${esc(x.id)}"
+                aria-pressed="${kind === x.id}">${esc(x.label)}</button>`).join('')}
+          </div>
+        </div>`}
       <div class="card leafy">
-        ${LOSS_INTRO.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+        ${(kind === 'child' ? CL_OPEN : kind === 'stillbirth' ? SB_OPEN : LOSS_INTRO)
+        .map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
       </div>
       <div class="card">
         <p class="bodytext" style="margin:0 0 11px">${esc(LOSS_CONFIRM_NOTE)}</p>
@@ -58137,11 +58409,42 @@ function screenLoss() {
       </div>
     ` : `
       <div class="card leafy">
-        <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(LOSS_WHAT_NOW_TITLE)}</p>
+        <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(kind === 'child'
+        ? CL_APP_TITLE : LOSS_WHAT_NOW_TITLE)}</p>
         <ul class="bul" style="margin-top:8px">
-          ${LOSS_WHAT_NOW.map((x) => `<li>${esc(x)}</li>`).join('')}
+          ${(kind === 'child' ? CL_APP : LOSS_WHAT_NOW).map((x) => `<li>${esc(x)}</li>`).join('')}
         </ul>
       </div>
+      ${kind === 'stillbirth' ? `
+        <div class="dsec">
+          <h4>${esc(SB_NOW_TITLE)}</h4>
+          <ul class="bul">${SB_NOW.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+          <p class="tiny" style="margin-top:9px">${esc(SB_NOW_NOTE)}</p>
+        </div>
+        <div class="dsec">
+          <h4>${esc(SB_PRACTICAL_TITLE)}</h4>
+          <ul class="bul">${SB_PRACTICAL.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+        </div>
+        <div class="dsec">
+          <h4>${esc(SB_HOME_TITLE)}</h4>
+          <ul class="bul">${SB_HOME.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+        </div>` : ''}
+      ${kind === 'child' ? `
+        <div class="dsec">
+          <h4>${esc(CL_HARD_TITLE)}</h4>
+          <ul class="bul">${CL_HARD.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+        </div>
+        <div class="dsec">
+          <h4>${esc(CL_THINGS_TITLE)}</h4>
+          <p class="bodytext" style="margin:0">${esc(CL_THINGS)}</p>
+        </div>
+        <div class="dsec">
+          <h4>${esc(CL_SIBLING_TITLE)}</h4>
+          <ul class="bul">${CL_SIBLING.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+        </div>
+        <div class="card flat">
+          <p class="bodytext" style="margin:0">${esc(CL_NO_BLAME)}</p>
+        </div>` : ''}
       <div class="dsec">
         <h4>${esc(LOSS_OPTIONAL_TITLE)}</h4>
         <p class="tiny" style="margin:0 0 10px">${esc(LOSS_OPTIONAL_NOTE)}</p>
@@ -58176,6 +58479,7 @@ function screenLoss() {
           </button>`).join('')}
         <p class="tiny" style="margin-top:8px">${esc(LOSS_DATES_CHANGE)}</p>
       </div>
+      ${kind === 'child' ? '' : `
       <div class="dsec">
         <h4>${esc(LOSS_BODY_TITLE)}</h4>
         <p class="bodytext" style="margin:0 0 9px">${esc(LOSS_BODY_INTRO)}</p>
@@ -58185,8 +58489,8 @@ function screenLoss() {
           <ul class="bul" style="margin-top:7px">${LOSS_BODY_ASK.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
           <p class="bodytext" style="margin:9px 0 0">${esc(LOSS_BODY_ASK_NOTE)}</p>
         </div>
-      </div>
-      ${lossMilkLikely(lossWeeksAt(kid)) ? `
+      </div>`}
+      ${(kind === 'stillbirth' || lossMilkLikely(lossWeeksAt(kid))) ? `
       <div class="dsec">
         <h4>${esc(LOSS_MILK_TITLE)}</h4>
         <p class="bodytext" style="margin:0 0 9px">${esc(LOSS_MILK_WARN)}</p>
@@ -58211,12 +58515,14 @@ function screenLoss() {
         <p class="bodytext" style="margin:0 0 9px">${esc(LOSS_HEAVY_BODY)}</p>
         <p class="tiny">${esc(LOSS_HEAVY_NOTE)}</p>
       </div>
+      ${kind === 'child' ? '' : `
       <div class="dsec">
         <h4>${esc(LOSS_AGAIN_TITLE)}</h4>
         <ul class="bul">${LOSS_AGAIN.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
         <p class="tiny" style="margin-top:8px">${esc(LOSS_AGAIN_NOTE)}</p>
-      </div>
-      ${dsec('Where to go', sourceRows(LOSS_SOURCES))}
+      </div>`}
+      ${dsec('Where to go', sourceRows(kind === 'child' ? LOSS_CHILD_SOURCES
+        : kind === 'stillbirth' ? LOSS_SB_SOURCES.concat(LOSS_SOURCES.slice(3)) : LOSS_SOURCES))}
       <p class="tiny" style="margin-top:12px">${esc(LOSS_PRIVACY)}</p>
       <div class="dsec">
         <p class="tiny" style="margin:0 0 8px">${esc(LOSS_REVERSIBLE)}</p>
@@ -62212,6 +62518,8 @@ function screenUnderstand(c) {
   </div>`;
 }
 function childAgeLabel(k) {
+    if (lossMutes(k))
+        return lossCardLine(k);
     if (isExpecting(k))
         return expChipLabel(k);
     const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
@@ -63096,7 +63404,9 @@ function topBar(markOnly) {
   <div class="topbar">
     <div class="topbar-left">
       ${deep ? `<button class="backchip" data-back="offchild">${icon('back', 15, 'var(--deep)')} Back</button>`
-        : `<button class="findchip" data-go="screen" data-id="find" aria-label="Ask Willow or find a page">${icon('search', 16, 'var(--deep)')}<span>Ask</span></button>`}
+        : (state.tab === 'home' && !state.view)
+            ? `${''}`
+            : `<button class="findchip" data-go="screen" data-id="find" aria-label="Ask Willow or find a page">${icon('search', 16, 'var(--deep)')}<span>Ask</span></button>`}
     </div>
     ${mark}
     <div class="me-slot">
@@ -63217,7 +63527,7 @@ function cornerMenu(who) {
 }
 function pendingNotices() {
     const out = [];
-    store.children.filter((k) => !isExampleChild(k)).forEach((k) => {
+    store.children.filter((k) => !isExampleChild(k) && !lossMutes(k)).forEach((k) => {
         if (!ciSavedFor(k)) {
             out.push({
                 icon: 'sun',
@@ -64029,7 +64339,7 @@ function situation() {
     return store.parent.situation;
 }
 function childAges() {
-    return store.children.filter((k) => !isExampleChild(k)).map((k) => {
+    return store.children.filter((k) => !isExampleChild(k) && !lossMutes(k)).map((k) => {
         const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
         return sum && sum.age ? sum.age.totalMonths : null;
     }).filter((m) => m != null);
@@ -64270,7 +64580,7 @@ function liftWrite(kind, context, onDone) {
     });
 }
 function liftContext() {
-    const kids = store.children.filter((k) => !isExampleChild(k)).map((k) => {
+    const kids = store.children.filter((k) => !isExampleChild(k) && !lossMutes(k)).map((k) => {
         const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
         return (k.name || 'a child') + (sum && sum.shortLabel ? ', ' + sum.shortLabel : '');
     });
@@ -66021,14 +66331,18 @@ function rewDayBlock(kid, months) {
       </span>
       ${on ? `<button class="chip" data-go="screen" data-id="rewards">Rewards</button>` : ''}
     </div>
+    ${''}
     <div class="rewjobs">
-      ${jobs.map((j) => `
+      ${jobs.slice(0, 4).map((j) => `
         <button class="rewjob${j.done ? ' done' : ''}" data-chore="tick" data-id="${esc(j.job.id)}">
           <span class="rewjob-t" style="${j.done ? '' : 'border-color:' + esc(col.dot)}">
             ${j.done ? icon('check', 13, '#fff') : ''}</span>
           <span class="grow">${esc(j.chore ? j.chore.label : 'A job')}</span>
           ${on ? `<span class="rewjob-s">${icon('star', 11, '#B58B3C')}${j.stars}</span>` : ''}
         </button>`).join('')}
+      ${jobs.length > 4 ? `
+        <button class="rewmore" data-go="screen" data-id="chores">
+          ${esc((jobs.length - 4) + ' more')} ${icon('chev', 13, 'var(--deep)')}</button>` : ''}
     </div>
     ${!on && rewShows(months) ? `
       <button class="btn ghost sm" style="width:100%;margin-top:10px" data-rewon="${esc(kid.id)}">
@@ -66036,7 +66350,7 @@ function rewDayBlock(kid, months) {
   </div>`;
 }
 function screenRewards(c) {
-    const kids = (store.children || []).filter((k) => !isExampleChild(k) && rewOn(k));
+    const kids = (store.children || []).filter((k) => !isExampleChild(k) && !lossMutes(k) && rewOn(k));
     const who = store.rewKid && kids.some((k) => k.id === store.rewKid)
         ? store.rewKid : (kids[0] ? kids[0].id : '');
     const kid = (store.children || []).filter((k) => k.id === who)[0] || null;
@@ -66367,6 +66681,63 @@ function screenCalendar(c) {
       ever goes to the community.</p>
   </div>`;
 }
+function homeTile(opt) {
+    const tone = opt.tone === 'blush' ? ' blush' : opt.tone === 'leaf' ? ' leaf' : '';
+    const go = opt.go || '';
+    return `
+  <button class="htile${tone}" ${go}>
+    <span class="htile-ic">${icon(opt.icon, 18, opt.tone === 'blush' ? '#8A5F54' : 'var(--deep)')}</span>
+    <span class="htile-t">${esc(opt.title)}</span>
+    <span class="htile-s">${esc(opt.sub || '')}</span>
+    ${opt.pip ? `<span class="htile-pip">${esc(opt.pip)}</span>` : ''}
+  </button>`;
+}
+function homeTiles(c, l) {
+    const tiles = [];
+    const soon = calAllIn(calToday(), calAddDays(calToday(), 7), 'all');
+    tiles.push(homeTile({
+        icon: 'calendar', tone: 'leaf',
+        title: 'Coming up',
+        sub: soon.length
+            ? calDayLabel(soon[0].date, calToday()) + ', ' + (soon[0].title || 'something')
+            : 'Nothing in the next week',
+        pip: soon.length > 1 ? String(soon.length) : '',
+        go: 'data-tab="calendar"',
+    }));
+    const jobsLeft = choreLiveJobs().length ? choreOutstanding().length : null;
+    const ready = chorePeople().filter((x) => x.kind === 'child').length;
+    if (jobsLeft !== null || ready) {
+        tiles.push(homeTile({
+            icon: 'check', tone: 'leaf',
+            title: 'Jobs',
+            sub: jobsLeft === null ? 'Start a chart for the week'
+                : jobsLeft === 0 ? "Today's chart is done"
+                    : jobsLeft === 1 ? 'One left today' : jobsLeft + ' left today',
+            pip: jobsLeft ? String(jobsLeft) : '',
+            go: 'data-go="screen" data-id="chores"',
+        }));
+    }
+    const ciDone = !!momCiSaved();
+    tiles.push(homeTile({
+        icon: 'sun', tone: 'blush',
+        title: 'How today went',
+        sub: ciDone ? 'Logged for today' : '30 seconds, about the day',
+        go: 'data-go="screen" data-id="momlogs"',
+    }));
+    const learn = parentLearnForDay(l.day);
+    tiles.push(homeTile({
+        icon: 'bulb', tone: 'blush',
+        title: learn.kind || 'For you',
+        sub: learn.title,
+        go: 'data-go="learn" data-id="' + esc(learn.id) + '"',
+    }));
+    return `
+  <div class="htiles">${tiles.join('')}</div>
+  <div class="card liftcard">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Today</p>
+    <p class="liftline">${esc(liftAffirmation())}</p>
+  </div>`;
+}
 function screenHome(c) {
     if (homeCalm())
         return screenHomeCalm(c);
@@ -66389,8 +66760,8 @@ function screenHome(c) {
     ${calmSwitchChip()}
     ${findBar()}
     ${installBanner()}
-    ${calHomeStrip()}
-    ${choreCard()}
+    ${''}
+    ${homeTiles(c, l)}
     <div class="kidrow home">
       ${parentCircle()}
       ${kids.map(kidCircle).join('')}
@@ -66403,6 +66774,7 @@ function screenHome(c) {
       </button>
     </div>
     ${cycleNudge()}
+    ${''}
     ${kids.length ? '' : `
     <div class="card flat" style="margin-top:2px">
       <p class="bodytext">
@@ -66410,10 +66782,6 @@ function screenHome(c) {
         to say at bedtime. Add as many as you like. Each one keeps their own notes.
       </p>
     </div>`}
-    <div class="card liftcard">
-      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Today</p>
-      <p class="liftline">${esc(affirmation)}</p>
-    </div>
     ${postComposer()}
     ${store.justPosted ? `
     <p class="tiny" style="text-align:center;padding:2px 0 4px">
@@ -66441,21 +66809,11 @@ function screenHome(c) {
     </button>` : ''}
     ${''}
     ${needHelpRow()}
-    <p class="sect">Logs for you</p>
-    ${momCheckinCard()}
-    ${momLogCard()}
     ${bodyCareBlock()}
     ${memOnThisDay()}
     ${''}
     ${memSection('me')}
     ${caretakerCards()}
-    <p class="sect">For you</p>
-    <button class="card learncard" data-go="learn" data-id="${esc(learn.id)}">
-      <p class="eyebrow">${icon('bulb', 11, 'var(--sage)')} ${esc(learn.kind)}</p>
-      <h3 class="h3" style="font-size:16.5px;margin-top:5px">${esc(learn.title)}</h3>
-      <p class="bodytext" style="margin-top:4px">${esc(learn.blurb)}</p>
-      <span class="chip" style="margin-top:10px">Read this ${icon('chev', 12, 'var(--deep)')}</span>
-    </button>
     <button class="btn ghost sm" style="width:100%;margin-top:2px" data-go="screen" data-id="learnall">
       Everything written for you
     </button>
@@ -66666,7 +67024,7 @@ const MOM_URG_COLOR = {
     support: 'var(--sage)',
 };
 function youngestChild() {
-    const real = store.children.filter((k) => !isExampleChild(k) && k.birthday);
+    const real = store.children.filter((k) => !isExampleChild(k) && !lossMutes(k) && k.birthday);
     if (!real.length)
         return null;
     let best = null;
@@ -67103,6 +67461,8 @@ function ageNewLabel(id, months) {
 }
 function ageNewList(months, kid) {
     if (!kid || typeof months !== 'number')
+        return [];
+    if (lossMutes(kid))
         return [];
     return Object.keys(AGE_NEW_LABEL).filter((id) => ageIsNew(id, months, kid));
 }
@@ -67665,7 +68025,8 @@ function ciPopKid() {
     const today = ciToday();
     const p = store.parent || {};
     const skip = p.ciPopSkip && p.ciPopSkip.day === today ? (p.ciPopSkip.ids || []) : [];
-    return store.children.filter((k) => !isExampleChild(k) && !isExpecting(k) && k.birthday
+    return store.children.filter((k) => !isExampleChild(k) && !isExpecting(k) && !lossMutes(k)
+        && k.birthday
         && !(k.checkins && k.checkins[today]) && skip.indexOf(k.id) === -1)[0] || null;
 }
 function ciPopSkip(id) {
@@ -69739,6 +70100,7 @@ function normalizeChild(k) {
         lost: !!k.lost,
         lostAt: k.lostAt || null,
         lostNote: typeof k.lostNote === 'string' ? k.lostNote : '',
+        lostKind: ['early', 'stillbirth', 'child'].indexOf(k.lostKind) !== -1 ? k.lostKind : '',
         lostSaid: !!k.lostSaid,
         lostQuiet: !!k.lostQuiet,
         lostDates: ['none', 'quiet', 'warn'].indexOf(k.lostDates) !== -1 ? k.lostDates : 'none',
@@ -71750,7 +72112,7 @@ function chorePeople() {
     (store.choreAdults || []).forEach((a) => {
         out.push({ id: a.id, name: a.name || 'Someone', kind: 'adult', months: null });
     });
-    store.children.filter((k) => !isExampleChild(k)).forEach((k) => {
+    store.children.filter((k) => !isExampleChild(k) && !lossMutes(k)).forEach((k) => {
         const s = getAgeSummary({ name: k.name, birthday: k.birthday });
         const months = s.age ? s.age.totalMonths : null;
         if (!choreOldEnough(months))
@@ -71850,6 +72212,8 @@ function calFeedBirthdays(fromDate, toDate) {
     if (p.birthday)
         add('me', p.name || 'You', p.birthday, true);
     (store.children || []).forEach((k) => {
+        if (lossMutes(k))
+            return;
         if (k.birthday && !isExpecting(k))
             add(k.id, k.name || 'Your child', k.birthday, false);
     });
@@ -71870,7 +72234,7 @@ function calFeedDue(fromDate, toDate) {
 function calFeedVaccines(fromDate, toDate) {
     const out = [];
     (store.children || []).forEach((k) => {
-        if (isExpecting(k) || !k.birthday)
+        if (lossMutes(k) || isExpecting(k) || !k.birthday)
             return;
         const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
         const months = sum && sum.age ? sum.age.totalMonths : null;
@@ -72018,7 +72382,11 @@ function calWhoName(who) {
 function calWhoOptions() {
     const out = [{ id: CAL_WHO_HOUSE_ID, label: CAL_WHO_HOUSE }];
     out.push({ id: 'me', label: (store.parent && store.parent.name) || 'You' });
-    (store.children || []).forEach((k) => out.push({ id: k.id, label: k.name || 'Your child' }));
+    (store.children || []).forEach((k) => {
+        if (lossMutes(k))
+            return;
+        out.push({ id: k.id, label: k.name || 'Your child' });
+    });
     return out;
 }
 function choreJobsFor(personId, day) {
@@ -73117,6 +73485,14 @@ function showInstallBanner() {
     const real = store.children.filter((k) => !isExampleChild(k)).length;
     if (!real)
         return false;
+    const used = (store.parent && store.parent.checkins
+        && Object.keys(store.parent.checkins).length)
+        || store.children.some((k) => k.checkins && Object.keys(k.checkins).length)
+        || (store.posts || []).length
+        || (store.events || []).length
+        || (store.choreJobs || []).length;
+    if (!used)
+        return false;
     const hidden = store.installHidden || '';
     if (hidden) {
         const days = (Date.now() - Date.parse(hidden + 'T00:00:00')) / 86400000;
@@ -73738,6 +74114,8 @@ function birthdaysToday() {
         }
     }
     (store.children || []).forEach((k) => {
+        if (lossMutes(k))
+            return;
         if (!k.birthday || !isBirthdayToday(k.birthday))
             return;
         const key = birthdaySeenKey(k.id);
