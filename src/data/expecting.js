@@ -144,6 +144,12 @@ export const EXP_DUE_NOTE = 'The date from your provider, or from your last peri
    THE PROFILE
    ================================================================== */
 
+/* The one line that sits under the countdown. Kept short because it
+   is next to a number, and a number with a paragraph under it stops
+   being a number. About 1 baby in 20 arrives on the actual date, and
+   a countdown that does not say so reads as a promise. */
+export const EXP_DUE_IS_A_GUESS = 'A date, not a deadline. Most arrive either side of it.';
+
 export const EXP_PROFILE_SUB = 'The seed stage. Same profile, same story, just earlier.';
 
 export const EXP_DATING_NOTE = {
