@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-05 19:31">
+<meta name="rsg-build" content="2026-10-05 20:23">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -2043,6 +2043,54 @@ body.calpage .mark-holder{margin-bottom:-20px}
 .listdel{font-size:19px;line-height:1;color:var(--faint);padding:0 2px;flex:none;opacity:.55}
 .listdel:hover{opacity:1;color:#A85A44}
 
+.rewx{flex:none;width:28px;height:28px;border:0;background:none;padding:0;display:flex;
+  align-items:center;justify-content:center;border-radius:50%;opacity:.5;cursor:pointer}
+.rewx:hover{opacity:1;background:var(--line2)}
+
+/* The three reward sizes. Boxed rather than only headed, because the
+   whole point she asked for is that a small one and a big one of the
+   same idea are a choice between taking it today and saving, and that
+   choice has to be visible at a glance rather than read for. */
+.rewgrp{margin-top:13px;padding:11px 12px 13px;border:1px solid var(--line2);
+  border-radius:15px;background:var(--paper)}
+.rewgrp-h{margin:0;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--deep)}
+.rewgrp-s{margin:3px 0 0;font-size:11.5px;line-height:1.45;color:var(--faint)}
+
+/* ------------------------------------------------------------------
+   THE WEEK HERO
+
+   Her note on the expecting screen: it read as a blog, one paragraph
+   under another, and the size comparison was a line of text when what
+   she wanted was the carrot. So the picture leads and the writing
+   follows it, and the two sections underneath got widget chrome so
+   they read as cards rather than article headings.
+   ------------------------------------------------------------------ */
+.szhero{display:flex;align-items:center;gap:13px;background:var(--leaf3);
+  border:1px solid rgba(74,103,65,.16);border-radius:20px;padding:13px 15px 13px 11px;
+  margin-top:12px}
+.szhero-t{min-width:0}
+.szhero-wk{margin:0;font-size:11.5px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--deep)}
+.szhero-sz{margin:3px 0 0;font-size:21px;font-weight:700;line-height:1.15;color:var(--ink)}
+.szhero-ms{margin:4px 0 0;font-size:12px;color:var(--muted);line-height:1.35}
+
+.szbig{margin:0;font-size:27px;font-weight:700;line-height:1;color:var(--ink);
+  font-variant-numeric:tabular-nums}
+.szbig-u{font-size:15px;font-weight:600;color:var(--muted);margin-left:1px}
+.szbar{height:6px;border-radius:3px;background:var(--line2);overflow:hidden;margin-top:7px}
+.szbar span{display:block;height:100%;border-radius:3px;background:var(--sage)}
+
+.szcard{background:#fff;border:1px solid rgba(74,103,65,.14);border-radius:18px;
+  padding:13px 14px;margin-top:11px}
+.szcard.blush{background:var(--blush2);border-color:rgba(168,112,107,.22)}
+.szcard-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.szcard-ic{width:28px;height:28px;border-radius:50%;background:var(--leaf3);flex:none;
+  display:flex;align-items:center;justify-content:center}
+.szcard.blush .szcard-ic{background:rgba(255,255,255,.72)}
+.szcard-t{font-size:13.5px;font-weight:700;color:var(--ink)}
+.szcard.blush .szcard-t{color:#6E4740}
+
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 <!--
@@ -2344,7 +2392,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-05 19:31';
+const BUILD_STAMP = '2026-10-05 20:23';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -19948,9 +19996,11 @@ const REW_TITLE = 'Stars and rewards';
 const REW_SUB = 'Jobs on the chart earn stars. Stars buy something the family agreed on. Off until you turn it on '
     + 'for a child, because this suits some children and not others.';
 const REW_FROM_MONTHS = 36;
-const REW_TO_MONTHS = 156;
-const REW_AGE_NOTE = 'Usually lands somewhere between 3 and 13. Younger than that and the star is not connected to the '
-    + 'job yet. Older and most children would rather be asked, or paid.';
+const REW_TO_MONTHS = 216;
+const REW_AGE_NOTE = 'Starts landing around 3, once a star and a job are connected in their head. It does not stop at '
+    + 'the end of childhood, it changes shape: a six year old is saving for the indoor play place, a '
+    + 'fifteen year old is saving for a lift into town and no questions asked. The rewards below move '
+    + 'with them.';
 const REW_OFF_TITLE = 'Stars are off for this child';
 const REW_OFF_BODY = [
     'Reward charts help some children a great deal and make things worse for others, and which one it '
@@ -19974,18 +20024,102 @@ const REW_HOW = {
     ],
 };
 const REW_IDEAS = [
-    { id: 'story', label: 'An extra bedtime story', cost: 10, kind: 'time' },
-    { id: 'pick-dinner', label: 'Pick what is for dinner', cost: 20, kind: 'choice' },
-    { id: 'film', label: 'Film night, their choice', cost: 40, kind: 'time' },
-    { id: 'late', label: 'Stay up 30 minutes later, once', cost: 30, kind: 'choice' },
-    { id: 'park', label: 'A trip to the park with you', cost: 25, kind: 'time' },
-    { id: 'baking', label: 'Bake something together', cost: 35, kind: 'time' },
-    { id: 'friend', label: 'A friend over', cost: 60, kind: 'time' },
-    { id: 'money', label: 'Pocket money', cost: 50, kind: 'thing' },
-    { id: 'toy', label: 'A small something from the shop', cost: 80, kind: 'thing' },
+    { id: 'story', label: 'An extra bedtime story', cost: 10,
+        kind: 'time', size: 'small', from: 36, to: 120 },
+    { id: 'piggyback', label: 'A piggyback up the stairs to bed', cost: 10,
+        kind: 'time', size: 'small', from: 36, to: 84 },
+    { id: 'music', label: 'Pick the music in the car', cost: 10,
+        kind: 'choice', size: 'small', from: 36, to: 216 },
+    { id: 'trolley', label: 'Be in charge of the trolley at the shop', cost: 10,
+        kind: 'choice', size: 'small', from: 36, to: 84 },
+    { id: 'bath', label: 'A long bath with the good bubbles', cost: 15,
+        kind: 'time', size: 'small', from: 36, to: 108 },
+    { id: 'stickers', label: 'A sticker sheet they choose', cost: 15,
+        kind: 'thing', size: 'small', from: 36, to: 84 },
+    { id: 'pick-dinner', label: 'Pick what is for dinner', cost: 20,
+        kind: 'choice', size: 'small', from: 36, to: 216 },
+    { id: 'park', label: 'A trip to the park with you', cost: 25,
+        kind: 'time', size: 'small', from: 36, to: 144 },
+    { id: 'late', label: 'Stay up 30 minutes later, once', cost: 25,
+        kind: 'choice', size: 'small', from: 48, to: 216 },
+    { id: 'takeaway', label: 'Pick the takeaway on Friday', cost: 25,
+        kind: 'choice', size: 'small', from: 96, to: 216 },
+    { id: 'skip-job', label: 'Skip one job, their pick of which', cost: 30,
+        kind: 'choice', size: 'small', from: 72, to: 216 },
+    { id: 'onegame', label: 'A game with you, one on one, nobody rushing', cost: 30,
+        kind: 'time', size: 'small', from: 48, to: 180 },
+    { id: 'small-thing', label: 'A small something they pick, from the shop they pick', cost: 40,
+        kind: 'thing', size: 'small', from: 36, to: 216 },
+    { id: 'lift', label: 'A lift somewhere, no questions', cost: 40,
+        kind: 'choice', size: 'small', from: 132, to: 216 },
+    { id: 'baking', label: 'Bake something together, their recipe', cost: 35,
+        kind: 'time', size: 'mid', from: 36, to: 192 },
+    { id: 'film', label: 'Film night, their choice, nobody else gets a vote', cost: 40,
+        kind: 'time', size: 'mid', from: 36, to: 216 },
+    { id: 'money', label: 'Pocket money', cost: 50,
+        kind: 'thing', size: 'mid', from: 60, to: 216 },
+    { id: 'friend', label: 'A friend over', cost: 60,
+        kind: 'time', size: 'mid', from: 48, to: 216 },
+    { id: 'camp', label: 'Camp out in the living room', cost: 60,
+        kind: 'time', size: 'mid', from: 48, to: 156 },
+    { id: 'home-late', label: 'An hour later coming home, once', cost: 60,
+        kind: 'choice', size: 'mid', from: 156, to: 216 },
+    { id: 'softplay', label: 'The indoor play place', cost: 70,
+        kind: 'time', size: 'mid', from: 36, to: 132 },
+    { id: 'swim', label: 'Swimming, just for the fun of it', cost: 70,
+        kind: 'time', size: 'mid', from: 36, to: 216 },
+    { id: 'cinema', label: 'The actual cinema, with the popcorn', cost: 80,
+        kind: 'time', size: 'mid', from: 48, to: 216 },
+    { id: 'drive', label: 'An hour of driving practice', cost: 60,
+        kind: 'time', size: 'mid', from: 192, to: 216 },
+    { id: 'sleepover', label: 'A friend to stay the night', cost: 100,
+        kind: 'time', size: 'big', from: 72, to: 216 },
+    { id: 'day-out', label: 'A day out, anywhere they pick', cost: 120,
+        kind: 'time', size: 'big', from: 48, to: 216 },
+    { id: 'zoo', label: 'The zoo, or the aquarium', cost: 120,
+        kind: 'time', size: 'big', from: 36, to: 180 },
+    { id: 'trampoline', label: 'The trampoline park, and they pick who comes', cost: 130,
+        kind: 'time', size: 'big', from: 60, to: 192 },
+    { id: 'big-thing', label: 'The big thing they have been going on about, from the shop they pick',
+        cost: 150, kind: 'thing', size: 'big', from: 48, to: 216 },
+    { id: 'tickets', label: 'Tickets to something they choose', cost: 150,
+        kind: 'thing', size: 'big', from: 120, to: 216 },
 ];
-const REW_IDEAS_NOTE = 'Time and choice work better than things, and cost nothing, which is also why they last. Change '
-    + 'any of these or write your own.';
+const REW_SIZES = [
+    { id: 'small', label: 'Small', hint: 'About a day of jobs. Something to take today.' },
+    { id: 'mid', label: 'Worth saving for', hint: 'A few days. Most of what gets claimed sits here.' },
+    { id: 'big', label: 'The big one', hint: 'A week or two. Worth agreeing out loud before it starts.' },
+];
+function rewIdeasAtAge(months) {
+    const m = Number(months);
+    if (!isFinite(m))
+        return REW_IDEAS.filter((i) => i.size !== 'big');
+    return REW_IDEAS.filter((i) => m >= i.from && m <= i.to);
+}
+function rewIdeasBySize(months) {
+    const live = rewIdeasAtAge(months);
+    return REW_SIZES.map((s) => ({
+        size: s,
+        items: live.filter((i) => i.size === s.id),
+    })).filter((g) => g.items.length);
+}
+function rewAgeFraming(months) {
+    const m = Number(months);
+    if (!isFinite(m))
+        return '';
+    if (m < 60)
+        return 'Geared to a little one: short, soon, and mostly you rather than a shop.';
+    if (m < 108)
+        return 'Geared to this age: outings and choices, and a big one worth saving a fortnight for.';
+    if (m < 156)
+        return 'Geared to this age: friends, outings, and something real at the end of saving.';
+    return 'Geared to this age: money, freedom and time, because that is what is actually worth having now.';
+}
+const REW_IDEAS_NOTE = 'Only the ones that suit their age are shown. Time and choice work better than things and cost '
+    + 'nothing, which is also why they last, but a real object at the end of a fortnight of saving is '
+    + 'the one most children are actually working for. Change any of these or write your own.';
+const REW_FOOD_NOTE = 'Nothing here is a pudding or a treat to eat. Food used as a reward is the one that tends to '
+    + 'backfire later, so picking the dinner is on the list and earning dessert is not.';
 const REW_NEW_PLACEHOLDER = 'What they are working towards';
 const REW_EMPTY = {
     title: 'Nothing to work towards yet',
@@ -26743,6 +26877,7 @@ const EXP_NAME_NOTE = 'A name, or whatever you have been calling them. Peanut is
     + 'good name for now and you can change it at any point.';
 const EXP_DUE_NOTE = 'The date from your provider, or from your last period if that is all '
     + 'you have. It can be changed whenever a scan moves it, which happens often and is normal.';
+const EXP_DUE_IS_A_GUESS = 'A date, not a deadline. Most arrive either side of it.';
 const EXP_PROFILE_SUB = 'The seed stage. Same profile, same story, just earlier.';
 const EXP_DATING_NOTE = {
     title: 'Why it says 40 weeks when it is really 38',
@@ -27234,6 +27369,224 @@ const PREG_WEEK_SOURCES = [
     { org: 'Tommy’s', label: 'Baby movements, and why counting kicks is no longer advised',
         url: 'https://www.tommys.org/pregnancy-information/im-pregnant/baby-movements-pregnancy' },
 ];
+const SIZE_ART_TITLE = 'About this big';
+const C = {
+    ring: '#F2EEE6',
+    shade: 'rgba(74,103,65,.09)',
+    leaf: '#7C9A5E', leafD: '#5E7A46',
+    green: '#8FB06A', greenD: '#6E8F4D', greenP: '#B9CE96',
+    deepGreen: '#4E6B3C',
+    red: '#D06A5C', redD: '#B3503F',
+    pink: '#D4738A',
+    purple: '#7E5A86', purpleD: '#60436A',
+    orange: '#E08B48', orangeD: '#C06F31',
+    gold: '#E3B457', goldD: '#C2913A',
+    yellow: '#EBD07A',
+    cream: '#EFE3C4',
+    brown: '#8A6A4F', brownD: '#6B5039',
+    tan: '#D8B98A',
+    blue: '#6B7FA8',
+    ink: '#4A3F36',
+    blush: 'rgba(214,138,130,.42)',
+};
+function face(cx, cy, s, dark) {
+    const col = dark ? '#FFF6EC' : C.ink;
+    const e = 1.9 * s;
+    const dx = 5.2 * s;
+    return ''
+        + `<ellipse cx="${cx - dx}" cy="${cy}" rx="${e * 0.78}" ry="${e}" fill="${col}"/>`
+        + `<ellipse cx="${cx + dx}" cy="${cy}" rx="${e * 0.78}" ry="${e}" fill="${col}"/>`
+        + `<path d="M${cx - 2.6 * s} ${cy + 3.6 * s}q${2.6 * s} ${2.4 * s} ${5.2 * s} 0" `
+        + `stroke="${col}" stroke-width="${1.25 * s}" fill="none" stroke-linecap="round"/>`
+        + `<ellipse cx="${cx - 9.4 * s}" cy="${cy + 2.6 * s}" rx="${2.5 * s}" ry="${1.7 * s}" fill="${C.blush}"/>`
+        + `<ellipse cx="${cx + 9.4 * s}" cy="${cy + 2.6 * s}" rx="${2.5 * s}" ry="${1.7 * s}" fill="${C.blush}"/>`;
+}
+function dot(r, fill, dashed) {
+    return (dashed ? `<circle cx="50" cy="50" r="26" fill="none" stroke="rgba(74,103,65,.3)"
+    stroke-width="1.1" stroke-dasharray="3 4"/>` : '')
+        + `<circle cx="50" cy="52" r="${r}" fill="${fill}"/>`;
+}
+function berry(rx, ry, fill, stem) {
+    return `<ellipse cx="50" cy="54" rx="${rx}" ry="${ry}" fill="${fill}"/>`
+        + (stem || '');
+}
+function longThing(w, h, fill, top) {
+    return `<rect x="${50 - w / 2}" y="${56 - h / 2}" width="${w}" height="${h}" rx="${w / 2}" fill="${fill}"/>`
+        + (top || '');
+}
+const LEAF_TUFT = `<path d="M50 24q-7-9-2-13 5 3 4 12z" fill="${C.leaf}"/>`
+    + `<path d="M50 24q7-9 2-13-5 3-4 12z" fill="${C.leafD}"/>`;
+const SHAPES = {
+    poppy: { body: dot(4.5, '#4A4036', true), fx: 50, fy: 51, fs: 0.34, dark: true },
+    sesame: { body: dot(0, '') + `<ellipse cx="50" cy="52" rx="5" ry="7.5" fill="${C.cream}"/>`
+            + `<circle cx="50" cy="50" r="26" fill="none" stroke="rgba(74,103,65,.3)" stroke-width="1.1" stroke-dasharray="3 4"/>`,
+        fx: 50, fy: 52, fs: 0.42 },
+    sweetpea: { body: `<circle cx="50" cy="50" r="26" fill="none" stroke="rgba(74,103,65,.3)" stroke-width="1.1" stroke-dasharray="3 4"/>`
+            + `<circle cx="50" cy="52" r="8" fill="${C.greenP}"/>`, fx: 50, fy: 52, fs: 0.5 },
+    blueberry: { body: berry(13, 13, C.blue)
+            + `<path d="M46 44h8M50 40v8" stroke="rgba(255,255,255,.5)" stroke-width="1.4" stroke-linecap="round"/>`,
+        fx: 50, fy: 55, fs: 0.7, dark: true },
+    raspberry: { body: [[42, 46], [50, 43], [58, 46], [38, 54], [46, 54], [54, 54], [62, 54], [42, 62], [50, 63], [58, 62], [46, 70], [54, 70]]
+            .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5.4" fill="${C.pink}"/>`).join('')
+            + `<path d="M44 42q6-6 12 0" stroke="${C.leafD}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`,
+        fx: 50, fy: 56, fs: 0.72, dark: true },
+    olive: { body: `<ellipse cx="50" cy="56" rx="11" ry="15" fill="${C.green}"/>`
+            + `<path d="M55 42q10-8 16-6-5 8-15 9z" fill="${C.leaf}"/>`, fx: 50, fy: 56, fs: 0.62 },
+    strawberry: { body: `<path d="M50 76q-15-6-15-20 0-11 15-11t15 11q0 14-15 20z" fill="${C.red}"/>`
+            + `<path d="M38 44h24l-6 5h-12z" fill="${C.leaf}"/><path d="M50 36v8" stroke="${C.leafD}" stroke-width="2.2" stroke-linecap="round"/>`
+            + [[44, 56], [56, 56], [50, 64], [41, 63], [59, 63]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.1" fill="#F6E7D8"/>`).join(''),
+        fx: 50, fy: 56, fs: 0.72, dark: true },
+    fig: { body: `<path d="M50 78q-14-7-14-19 0-10 14-15 14 5 14 15 0 12-14 19z" fill="${C.purple}"/>`
+            + `<path d="M50 44v-8M50 38q5-4 9-3" stroke="${C.leafD}" stroke-width="2.2" fill="none" stroke-linecap="round"/>`,
+        fx: 50, fy: 57, fs: 0.72, dark: true },
+    lime: { body: berry(17, 16, C.green) + `<path d="M64 42q6-5 9-3-3 6-9 6z" fill="${C.leaf}"/>`,
+        fx: 50, fy: 55, fs: 0.78 },
+    peapod: { body: `<path d="M22 50q4 26 28 26t28-26q-6 10-28 10T22 50z" fill="${C.green}"/>`
+            + [[33, 54], [42, 57], [50, 58], [58, 57], [67, 54]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6.5" fill="${C.greenP}"/>`).join('')
+            + `<path d="M22 50q4 26 28 26t28-26" fill="none" stroke="${C.greenD}" stroke-width="1.6" opacity=".45"/>`,
+        fx: 50, fy: 57, fs: 0.52 },
+    lemon: { body: `<ellipse cx="50" cy="57" rx="19" ry="15" fill="${C.yellow}"/>`
+            + `<path d="M68 48q6-5 9-4-3 6-9 6z" fill="${C.leaf}"/>`, fx: 50, fy: 57, fs: 0.78 },
+    pinecone: { body: `<ellipse cx="50" cy="57" rx="15" ry="21" fill="${C.brownD}"/>`
+            + [[50, 40], [42, 47], [58, 47], [50, 54], [42, 61], [58, 61], [50, 68], [46, 75], [54, 75]]
+                .map(([x, y]) => `<path d="M${x - 7} ${y}q7 7 14 0q-7-6-14 0z" fill="${C.tan}"/>`
+                + `<path d="M${x - 7} ${y}q7 7 14 0" fill="none" stroke="${C.brown}" stroke-width="1"/>`).join(''),
+        fx: 50, fy: 55, fs: 0.62 },
+    avocado: { body: `<path d="M50 80q-16-6-16-23 0-16 16-21 16 5 16 21 0 17-16 23z" fill="${C.deepGreen}"/>`
+            + `<path d="M50 74q-11-5-11-17 0-12 11-16 11 4 11 16 0 12-11 17z" fill="${C.greenP}"/>`
+            + `<circle cx="50" cy="60" r="9" fill="${C.brown}"/>`, fx: 50, fy: 48, fs: 0.6 },
+    pear: { body: `<path d="M50 82q-14 0-14-13 0-9 7-14 4-3 4-10 0-6 3-6t3 6q0 7 4 10 7 5 7 14 0 13-14 13z" fill="#C9C97E"/>`
+            + `<path d="M50 40v-6" stroke="${C.brownD}" stroke-width="2" stroke-linecap="round"/>`
+            + `<path d="M52 36q7-5 10-3-3 6-10 5z" fill="${C.leaf}"/>`, fx: 50, fy: 64, fs: 0.68 },
+    pepper: { body: `<path d="M50 80q-17 0-17-16 0-14 17-14t17 14q0 16-17 16z" fill="${C.red}"/>`
+            + `<path d="M43 50h14l-3 4h-8z" fill="${C.leaf}"/><path d="M50 44v6" stroke="${C.leafD}" stroke-width="2.4" stroke-linecap="round"/>`,
+        fx: 50, fy: 64, fs: 0.74, dark: true },
+    tomato: { body: `<ellipse cx="50" cy="60" rx="21" ry="17" fill="${C.red}"/>`
+            + [[36, 60], [43, 60], [57, 60], [64, 60]].map(([x]) => `<path d="M${x} 46q-2 14 0 28" stroke="${C.redD}" stroke-width="1.3" fill="none" opacity=".45"/>`).join('')
+            + `<path d="M40 46h20l-5 5H45z" fill="${C.leaf}"/>`, fx: 50, fy: 62, fs: 0.78, dark: true },
+    sweetpotato: { body: `<path d="M24 60q6-14 26-14t26 12q0 12-26 12T24 60z" fill="#A9705A"/>`
+            + `<path d="M76 58q6 1 8 4" stroke="#8A5947" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+        fx: 50, fy: 59, fs: 0.74, dark: true },
+    carrot: { body: `<path d="M50 84 38 46q12-5 24 0z" fill="${C.orange}"/>`
+            + `<path d="M44 56h12M42 48h16" stroke="${C.orangeD}" stroke-width="1.3" opacity=".5" stroke-linecap="round"/>`
+            + `<path d="M50 46V30M50 46 40 32M50 46l10-14" stroke="${C.leaf}" stroke-width="3" stroke-linecap="round" fill="none"/>`,
+        fx: 50, fy: 60, fs: 0.6, dark: true },
+    zucchini: { body: `<path d="M28 72q-4-6 2-12l32-20q7-4 11 2t-2 11L39 73q-7 4-11-1z" fill="${C.green}"/>`
+            + `<path d="M70 40q5-5 9-5" stroke="${C.brownD}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`
+            + [[40, 62], [50, 55], [60, 48]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.3" fill="${C.greenP}"/>`).join(''),
+        fx: 46, fy: 60, fs: 0.56, dark: true },
+    mango: { body: `<path d="M50 80q-20-4-20-21t20-17q20 0 20 17-1 17-20 21z" fill="${C.gold}"/>`
+            + `<path d="M58 44q10 0 14 6-8 3-16 1z" fill="${C.orange}" opacity=".7"/>`, fx: 50, fy: 62, fs: 0.8 },
+    corn: { body: `<ellipse cx="50" cy="56" rx="13" ry="24" fill="${C.yellow}"/>`
+            + [0, 1, 2, 3, 4].map((i) => `<path d="M${40 + i * 5} 34v44" stroke="${C.goldD}" stroke-width="1" opacity=".45"/>`).join('')
+            + `<path d="M37 36q-14 10-10 36 12-8 12-32z" fill="${C.leaf}"/>`
+            + `<path d="M63 36q14 10 10 36-12-8-12-32z" fill="${C.leafD}"/>`, fx: 50, fy: 56, fs: 0.62 },
+    swede: { body: `<ellipse cx="50" cy="58" rx="18" ry="17" fill="${C.cream}"/>`
+            + `<path d="M32 52q4-12 18-12t18 12z" fill="${C.purple}"/>`
+            + `<path d="M50 40V28M44 30l6 8M56 30l-6 8" stroke="${C.leaf}" stroke-width="2.6" stroke-linecap="round" fill="none"/>`
+            + `<path d="M50 75v8" stroke="${C.tan}" stroke-width="2" stroke-linecap="round"/>`, fx: 50, fy: 60, fs: 0.74 },
+    acorn: { body: `<ellipse cx="50" cy="58" rx="19" ry="19" fill="${C.deepGreen}"/>`
+            + `<path d="M50 39v-8" stroke="${C.brownD}" stroke-width="3" stroke-linecap="round"/>`
+            + `<ellipse cx="62" cy="64" rx="5" ry="4" fill="${C.gold}" opacity=".8"/>`, fx: 48, fy: 58, fs: 0.78, dark: true },
+    cauliflower: { body: `<path d="M26 66q-8-14 2-20 6 14 6 22z" fill="${C.green}"/>`
+            + `<path d="M74 66q8-14-2-20-6 14-6 22z" fill="${C.leaf}"/>`
+            + `<ellipse cx="50" cy="60" rx="22" ry="17" fill="#E6DFCB"/>`
+            + [[36, 54], [50, 48], [64, 54], [42, 64], [58, 64]]
+                .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9.5" fill="#F7F2E6"/>`).join('')
+            + [[36, 54], [50, 48], [64, 54], [42, 64], [58, 64]]
+                .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9.5" fill="none" stroke="#DCD3BC" stroke-width="1.1"/>`).join(''),
+        fx: 50, fy: 60, fs: 0.74 },
+    aubergine: { body: `<path d="M50 82q-18 0-18-18 0-16 18-20 18 4 18 20 0 18-18 18z" fill="${C.purple}"/>`
+            + `<path d="M42 46h16l-4 5h-8z" fill="${C.leaf}"/><path d="M50 38v8" stroke="${C.leafD}" stroke-width="2.4" stroke-linecap="round"/>`,
+        fx: 50, fy: 64, fs: 0.76, dark: true },
+    butternut: { body: `<path d="M50 84q-13 0-13-13 0-11 6-15 3-2 3-12 0-8 4-8t4 8q0 10 3 12 6 4 6 15 0 13-13 13z" fill="${C.tan}"/>`
+            + `<path d="M50 36v-6" stroke="${C.brownD}" stroke-width="3" stroke-linecap="round"/>`, fx: 50, fy: 66, fs: 0.66 },
+    cabbage: { body: `<circle cx="50" cy="57" r="21" fill="${C.greenP}"/>`
+            + `<path d="M50 36v42M32 52q18 6 36 0M34 66q16-6 32 0" stroke="${C.green}" stroke-width="1.5" fill="none" opacity=".7"/>`,
+        fx: 50, fy: 57, fs: 0.8 },
+    coconut: { body: `<circle cx="50" cy="57" r="20" fill="${C.brownD}"/>`
+            + [[42, 44], [50, 42], [58, 44]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.4" fill="#4A3729"/>`).join('')
+            + `<path d="M36 64q6 8 10 10M62 62q-4 8-8 11" stroke="#6B5039" stroke-width="1.6" fill="none" opacity=".7"/>`,
+        fx: 50, fy: 59, fs: 0.8, dark: true },
+    marrow: { body: `<path d="M24 66q-3-8 4-13l34-14q8-3 11 4t-4 12L36 70q-8 3-12-4z" fill="${C.green}"/>`
+            + `<path d="M70 40q6-4 10-3" stroke="${C.brownD}" stroke-width="3" fill="none" stroke-linecap="round"/>`
+            + [0, 1, 2, 3].map((i) => `<path d="M${32 + i * 11} ${66 - i * 4}q6-8 14-12" stroke="${C.greenP}" stroke-width="1.4" fill="none" opacity=".7"/>`).join(''),
+        fx: 45, fy: 58, fs: 0.56, dark: true },
+    pineapple: { body: `<ellipse cx="50" cy="62" rx="17" ry="20" fill="${C.gold}"/>`
+            + [0, 1, 2].map((r) => [0, 1, 2, 3].map((i) => `<path d="M${38 + i * 8} ${50 + r * 9}l4 4-4 4-4-4z" fill="${C.goldD}" opacity=".45"/>`).join('')).join('')
+            + `<path d="M50 42V26M42 42l-4-14M58 42l4-14" stroke="${C.leaf}" stroke-width="3" stroke-linecap="round" fill="none"/>`,
+        fx: 50, fy: 62, fs: 0.74, dark: true },
+    cantaloupe: { body: `<circle cx="50" cy="56" r="23" fill="#E8DCBE"/>`
+            + [-15, -5, 5, 15].map((dx) => `<path d="M${50 + dx} 34q${dx > 0 ? -7 : 7} 22 0 44" stroke="#F4EEDD" stroke-width="2.2" fill="none" stroke-linecap="round"/>`).join('')
+            + [-12, 0, 12].map((dy) => `<path d="M29 ${56 + dy}q21 ${dy > 0 ? -7 : 7} 42 0" stroke="#F4EEDD" stroke-width="2.2" fill="none" stroke-linecap="round"/>`).join(''),
+        fx: 50, fy: 58, fs: 0.8 },
+    honeydew: { body: `<circle cx="50" cy="56" r="24" fill="#C9D9A6"/>`
+            + `<path d="M50 32v-6" stroke="${C.leafD}" stroke-width="2.6" stroke-linecap="round"/>`,
+        fx: 50, fy: 56, fs: 0.86 },
+    romaine: { body: `<path d="M33 80q-9-30 1-48 5 24 4 48z" fill="${C.leaf}"/>`
+            + `<path d="M67 80q9-30-1-48-5 24-4 48z" fill="${C.leaf}"/>`
+            + `<path d="M40 80q-6-32 3-52 5 28 4 52z" fill="${C.green}"/>`
+            + `<path d="M60 80q6-32-3-52-5 28-4 52z" fill="${C.green}"/>`
+            + `<path d="M50 80q-9 0-9-10 0-28 9-44 9 16 9 44 0 10-9 10z" fill="#CBDDA8"/>`
+            + `<path d="M50 34v42" stroke="#AFC98A" stroke-width="1.5" opacity=".8"/>`,
+        fx: 50, fy: 62, fs: 0.58 },
+    wintermelon: { body: `<ellipse cx="50" cy="58" rx="25" ry="19" fill="#9FB58A"/>`
+            + [[38, 52], [46, 62], [56, 50], [62, 60], [50, 56], [42, 68], [60, 68]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.6" fill="#E6EDDC"/>`).join('')
+            + `<path d="M74 54q6-2 8 0" stroke="${C.brownD}" stroke-width="2.2" fill="none" stroke-linecap="round"/>`,
+        fx: 50, fy: 58, fs: 0.78, dark: true },
+    leek: { body: `<path d="M38 50q12-5 24 0l-3 32q-9 3-18 0z" fill="#E4E7D2"/>`
+            + `<path d="M38 50q12-5 24 0" fill="none" stroke="#C7CDAE" stroke-width="1.4"/>`
+            + `<path d="M50 50V20M41 52 31 26M59 52l10-26M45 50l-4-26M55 50l4-26"
+        stroke="${C.green}" stroke-width="4.6" stroke-linecap="round" fill="none"/>`
+            + `<path d="M50 50V22" stroke="${C.leafD}" stroke-width="4.6" stroke-linecap="round"/>`,
+        fx: 50, fy: 66, fs: 0.56 },
+    watermelonS: { body: `<ellipse cx="50" cy="57" rx="24" ry="20" fill="${C.deepGreen}"/>`
+            + [0, 1, 2, 3].map((i) => `<path d="M${32 + i * 12} 39q-5 18 0 36" stroke="#A8C487" stroke-width="3.4" fill="none" opacity=".85"/>`).join(''),
+        fx: 50, fy: 57, fs: 0.8, dark: true },
+    pumpkin: { body: `<ellipse cx="50" cy="60" rx="24" ry="19" fill="${C.orange}"/>`
+            + [[34], [42], [58], [66]].map(([x]) => `<path d="M${x} 44q-3 16 0 32" stroke="${C.orangeD}" stroke-width="1.5" fill="none" opacity=".5"/>`).join('')
+            + `<path d="M50 41v-7q6-1 8 2" stroke="${C.leafD}" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+        fx: 50, fy: 60, fs: 0.8, dark: true },
+    watermelonL: { body: `<ellipse cx="50" cy="56" rx="29" ry="24" fill="${C.deepGreen}"/>`
+            + [0, 1, 2, 3, 4].map((i) => `<path d="M${28 + i * 11} 34q-6 22 0 44" stroke="#A8C487" stroke-width="3.8" fill="none" opacity=".85"/>`).join(''),
+        fx: 50, fy: 56, fs: 0.9, dark: true },
+    pumpkinL: { body: `<ellipse cx="50" cy="59" rx="29" ry="23" fill="${C.orange}"/>`
+            + [[31], [40], [60], [69]].map(([x]) => `<path d="M${x} 40q-4 19 0 38" stroke="${C.orangeD}" stroke-width="1.7" fill="none" opacity=".5"/>`).join('')
+            + `<path d="M50 38v-8q7-1 9 3" stroke="${C.leafD}" stroke-width="3.4" fill="none" stroke-linecap="round"/>`,
+        fx: 50, fy: 59, fs: 0.9, dark: true },
+};
+const SIZE_ART_BY_WEEK = {
+    4: 'poppy', 5: 'sesame', 6: 'sweetpea', 7: 'blueberry', 8: 'raspberry', 9: 'olive',
+    10: 'strawberry', 11: 'fig', 12: 'lime', 13: 'peapod', 14: 'lemon', 15: 'pinecone',
+    16: 'avocado', 17: 'pear', 18: 'pepper', 19: 'tomato', 20: 'sweetpotato', 21: 'carrot',
+    22: 'zucchini', 23: 'mango', 24: 'corn', 25: 'swede', 26: 'acorn', 27: 'cauliflower',
+    28: 'aubergine', 29: 'butternut', 30: 'cabbage', 31: 'coconut', 32: 'marrow',
+    33: 'pineapple', 34: 'cantaloupe', 35: 'honeydew', 36: 'romaine', 37: 'wintermelon',
+    38: 'leek', 39: 'watermelonS', 40: 'pumpkin', 41: 'watermelonL', 42: 'pumpkinL',
+};
+function sizeArtKey(week) {
+    const w = Math.round(Number(week));
+    if (SIZE_ART_BY_WEEK[w])
+        return SIZE_ART_BY_WEEK[w];
+    if (w > 42)
+        return SIZE_ART_BY_WEEK[42];
+    if (w < 4)
+        return SIZE_ART_BY_WEEK[4];
+    return '';
+}
+function sizeArtSvg(week, px = 86, ring = true) {
+    const key = sizeArtKey(week);
+    const s = SHAPES[key];
+    if (!s)
+        return '';
+    return `<svg width="${px}" height="${px}" viewBox="0 0 100 100" aria-hidden="true"
+    style="display:block;flex:none">
+    ${ring ? `<circle cx="50" cy="50" r="46" fill="${C.ring}"/>` : ''}
+    <ellipse cx="50" cy="84" rx="20" ry="3.4" fill="${C.shade}"/>
+    ${s.body}
+    ${face(s.fx, s.fy, s.fs, s.dark)}
+  </svg>`;
+}
 const TTC_TITLE = 'Trying';
 const TTC_SUB = 'The timing, what the evidence actually supports, and what happens if you '
     + 'need help. Written to be honest rather than encouraging.';
@@ -50557,7 +50910,7 @@ const state = {};
     'tab', 'view', 'undGroup', 'lensBand', 'feedTab', 'outTab', 'safetyTab',
     'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'sexedTab',
     'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab', 'crTab', 'calTab',
-    'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift', 'lists', 'deletedListIds', 'listOpen', 'rewards', 'rewardLog', 'rewKid',
+    'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift', 'lists', 'deletedListIds', 'listOpen', 'rewards', 'rewardLog', 'rewKid', 'rewOwnOpen',
     'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
     Object.defineProperty(state, key, {
         enumerable: true,
@@ -52190,7 +52543,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -52844,8 +53197,34 @@ function initControls() {
                 return;
             store.rewards = rewList().concat([{
                     id: 'r' + Date.now() + Math.floor(Math.random() * 1000),
-                    label: idea.label, cost: idea.cost, updatedAt: Date.now(),
+                    label: idea.label, cost: idea.cost,
+                    kidId: t.dataset.kid || store.rewKid || '', updatedAt: Date.now(),
                 }]);
+            store.parentUpdatedAt = Date.now();
+        }
+        else if (t.dataset.rewown) {
+            store.rewOwnOpen = t.dataset.rewown === 'open';
+        }
+        else if (t.dataset.rewownsave) {
+            const f = document.getElementById('rewownin');
+            const cf = document.getElementById('rewowncost');
+            const label = String(f ? f.value : '').replace(/\s+/g, ' ').trim().slice(0, 70);
+            const cost = Math.max(1, Math.min(999, Math.round(Number(cf ? cf.value : 0) || 0)));
+            if (!label) {
+                store.rewOwnOpen = false;
+                render();
+                return;
+            }
+            store.rewards = rewList().concat([{
+                    id: 'r' + Date.now() + Math.floor(Math.random() * 1000),
+                    label: label, cost: cost,
+                    kidId: t.dataset.kid || store.rewKid || '', updatedAt: Date.now(),
+                }]);
+            store.rewOwnOpen = false;
+            store.parentUpdatedAt = Date.now();
+        }
+        else if (t.dataset.rewdel) {
+            store.rewards = rewList().filter((r) => r.id !== t.dataset.rewdel);
             store.parentUpdatedAt = Date.now();
         }
         else if (t.dataset.rewspend) {
@@ -58321,19 +58700,56 @@ function expWeekBlock(k, where) {
       <p class="bodytext" style="margin-top:6px">${esc(EXP_NOTHING_YET.body)}</p>
     </div>`;
     }
+    const togo = where.overdue
+        ? { n: Math.abs(where.daysToDue), lab: Math.abs(where.daysToDue) === 1 ? 'day over' : 'days over' }
+        : { n: where.daysToDue, lab: where.daysToDue === 1 ? 'day to go' : 'days to go' };
+    const pct = Math.max(0, Math.min(100, Math.round((where.daysIn / 280) * 100)));
     return `
-  <div class="card leafy">
-    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Week ${where.week} &middot; ${esc(where.stage.label)}</p>
-    <p class="liftline" style="font-size:19px;margin-top:8px">${esc(wk.size)}</p>
-    <p class="tiny" style="margin-top:2px">${esc(wk.measure)}</p>
+  <div class="szhero">
+    ${sizeArtSvg(where.week, 92, false)}
+    <div class="szhero-t">
+      <p class="szhero-wk">Week ${where.week}${where.days ? ' + ' + where.days : ''}</p>
+      <p class="szhero-sz">${esc(wk.size)}</p>
+      <p class="szhero-ms">${esc(wk.measure)} &middot; ${esc(where.stage.label)}</p>
+    </div>
   </div>
-  <div class="dsec">
-    <h4>What is happening</h4>
-    <p class="bodytext">${esc(wk.baby)}</p>
+  <div class="hpair">
+    <div class="hhalf">
+      <div class="hhalf-h">
+        <span class="hhalf-ic">${icon('leaf', 14, 'var(--deep)')}</span>
+        <span class="hhalf-t">How far along</span>
+      </div>
+      <div class="hhalf-b">
+        <p class="szbig">${pct}<span class="szbig-u">%</span></p>
+        <div class="szbar"><span style="width:${pct}%"></span></div>
+        <p class="hhalf-free">${where.week} of 40 weeks</p>
+      </div>
+    </div>
+    <div class="hhalf">
+      <div class="hhalf-h">
+        <span class="hhalf-ic">${icon('calendar', 14, 'var(--deep)')}</span>
+        <span class="hhalf-t">${esc(where.overdue ? 'Past the date' : 'Until the date')}</span>
+      </div>
+      <div class="hhalf-b">
+        <p class="szbig">${togo.n}</p>
+        <p class="hhalf-free">${esc(togo.lab)}</p>
+        <p class="hhalf-free" style="margin-top:4px">${esc(EXP_DUE_IS_A_GUESS)}</p>
+      </div>
+    </div>
   </div>
-  <div class="dsec">
-    <h4>What you may feel</h4>
-    <p class="bodytext">${esc(wk.you)}</p>
+  <div class="szcard">
+    <div class="szcard-h">
+      <span class="szcard-ic">${icon('heart', 15, 'var(--deep)')}</span>
+      <span class="szcard-t">What is happening</span>
+    </div>
+    <p class="bodytext" style="margin:0">${esc(wk.baby)}</p>
+  </div>
+  <div class="szcard blush">
+    <div class="szcard-h">
+      <span class="szcard-ic">${icon('user', 15, '#8A5F54')}</span>
+      <span class="szcard-t">What you may feel</span>
+    </div>
+    <p class="bodytext" style="margin:0">${esc(wk.you)}</p>
     <p class="tiny" style="margin-top:8px">May, rather than will. Having none of this is just as
       normal as having all of it.</p>
   </div>
@@ -58384,6 +58800,7 @@ function screenExpecting(c) {
   <div class="sc">
     ${subTabs('expTab', tab, tabs)}
     ${tab === 'week' ? `
+      ${where && !where.tooEarly && !where.tooLate ? expWeekBlock(kid, where) : ''}
       ${where && !where.tooEarly ? bumpPlanCard(kid, where) : ''}
       ${!where ? `
         <div class="card flat"><p class="bodytext">Put a due date on this profile and the weeks
@@ -58398,7 +58815,6 @@ function screenExpecting(c) {
           <p class="bpbox-t">${esc(EXP_OVERDUE.title)}</p>
           <p class="bodytext" style="margin-top:8px">${esc(EXP_OVERDUE.body)}</p>
         </div>` : ''}
-      ${where && !where.tooEarly && !where.tooLate ? expWeekBlock(kid, where) : ''}
       ${where && (where.week >= 28 || where.overdue) ? `
         <div class="card" style="border-left:3px solid var(--sage)">
           <p class="eyebrow">${icon('note', 11, 'var(--sage)')} If induction comes up</p>
@@ -58413,44 +58829,23 @@ function screenExpecting(c) {
           </button>
         </div>` : ''}
       ${expCallNowBlock()}
-      <div class="dsec">
-        <h4>${esc(PREG_MOVEMENT.title)}</h4>
-        <p class="bodytext">${esc(PREG_MOVEMENT.body)}</p>
+      <p class="sect" style="margin-top:18px">Getting ready</p>
+      <div class="htiles">
+        ${homeTile({ icon: 'bag', title: 'The hospital bag',
+        sub: 'It remembers what you packed', go: 'data-go="screen" data-id="bag"' })}
+        ${homeTile({ icon: 'heart', tone: 'blush', title: 'Your health',
+        sub: 'What to watch for while pregnant', go: 'data-go="screen" data-id="pregHealth"' })}
+        ${homeTile({ icon: 'book', tone: 'leaf', title: 'Birth, all of it',
+        sub: 'Pain relief, tearing, who is with you', go: 'data-go="screen" data-id="birth"' })}
+        ${homeTile({ icon: 'note', title: 'Induction',
+        sub: 'The five numbers, and what to ask', go: 'data-go="screen" data-id="induction"' })}
       </div>
-      <div class="dsec">
-        <h4>Getting ready</h4>
-        <button class="lrow" data-go="screen" data-id="bag">
-          <span class="licon">${icon('bag', 18)}</span>
-          <span class="grow">
-            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">The hospital bag</span>
-            <span class="tiny" style="display:block;margin-top:2px">It remembers what you have packed</span>
-          </span>
-          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-        </button>
-        <button class="lrow" data-go="screen" data-id="pregHealth">
-          <span class="licon">${icon('heart', 18)}</span>
-          <span class="grow">
-            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Your health while pregnant</span>
-            <span class="tiny" style="display:block;margin-top:2px">What to watch, and the infections nobody mentions</span>
-          </span>
-          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-        </button>
-        <button class="lrow" data-go="screen" data-id="birth">
-          <span class="licon">${icon('book', 18)}</span>
-          <span class="grow">
-            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Birth, all of it</span>
-            <span class="tiny" style="display:block;margin-top:2px">Pain relief, who is with you, tearing, and what can go wrong</span>
-          </span>
-          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-        </button>
-        <button class="lrow" data-go="screen" data-id="induction">
-          <span class="licon">${icon('note', 18)}</span>
-          <span class="grow">
-            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Induction, and the chart</span>
-            <span class="tiny" style="display:block;margin-top:2px">The five numbers, and what to ask before they break your water</span>
-          </span>
-          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-        </button>
+      <div class="szcard">
+        <div class="szcard-h">
+          <span class="szcard-ic">${icon('hand', 15, 'var(--deep)')}</span>
+          <span class="szcard-t">${esc(PREG_MOVEMENT.title)}</span>
+        </div>
+        <p class="bodytext" style="margin:0">${esc(PREG_MOVEMENT.body)}</p>
       </div>
     ` : ''}
     ${tab === 'ask' ? `
@@ -64796,7 +65191,7 @@ function checkinRunNote(k, day) {
         const e = k.checkins[ciDayBefore(day, i)];
         if (!e)
             break;
-        const shape = checkinShape(e.answers);
+        const shape = checkinShape(e.answers || {});
         if (shape === 'allHard' || shape === 'mostlyHard')
             hard++;
         else if (shape === 'allGood' || shape === 'mostlyGood')
@@ -64814,6 +65209,8 @@ function makeCheckinReply(k, day) {
     const entry = k && k.checkins ? k.checkins[day] : null;
     if (!entry)
         return;
+    if (!entry.answers || typeof entry.answers !== 'object')
+        entry.answers = {};
     entry.reply = writtenCheckinReply(entry.answers, day + k.id);
     entry.replyFrom = 'written';
     entry.runNote = checkinRunNote(k, day);
@@ -64861,7 +65258,12 @@ function ciSaved(dayKey) {
     const k = activeChild();
     if (!k || !k.checkins)
         return null;
-    return k.checkins[dayKey || ciToday()] || null;
+    const raw = k.checkins[dayKey || ciToday()];
+    if (!raw)
+        return null;
+    if (raw.answers && typeof raw.answers === 'object')
+        return raw;
+    return Object.assign({}, raw, { answers: {} });
 }
 function ciDraft() {
     const k = activeChild();
@@ -64980,7 +65382,7 @@ function ciStrip(rowId, days) {
     for (let i = n - 1; i >= 0; i--) {
         const day = ciDayBefore(ciToday(), i);
         const entry = k.checkins ? k.checkins[day] : null;
-        const val = entry ? entry.answers[rowId] : null;
+        const val = (entry && entry.answers) ? entry.answers[rowId] : null;
         const sc = val ? getCheckinScale(val) : null;
         cells.push(`<span class="cidot${sc ? '' : ' none'}"
       style="${sc ? 'background:' + sc.color : ''}"
@@ -65150,14 +65552,15 @@ function screenCheckins(c) {
     <p class="sect">Day by day</p>
     ${days.slice(0, 30).map((day) => {
         const e = k.checkins[day];
-        const answered = rows.filter((r) => e.answers[r.id]);
+        const ans = (e && e.answers) ? e.answers : {};
+        const answered = rows.filter((r) => ans[r.id]);
         return `
       <div class="card" style="margin-bottom:8px">
         <p class="eyebrow">${esc(cycleDateLabelWithYear(day))}</p>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px">
           ${answered.map((r) => {
-            const sc = getCheckinScale(e.answers[r.id]);
-            return `<span class="cipill" style="background:${sc.tint};color:${sc.color}">${esc(r.label)}: ${esc(r[e.answers[r.id]] || sc.label)}</span>`;
+            const sc = getCheckinScale(ans[r.id]);
+            return `<span class="cipill" style="background:${sc.tint};color:${sc.color}">${esc(r.label)}: ${esc(r[ans[r.id]] || sc.label)}</span>`;
         }).join('')}
         </div>
         ${e.note ? `<p class="bodytext" style="margin-top:8px">${esc(e.note)}</p>` : ''}
@@ -66477,6 +66880,9 @@ function rewOn(kid) {
 function rewList() {
     return Array.isArray(store.rewards) ? store.rewards : [];
 }
+function rewListFor(kidId) {
+    return rewList().filter((r) => !r.kidId || r.kidId === kidId);
+}
 function rewEarned(kidId) {
     const done = (store.choreDone && typeof store.choreDone === 'object') ? store.choreDone : {};
     const jobs = {};
@@ -66614,7 +67020,14 @@ function screenRewards(c) {
     const who = store.rewKid && kids.some((k) => k.id === store.rewKid)
         ? store.rewKid : (kids[0] ? kids[0].id : '');
     const kid = (store.children || []).filter((k) => k.id === who)[0] || null;
-    const list = rewList();
+    const list = rewListFor(who);
+    const rewSum = kid ? getAgeSummary({ name: kid.name, birthday: kid.birthday }) : null;
+    const rewMonths = (rewSum && rewSum.age) ? rewSum.age.totalMonths : null;
+    const rewFrame = rewAgeFraming(rewMonths);
+    const rewGroups = rewIdeasBySize(rewMonths).map((g) => ({
+        size: g.size,
+        items: g.items.filter((i) => !list.some((r) => r.label === i.label)),
+    })).filter((g) => g.items.length);
     return `
   ${pageHeader()}
   <div class="sc-head tight">
@@ -66665,6 +67078,8 @@ function screenRewards(c) {
             <button class="btn sm${can ? '' : ' ghost'}" ${can ? '' : 'disabled'}
               data-rewspend="${esc(r.id)}" data-kid="${esc(who)}">
               ${can ? 'Give it' : 'Not yet'}</button>
+            <button class="rewx" data-rewdel="${esc(r.id)}"
+              aria-label="Take ${esc(r.label)} off the list">${icon('close', 13, 'var(--faint)')}</button>
           </div>
         </div>`;
     }).join('') : `
@@ -66672,17 +67087,44 @@ function screenRewards(c) {
         <p class="eyebrow">${esc(REW_EMPTY.title)}</p>
         <p class="bodytext" style="margin-top:6px">${esc(REW_EMPTY.body)}</p>
       </div>`}
-      <p class="sect" style="margin-top:16px">Add a reward</p>
+      <p class="sect" style="margin-top:16px">Add a reward${kid ? ' for ' + esc((kid.name || '').split(/\s+/)[0]) : ''}</p>
+      ${rewFrame ? `<p class="tiny" style="margin:0 0 4px;color:var(--sage);font-weight:600">${esc(rewFrame)}</p>` : ''}
       <p class="tiny" style="margin:0 0 9px">${esc(REW_IDEAS_NOTE)}</p>
-      ${REW_IDEAS.filter((i) => !list.some((r) => r.label === i.label)).map((i) => `
-        <button class="lrow" data-rewadd="${esc(i.id)}" style="align-items:center;margin-top:7px">
-          <span class="licon">${icon('star', 16, '#B58B3C')}</span>
-          <span class="grow">
-            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(i.label)}</span>
-            <span class="tiny" style="display:block;margin-top:2px">${i.cost} stars</span>
-          </span>
-          <span class="chev">${icon('plus', 15, 'var(--sage)')}</span>
-        </button>`).join('')}
+      ${rewGroups.map((g) => `
+        <div class="rewgrp">
+          <p class="rewgrp-h">${esc(g.size.label)}</p>
+          <p class="rewgrp-s">${esc(g.size.hint)}</p>
+          ${g.items.map((i) => `
+          <button class="lrow" data-rewadd="${esc(i.id)}" data-kid="${esc(who)}"
+            style="align-items:center;margin-top:7px">
+            <span class="licon">${icon('star', 16, '#B58B3C')}</span>
+            <span class="grow">
+              <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(i.label)}</span>
+              <span class="tiny" style="display:block;margin-top:2px">${i.cost} stars</span>
+            </span>
+            <span class="chev">${icon('plus', 15, 'var(--sage)')}</span>
+          </button>`).join('')}
+        </div>`).join('')}
+      ${!rewGroups.length ? `
+      <div class="card flat"><p class="tiny">Everything that suits this age is already on their
+        list. Write your own below.</p></div>` : ''}
+      ${store.rewOwnOpen ? `
+      <div class="card" style="margin-top:10px">
+        <p class="eyebrow">${icon('star', 11, '#B58B3C')} Your own</p>
+        <input id="rewownin" class="inp" style="margin-top:8px"
+          placeholder="${esc(REW_NEW_PLACEHOLDER)}" maxlength="70">
+        <p class="tiny" style="margin-top:9px">How many stars</p>
+        <input id="rewowncost" class="inp" type="number" inputmode="numeric"
+          min="1" max="999" value="40" style="margin-top:5px">
+        <div style="display:flex;gap:8px;margin-top:11px">
+          <button class="btn grow" data-rewownsave="1" data-kid="${esc(who)}"
+            style="justify-content:center">Add it</button>
+          <button class="btn ghost" data-rewown="close">Cancel</button>
+        </div>
+      </div>` : `
+      <button class="btn ghost" style="width:100%;margin-top:10px" data-rewown="open">
+        ${icon('plus', 14, 'var(--deep)')} Write your own</button>`}
+      <p class="tiny" style="margin-top:10px">${esc(REW_FOOD_NOTE)}</p>
       ${(store.rewardLog || []).filter((r) => r.kidId === who).length ? `
       <p class="sect" style="margin-top:18px">${esc(REW_HISTORY_TITLE)}</p>
       ${(store.rewardLog || []).filter((r) => r.kidId === who).slice().reverse().slice(0, 12).map((r) => `
@@ -68215,9 +68657,9 @@ function screenChild(c) {
     }).join('');
     const ciHtml = body.checkin ? body.checkin() : '';
     tiles.sort((x, y) => TILE_IDS.indexOf(x.id) - TILE_IDS.indexOf(y.id));
-    const sections = ageNewCard(months, kid, first) + monthTopCard(kid)
+    const sections = ageNewCard(months, kid, first) + monthTopCard(kid) + daily
         + (kid ? homeDayPair(kid.id, first + "'s jobs") : '')
-        + (kid ? rewProfileBlock(kid, months) : '') + daily + (tiles.length ? `
+        + (kid ? rewProfileBlock(kid, months) : '') + (tiles.length ? `
     <p class="sect" style="margin-top:18px">Everything about ${esc(first)}</p>
     <div class="kidtiles">${tiles.map((t) => kidTile(t.id, t.html)).join('')}</div>` : '')
         + (ciHtml ? `<p class="sect" style="margin-top:18px">How today went</p>` + ciHtml : '')
@@ -70441,7 +70883,18 @@ function normalizeChild(k) {
         lensNumbers: k.lensNumbers && typeof k.lensNumbers === 'object' ? k.lensNumbers : {},
         statuses: k.statuses && typeof k.statuses === 'object' ? k.statuses : {},
         statusDates: k.statusDates && typeof k.statusDates === 'object' ? k.statusDates : {},
-        checkins: k.checkins && typeof k.checkins === 'object' ? k.checkins : {},
+        checkins: (() => {
+            const src = (k.checkins && typeof k.checkins === 'object') ? k.checkins : {};
+            const out = {};
+            Object.keys(src).forEach((day) => {
+                const e = src[day];
+                if (!e || typeof e !== 'object')
+                    return;
+                out[day] = (e.answers && typeof e.answers === 'object')
+                    ? e : Object.assign({}, e, { answers: {} });
+            });
+            return out;
+        })(),
         arrival: Array.isArray(k.arrival) ? k.arrival : [],
         photo: k.photo || '',
         calColor: typeof k.calColor === 'string' ? k.calColor : '',
