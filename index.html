@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-05 21:14">
+<meta name="rsg-build" content="2026-10-05 21:51">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -2184,6 +2184,58 @@ body.calpage .mark-holder{margin-bottom:-20px}
 .pickcard:focus-visible{outline:2px solid var(--deep);outline-offset:2px}
 @media (max-width:360px){.pickgrid{grid-template-columns:1fr}}
 
+/* ------------------------------------------------------------------
+   THE BIRTH PLAN SHEET
+
+   Styled as paper rather than as app, because this one leaves the
+   screen. Serif, black on white, generous line spacing, and the
+   question in grey with the answer in black so somebody scanning it in
+   ten seconds reads the answers and not the form.
+   ------------------------------------------------------------------ */
+.bpbar{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.bpbar .btn{width:100%;justify-content:center;white-space:nowrap}
+.bpsheet{background:#fff;border:1px solid var(--line2);border-radius:16px;
+  padding:22px 20px 24px;margin-top:12px;color:#1A1A1A}
+.bpsheet-k{margin:0;font-size:10.5px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:#777}
+.bpsheet-n{margin:5px 0 0;font-family:Georgia,'Times New Roman',serif;font-size:25px;
+  font-weight:700;line-height:1.15;color:#1A1A1A}
+.bpsheet-meta{margin-top:11px;padding-bottom:13px;border-bottom:1px solid #DDD}
+.bpsheet-meta p{margin:3px 0 0;font-size:12.5px;line-height:1.5;color:#1A1A1A}
+.bpsheet-meta span{color:#777}
+.bpsheet-sec{margin-top:16px}
+.bpsheet-h{margin:0 0 7px;font-size:10.5px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:#777}
+.bpsheet-l{margin:0 0 6px;font-size:13.5px;line-height:1.55;color:#1A1A1A}
+.bpsheet-l span{display:block;font-size:11px;color:#777;line-height:1.3}
+.bpsheet-flex{margin:20px 0 0;padding-top:13px;border-top:1px solid #DDD;
+  font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:13px;
+  line-height:1.6;color:#333}
+
+/* WHAT ACTUALLY COMES OUT OF THE PRINTER.
+
+   Everything except the sheet is taken off the page, the sheet loses
+   its card edges and becomes the page itself, and the colours go to
+   black on white so it does not eat a colour cartridge printing a
+   sage green border. On a phone this same stylesheet is what the Save
+   as PDF sheet renders. */
+@media print {
+  body > *{display:none !important}
+  body{background:#fff !important;margin:0 !important;padding:0 !important}
+  #screen{display:block !important;overflow:visible !important;height:auto !important;
+    max-height:none !important;background:#fff !important;padding:0 !important}
+  #screen > *{display:none !important}
+  #screen .sc{display:block !important}
+  #screen .sc > *{display:none !important}
+  #screen .sc .bpsheet{display:block !important}
+  .bpsheet{border:0 !important;border-radius:0 !important;padding:0 !important;
+    margin:0 !important;background:#fff !important;box-shadow:none !important}
+  .bpsheet-l,.bpsheet-meta p{font-size:11.5pt;color:#000 !important}
+  .bpsheet-n{font-size:22pt}
+  .bpsheet-sec{page-break-inside:avoid}
+  @page{margin:16mm}
+}
+
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 <!--
@@ -2485,7 +2537,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-05 21:14';
+const BUILD_STAMP = '2026-10-05 21:51';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -27492,6 +27544,220 @@ const PREG_WEEK_SOURCES = [
     { org: 'Tommy’s', label: 'Baby movements, and why counting kicks is no longer advised',
         url: 'https://www.tommys.org/pregnancy-information/im-pregnant/baby-movements-pregnancy' },
 ];
+const BP_TITLE = 'Your birth plan';
+const BP_SUB = 'One page, only what you picked, ready to print or send. Take it to an appointment and talk it '
+    + 'through, which is the part that actually makes a difference.';
+const BP_WHY = {
+    title: 'Short on purpose',
+    body: 'The evidence on birth plans points one way. They help when they have been discussed with your '
+        + 'midwife or doctor beforehand, and a long one handed in on the day tends not to get read. One '
+        + 'side of one page is what the people receiving it ask for.',
+};
+const BP_FIELDS = [
+    { id: 'name', label: 'Your name', ph: 'The name you want to be called' },
+    { id: 'baby', label: 'Baby is called', ph: 'Or whatever you have been calling them' },
+    { id: 'support', label: 'With me', ph: 'Who is coming in with you' },
+    { id: 'provider', label: 'My midwife or doctor', ph: 'Name or practice' },
+    { id: 'place', label: 'Where', ph: 'Hospital or birth centre' },
+];
+const BP_NOTE_LABEL = 'Anything else they should know';
+const BP_NOTE_PH = 'Previous birth, something you are frightened of, a word you would rather they did not use';
+const BP_NOTE_MAX = 400;
+const BP_SECTIONS = [
+    { id: 'labor', label: 'During labor' },
+    { id: 'push', label: 'Pushing and birth' },
+    { id: 'after', label: 'Straight after' },
+    { id: 'baby', label: 'Our baby' },
+    { id: 'change', label: 'If plans change' },
+];
+const BP_ROWS = [
+    { id: 'who', sec: 'labor', q: 'Who is with me',
+        options: [
+            { v: 'partner', label: 'My partner' },
+            { v: 'doula', label: 'A doula as well' },
+            { v: 'family', label: 'Somebody from my family' },
+            { v: 'alone', label: 'I would rather it was quiet' },
+        ] },
+    { id: 'pain', sec: 'labor', q: 'Pain relief',
+        options: [
+            { v: 'epi', label: 'I want an epidural' },
+            { v: 'none', label: 'I want to avoid one if I can' },
+            { v: 'see', label: 'I want to decide in the moment' },
+            { v: 'ask', label: 'Please do not offer, I will ask' },
+        ] },
+    { id: 'move', sec: 'labor', q: 'Moving about',
+        options: [
+            { v: 'up', label: 'I want to stay upright and moving' },
+            { v: 'bed', label: 'I would rather be in the bed' },
+            { v: 'see', label: 'Whatever feels right then' },
+        ] },
+    { id: 'mon', sec: 'labor', q: 'Monitoring',
+        options: [
+            { v: 'int', label: 'Listening in now and then if I am low risk' },
+            { v: 'cont', label: 'Continuous is fine with me' },
+            { v: 'ask', label: 'Tell me why before it changes' },
+        ] },
+    { id: 'water', sec: 'labor', q: 'Breaking my waters',
+        options: [
+            { v: 'ask', label: 'Ask me first and tell me my score' },
+            { v: 'fine', label: 'Go ahead if you think it helps' },
+            { v: 'late', label: 'I would rather wait as long as is safe' },
+        ] },
+    { id: 'room', sec: 'labor', q: 'The room',
+        options: [
+            { v: 'dim', label: 'Lights low and voices down, please' },
+            { v: 'music', label: 'I would like my own music on' },
+            { v: 'few', label: 'As few people in the room as possible' },
+            { v: 'none', label: 'No strong feelings about the room' },
+        ] },
+    { id: 'eat', sec: 'labor', q: 'Eating and drinking',
+        options: [
+            { v: 'light', label: 'I would like to eat and drink if I am allowed' },
+            { v: 'sips', label: 'Water and ice chips are enough' },
+            { v: 'ask', label: 'Tell me what is allowed here' },
+        ] },
+    { id: 'pushhow', sec: 'push', q: 'How I push',
+        options: [
+            { v: 'own', label: 'Let me follow my own body if it is safe' },
+            { v: 'coach', label: 'I would like to be told when and how' },
+            { v: 'see', label: 'Whatever is working on the day' },
+        ] },
+    { id: 'pushpos', sec: 'push', q: 'Position for pushing',
+        options: [
+            { v: 'upright', label: 'Upright or on my side if I can' },
+            { v: 'back', label: 'On my back is fine' },
+            { v: 'see', label: 'I will see how I feel' },
+        ] },
+    { id: 'cut', sec: 'push', q: 'If a cut is being considered',
+        options: [
+            { v: 'ask', label: 'Tell me why, at the time' },
+            { v: 'avoid', label: 'Only if there is a clear reason' },
+            { v: 'fine', label: 'I trust your judgement' },
+        ] },
+    { id: 'see', sec: 'push', q: 'As the baby is born',
+        options: [
+            { v: 'mirror', label: 'I would like a mirror, or to reach down' },
+            { v: 'tell', label: 'Tell me what is happening as it happens' },
+            { v: 'quiet', label: 'I would rather just be left to it' },
+        ] },
+    { id: 'after', sec: 'after', q: 'The first few minutes',
+        options: [
+            { v: 'skin', label: 'Baby on my chest, cord left alone a minute' },
+            { v: 'partner', label: 'My partner takes the baby first if I cannot' },
+            { v: 'see', label: 'I have not thought about it yet' },
+        ] },
+    { id: 'cord', sec: 'after', q: 'The cord',
+        options: [
+            { v: 'wait', label: 'Wait before clamping if all is well' },
+            { v: 'partner', label: 'My partner would like to cut it' },
+            { v: 'bank', label: 'We are banking or donating it' },
+            { v: 'any', label: 'No strong feelings' },
+        ] },
+    { id: 'placenta', sec: 'after', q: 'Delivering the placenta',
+        options: [
+            { v: 'managed', label: 'The injection to speed it up is fine' },
+            { v: 'nat', label: 'I would like to try without it first' },
+            { v: 'ask', label: 'Explain the choice to me at the time' },
+        ] },
+    { id: 'feed', sec: 'baby', q: 'Feeding',
+        options: [
+            { v: 'breast', label: 'Breastfeeding, and I would like help early' },
+            { v: 'bottle', label: 'Bottle feeding' },
+            { v: 'both', label: 'Both, and I know what I am doing' },
+            { v: 'see', label: 'Still deciding' },
+        ] },
+    { id: 'formula', sec: 'baby', q: 'If formula is offered',
+        options: [
+            { v: 'ask', label: 'Please ask me first' },
+            { v: 'fine', label: 'That is fine without asking' },
+            { v: 'na', label: 'Not applicable' },
+        ] },
+    { id: 'stay', sec: 'baby', q: 'Where the baby sleeps',
+        options: [
+            { v: 'room', label: 'In the room with me' },
+            { v: 'help', label: 'I may want a break overnight' },
+            { v: 'see', label: 'I will decide when I am there' },
+        ] },
+    { id: 'bath', sec: 'baby', q: 'The first bath',
+        options: [
+            { v: 'wait', label: 'Please wait a while before bathing them' },
+            { v: 'any', label: 'Whenever suits you' },
+            { v: 'me', label: 'I would like to be there for it' },
+        ] },
+    { id: 'vitk', sec: 'baby', q: 'Vitamin K and the newborn checks',
+        options: [
+            { v: 'yes', label: 'Yes to all of it' },
+            { v: 'talk', label: 'I have questions first' },
+            { v: 'decided', label: 'We have decided already and will tell you' },
+        ] },
+    { id: 'caes', sec: 'change', q: 'If it becomes a cesarean',
+        options: [
+            { v: 'gentle', label: 'Awake, partner in, baby on my chest in the operating room' },
+            { v: 'quiet', label: 'Keep it calm and tell me what is happening' },
+            { v: 'see', label: 'I would rather not think about that' },
+        ] },
+    { id: 'nicu', sec: 'change', q: 'If the baby needs to leave the room',
+        options: [
+            { v: 'partner', label: 'My partner goes with the baby' },
+            { v: 'stay', label: 'My partner stays with me' },
+            { v: 'photo', label: 'Please bring me a photo as soon as you can' },
+        ] },
+    { id: 'tell', sec: 'change', q: 'If something changes',
+        options: [
+            { v: 'all', label: 'Tell me everything, even if it is quick' },
+            { v: 'partner', label: 'Tell my partner and let them tell me' },
+            { v: 'do', label: 'Just do what is needed, explain afterwards' },
+        ] },
+];
+function bpRowsIn(secId) {
+    return BP_ROWS.filter((r) => r.sec === secId);
+}
+function bpAnswerLabel(rowId, value) {
+    const row = BP_ROWS.filter((r) => r.id === rowId)[0];
+    if (!row)
+        return '';
+    const opt = (row.options || []).filter((o) => o.v === value)[0];
+    return opt ? opt.label : '';
+}
+function bpChosen(prefs) {
+    const p = (prefs && typeof prefs === 'object') ? prefs : {};
+    return BP_ROWS.filter((r) => p[r.id] && bpAnswerLabel(r.id, p[r.id])).length;
+}
+function bpSectionsWithAnswers(prefs) {
+    const p = (prefs && typeof prefs === 'object') ? prefs : {};
+    return BP_SECTIONS.map((s) => ({
+        label: s.label,
+        lines: bpRowsIn(s.id)
+            .filter((r) => p[r.id] && bpAnswerLabel(r.id, p[r.id]))
+            .map((r) => ({ q: r.q, a: bpAnswerLabel(r.id, p[r.id]) })),
+    })).filter((s) => s.lines.length);
+}
+const BP_FLEX_LINE = 'I know birth does not follow a plan. If something needs to change, please tell me what is '
+    + 'happening and why, and I will go with you.';
+const BP_FLEX_LABEL = 'End the page with this';
+const BP_EMPTY = {
+    title: 'Nothing picked yet',
+    body: 'Answer only the ones you have a view on. A page with 4 lines you mean is better than 20 '
+        + 'you were talked into.',
+};
+const BP_PRINT = 'Print it';
+const BP_SHARE = 'Send a copy';
+const BP_PRINT_HINT = 'On a phone this opens the print sheet, where Save as PDF is usually the first option.';
+const BP_FILENAME = 'birth-plan.txt';
+const BP_TALK = {
+    title: 'Take it to an appointment',
+    body: 'This is the step the research is actually about. Printing it is not the point, talking it '
+        + 'through is. Ask at your next visit whether anything on it would be difficult where you are '
+        + 'giving birth, because that answer is worth more than the page.',
+};
+const BP_SOURCES = [
+    { org: 'Cochrane',
+        label: 'Written birth plans, and why discussion with a provider is the part that helps',
+        url: 'https://www.cochrane.org/evidence' },
+    { org: 'ACOG',
+        label: 'Preparing for birth, and talking preferences through in advance',
+        url: 'https://www.acog.org/womens-health/faqs/how-to-tell-when-labor-begins' },
+];
 const SIZE_ART_TITLE = 'About this big';
 const C = {
     ring: '#F2EEE6',
@@ -50850,6 +51116,7 @@ function newChildRecord(name, birthday) {
         dueDate: null,
         bishop: [],
         birthPrefs: {},
+        birthPlan: {},
         cycleDays: {},
         monthNotes: {},
         monthSeen: '',
@@ -51035,7 +51302,7 @@ const state = {};
     'liftUsed', 'liftDate', 'pumpTab', 'pumpGoal',
     'pumpProblem', 'flangeMm', 'ppTab', 'ppStage', 'askQuery', 'askAsked',
     'tab', 'view', 'undGroup', 'lensBand', 'feedTab', 'outTab', 'safetyTab',
-    'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'sexedTab',
+    'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'bpTab', 'sexedTab',
     'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab', 'crTab', 'calTab',
     'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift', 'lists', 'deletedListIds', 'listOpen', 'rewards', 'rewardLog', 'rewKid', 'rewOwnOpen',
     'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
@@ -52191,6 +52458,8 @@ function render() {
         html = viewInfection(v.id);
     else if (v && v.type === 'btopic')
         html = viewBTopic(v.id);
+    else if (v && v.type === 'screen' && v.id === 'birthplan')
+        html = screenBirthPlan();
     else if (v && v.type === 'screen' && v.id === 'now')
         html = screenNow(c);
     else if (v && v.type === 'screen' && v.id === 'momnow')
@@ -52426,6 +52695,11 @@ function initControls() {
             render();
         });
     document.addEventListener('input', (e) => {
+        if (e.target.matches && e.target.matches('[data-bpfield]')) {
+            bpSet(e.target.dataset.bpfield, String(e.target.value || '').slice(0, BP_NOTE_MAX));
+            saveStore();
+            return;
+        }
         if (e.target.id === 'askIn') {
             state.askQuery = e.target.value;
         }
@@ -52727,7 +53001,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -54108,6 +54382,30 @@ function initControls() {
                 state.bagChecked.push(id);
             else
                 state.bagChecked.splice(i, 1);
+        }
+        else if (t.dataset.bp) {
+            if (t.dataset.bp === 'print')
+                bpPrint();
+            else
+                bpShare();
+            return;
+        }
+        else if (t.dataset.bppick) {
+            const kid = bpKid();
+            if (kid) {
+                if (!kid.birthPrefs || typeof kid.birthPrefs !== 'object')
+                    kid.birthPrefs = {};
+                if (kid.birthPrefs[t.dataset.bppick] === t.dataset.val)
+                    delete kid.birthPrefs[t.dataset.bppick];
+                else
+                    kid.birthPrefs[t.dataset.bppick] = t.dataset.val;
+                kid.updatedAt = Date.now();
+            }
+        }
+        else if (t.dataset.bpflex) {
+            const kid = bpKid();
+            if (kid)
+                bpSet('flex', bpMeta(kid).flex === false);
         }
         else if (t.dataset.bagadd) {
             store.bagAdd = t.dataset.bagadd === 'open' ? (t.dataset.cat || 'own') : null;
@@ -59991,6 +60289,231 @@ function viewBTopic(key) {
     </div>` : ''}
   </div>`;
 }
+function bpKid() {
+    const kid = activeChild();
+    return (kid && isExpecting(kid)) ? kid : null;
+}
+function bpPrefs(kid) {
+    return (kid && kid.birthPrefs && typeof kid.birthPrefs === 'object') ? kid.birthPrefs : {};
+}
+function bpMeta(kid) {
+    return (kid && kid.birthPlan && typeof kid.birthPlan === 'object') ? kid.birthPlan : {};
+}
+function bpSet(field, value) {
+    const kid = bpKid();
+    if (!kid)
+        return;
+    if (!kid.birthPlan || typeof kid.birthPlan !== 'object')
+        kid.birthPlan = {};
+    kid.birthPlan[field] = value;
+    kid.updatedAt = Date.now();
+}
+function bpPlainText() {
+    const kid = bpKid();
+    if (!kid)
+        return '';
+    const meta = bpMeta(kid);
+    const secs = bpSectionsWithAnswers(bpPrefs(kid));
+    const out = ['BIRTH PLAN'];
+    if (meta.name)
+        out.push(meta.name);
+    BP_FIELDS.forEach((f) => {
+        if (f.id === 'name')
+            return;
+        if (meta[f.id])
+            out.push(f.label + ': ' + meta[f.id]);
+    });
+    out.push('');
+    secs.forEach((sec) => {
+        out.push(sec.label.toUpperCase());
+        sec.lines.forEach((l) => out.push('  ' + l.q + ': ' + l.a));
+        out.push('');
+    });
+    if (meta.note) {
+        out.push('ANYTHING ELSE');
+        out.push('  ' + meta.note);
+        out.push('');
+    }
+    if (meta.flex !== false)
+        out.push(BP_FLEX_LINE);
+    return out.join('\n');
+}
+async function bpShare() {
+    const text = bpPlainText();
+    if (!text)
+        return;
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    try {
+        if (navigator.share && typeof File === 'function') {
+            const file = new File([blob], BP_FILENAME, { type: 'text/plain' });
+            if (!navigator.canShare || navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], title: 'Birth plan' });
+                return;
+            }
+        }
+        if (navigator.share) {
+            await navigator.share({ title: 'Birth plan', text: text });
+            return;
+        }
+    }
+    catch (err) {
+        if (err && err.name === 'AbortError')
+            return;
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = BP_FILENAME;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+function bpPrint() {
+    try {
+        window.print();
+    }
+    catch (err) { }
+}
+function bpSheet(kid) {
+    const meta = bpMeta(kid);
+    const secs = bpSectionsWithAnswers(bpPrefs(kid));
+    const who = meta.name || (store.parent && store.parent.name) || '';
+    const details = BP_FIELDS.filter((f) => f.id !== 'name' && meta[f.id]);
+    return `
+  <div class="bpsheet">
+    <p class="bpsheet-k">Birth plan</p>
+    ${who ? `<p class="bpsheet-n">${esc(who)}</p>` : ''}
+    ${details.length ? `
+    <div class="bpsheet-meta">
+      ${details.map((f) => `<p><span>${esc(f.label)}</span> ${esc(meta[f.id])}</p>`).join('')}
+    </div>` : ''}
+    ${secs.length ? secs.map((sec) => `
+      <div class="bpsheet-sec">
+        <p class="bpsheet-h">${esc(sec.label)}</p>
+        ${sec.lines.map((l) => `
+          <p class="bpsheet-l"><span>${esc(l.q)}</span>${esc(l.a)}</p>`).join('')}
+      </div>`).join('') : `
+      <p class="bpsheet-l" style="margin-top:14px">${esc(BP_EMPTY.body)}</p>`}
+    ${meta.note ? `
+      <div class="bpsheet-sec">
+        <p class="bpsheet-h">${esc(BP_NOTE_LABEL)}</p>
+        <p class="bpsheet-l"><span style="display:none"></span>${esc(meta.note)}</p>
+      </div>` : ''}
+    ${meta.flex !== false ? `<p class="bpsheet-flex">${esc(BP_FLEX_LINE)}</p>` : ''}
+  </div>`;
+}
+function screenBirthPlan() {
+    const kid = bpKid();
+    if (!kid) {
+        return `
+    <div class="sc-head">
+      <button class="back" data-back="birth">${icon('back', 15, 'var(--deep)')} Back</button>
+      <h1 class="title sm" style="margin-top:6px">${esc(BP_TITLE)}</h1>
+    </div>
+    <div class="sc">
+      <div class="card flat"><p class="bodytext">Open this from the profile of the baby you are
+        expecting, and the plan is kept there.</p></div>
+    </div>`;
+    }
+    const prefs = bpPrefs(kid);
+    const meta = bpMeta(kid);
+    const chosen = bpChosen(prefs);
+    const tab = state.bpTab || 'build';
+    return `
+  <div class="sc-head">
+    <button class="back" data-back="birth">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(BP_TITLE)}</h1>
+    <p class="sub">${esc(BP_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('bpTab', tab, [
+        { id: 'build', label: 'Build it' },
+        { id: 'page', label: 'The page' },
+    ])}
+    ${tab === 'build' ? `
+      <div class="hpair">
+        <div class="hhalf">
+          <div class="hhalf-h"><span class="hhalf-ic">${icon('check', 14, 'var(--deep)')}</span>
+            <span class="hhalf-t">Chosen</span></div>
+          <div class="hhalf-b">
+            <p class="szbig">${chosen}<span class="szbig-u">/${BP_ROWS.length}</span></p>
+            <p class="hhalf-free">Answer only what you have a view on.</p>
+          </div>
+        </div>
+        <div class="hhalf">
+          <div class="hhalf-h"><span class="hhalf-ic">${icon('note', 14, 'var(--deep)')}</span>
+            <span class="hhalf-t">Your page</span></div>
+          <div class="hhalf-b">
+            <p class="hhalf-free">${chosen
+        ? 'Ready to print or send.' : 'Nothing on it yet.'}</p>
+          </div>
+          <button class="hhalf-go" data-sub="bpTab" data-val="page">
+            See it ${icon('chev', 12, 'var(--deep)')}</button>
+        </div>
+      </div>
+      <div class="szcard blush">
+        <div class="szcard-h">
+          <span class="szcard-ic">${icon('bulb', 15, '#8A5F54')}</span>
+          <span class="szcard-t">${esc(BP_WHY.title)}</span>
+        </div>
+        <p class="bodytext" style="margin:0">${esc(BP_WHY.body)}</p>
+      </div>
+      <p class="sect" style="margin-top:16px">The details at the top</p>
+      <div class="card">
+        ${BP_FIELDS.map((f) => `
+        <div style="margin-bottom:10px">
+          <p class="tiny" style="margin:0 0 4px">${esc(f.label)}</p>
+          <input class="inp" id="bpf-${esc(f.id)}" data-bpfield="${esc(f.id)}"
+            value="${esc(meta[f.id] || '')}" placeholder="${esc(f.ph)}" maxlength="60">
+        </div>`).join('')}
+      </div>
+      ${BP_SECTIONS.map((sec) => `
+        <p class="sect" style="margin-top:18px">${esc(sec.label)}</p>
+        ${bpRowsIn(sec.id).map((r) => `
+          <div class="card" style="margin-bottom:9px">
+            <p class="eyebrow">${esc(r.q)}</p>
+            <div class="chips" style="margin-top:9px">
+              ${r.options.map((o) => `
+                <button class="chip${prefs[r.id] === o.v ? ' on' : ''}"
+                  data-bppick="${esc(r.id)}" data-val="${esc(o.v)}"
+                  aria-pressed="${prefs[r.id] === o.v}">${esc(o.label)}</button>`).join('')}
+            </div>
+          </div>`).join('')}
+      `).join('')}
+      <p class="sect" style="margin-top:18px">${esc(BP_NOTE_LABEL)}</p>
+      <div class="card">
+        <textarea class="inp" id="bpf-note" data-bpfield="note" rows="3"
+          maxlength="${BP_NOTE_MAX}" placeholder="${esc(BP_NOTE_PH)}">${esc(meta.note || '')}</textarea>
+      </div>
+      <div class="card" style="margin-top:10px">
+        ${tickRow(meta.flex !== false, BP_FLEX_LABEL, BP_FLEX_LINE, 'data-bpflex="1"')}
+      </div>
+      ${Object.keys(prefs).length ? `
+        <button class="btn ghost" style="width:100%;margin-top:12px" data-birth="prefclear">
+          Clear every answer</button>` : ''}
+      ${dsec(BP_TALK.title, `<p class="bodytext">${esc(BP_TALK.body)}</p>`)}
+      ${dsec('Sources', sourceRows(BP_SOURCES))}
+    ` : `
+      ${!chosen && !meta.note ? `
+      <div class="card flat">
+        <p class="eyebrow">${esc(BP_EMPTY.title)}</p>
+        <p class="bodytext" style="margin-top:6px">${esc(BP_EMPTY.body)}</p>
+        <button class="btn" style="width:100%;margin-top:11px" data-sub="bpTab" data-val="build">
+          Start picking</button>
+      </div>` : `
+      <div class="bpbar">
+        <button class="btn" data-bp="print">
+          ${icon('note', 14, '#fff')} ${esc(BP_PRINT)}</button>
+        <button class="btn ghost" data-bp="share">
+          ${icon('chat', 14, 'var(--deep)')} ${esc(BP_SHARE)}</button>
+      </div>
+      <p class="tiny" style="margin:8px 2px 0">${esc(BP_PRINT_HINT)}</p>
+      ${bpSheet(kid)}
+      ${dsec(BP_TALK.title, `<p class="bodytext">${esc(BP_TALK.body)}</p>`)}`}
+    `}
+  </div>`;
+}
 function screenBirth(c) {
     const kid = activeChild();
     const seed = kid && isExpecting(kid) ? kid : null;
@@ -60029,6 +60552,13 @@ function screenBirth(c) {
         ${PREF_INTRO.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
       </div>
       ${seed ? `
+        <button class="pickcard" style="width:100%;margin-bottom:12px"
+          data-go="screen" data-id="birthplan">
+          <span class="pickcard-ic">${icon('note', 17, 'var(--deep)')}</span>
+          <span class="pickcard-t">${esc(BP_TITLE)}</span>
+          <span class="pickcard-b">${esc(BP_SUB)}</span>
+          <span class="pickcard-go">Build it, print it ${icon('chev', 12, 'var(--deep)')}</span>
+        </button>
         ${PREF_ROWS.map((r) => birthPrefRow(r, prefs[r.id])).join('')}
         <div class="card" style="border-left:3px solid var(--sage)">
           <p class="eyebrow">What you have said matters to you</p>
@@ -71420,6 +71950,7 @@ function normalizeChild(k) {
         logs: Array.isArray(k.logs) ? k.logs : [],
         bishop: Array.isArray(k.bishop) ? k.bishop : [],
         birthPrefs: k.birthPrefs && typeof k.birthPrefs === 'object' ? k.birthPrefs : {},
+        birthPlan: k.birthPlan && typeof k.birthPlan === 'object' ? k.birthPlan : {},
         cycleDays: k.cycleDays && typeof k.cycleDays === 'object' ? k.cycleDays : {},
         monthNotes: k.monthNotes && typeof k.monthNotes === 'object' ? k.monthNotes : {},
         monthSeen: typeof k.monthSeen === 'string' ? k.monthSeen : '',
