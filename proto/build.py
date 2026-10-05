@@ -78,6 +78,7 @@ order = [
     ('rewards',             SRC/'data/rewards.js'),
     ('meals',               SRC/'data/meals.js'),
     ('ics',                 SRC/'data/ics.js'),
+    ('loss',                SRC/'data/loss.js'),
     ('feed',                SRC/'data/feed.js'),
     ('fireflies',           SRC/'data/fireflies.js'),
     ('groups',              SRC/'data/groups.js'),

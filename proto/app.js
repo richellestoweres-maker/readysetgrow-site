@@ -957,6 +957,20 @@ function newChildRecord(name, birthday) {
     /* Stars are off until a parent turns them on for this child. See
        src/data/rewards.js for why that is not a default. */
     starsOn: false,
+    /* WHEN A PREGNANCY ENDS.
+
+       lost is the only required one and a bare true is a complete
+       answer. Everything beside it is optional, including the date,
+       because an app that demands the details of the worst week of
+       somebody's life before it will stop sending fruit comparisons
+       is not a caring app. See src/data/loss.js. */
+    lost: false,
+    lostAt: null,
+    lostNote: '',
+    /* none, quiet or warn. Default none: a reminder nobody asked for
+       about the hardest day of their year is the worst thing a
+       calendar can do. */
+    lostDates: 'none',
     lenses: [],
     lensOptions: {},
     lensNumbers: {},
@@ -1181,6 +1195,9 @@ const store = {
   choreTab: 'today',
   choreDay: null,
   chorePick: null,
+  /* Whether the picker is also showing jobs the child has outgrown.
+     Transient and never synced: it is a view, not a fact. */
+  choreOlder: false,
   /* What is for dinner, as a flat map of date to one short line.
      Household level, so it syncs with the calendar and the chart. */
   meals: {},
@@ -2752,6 +2769,7 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'lists') html = screenLists(c);
   else if (v && v.type === 'screen' && v.id === 'rewards') html = screenRewards(c);
   else if (v && v.type === 'screen' && v.id === 'kids') html = screenKids();
+  else if (v && v.type === 'screen' && v.id === 'loss') html = screenLoss();
   else if (v && v.type === 'screen' && v.id === 'chores') html = screenChores();
   else if (v && v.type === 'screen' && v.id === 'learning') html = screenLearning(c);
   else if (v && v.type === 'screen' && v.id === 'growth') html = screenGrowth(c);
@@ -3389,7 +3407,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-chore],[data-chorepat],[data-choreevery],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -4153,6 +4171,37 @@ function initControls() {
     } else if (t.dataset.chore === 'add') {
       choreAdd(t.dataset.id, t.dataset.who,
         String(t.dataset.days || '').split(',').filter((x) => x !== '').map(Number));
+    } else if (t.dataset.loss) {
+      const kid = activeChild();
+      const how = t.dataset.loss;
+      if (kid && how === 'confirm') {
+        /* One tap and the updates stop. Nothing else is required and
+           nothing is removed. */
+        kid.lost = true;
+        kid.updatedAt = Date.now();
+        flushStore();
+      } else if (kid && how === 'save') {
+        const d = document.getElementById('lossDateIn');
+        const n = document.getElementById('lossNameIn');
+        const note = document.getElementById('lossNoteIn');
+        /* A blank date stays blank. Not knowing, or not wanting to
+           write it down, is a complete answer. */
+        kid.lostAt = (d && d.value && d.value <= ciToday()) ? d.value : null;
+        if (n) kid.name = String(n.value || '').trim();
+        if (note) kid.lostNote = String(note.value || '');
+        kid.updatedAt = Date.now();
+        flushStore();
+      } else if (kid && how === 'dates') {
+        kid.lostDates = t.dataset.id;
+        kid.updatedAt = Date.now();
+        flushStore();
+      } else if (kid && how === 'undo') {
+        kid.lost = false;
+        kid.updatedAt = Date.now();
+        flushStore();
+      }
+    } else if (t.dataset.choreolder) {
+      store.choreOlder = t.dataset.choreolder === 'on';
     } else if (t.dataset.chorepat) {
       if (!store.chorePick) store.chorePick = {};
       store.chorePick.pattern = t.dataset.chorepat;
@@ -9888,8 +9937,28 @@ function safetyMoreBtn(all, key) {
    this feature exists.
    ================================================================== */
 
+/* ==================================================================
+   WHEN A PREGNANCY ENDS
+
+   isExpecting is the single gate every forward looking pregnancy
+   screen already asks, which is what makes this safe to add late:
+   one condition here turns off the week by week pages, the
+   countdown, the hospital bag, nesting, the birth plan and the
+   induction pages all at once, without touching any of them.
+
+   lost is a flag on the child rather than a deletion, because the
+   record is theirs to keep or remove and plenty of parents want it
+   kept. See src/data/loss.js for the reasoning on all of it.
+   ================================================================== */
+function isLost(k) {
+  return !!(k && k.lost);
+}
+
 function isExpecting(k) {
-  return !!(k && k.expecting && k.dueDate);
+  /* A pregnancy that has ended is not an expecting pregnancy. This
+     one line is the whole feature: every screen that asks this
+     question already stops asking for anything else. */
+  return !!(k && k.expecting && k.dueDate && !k.lost);
 }
 
 function expWhereFor(k) {
@@ -10142,6 +10211,28 @@ function screenExpecting(c) {
         </button>`}
     </div>
 
+    ${/* THE OTHER EXIT.
+
+          Quiet, plain, and at the bottom. Not a coloured button, not
+          above the week by week content where somebody happily
+          pregnant has to read past it every single day, and not
+          hidden three menus deep either, because the person who needs
+          it needs it today and should not have to hunt while they are
+          in pieces.
+
+          One in five known pregnancies ends. This being missing was
+          the most serious gap in the app. */''}
+    <div class="dsec">
+      <button class="lrow" data-go="screen" data-id="loss" style="align-items:flex-start">
+        <span class="licon">${icon('heart', 18, 'var(--muted)')}</span>
+        <span class="grow">
+          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(LOSS_ENTRY)}</span>
+          <span class="tiny" style="display:block;margin-top:2px">${esc(LOSS_ENTRY_SUB)}</span>
+        </span>
+        <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+      </button>
+    </div>
+
     <p class="disclaimer">${esc(EXP_DISCLAIMER)}</p>
   </div>`;
 }
@@ -10149,6 +10240,141 @@ function screenExpecting(c) {
 
 
 
+
+/* ==================================================================
+   WHEN A PREGNANCY ENDS
+
+   Two states on one screen. Before it is recorded, the only required
+   action and nothing else. After, what the app has stopped doing,
+   the optional record, the dates question, and the orientation.
+
+   The order is deliberate. Stopping the updates comes first and
+   costs one tap, because that is what the person opening this screen
+   needs in the next ten seconds. Every form field is on the other
+   side of that, so nobody has to fill anything in to make the
+   hurting stop.
+   ================================================================== */
+function screenLoss() {
+  const kid = activeChild();
+  if (!kid) return `
+    ${cornerLeaves()}
+    <div class="sc-head tight">
+      <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    </div>
+    <div class="sc"><div class="card flat"><p class="bodytext">Nothing selected.</p></div></div>`;
+
+  const done = isLost(kid);
+  const name = lossLabel(kid.name);
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head tight">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">${esc(LOSS_TITLE)}</h1>
+  </div>
+  <div class="sc">
+
+    ${!done ? `
+      <div class="card leafy">
+        ${LOSS_INTRO.map((x) => `<p class="bodytext" style="margin:0 0 9px">${esc(x)}</p>`).join('')}
+      </div>
+      <div class="card">
+        <p class="bodytext" style="margin:0 0 11px">${esc(LOSS_CONFIRM_NOTE)}</p>
+        <button class="btn" style="width:100%;justify-content:center" data-loss="confirm">
+          ${esc(LOSS_CONFIRM)}</button>
+        <button class="chip" style="margin-top:10px" data-back="1">${esc(LOSS_CANCEL)}</button>
+      </div>
+    ` : `
+      <div class="card leafy">
+        <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} ${esc(LOSS_WHAT_NOW_TITLE)}</p>
+        <ul class="bul" style="margin-top:8px">
+          ${LOSS_WHAT_NOW.map((x) => `<li>${esc(x)}</li>`).join('')}
+        </ul>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(LOSS_OPTIONAL_TITLE)}</h4>
+        <p class="tiny" style="margin:0 0 10px">${esc(LOSS_OPTIONAL_NOTE)}</p>
+        <div class="card">
+          <p class="eyebrow">${esc(LOSS_DATE_LABEL)}</p>
+          <input class="inp" id="lossDateIn" type="date" max="${esc(ciToday())}"
+            value="${esc(kid.lostAt || '')}" style="width:100%;margin-top:7px">
+          <p class="tiny" style="margin:7px 0 0">${esc(LOSS_DATE_NOTE)}</p>
+
+          <p class="eyebrow" style="margin-top:14px">${esc(LOSS_NAME_LABEL)}</p>
+          <input class="inp" id="lossNameIn" type="text" autocomplete="off"
+            value="${esc(kid.name || '')}" style="width:100%;margin-top:7px">
+          <p class="tiny" style="margin:7px 0 0">${esc(LOSS_NAME_NOTE)}</p>
+
+          <p class="eyebrow" style="margin-top:14px">${esc(LOSS_NOTE_LABEL)}</p>
+          <textarea class="inp" id="lossNoteIn" rows="3" style="width:100%;margin-top:7px"
+            placeholder="${esc(LOSS_NOTE_PLACEHOLDER)}">${esc(kid.lostNote || '')}</textarea>
+
+          <button class="btn ghost" style="width:100%;margin-top:12px;justify-content:center"
+            data-loss="save">Save</button>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(LOSS_DATES_TITLE)}</h4>
+        <p class="bodytext" style="margin:0 0 9px">${esc(LOSS_DATES_BODY)}</p>
+        <p class="eyebrow">${esc(LOSS_DATES_ASK)}</p>
+        ${LOSS_DATES_OPTIONS.map((o) => `
+          <button class="lrow${kid.lostDates === o.id ? ' on' : ''}" data-loss="dates" data-id="${esc(o.id)}"
+            style="align-items:flex-start">
+            <span class="licon">${icon(kid.lostDates === o.id ? 'check' : 'circle', 16,
+    kid.lostDates === o.id ? 'var(--deep)' : 'var(--faint)')}</span>
+            <span class="grow">
+              <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(o.label)}</span>
+              <span class="tiny" style="display:block;margin-top:2px">${esc(o.note)}</span>
+            </span>
+          </button>`).join('')}
+        <p class="tiny" style="margin-top:8px">${esc(LOSS_DATES_CHANGE)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(LOSS_BODY_TITLE)}</h4>
+        <p class="bodytext" style="margin:0 0 9px">${esc(LOSS_BODY_INTRO)}</p>
+        <ul class="bul">${LOSS_BODY_POINTS.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+        <div class="card warn" style="margin-top:11px">
+          <p class="eyebrow">${esc(LOSS_BODY_ASK_TITLE)}</p>
+          <ul class="bul" style="margin-top:7px">${LOSS_BODY_ASK.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+          <p class="bodytext" style="margin:9px 0 0">${esc(LOSS_BODY_ASK_NOTE)}</p>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(LOSS_OTHERS_TITLE)}</h4>
+        <ul class="bul">${LOSS_OTHERS.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(LOSS_HEAVY_TITLE)}</h4>
+        <p class="bodytext" style="margin:0 0 9px">${esc(LOSS_HEAVY_BODY)}</p>
+        <p class="tiny">${esc(LOSS_HEAVY_NOTE)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(LOSS_AGAIN_TITLE)}</h4>
+        <ul class="bul">${LOSS_AGAIN.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+        <p class="tiny" style="margin-top:8px">${esc(LOSS_AGAIN_NOTE)}</p>
+      </div>
+
+      ${dsec('Where to go', sourceRows(LOSS_SOURCES))}
+
+      <p class="tiny" style="margin-top:12px">${esc(LOSS_PRIVACY)}</p>
+
+      <div class="dsec">
+        <p class="tiny" style="margin:0 0 8px">${esc(LOSS_REVERSIBLE)}</p>
+        <button class="tiny" data-loss="undo"
+          style="background:none;border:0;padding:6px 0;color:var(--deep);text-decoration:underline">
+          ${esc(LOSS_UNDO)}</button>
+      </div>
+    `}
+
+    <p class="disclaimer">${esc(LOSS_DISCLAIMER)}</p>
+  </div>`;
+}
 
 /* ==================================================================
    SEX, HONESTLY
@@ -19780,7 +20006,16 @@ function rewDayBlock(kid, months) {
      young still gets silence, because that one really is not for
      them. */
   if (!jobs.length) {
-    if (!rewShows(months)) return '';
+    /* GATED ON THE CHART, NOT ON THE STARS.
+
+       This asked rewShows(), which is the STARS window, three to
+       thirteen. So a fifteen year old with nothing on the chart yet
+       got no jobs block and no way into the chart from their own
+       page, and a two year old did not either, even though the chart
+       itself starts at two. Teenagers have chores. They just do not
+       want a star for them, which is a different question and is
+       already answered further down. */
+    if (!choreOldEnough(months)) return '';
     const any = (store.choreJobs || []).length;
     return `
     <p class="sect" style="margin-top:18px">${esc(first)}'s jobs</p>
@@ -19789,7 +20024,7 @@ function rewDayBlock(kid, months) {
         ? 'Nothing on the chart for ' + first + ' today. Put a few jobs on and they turn up here, '
           + 'ready to tick off.'
         : 'The chore chart is empty. Put a few jobs on it and they turn up here each day, ready to '
-          + 'tick off, with stars if you want them.')}</p>
+          + 'tick off' + (rewShows(months) ? ', with stars if you want them.' : '.'))}</p>
       <button class="btn ghost sm" style="width:100%;margin-top:11px" data-go="screen" data-id="chores">
         ${icon('leaf', 13, 'var(--deep)')} Set up the chart</button>
     </div>`;
@@ -21144,6 +21379,56 @@ const AGE_NEW_LABEL = {
   activities: 'Activities',
 };
 
+/* ------------------------------------------------------------------
+   THE SAME SECTION, NAMED FOR THE AGE IT IS BEING SHOWN AT
+
+   Three of these sections open at 18 months and the content behind
+   them is right to open then. Body safety at 18 months is "nobody
+   has to hug anybody" and the correct word for a body part. Screens
+   at 18 months is the WHO and AAP guidance on how much and whether
+   you watch it together.
+
+   The LABELS were written for the oldest age the section ever
+   reaches, so a parent opening their toddler's profile was told the
+   app had just unlocked "Consent and body safety" and "Phones, games
+   and who is on the other side". Both of those read, on an 18 month
+   old's page, as either a bug or something worse. Richelle found the
+   same shape of mistake on the chore list, where a thirteen year old
+   was offered a diaper job, and it is the same mistake: content
+   gated correctly and described at the wrong age.
+
+   So the gate stays exactly where it is and the words change with
+   the child. Nothing is hidden and nothing new is shown.
+   ------------------------------------------------------------------ */
+const AGE_LABEL_BY_AGE = {
+  online: [
+    { to: 60,  label: 'Screens, and how much' },
+    { to: 108, label: 'Screens, games and what they watch' },
+    { to: null, label: 'Phones, games and who is on the other side' },
+  ],
+  consent: [
+    { to: 60,  label: 'Body safety and saying no' },
+    { to: null, label: 'Consent and body safety' },
+  ],
+  growingup: [
+    { to: 84,  label: 'Their body, in the right words' },
+    { to: null, label: 'Growing up' },
+  ],
+  jobs: [
+    { to: 36,  label: 'Little jobs they can help with' },
+    { to: null, label: 'Jobs they can have a go at' },
+  ],
+};
+
+function ageNewLabel(id, months) {
+  const bands = AGE_LABEL_BY_AGE[id];
+  if (!bands || typeof months !== 'number') return AGE_NEW_LABEL[id];
+  for (let i = 0; i < bands.length; i += 1) {
+    if (bands[i].to === null || months < bands[i].to) return bands[i].label;
+  }
+  return AGE_NEW_LABEL[id];
+}
+
 function ageNewList(months, kid) {
   if (!kid || typeof months !== 'number') return [];
   return Object.keys(AGE_NEW_LABEL).filter((id) => ageIsNew(id, months, kid));
@@ -21174,7 +21459,7 @@ function ageNewDismiss(ids) {
 function ageNewCard(months, kid, first) {
   const ids = ageNewList(months, kid);
   if (!ids.length || ageNewSeen(kid, ids)) return '';
-  const names = ids.map((id) => AGE_NEW_LABEL[id]);
+  const names = ids.map((id) => ageNewLabel(id, months));
   return `
   <div class="card" style="border-left:3px solid var(--sage);position:relative">
     <button class="wnudge-x" data-agenew="hide" aria-label="Not now">&times;</button>
@@ -21183,7 +21468,7 @@ function ageNewCard(months, kid, first) {
     ${names.length === 1 ? 'this now' : 'these now'}, so ${names.length === 1 ? 'it has' : 'they have'}
     just appeared below.</p>
     <div class="chips" style="gap:7px;margin-top:10px">
-      ${ids.map((id) => `<button class="chip" data-agenew="go" data-id="${esc(id)}">${esc(AGE_NEW_LABEL[id])}</button>`).join('')}
+      ${ids.map((id) => `<button class="chip" data-agenew="go" data-id="${esc(id)}">${esc(ageNewLabel(id, months))}</button>`).join('')}
     </div>
     <p class="tiny" style="margin-top:9px">Nothing has been taken away. Things that stop applying at
     ${esc(first)}'s age simply stop taking up room.</p>
@@ -24466,6 +24751,10 @@ function normalizeChild(k) {
     arrival: Array.isArray(k.arrival) ? k.arrival : [],
     photo: k.photo || '',
     calColor: typeof k.calColor === 'string' ? k.calColor : '',
+    lost: !!k.lost,
+    lostAt: k.lostAt || null,
+    lostNote: typeof k.lostNote === 'string' ? k.lostNote : '',
+    lostDates: ['none', 'quiet', 'warn'].indexOf(k.lostDates) !== -1 ? k.lostDates : 'none',
     starsOn: !!k.starsOn,
     routineInclude: Array.isArray(k.routineInclude) ? k.routineInclude : [],
     routineMode: typeof k.routineMode === 'string' ? k.routineMode : '',
@@ -27688,9 +27977,16 @@ function chorePicker() {
     have[j.choreId] = wantDays.every((x) => d.indexOf(x) !== -1);
   });
 
+  /* TWO POOLS NOW, NOT ONE.
+
+     The main list is jobs of their age. The second is everything they
+     have outgrown but could still do, behind a tap, because keeping
+     the easy jobs available is right and putting them first is not. */
+  const younger = p.kind === 'adult' || p.months == null ? [] : choresBelowAge(p.months);
+  const showOld = !!store.choreOlder;
   const pool = p.kind === 'adult'
     ? adultChores()
-    : (p.months == null ? [] : choresForMonths(p.months));
+    : (p.months == null ? [] : (showOld ? choresForMonths(p.months) : choresAtAge(p.months)));
   const groups = choresByArea(pool);
 
   /* A WAY OUT AT THE TOP.
@@ -27712,7 +28008,7 @@ function chorePicker() {
     <p class="bodytext" style="margin:0">
       A job for ${esc(p.name)}, ${esc(choreDaysLine(wantDays).toLowerCase())}.
       ${p.kind === 'child' && p.months != null
-    ? esc('Everything here is something a ' + childAgeWord(p.months) + ' can have a go at. It will not be done well and that is the job being done.')
+    ? esc(choreAgeLine(p.months, p.name))
     : esc('The work that is already yours, written down so it is on the chart with everybody else’s.')}
     </p>
   </div>
@@ -27750,6 +28046,17 @@ function chorePicker() {
           ${choreStarRow(ch.stars)}
         </button>`).join('')}
     </div>`).join('')}
+  ${younger.length ? `
+    <div class="dsec">
+      <button class="lrow" data-choreolder="${showOld ? 'off' : 'on'}">
+        <span class="licon">${icon(showOld ? 'chevdown' : 'chev', 16)}</span>
+        <span class="grow">
+          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(CHORE_YOUNGER_LABEL)}</span>
+          <span class="tiny" style="display:block;margin-top:2px">${esc(showOld
+    ? CHORE_YOUNGER_NOTE : younger.length + ' more, hidden so they are not the first thing you see')}</span>
+        </span>
+      </button>
+    </div>` : ''}
   <button class="bigbtn" data-chore="donepick">Done</button>`;
 }
 
