@@ -203,6 +203,50 @@ export const CHORES = [
   { id: 'a-yard', label: 'Garden and yard', area: 'outside', adult: true, minutes: 60, stars: 0 },
   { id: 'a-car', label: 'Car, fuel and servicing', area: 'outside', adult: true, minutes: 30, stars: 0 },
   { id: 'a-tidy-round', label: 'The evening tidy round', area: 'tidy', adult: true, minutes: 15, stars: 0 },
+
+  /* ---------------- ROOM BY ROOM ----------------
+     Her list, and she is right that it was missing. "Clean the house"
+     is not a job anybody can put on a Tuesday. "Clean the kitchen" is.
+     Splitting it by room is what makes it possible to share, because
+     two adults can take a room each and actually know what they
+     agreed to. */
+  { id: 'a-kitchen-clean', label: 'Clean the kitchen properly', area: 'kitchen', adult: true, minutes: 40, stars: 0 },
+  { id: 'a-fridge-out', label: 'Clear out the fridge', area: 'kitchen', adult: true, minutes: 25, stars: 0,
+    note: 'Easiest the night before the food shop, when it is emptiest and you find out what you actually need.' },
+  { id: 'a-living-room', label: 'Clean the living room', area: 'floors', adult: true, minutes: 30, stars: 0 },
+  { id: 'a-our-room', label: 'Clean our bedroom', area: 'tidy', adult: true, minutes: 25, stars: 0 },
+  { id: 'a-kids-rooms', label: "Clean the children's rooms", area: 'tidy', adult: true, minutes: 35, stars: 0 },
+  { id: 'a-sheets', label: 'Change the beds', area: 'laundry', adult: true, minutes: 25, stars: 0 },
+  { id: 'a-towels', label: 'Fresh towels out', area: 'laundry', adult: true, minutes: 10, stars: 0 },
+  { id: 'a-meal-prep', label: 'Meal prep for the week', area: 'kitchen', adult: true, minutes: 90, stars: 0,
+    note: 'Usually a Sunday. The single biggest difference to a weeknight, and the single most skipped.' },
+  { id: 'a-lunches', label: 'Make the lunches', area: 'kitchen', adult: true, minutes: 20, stars: 0 },
+  { id: 'a-grocery-order', label: 'Put the grocery order in', area: 'house', adult: true, minutes: 20, stars: 0 },
+  { id: 'a-windows', label: 'Windows and mirrors', area: 'floors', adult: true, minutes: 30, stars: 0 },
+  { id: 'a-declutter', label: 'One drawer or cupboard', area: 'tidy', adult: true, minutes: 20, stars: 0,
+    note: 'One at a time, on a repeat. Whole house decluttering days are how nobody declutters.' },
+
+  /* ---------------- THE PART NOBODY PUTS ON A CHART ----------------
+     Her phrase was what a mother is usually responsible for, and most
+     of the honest answer is not scrubbing anything. It is the
+     remembering: who needs new shoes, whose vaccinations are due,
+     whose friend's party is on Saturday and what to take to it.
+
+     This work is real, it takes hours, it is almost always carried by
+     one person, and it is invisible precisely because it never
+     appears on a list. Putting it on the chart is the whole point.
+     You cannot split a load nobody has written down.
+
+     These are offered the same way as everything else, to whoever is
+     on the chart, with no assumption about who that is. */
+  { id: 'a-sizes', label: 'Check what still fits and what to size up', area: 'house', adult: true, minutes: 30, stars: 0 },
+  { id: 'a-gifts', label: 'Birthdays, presents and cards', area: 'house', adult: true, minutes: 30, stars: 0 },
+  { id: 'a-health-admin', label: 'Checkups, prescriptions and the dentist', area: 'house', adult: true, minutes: 25, stars: 0 },
+  { id: 'a-plan-week', label: 'Work out who is doing what this week', area: 'house', adult: true, minutes: 20, stars: 0,
+    note: 'Fifteen minutes on a Sunday prevents most of the week\'s arguments about who was supposed to.' },
+  { id: 'a-activities', label: 'Clubs, sign ups and kit', area: 'house', adult: true, minutes: 20, stars: 0 },
+  { id: 'a-holidays', label: 'Holidays, childcare and cover', area: 'house', adult: true, minutes: 40, stars: 0 },
+  { id: 'a-restock', label: 'Notice what is running out', area: 'house', adult: true, minutes: 15, stars: 0 },
 ];
 
 export const CHORE_INTRO =
