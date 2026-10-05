@@ -1454,7 +1454,7 @@ const state = {};
     build now refuses to finish if a data-sub key is not here. */
  'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'sexedTab',
  'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab', 'crTab', 'calTab',
- 'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift', 'lists', 'deletedListIds', 'listOpen', 'rewards', 'rewardLog', 'rewKid',
+ 'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift', 'lists', 'deletedListIds', 'listOpen', 'rewards', 'rewardLog', 'rewKid', 'rewOwnOpen',
  'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -3419,7 +3419,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -3888,8 +3888,31 @@ function initControls() {
       if (!idea) return;
       store.rewards = rewList().concat([{
         id: 'r' + Date.now() + Math.floor(Math.random() * 1000),
-        label: idea.label, cost: idea.cost, updatedAt: Date.now(),
+        label: idea.label, cost: idea.cost,
+        kidId: t.dataset.kid || store.rewKid || '', updatedAt: Date.now(),
       }]);
+      store.parentUpdatedAt = Date.now();
+    } else if (t.dataset.rewown) {
+      store.rewOwnOpen = t.dataset.rewown === 'open';
+    } else if (t.dataset.rewownsave) {
+      const f = document.getElementById('rewownin');
+      const cf = document.getElementById('rewowncost');
+      const label = String(f ? f.value : '').replace(/\s+/g, ' ').trim().slice(0, 70);
+      const cost = Math.max(1, Math.min(999, Math.round(Number(cf ? cf.value : 0) || 0)));
+      if (!label) { store.rewOwnOpen = false; render(); return; }
+      store.rewards = rewList().concat([{
+        id: 'r' + Date.now() + Math.floor(Math.random() * 1000),
+        label: label, cost: cost,
+        kidId: t.dataset.kid || store.rewKid || '', updatedAt: Date.now(),
+      }]);
+      store.rewOwnOpen = false;
+      store.parentUpdatedAt = Date.now();
+    } else if (t.dataset.rewdel) {
+      /* Removed outright rather than tombstoned. Nothing has been
+         earned against a reward that is being taken off the list, and
+         the claim history keeps its own copy of the label, so an
+         already-given reward still reads correctly afterwards. */
+      store.rewards = rewList().filter((r) => r.id !== t.dataset.rewdel);
       store.parentUpdatedAt = Date.now();
     } else if (t.dataset.rewspend) {
       const r = rewList().filter((x) => x.id === t.dataset.rewspend)[0];
@@ -10134,21 +10157,66 @@ function expWeekBlock(k, where) {
       <p class="bodytext" style="margin-top:6px">${esc(EXP_NOTHING_YET.body)}</p>
     </div>`;
   }
+
+  /* Her note: this read as a blog, one paragraph after another. So the
+     week now opens with the thing she actually wanted, which is the
+     picture, and the two numbers that answer "how far along" without
+     reading a sentence. The writing is still here, it just stopped
+     being the first thing. */
+  const togo = where.overdue
+    ? { n: Math.abs(where.daysToDue), lab: Math.abs(where.daysToDue) === 1 ? 'day over' : 'days over' }
+    : { n: where.daysToDue, lab: where.daysToDue === 1 ? 'day to go' : 'days to go' };
+  const pct = Math.max(0, Math.min(100, Math.round((where.daysIn / 280) * 100)));
+
   return `
-  <div class="card leafy">
-    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Week ${where.week} &middot; ${esc(where.stage.label)}</p>
-    <p class="liftline" style="font-size:19px;margin-top:8px">${esc(wk.size)}</p>
-    <p class="tiny" style="margin-top:2px">${esc(wk.measure)}</p>
+  <div class="szhero">
+    ${sizeArtSvg(where.week, 92, false)}
+    <div class="szhero-t">
+      <p class="szhero-wk">Week ${where.week}${where.days ? ' + ' + where.days : ''}</p>
+      <p class="szhero-sz">${esc(wk.size)}</p>
+      <p class="szhero-ms">${esc(wk.measure)} &middot; ${esc(where.stage.label)}</p>
+    </div>
   </div>
 
-  <div class="dsec">
-    <h4>What is happening</h4>
-    <p class="bodytext">${esc(wk.baby)}</p>
+  <div class="hpair">
+    <div class="hhalf">
+      <div class="hhalf-h">
+        <span class="hhalf-ic">${icon('leaf', 14, 'var(--deep)')}</span>
+        <span class="hhalf-t">How far along</span>
+      </div>
+      <div class="hhalf-b">
+        <p class="szbig">${pct}<span class="szbig-u">%</span></p>
+        <div class="szbar"><span style="width:${pct}%"></span></div>
+        <p class="hhalf-free">${where.week} of 40 weeks</p>
+      </div>
+    </div>
+    <div class="hhalf">
+      <div class="hhalf-h">
+        <span class="hhalf-ic">${icon('calendar', 14, 'var(--deep)')}</span>
+        <span class="hhalf-t">${esc(where.overdue ? 'Past the date' : 'Until the date')}</span>
+      </div>
+      <div class="hhalf-b">
+        <p class="szbig">${togo.n}</p>
+        <p class="hhalf-free">${esc(togo.lab)}</p>
+        <p class="hhalf-free" style="margin-top:4px">${esc(EXP_DUE_IS_A_GUESS)}</p>
+      </div>
+    </div>
   </div>
 
-  <div class="dsec">
-    <h4>What you may feel</h4>
-    <p class="bodytext">${esc(wk.you)}</p>
+  <div class="szcard">
+    <div class="szcard-h">
+      <span class="szcard-ic">${icon('heart', 15, 'var(--deep)')}</span>
+      <span class="szcard-t">What is happening</span>
+    </div>
+    <p class="bodytext" style="margin:0">${esc(wk.baby)}</p>
+  </div>
+
+  <div class="szcard blush">
+    <div class="szcard-h">
+      <span class="szcard-ic">${icon('user', 15, '#8A5F54')}</span>
+      <span class="szcard-t">What you may feel</span>
+    </div>
+    <p class="bodytext" style="margin:0">${esc(wk.you)}</p>
     <p class="tiny" style="margin-top:8px">May, rather than will. Having none of this is just as
       normal as having all of it.</p>
   </div>
@@ -10203,6 +10271,7 @@ function screenExpecting(c) {
     ${subTabs('expTab', tab, tabs)}
 
     ${tab === 'week' ? `
+      ${where && !where.tooEarly && !where.tooLate ? expWeekBlock(kid, where) : ''}
       ${where && !where.tooEarly ? bumpPlanCard(kid, where) : ''}
       ${!where ? `
         <div class="card flat"><p class="bodytext">Put a due date on this profile and the weeks
@@ -10217,8 +10286,6 @@ function screenExpecting(c) {
           <p class="bpbox-t">${esc(EXP_OVERDUE.title)}</p>
           <p class="bodytext" style="margin-top:8px">${esc(EXP_OVERDUE.body)}</p>
         </div>` : ''}
-      ${where && !where.tooEarly && !where.tooLate ? expWeekBlock(kid, where) : ''}
-
       ${where && (where.week >= 28 || where.overdue) ? `
         <div class="card" style="border-left:3px solid var(--sage)">
           <p class="eyebrow">${icon('note', 11, 'var(--sage)')} If induction comes up</p>
@@ -10235,45 +10302,24 @@ function screenExpecting(c) {
 
       ${expCallNowBlock()}
 
-      <div class="dsec">
-        <h4>${esc(PREG_MOVEMENT.title)}</h4>
-        <p class="bodytext">${esc(PREG_MOVEMENT.body)}</p>
+      <p class="sect" style="margin-top:18px">Getting ready</p>
+      <div class="htiles">
+        ${homeTile({ icon: 'bag', title: 'The hospital bag',
+          sub: 'It remembers what you packed', go: 'data-go="screen" data-id="bag"' })}
+        ${homeTile({ icon: 'heart', tone: 'blush', title: 'Your health',
+          sub: 'What to watch for while pregnant', go: 'data-go="screen" data-id="pregHealth"' })}
+        ${homeTile({ icon: 'book', tone: 'leaf', title: 'Birth, all of it',
+          sub: 'Pain relief, tearing, who is with you', go: 'data-go="screen" data-id="birth"' })}
+        ${homeTile({ icon: 'note', title: 'Induction',
+          sub: 'The five numbers, and what to ask', go: 'data-go="screen" data-id="induction"' })}
       </div>
 
-      <div class="dsec">
-        <h4>Getting ready</h4>
-        <button class="lrow" data-go="screen" data-id="bag">
-          <span class="licon">${icon('bag', 18)}</span>
-          <span class="grow">
-            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">The hospital bag</span>
-            <span class="tiny" style="display:block;margin-top:2px">It remembers what you have packed</span>
-          </span>
-          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-        </button>
-        <button class="lrow" data-go="screen" data-id="pregHealth">
-          <span class="licon">${icon('heart', 18)}</span>
-          <span class="grow">
-            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Your health while pregnant</span>
-            <span class="tiny" style="display:block;margin-top:2px">What to watch, and the infections nobody mentions</span>
-          </span>
-          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-        </button>
-        <button class="lrow" data-go="screen" data-id="birth">
-          <span class="licon">${icon('book', 18)}</span>
-          <span class="grow">
-            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Birth, all of it</span>
-            <span class="tiny" style="display:block;margin-top:2px">Pain relief, who is with you, tearing, and what can go wrong</span>
-          </span>
-          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-        </button>
-        <button class="lrow" data-go="screen" data-id="induction">
-          <span class="licon">${icon('note', 18)}</span>
-          <span class="grow">
-            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Induction, and the chart</span>
-            <span class="tiny" style="display:block;margin-top:2px">The five numbers, and what to ask before they break your water</span>
-          </span>
-          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-        </button>
+      <div class="szcard">
+        <div class="szcard-h">
+          <span class="szcard-ic">${icon('hand', 15, 'var(--deep)')}</span>
+          <span class="szcard-t">${esc(PREG_MOVEMENT.title)}</span>
+        </div>
+        <p class="bodytext" style="margin:0">${esc(PREG_MOVEMENT.body)}</p>
       </div>
     ` : ''}
 
@@ -18049,7 +18095,7 @@ function checkinRunNote(k, day) {
   for (let i = 0; i < 5; i++) {
     const e = k.checkins[ciDayBefore(day, i)];
     if (!e) break;
-    const shape = checkinShape(e.answers);
+    const shape = checkinShape(e.answers || {});
     if (shape === 'allHard' || shape === 'mostlyHard') hard++;
     else if (shape === 'allGood' || shape === 'mostlyGood') good++;
     else break;
@@ -18062,6 +18108,7 @@ function checkinRunNote(k, day) {
 function makeCheckinReply(k, day) {
   const entry = k && k.checkins ? k.checkins[day] : null;
   if (!entry) return;
+  if (!entry.answers || typeof entry.answers !== 'object') entry.answers = {};
   entry.reply = writtenCheckinReply(entry.answers, day + k.id);
   entry.replyFrom = 'written';
   entry.runNote = checkinRunNote(k, day);
@@ -18126,10 +18173,26 @@ function ciRows() {
   return checkinRows(getLenses(k.lenses || []));
 }
 
+/* ONE SHAPE, ALWAYS.
+
+   This returned whatever was stored, and every caller then assumed
+   the entry had an `answers` object on it. A single entry without
+   one, from an older save, a half finished write or a merge between
+   two devices, threw inside checkinCard and took down THE WHOLE
+   CHILD PROFILE. Not the card, the entire screen, which is the most
+   used screen in the app.
+
+   The crawl found it by seeding exactly that: an entry with nothing
+   on it but done:true. A missing sub field should never be able to
+   do that, so the shape is guaranteed here once rather than guarded
+   at a dozen call sites, which is how one of them gets missed. */
 function ciSaved(dayKey) {
   const k = activeChild();
   if (!k || !k.checkins) return null;
-  return k.checkins[dayKey || ciToday()] || null;
+  const raw = k.checkins[dayKey || ciToday()];
+  if (!raw) return null;
+  if (raw.answers && typeof raw.answers === 'object') return raw;
+  return Object.assign({}, raw, { answers: {} });
 }
 
 function ciDraft() {
@@ -18252,7 +18315,10 @@ function ciStrip(rowId, days) {
   for (let i = n - 1; i >= 0; i--) {
     const day = ciDayBefore(ciToday(), i);
     const entry = k.checkins ? k.checkins[day] : null;
-    const val = entry ? entry.answers[rowId] : null;
+    /* Same guard as ciSaved, for the same reason: an entry without an
+       answers object took the whole screen down rather than drawing
+       one grey dot. */
+    const val = (entry && entry.answers) ? entry.answers[rowId] : null;
     const sc = val ? getCheckinScale(val) : null;
     cells.push(`<span class="cidot${sc ? '' : ' none'}"
       style="${sc ? 'background:' + sc.color : ''}"
@@ -18456,14 +18522,18 @@ function screenCheckins(c) {
     <p class="sect">Day by day</p>
     ${days.slice(0, 30).map((day) => {
       const e = k.checkins[day];
-      const answered = rows.filter((r) => e.answers[r.id]);
+      /* The crawl found this by seeding a check in with nothing on
+         it, which took the whole screen down rather than drawing an
+         empty row. */
+      const ans = (e && e.answers) ? e.answers : {};
+      const answered = rows.filter((r) => ans[r.id]);
       return `
       <div class="card" style="margin-bottom:8px">
         <p class="eyebrow">${esc(cycleDateLabelWithYear(day))}</p>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px">
           ${answered.map((r) => {
-            const sc = getCheckinScale(e.answers[r.id]);
-            return `<span class="cipill" style="background:${sc.tint};color:${sc.color}">${esc(r.label)}: ${esc(r[e.answers[r.id]] || sc.label)}</span>`;
+            const sc = getCheckinScale(ans[r.id]);
+            return `<span class="cipill" style="background:${sc.tint};color:${sc.color}">${esc(r.label)}: ${esc(r[ans[r.id]] || sc.label)}</span>`;
           }).join('')}
         </div>
         ${e.note ? `<p class="bodytext" style="margin-top:8px">${esc(e.note)}</p>` : ''}
@@ -20257,6 +20327,14 @@ function rewList() {
   return Array.isArray(store.rewards) ? store.rewards : [];
 }
 
+/* A reward belongs to the child it was added for. Anything saved
+   before rewards knew about children has no kidId and stays visible to
+   everybody, because silently hiding a family's existing rewards to
+   tidy up a data shape is not a trade worth making. */
+function rewListFor(kidId) {
+  return rewList().filter((r) => !r.kidId || r.kidId === kidId);
+}
+
 /* Every star this child has ever earned, from the chart's own record
    of what was ticked, minus whatever has been spent. Worked out rather
    than stored, so it can never drift away from the ticks it came
@@ -20452,7 +20530,14 @@ function screenRewards(c) {
   const who = store.rewKid && kids.some((k) => k.id === store.rewKid)
     ? store.rewKid : (kids[0] ? kids[0].id : '');
   const kid = (store.children || []).filter((k) => k.id === who)[0] || null;
-  const list = rewList();
+  const list = rewListFor(who);
+  const rewSum = kid ? getAgeSummary({ name: kid.name, birthday: kid.birthday }) : null;
+  const rewMonths = (rewSum && rewSum.age) ? rewSum.age.totalMonths : null;
+  const rewFrame = rewAgeFraming(rewMonths);
+  const rewGroups = rewIdeasBySize(rewMonths).map((g) => ({
+    size: g.size,
+    items: g.items.filter((i) => !list.some((r) => r.label === i.label)),
+  })).filter((g) => g.items.length);
 
   return `
   ${pageHeader()}
@@ -20506,6 +20591,8 @@ function screenRewards(c) {
             <button class="btn sm${can ? '' : ' ghost'}" ${can ? '' : 'disabled'}
               data-rewspend="${esc(r.id)}" data-kid="${esc(who)}">
               ${can ? 'Give it' : 'Not yet'}</button>
+            <button class="rewx" data-rewdel="${esc(r.id)}"
+              aria-label="Take ${esc(r.label)} off the list">${icon('close', 13, 'var(--faint)')}</button>
           </div>
         </div>`;
       }).join('') : `
@@ -20514,17 +20601,48 @@ function screenRewards(c) {
         <p class="bodytext" style="margin-top:6px">${esc(REW_EMPTY.body)}</p>
       </div>`}
 
-      <p class="sect" style="margin-top:16px">Add a reward</p>
+      <p class="sect" style="margin-top:16px">Add a reward${kid ? ' for ' + esc((kid.name || '').split(/\s+/)[0]) : ''}</p>
+      ${rewFrame ? `<p class="tiny" style="margin:0 0 4px;color:var(--sage);font-weight:600">${esc(rewFrame)}</p>` : ''}
       <p class="tiny" style="margin:0 0 9px">${esc(REW_IDEAS_NOTE)}</p>
-      ${REW_IDEAS.filter((i) => !list.some((r) => r.label === i.label)).map((i) => `
-        <button class="lrow" data-rewadd="${esc(i.id)}" style="align-items:center;margin-top:7px">
-          <span class="licon">${icon('star', 16, '#B58B3C')}</span>
-          <span class="grow">
-            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(i.label)}</span>
-            <span class="tiny" style="display:block;margin-top:2px">${i.cost} stars</span>
-          </span>
-          <span class="chev">${icon('plus', 15, 'var(--sage)')}</span>
-        </button>`).join('')}
+
+      ${rewGroups.map((g) => `
+        <div class="rewgrp">
+          <p class="rewgrp-h">${esc(g.size.label)}</p>
+          <p class="rewgrp-s">${esc(g.size.hint)}</p>
+          ${g.items.map((i) => `
+          <button class="lrow" data-rewadd="${esc(i.id)}" data-kid="${esc(who)}"
+            style="align-items:center;margin-top:7px">
+            <span class="licon">${icon('star', 16, '#B58B3C')}</span>
+            <span class="grow">
+              <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(i.label)}</span>
+              <span class="tiny" style="display:block;margin-top:2px">${i.cost} stars</span>
+            </span>
+            <span class="chev">${icon('plus', 15, 'var(--sage)')}</span>
+          </button>`).join('')}
+        </div>`).join('')}
+
+      ${!rewGroups.length ? `
+      <div class="card flat"><p class="tiny">Everything that suits this age is already on their
+        list. Write your own below.</p></div>` : ''}
+
+      ${store.rewOwnOpen ? `
+      <div class="card" style="margin-top:10px">
+        <p class="eyebrow">${icon('star', 11, '#B58B3C')} Your own</p>
+        <input id="rewownin" class="inp" style="margin-top:8px"
+          placeholder="${esc(REW_NEW_PLACEHOLDER)}" maxlength="70">
+        <p class="tiny" style="margin-top:9px">How many stars</p>
+        <input id="rewowncost" class="inp" type="number" inputmode="numeric"
+          min="1" max="999" value="40" style="margin-top:5px">
+        <div style="display:flex;gap:8px;margin-top:11px">
+          <button class="btn grow" data-rewownsave="1" data-kid="${esc(who)}"
+            style="justify-content:center">Add it</button>
+          <button class="btn ghost" data-rewown="close">Cancel</button>
+        </div>
+      </div>` : `
+      <button class="btn ghost" style="width:100%;margin-top:10px" data-rewown="open">
+        ${icon('plus', 14, 'var(--deep)')} Write your own</button>`}
+
+      <p class="tiny" style="margin-top:10px">${esc(REW_FOOD_NOTE)}</p>
 
       ${(store.rewardLog || []).filter((r) => r.kidId === who).length ? `
       <p class="sect" style="margin-top:18px">${esc(REW_HISTORY_TITLE)}</p>
@@ -22678,9 +22796,16 @@ function screenChild(c) {
      which is the same mistake Home had. A child's morning is "these
      things to do, and you have swimming at four", so the two sit
      side by side and are read as one answer. */
-  const sections = ageNewCard(months, kid, first) + monthTopCard(kid)
+  /* HER PLACEMENT, OCTOBER 2026.
+
+     The jobs pair and the stars sit UNDER "Log it as it happens",
+     not above it. Her line for this screen has not changed since
+     September: the top half is what she DOES on the page and the
+     bottom half is what she reads, and the jobs belong at the bottom
+     of the doing half rather than in front of it. */
+  const sections = ageNewCard(months, kid, first) + monthTopCard(kid) + daily
     + (kid ? homeDayPair(kid.id, first + "'s jobs") : '')
-    + (kid ? rewProfileBlock(kid, months) : '') + daily + (tiles.length ? `
+    + (kid ? rewProfileBlock(kid, months) : '') + (tiles.length ? `
     <p class="sect" style="margin-top:18px">Everything about ${esc(first)}</p>
     <div class="kidtiles">${tiles.map((t) => kidTile(t.id, t.html)).join('')}</div>` : '')
     + (ciHtml ? `<p class="sect" style="margin-top:18px">How today went</p>` + ciHtml : '')
@@ -25386,7 +25511,20 @@ function normalizeChild(k) {
     lensNumbers: k.lensNumbers && typeof k.lensNumbers === 'object' ? k.lensNumbers : {},
     statuses: k.statuses && typeof k.statuses === 'object' ? k.statuses : {},
     statusDates: k.statusDates && typeof k.statusDates === 'object' ? k.statusDates : {},
-    checkins: k.checkins && typeof k.checkins === 'object' ? k.checkins : {},
+    /* Every stored check in gets an answers object on the way in, so
+       no screen has to wonder. One entry without it used to throw and
+       take down the whole child profile. */
+    checkins: (() => {
+      const src = (k.checkins && typeof k.checkins === 'object') ? k.checkins : {};
+      const out = {};
+      Object.keys(src).forEach((day) => {
+        const e = src[day];
+        if (!e || typeof e !== 'object') return;
+        out[day] = (e.answers && typeof e.answers === 'object')
+          ? e : Object.assign({}, e, { answers: {} });
+      });
+      return out;
+    })(),
     arrival: Array.isArray(k.arrival) ? k.arrival : [],
     photo: k.photo || '',
     calColor: typeof k.calColor === 'string' ? k.calColor : '',
