@@ -725,6 +725,9 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 .fcag-free{font-size:11.5px;color:var(--faint)}
 .fcag-add{flex:none;opacity:.5}
 
+.findchip.icon{padding:0;width:38px;min-width:38px;justify-content:center}
+.findchip.icon span{display:none}
+
 .hpair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 0;align-items:stretch}
 .hhalf{display:flex;flex-direction:column;background:#fff;border:1px solid rgba(74,103,65,.14);
   border-radius:18px;padding:11px 10px 8px;min-height:160px}
@@ -1807,8 +1810,14 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 @media (min-width:700px){
   /* A real 7 column week, the way a wall display does it. */
   .fcweek{grid-template-columns:repeat(7,1fr);gap:6px}
-  .fcwd{grid-template-columns:1fr;gap:6px;padding:8px 6px;min-height:120px;
-    background:var(--surface2);border:1px solid var(--line2)}
+  /* flex rather than a one column grid. As a grid the day heading and
+     the chip box were being laid out as separate cells of the WEEK on
+     some widths, so Sunday's date and Sunday's entries ended up in
+     different columns and the whole block read as scrambled. A column
+     flex cannot do that. */
+  .fcwd{display:flex;flex-direction:column;gap:6px;padding:8px 6px;min-height:120px;
+    background:var(--surface2);border:1px solid var(--line2);align-items:stretch}
+  .fcwd-b{display:flex;flex-direction:column;gap:4px;min-width:0}
   .fcwd.today{background:var(--leaf2);border-color:var(--leaf)}
   .fcwd-h{flex-direction:column;gap:2px}
 }

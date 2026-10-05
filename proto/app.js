@@ -16525,10 +16525,12 @@ function topBar(markOnly) {
     <div class="topbar-left">
       ${deep ? `<button class="backchip" data-back="offchild">${icon('back', 15, 'var(--deep)')} Back</button>`
         : (state.tab === 'home' && !state.view)
-    ? `${/* Home already has the full width Ask Willow field, so the
-             pill in the corner was the same door twice, 300 pixels
-             apart. It stays on every other screen, where it is the
-             only way in. */''}`
+    ? `${/* On Home the search box now lives at the bottom, where she
+             asked for it, so the corner keeps only the quick version:
+             a magnifying glass and no word, for when she knows
+             exactly what she is after. */''}
+        <button class="findchip icon" data-go="screen" data-id="find"
+          aria-label="Search, or ask Willow">${icon('search', 17, 'var(--deep)')}</button>`
     : `<button class="findchip" data-go="screen" data-id="find" aria-label="Ask Willow or find a page">${icon('search', 16, 'var(--deep)')}<span>Ask</span></button>`}
     </div>
     ${mark}
@@ -20062,11 +20064,42 @@ function listsSave() {
    The children's profiles carry only their own day, which is the
    other half of the same idea.
    ------------------------------------------------------------------ */
+/* A CHIP THAT IS NOT A BUTTON.
+
+   The week block draws each day as a <button> and filled it with
+   calChipEl, which also returns a <button>. A button cannot be nested
+   inside a button, so the parser closes the outer one and lifts the
+   chip out as a sibling. On a phone, with the week in one column,
+   that looked like slightly odd spacing. On a wide screen, with seven
+   columns, every day that had anything on it pushed its own date into
+   the wrong cell and the whole block read as scrambled. That is what
+   she was looking at.
+
+   Here the chip is a span. Tapping the day opens the day, which is
+   what the cell was always for. */
+function calChipFlat(e) {
+  const col = calColorOf(e.who);
+  const reading = e.from === 'app';
+  return `
+  <span class="fcchip-e${reading ? ' soft' : ''}"
+    style="${reading ? 'color:' + esc(col.ink) + ';border:1px solid ' + esc(col.dot)
+    : 'background:' + esc(col.soft) + ';color:' + esc(col.ink)}">
+    ${e.time ? `<span class="fcchip-t">${esc(calTimeLabel(e.time))}</span> ` : ''}${esc(e.title)}
+  </span>`;
+}
+
 function profileWeekBlock() {
   const today = calToday();
-  const days = calWeekOf(today);
+  const days = calWeekFrom(today);
   const byDay = {};
   calAllIn(days[0], days[6], 'all').forEach((e) => {
+    /* THE CHORE LINES, FOR THE FOURTH TIME.
+
+       "Stetson, 16 jobs" on every single day of the week, which on
+       her screen was the only thing in the whole block and clipped
+       to "Stetson, 1..." in every cell. The jobs widget two rows up
+       already says this, as a number that changes through the day. */
+    if (String(e.id || '').indexOf('chore:') === 0) return;
     if (!byDay[e.date]) byDay[e.date] = [];
     byDay[e.date].push(e);
   });
@@ -20089,7 +20122,7 @@ function profileWeekBlock() {
             <span class="fcwd-n">${p.getDate()}</span>
           </span>
           <span class="fcwd-b">
-            ${list.length ? list.slice(0, 4).map(calChipEl).join('')
+            ${list.length ? list.slice(0, 4).map(calChipFlat).join('')
               + (list.length > 4 ? `<span class="fcmore">and ${list.length - 4} more</span>` : '')
               : '<span class="fcwd-free"></span>'}
           </span>
@@ -20963,25 +20996,39 @@ function homeDayWidget(whoId, title) {
 function homeTiles(c, l) {
   const tiles = [];
 
-  /* With no chart at all there is nothing to tick, so the small tile
-     is the way in. Once there is one, the wide widget takes over. */
-  if (!choreLiveJobs().length && chorePeople().some((x) => x.kind === 'child')) {
-    tiles.push(homeTile({
-      icon: 'check', tone: 'leaf',
-      title: 'Jobs',
-      sub: 'Start a chart for the week',
-      go: 'data-go="screen" data-id="chores"',
-    }));
-  }
+  /* HER FOUR, IN THE POSITIONS SHE NAMED.
 
-  /* Hers. Both in blush, because these two are about her. */
-  const ciDone = !!momCiSaved();
+       top left     How today went
+       top right    Log your cycle
+       bottom left  Everything logged for you
+       bottom right Being their person
+
+     All four are about HER, which is why all four are blush. */
   tiles.push(homeTile({
     icon: 'sun', tone: 'blush',
     title: 'How today went',
-    sub: ciDone ? 'Logged for today' : '30 seconds, about the day',
+    sub: momCiSaved() ? 'Logged for today' : '30 seconds, about the day',
     go: 'data-go="screen" data-id="momlogs"',
   }));
+
+  if (showsBodyHalf(store.parent)) {
+    /* The real numbers when she has logged a period, and an
+       invitation when she has not. Never a guess dressed as a fact. */
+    const ci = cycleInfoNow();
+    let csub = 'Log a period and this fills in';
+    if (ci && typeof ci.dayOfCycle === 'number') {
+      csub = 'Day ' + ci.dayOfCycle
+        + (typeof ci.daysToNext === 'number' && ci.daysToNext > 0
+          ? ', next due in ' + ci.daysToNext + (ci.daysToNext === 1 ? ' day' : ' days')
+          : (ci.daysLate ? ', ' + ci.daysLate + ' days late' : ''));
+    }
+    tiles.push(homeTile({
+      icon: 'drop', tone: 'blush',
+      title: 'Log your cycle',
+      sub: csub,
+      go: 'data-go="screen" data-id="mycycle"',
+    }));
+  }
 
   tiles.push(homeTile({
     icon: 'note', tone: 'blush',
@@ -20998,16 +21045,10 @@ function homeTiles(c, l) {
     go: 'data-go="learn" data-id="' + esc(learn.id) + '"',
   }));
 
-  /* Tiles first, then the line for the day. The affirmation is lovely
-     and it is a thing you read, so it goes under the things you
-     glance at rather than in front of them. */
-  return `
-  ${homeDayPair('all', "Today's jobs")}
-  <div class="htiles">${tiles.join('')}</div>
-  <div class="card liftcard">
-    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Today</p>
-    <p class="liftline">${esc(liftAffirmation())}</p>
-  </div>`;
+  /* The line for today and the jobs pair both moved out, to the top
+     of Home and to their own slot in her running order. This block
+     is only the four tiles now. */
+  return `<div class="htiles">${tiles.join('')}</div>`;
 }
 
 function screenHome(c) {
@@ -21030,27 +21071,25 @@ function screenHome(c) {
   </div>
   <div class="sc">
     ${calmSwitchChip()}
-    ${findBar()}
     ${installBanner()}
-    ${/* THE WHOLE HOUSE'S WEEK, MOVED HERE OFF HER PROFILE.
+    ${/* HER RUNNING ORDER, GIVEN SCREEN BY SCREEN.
 
-          It was on her profile on the argument that she is the one
-          carrying everybody's week. True, and beside the point: her
-          profile is the public one, and the week is nobody's business
-          but the family's. Home is the private half of the app, so
-          the week lives here. */''}
-    ${profileWeekBlock()}
+          1  the line for today
+          2  the faces
+          3  Willow, the composer and the two urgent doors
+          4  her cycle
+          5  the four tiles that are about her
+          6  her jobs beside her day
+          7  the whole house's week
+          8  everything written for her, then memories
+          9  the search box, at the very bottom
 
-    ${/* WIDGETS, NOT A COLUMN OF ARTICLES.
-
-          Her note and it was right. Home was one full width card
-          stacked on another all the way down, which reads as a blog.
-          The child profile already solved this with a two across
-          tile grid, and she pointed at it herself.
-
-          So the glanceable things are that same grid, two across,
-          equal size, one fact each, above everything you read. */''}
-    ${homeTiles(c, l)}
+          Home is her profile in everything but name, which is why
+          the jobs widget on it is HERS and not the family's. */''}
+    <div class="card liftcard">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Today</p>
+      <p class="liftline">${esc(affirmation)}</p>
+    </div>
 
     <div class="kidrow home">
       ${parentCircle()}
@@ -21063,8 +21102,6 @@ function screenHome(c) {
         <span class="kidcirc-age">a child</span>
       </button>
     </div>
-    ${cycleNudge()}
-
     ${/* WIDGETS, NOT A COLUMN OF ARTICLES.
 
           Her note, and it was the right one. Home was one full width
@@ -21121,6 +21158,20 @@ function screenHome(c) {
           house this is written for. */ ''}
     ${needHelpRow()}
 
+    ${/* HER RUNNING ORDER FROM HERE DOWN, GIVEN SCREEN BY SCREEN.
+
+          4  her cycle, right after the two urgent doors
+          5  the four tiles that are about her
+          6  her jobs beside her day
+          7  the whole house's week
+
+          Home is her profile in everything but name, which is why
+          the jobs widget here is HERS rather than the family's. */''}
+    ${cycleNudge()}
+    ${homeTiles(c, l)}
+    ${homeDayPair('me', 'My jobs')}
+    ${profileWeekBlock()}
+
     ${bodyCareBlock()}
 
     ${memOnThisDay()}
@@ -21143,6 +21194,16 @@ function screenHome(c) {
       <h3 class="h3" style="font-size:16px;margin-top:5px">${esc(morning.title)}</h3>
       <p class="bodytext" style="margin-top:4px">${esc(morning.body)}</p>
     </div>` : ''}
+
+    ${/* 9. THE SEARCH BOX, AT THE VERY BOTTOM.
+
+          Her call, and a good one. It was the second thing on the
+          page, above anything she actually came for, which is how a
+          search box ends up being the most prominent thing on a
+          screen nobody opened to search. There is a magnifying glass
+          in the corner for the quick version. */''}
+    <p class="sect" style="margin-top:20px">Looking for something</p>
+    ${findBar()}
 
     ${duplicateCard()}
 
