@@ -697,6 +697,70 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
   font-size:12.5px;font-weight:600;color:var(--deep);cursor:pointer;
   display:flex;align-items:center;justify-content:center;gap:5px}
 
+/* THE PAIR.
+   Jobs and today, side by side, equal height. On a 390 wide phone
+   each is about 170, which is enough for a tick circle and a short
+   name but not for a sentence, so everything in here is clipped
+   rather than wrapped into a wall. */
+/* THE QUIET WEEK.
+   What a week with nothing timed on it looks like, instead of fifty
+   six empty cells of ruled paper. */
+.fcagenda{background:var(--surface);border:1px solid var(--line2);border-radius:14px;
+  overflow:hidden}
+.fcag{appearance:none;border:0;background:transparent;width:100%;display:flex;
+  align-items:center;gap:11px;padding:11px 12px;cursor:pointer;text-align:left;
+  border-bottom:1px solid var(--line2)}
+.fcag:last-child{border-bottom:0}
+.fcag-d{width:44px;min-width:44px;flex:none;display:flex;flex-direction:column;align-items:center;
+  gap:1px}
+.fcag-dw{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);line-height:1}
+.fcag-dn{font-size:17px;font-weight:700;color:var(--ink);line-height:1.1;
+  font-variant-numeric:tabular-nums}
+.fcag-d.today .fcag-dw,.fcag-d.today .fcag-dn{color:var(--deep2)}
+.fcag-b{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.fcag-e{border-radius:8px;padding:4px 8px;font-size:11.5px;font-weight:700;max-width:100%;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fcag-m{border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;
+  background:var(--blush2);color:#7A3B27}
+.fcag-free{font-size:11.5px;color:var(--faint)}
+.fcag-add{flex:none;opacity:.5}
+
+.hpair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 0;align-items:stretch}
+.hhalf{display:flex;flex-direction:column;background:#fff;border:1px solid rgba(74,103,65,.14);
+  border-radius:18px;padding:11px 10px 8px;min-height:160px}
+.hhalf-h{display:flex;align-items:center;gap:7px;margin-bottom:9px}
+.hhalf-ic{width:26px;height:26px;border-radius:50%;background:var(--leaf3);flex:none;
+  display:flex;align-items:center;justify-content:center}
+.hhalf-t{font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.15;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hhalf-b{flex:1;display:flex;flex-direction:column;gap:5px;min-width:0}
+.hhalf-free{font-size:11.5px;color:var(--faint);line-height:1.3}
+.hhalf-go{appearance:none;border:0;background:transparent;padding:8px 0 2px;margin-top:4px;
+  font-size:11.5px;font-weight:600;color:var(--deep);cursor:pointer;display:flex;
+  align-items:center;gap:4px;border-top:1px solid var(--line2)}
+.hhalf-ring{width:28px;height:28px;border-radius:50%;flex:none;display:flex;
+  align-items:center;justify-content:center}
+.hhalf-ring-in{width:21px;height:21px;border-radius:50%;background:#fff;display:flex;
+  align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--deep2)}
+.hhalf-ring-of{font-size:8px;color:var(--muted)}
+
+/* A job you can tick without leaving the page. */
+.hjob{appearance:none;border:0;background:transparent;padding:0;cursor:pointer;width:100%;
+  display:flex;align-items:flex-start;gap:7px;text-align:left}
+.hjob-t{width:18px;height:18px;min-width:18px;border-radius:50%;border:2px solid var(--line2);
+  display:flex;align-items:center;justify-content:center;margin-top:1px;flex:none}
+.hjob.done .hjob-t{background:var(--sage);border-color:var(--sage)}
+.hjob-n{display:block;font-size:11.5px;font-weight:600;color:var(--ink);line-height:1.25;
+  overflow:hidden}
+.hjob.done .hjob-n{text-decoration:line-through;color:var(--muted)}
+.hjob-w{display:block;font-size:10px;margin-top:1px;opacity:.85}
+
+/* One of their things today. */
+.hday-e{display:block;border-radius:9px;padding:5px 7px;min-width:0}
+.hday-n{display:block;font-size:11px;font-weight:700;line-height:1.2;overflow:hidden}
+.hday-w{display:block;font-size:9.5px;opacity:.78;margin-top:1px;font-variant-numeric:tabular-nums}
+.hday-more{font-size:10.5px;color:var(--muted);padding:2px 1px}
+
 .htiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 4px}
 .htile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:5px;
   text-align:left;cursor:pointer;font:inherit;background:#fff;

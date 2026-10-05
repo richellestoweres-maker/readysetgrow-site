@@ -372,6 +372,19 @@ def check_dupe_functions(text, label):
         raise SystemExit(1)
 
 
+# THE GATE THAT SHOULD HAVE BEEN HERE ALL ALONG.
+#
+# check_syntax only ever ran against the data bundle, so a broken
+# brace in proto/app.js, which is by far the biggest and most edited
+# file, sailed through a green build and was only caught later by a
+# test reporting that the whole page had failed to load. That is a
+# slow and confusing way to find out, and it happened: a template
+# placeholder written inside a function argument list.
+#
+# app.js is not valid on its own (it leans on the data bundle's
+# names), so it is checked wrapped in a function, which validates the
+# syntax without needing anything it refers to to exist.
+check_syntax('function __appsyntax__(){\n' + app + '\n}', 'proto/app.js')
 check_dupe_functions(app, 'proto/app.js')
 def check_css_dupes(shell_text, label):
     """No class may be defined twice as a plain top level rule.

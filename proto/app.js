@@ -1204,6 +1204,9 @@ const store = {
   choreTab: 'today',
   choreDay: null,
   chorePick: null,
+  /* Which person the chart is focused on, set when you arrive from
+     somebody's own page. Empty means the whole house. */
+  choreWho: '',
   /* Whether the picker is also showing jobs the child has outgrown.
      Transient and never synced: it is a view, not a fact. */
   choreOlder: false,
@@ -3416,7 +3419,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -4221,6 +4224,12 @@ function initControls() {
         kid.updatedAt = Date.now();
         flushStore();
       }
+    } else if (t.hasAttribute('data-choreon')) {
+      /* Set alongside the navigation, so arriving from a child's page
+         puts the chart on that child rather than on whoever was last
+         looked at. An empty value is the way back to everybody. */
+      store.choreWho = t.dataset.choreon || '';
+      if (t.dataset.choreon) store.choreTab = 'who';
     } else if (t.dataset.choreolder) {
       store.choreOlder = t.dataset.choreolder === 'on';
     } else if (t.dataset.chorepat) {
@@ -19294,6 +19303,59 @@ function calTimeGrid(who) {
      to a date mean everywhere else. */
   const step = wide ? 7 : 1;
 
+  /* ==================================================================
+     AN EMPTY WEEK IS NOT A GRID OF NOTHING
+
+     Her word for it was hideous and she is right. With nothing on,
+     the week still drew seven columns by eight hours, which is
+     fifty six empty cells and about five hundred pixels of ruled
+     paper, and the only thing on the screen was the ruling. A paper
+     diary gets away with that because the page is also where you
+     write. This is not, so it was just a spreadsheet with no data.
+
+     So the hour grid is for a week that HAS hours in it. A week with
+     nothing timed gets a quiet agenda instead: the days, what is on
+     them, and room to add something. The grid comes back the moment
+     there is a single timed thing to put in it.
+     ================================================================== */
+  const timed = all.filter((e) => calSpan(e)).length;
+  if (!timed) {
+    return `
+    <div class="fchead">
+      <button class="fcnav" data-calstep="${-step}"
+        aria-label="${wide ? 'Previous week' : 'Previous day'}">${icon('chev', 15, 'var(--deep)')}</button>
+      <span class="fcmonth">${esc(wide ? calWeekLabel(days) : calDayLabel(sel, today))}</span>
+      <button class="fcnav next" data-calstep="${step}"
+        aria-label="${wide ? 'Next week' : 'Next day'}">${icon('chev', 15, 'var(--deep)')}</button>
+    </div>
+    ${sel !== today ? `
+      <button class="chip" style="margin:0 auto 10px;display:block" data-calstep="today">Back to today</button>` : ''}
+    <div class="fcagenda">
+      ${days.map((d) => {
+      const p = calParse(d);
+      const list = byDay[d] || [];
+      const meal = mealFor(d);
+      return `
+        <button class="fcag" data-calgoday="${esc(d)}">
+          <span class="fcag-d${d === today ? ' today' : ''}">
+            <span class="fcag-dw">${esc(d === today ? 'Today' : CAL_DOW[p.getDay()])}</span>
+            <span class="fcag-dn">${p.getDate()}</span>
+          </span>
+          <span class="fcag-b">
+            ${list.length ? list.map((e) => {
+        const col = calColorOf(e.who);
+        return `<span class="fcag-e" style="background:${esc(col.soft)};color:${esc(col.ink)}"
+                  >${esc(e.title)}</span>`;
+      }).join('') : ''}
+            ${meal ? `<span class="fcag-m">${esc(meal)}</span>` : ''}
+            ${!list.length && !meal ? '<span class="fcag-free">Nothing on</span>' : ''}
+          </span>
+          <span class="fcag-add">${icon('plus', 14, 'var(--faint)')}</span>
+        </button>`;
+    }).join('')}
+    </div>`;
+  }
+
   /* Where the earliest thing on screen sits, in pixels down the grid,
      so the scroller above knows where to open. Falls back to now on a
      day with nothing on it, which is the other sensible answer. */
@@ -20269,6 +20331,52 @@ function rewDayBlock(kid, months) {
   </div>`;
 }
 
+/* THE STARS, AFTER THE PAIR TOOK OVER THE JOBS BLOCK.
+
+   Swapping the profile's jobs block for the side by side pair took
+   the stars out with it, which broke turning them on, the balance,
+   and the way into rewards. That was my regression and the tests
+   caught it.
+
+   The jobs themselves now live in the widget above, so this is only
+   the stars half: what they have, where to spend it, and the offer
+   to switch it on for a child who is the right age and does not have
+   it yet. It draws nothing at all for a child outside that window,
+   which is the same rule as before. */
+function rewProfileBlock(kid, months) {
+  if (!kid || !rewShows(months)) return '';
+  const first = (kid.name || 'They').split(/\s+/)[0];
+  const on = rewOn(kid);
+  const day = choreTodayIndex();
+  const jobs = choreJobsFor(kid.id, day);
+  if (!on) {
+    if (!jobs.length) return '';
+    return `
+    <button class="lrow" data-rewon="${esc(kid.id)}" style="align-items:flex-start;margin-top:10px">
+      <span class="licon">${icon('star', 17, '#B58B3C')}</span>
+      <span class="grow">
+        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(REW_ON_LABEL)} ${esc(first)}</span>
+        <span class="tiny" style="display:block;margin-top:2px">${esc(REW_SUB)}</span>
+      </span>
+    </button>`;
+  }
+  const key = ciToday();
+  const earnedToday = jobs.filter((j) => choreIsDone(j.id, key))
+    .reduce((a, j) => { const c = choreById(j.choreId); return a + ((c && c.stars) ? c.stars : 1); }, 0);
+  return `
+  <button class="lrow" data-go="screen" data-id="rewards" style="align-items:center;margin-top:10px">
+    <span class="licon">${icon('star', 17, '#B58B3C')}</span>
+    <span class="grow">
+      <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">
+        ${esc(rewBalance(kid.id) + (rewBalance(kid.id) === 1 ? ' star saved up' : ' stars saved up'))}</span>
+      <span class="tiny" style="display:block;margin-top:2px">${esc(earnedToday
+    ? earnedToday + ' earned today. Tap to see what they are working towards.'
+    : 'Tap to see what they are working towards.')}</span>
+    </span>
+    <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+  </button>`;
+}
+
 /* ------------------------------------------------------------------
    THE REWARDS SCREEN
    ------------------------------------------------------------------ */
@@ -20721,33 +20829,147 @@ function homeTile(opt) {
   </button>`;
 }
 
+/* ==================================================================
+   THE WIDE WIDGETS
+
+   Her note: more widgets, and ones you can actually use rather than
+   ones you tap to go somewhere else. A calendar you can read and a
+   jobs list you can tick off, both on Home.
+
+   So there are two sizes now. The small tile is a fact and a door.
+   The wide widget spans the grid and is a working surface: the jobs
+   one ticks, and the calendar one shows the next three days laid
+   out, both without leaving Home.
+   ================================================================== */
+function homeJobsWidget(whoId, title) {
+  const day = choreTodayIndex();
+  const key = ciToday();
+  const people = chorePeople()
+    .filter((p) => (!whoId || whoId === 'all' || p.id === whoId) && choreJobsFor(p.id, day).length);
+  if (!people.length) return '';
+
+  const all = [];
+  people.forEach((p) => { choreJobsFor(p.id, day).forEach((j) => all.push(j)); });
+  const doneN = all.filter((j) => choreIsDone(j.id, key)).length;
+  const pct = all.length ? Math.round((doneN / all.length) * 100) : 0;
+
+  /* Everybody's outstanding jobs, newest person first, capped so the
+     widget stays a widget. The rest is one tap away. */
+  const rows = [];
+  people.forEach((p) => {
+    choreJobsFor(p.id, day).forEach((j) => {
+      rows.push({ job: j, person: p, done: choreIsDone(j.id, key) });
+    });
+  });
+  const undone = rows.filter((r) => !r.done);
+  const show = undone.concat(rows.filter((r) => r.done)).slice(0, 5);
+
+  return `
+  <div class="hhalf">
+    <div class="hhalf-h">
+      <span class="hhalf-ring" style="background:conic-gradient(var(--sage) ${pct}%,var(--leaf2) 0)">
+        <span class="hhalf-ring-in">${doneN}<span class="hhalf-ring-of">/${all.length}</span></span>
+      </span>
+      <span class="hhalf-t">${esc(title || 'Jobs')}</span>
+    </div>
+    <div class="hhalf-b">
+      ${show.map((r) => {
+    const ch = choreById(r.job.choreId);
+    if (!ch) return '';
+    const look = choreLook(ch.area);
+    const col = calColor(look.color);
+    return `
+        <button class="hjob${r.done ? ' done' : ''}" data-chore="tick" data-id="${esc(r.job.id)}"
+          aria-pressed="${r.done}">
+          <span class="hjob-t" style="${r.done ? '' : 'border-color:' + esc(col.dot)}">
+            ${r.done ? icon('check', 12, '#fff') : ''}</span>
+          <span class="grow">
+            <span class="hjob-n">${esc(ch.label)}</span>
+            ${(!whoId || whoId === 'all') ? `
+              <span class="hjob-w" style="color:${esc(col.ink)}">${esc(r.person.name)}</span>` : ''}
+          </span>
+        </button>`;
+  }).join('')}
+      ${rows.length > show.length ? `
+        <span class="hday-more">and ${rows.length - show.length} more</span>` : ''}
+    </div>
+    <button class="hhalf-go" data-go="screen" data-id="chores">
+      The chart ${icon('chev', 12, 'var(--deep)')}</button>
+  </div>`;
+}
+
+/* The pair. If one half has nothing it still draws, because two
+   boxes of different heights side by side looks like a mistake and
+   an empty day is information. */
+function homeDayPair(whoId, jobTitle) {
+  const jobs = homeJobsWidget(whoId, jobTitle);
+  return `
+  <div class="hpair">
+    ${jobs || `
+      <div class="hhalf">
+        <div class="hhalf-h">
+          <span class="hhalf-ic">${icon('check', 15, 'var(--deep)')}</span>
+          <span class="hhalf-t">${esc(jobTitle || 'Jobs')}</span>
+        </div>
+        <div class="hhalf-b"><span class="hhalf-free">Nothing on the chart</span></div>
+        <button class="hhalf-go" data-go="screen" data-id="chores">
+          Set one up ${icon('chev', 12, 'var(--deep)')}</button>
+      </div>`}
+    ${homeDayWidget(whoId, 'Today')}
+  </div>`;
+}
+
+/* TODAY, FOR ONE PERSON, BESIDE THEIR JOBS.
+
+   Her words: side by side with a calendar of what they have to do
+   each day, one day at a time, so swim lessons or dance class turn
+   up next to the jobs. That pairing is the whole point. A child's
+   morning is "these three things to do and you have swimming at
+   four", and until now the app held those two facts on different
+   screens.
+
+   whoId filters to one person, or 'all' on Home where it is the
+   household's day. Readings from the chore feed stay out, because
+   the widget next to this one already is the jobs. */
+function homeDayWidget(whoId, title) {
+  const today = calToday();
+  const list = calAllIn(today, today, whoId || 'all')
+    .filter((e) => String(e.id || '').indexOf('chore:') !== 0);
+  const shown = list.slice(0, 4);
+  const more = list.length - shown.length;
+
+  return `
+  <div class="hhalf">
+    <div class="hhalf-h">
+      <span class="hhalf-ic">${icon('calendar', 15, 'var(--deep)')}</span>
+      <span class="hhalf-t">${esc(title || 'Today')}</span>
+    </div>
+    <div class="hhalf-b">
+      ${shown.length ? shown.map((e) => {
+    const col = calColorOf(e.who);
+    return `
+        <span class="hday-e" style="background:${esc(col.soft)};color:${esc(col.ink)}">
+          <span class="hday-n">${esc(e.title)}</span>
+          ${e.time ? `<span class="hday-w">${esc(calTimeLabel(e.time))}</span>` : ''}
+        </span>`;
+  }).join('') + (more > 0 ? `<span class="hday-more">and ${more} more</span>` : '')
+    : '<span class="hhalf-free">Nothing on today</span>'}
+    </div>
+    <button class="hhalf-go" data-tab="calendar">
+      ${esc(list.length ? 'The whole week' : 'Add something')} ${icon('chev', 12, 'var(--deep)')}</button>
+  </div>`;
+}
+
 function homeTiles(c, l) {
   const tiles = [];
 
-  /* What is coming up, from the calendar she already keeps. */
-  const soon = calAllIn(calToday(), calAddDays(calToday(), 7), 'all');
-  tiles.push(homeTile({
-    icon: 'calendar', tone: 'leaf',
-    title: 'Coming up',
-    sub: soon.length
-      ? calDayLabel(soon[0].date, calToday()) + ', ' + (soon[0].title || 'something')
-      : 'Nothing in the next week',
-    pip: soon.length > 1 ? String(soon.length) : '',
-    go: 'data-tab="calendar"',
-  }));
-
-  /* Jobs, as a number rather than as a list. Her note: sixteen jobs
-     unrolled on a page is the opposite of a glance. */
-  const jobsLeft = choreLiveJobs().length ? choreOutstanding().length : null;
-  const ready = chorePeople().filter((x) => x.kind === 'child').length;
-  if (jobsLeft !== null || ready) {
+  /* With no chart at all there is nothing to tick, so the small tile
+     is the way in. Once there is one, the wide widget takes over. */
+  if (!choreLiveJobs().length && chorePeople().some((x) => x.kind === 'child')) {
     tiles.push(homeTile({
       icon: 'check', tone: 'leaf',
       title: 'Jobs',
-      sub: jobsLeft === null ? 'Start a chart for the week'
-        : jobsLeft === 0 ? "Today's chart is done"
-          : jobsLeft === 1 ? 'One left today' : jobsLeft + ' left today',
-      pip: jobsLeft ? String(jobsLeft) : '',
+      sub: 'Start a chart for the week',
       go: 'data-go="screen" data-id="chores"',
     }));
   }
@@ -20758,6 +20980,13 @@ function homeTiles(c, l) {
     icon: 'sun', tone: 'blush',
     title: 'How today went',
     sub: ciDone ? 'Logged for today' : '30 seconds, about the day',
+    go: 'data-go="screen" data-id="momlogs"',
+  }));
+
+  tiles.push(homeTile({
+    icon: 'note', tone: 'blush',
+    title: 'Everything logged for you',
+    sub: 'Your body, your mood, and where the numbers have moved',
     go: 'data-go="screen" data-id="momlogs"',
   }));
 
@@ -20773,6 +21002,7 @@ function homeTiles(c, l) {
      and it is a thing you read, so it goes under the things you
      glance at rather than in front of them. */
   return `
+  ${homeDayPair('all', "Today's jobs")}
   <div class="htiles">${tiles.join('')}</div>
   <div class="card liftcard">
     <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Today</p>
@@ -20802,6 +21032,15 @@ function screenHome(c) {
     ${calmSwitchChip()}
     ${findBar()}
     ${installBanner()}
+    ${/* THE WHOLE HOUSE'S WEEK, MOVED HERE OFF HER PROFILE.
+
+          It was on her profile on the argument that she is the one
+          carrying everybody's week. True, and beside the point: her
+          profile is the public one, and the week is nobody's business
+          but the family's. Home is the private half of the app, so
+          the week lives here. */''}
+    ${profileWeekBlock()}
+
     ${/* WIDGETS, NOT A COLUMN OF ARTICLES.
 
           Her note and it was right. Home was one full width card
@@ -22051,23 +22290,17 @@ function screenMyProfile() {
       <button class="chip" style="margin-top:9px" data-feed="errok">Close</button>
     </div>` : ''}
 
-    ${/* Her own logs, reached the same way a child's are: from the
-          profile of the person they are about. */''}
-    <button class="lrow" data-go="screen" data-id="momlogs" style="align-items:center;margin-top:14px">
-      <span class="licon">${icon('note', 17)}</span>
-      <span class="grow">
-        <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">Everything logged for you</span>
-        <span class="tiny" style="display:block;margin-top:2px">Feeding, your body, your mood, and
-          where the numbers have moved</span>
-      </span>
-      <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-    </button>
+    ${/* WHAT THIS PAGE IS, FINALLY.
 
-    ${/* THE WHOLE HOUSE'S WEEK, which is what she asked for. Not just
-          hers: she is the one carrying everybody's week, so her
-          profile carries everybody's week. The children's profiles
-          carry their own day. */''}
-    ${profileWeekBlock()}
+          Her words: this should be like Facebook. Only the things I
+          share publicly, photos and videos I post or share from
+          somebody else. Nothing private.
+
+          So her logs and the whole house's week have both moved to
+          Home, where the private half of the app already lives.
+          This page is now only what she has chosen to show, which
+          also means there is a single honest answer to "what can
+          other people see", and it is: this page. */''}
 
     ${/* The box she writes in lives on Home and only on Home. This page
           is where the posts LAND, which is the whole reason they are two
@@ -22192,7 +22425,14 @@ function screenChild(c) {
 
     together: () => {
       const jobs = kid ? choreJobsFor(kid.id).length : 0;
-      const canDo = months == null ? 0 : choresForMonths(months).length;
+      /* THE SAME FLOOR THE PICKER USES.
+
+         She opened a seven year old and was told he was old enough
+         for 44 things, which is the unfiltered count including the
+         sixteen month old jobs. The picker had a floor and this
+         number did not, so they disagreed with each other on the
+         same screen. */
+      const canDo = months == null ? 0 : choresAtAge(months).length;
       const fresh = months == null ? [] : choresNewlyPossible(months);
       return `
       ${sectHead('together', months, 'Things to do together')}
@@ -22205,7 +22445,11 @@ function screenChild(c) {
           : (fresh.length
             ? 'Old enough now for ' + fresh[0].label.toLowerCase()
             : canDo + ' things they are old enough to have a go at')),
-        'data-go="screen" data-id="chores"') : ''}`;
+        /* OPENS ON THEM. Her note: tapping Jobs on one child's page
+           showed another child's jobs, because the chart remembers
+           whoever was last picked. Coming in from a child's profile
+           names that child, so it opens on them every time. */
+        'data-go="screen" data-id="chores" data-choreon="' + esc(kid ? kid.id : '') + '"') : ''}`;
     },
 
     where: () => {
@@ -22333,9 +22577,15 @@ function screenChild(c) {
      doing thing, so it belongs on the near side of that line, at the
      bottom of it. Their day timeline stays higher, with the other
      things that are about today. */
+  /* HER PAIRING, ON THEIR OWN PAGE TOO.
+
+     Their jobs and their day were two stacked blocks a scroll apart,
+     which is the same mistake Home had. A child's morning is "these
+     things to do, and you have swimming at four", so the two sit
+     side by side and are read as one answer. */
   const sections = ageNewCard(months, kid, first) + monthTopCard(kid)
-    + (kid ? profileDayBlock(kid.id) : '') + daily
-    + (kid ? rewDayBlock(kid, months) : '') + (tiles.length ? `
+    + (kid ? homeDayPair(kid.id, first + "'s jobs") : '')
+    + (kid ? rewProfileBlock(kid, months) : '') + daily + (tiles.length ? `
     <p class="sect" style="margin-top:18px">Everything about ${esc(first)}</p>
     <div class="kidtiles">${tiles.map((t) => kidTile(t.id, t.html)).join('')}</div>` : '')
     + (ciHtml ? `<p class="sect" style="margin-top:18px">How today went</p>` + ciHtml : '')
@@ -27496,6 +27746,8 @@ function choreLiveJobs() {
    opening a grey calendar. */
 function calColorOf(who) {
   if (who === 'me') return calColorFor('me', (store.parent || {}).calColor);
+  const a = (store.choreAdults || []).filter((x) => x.id === who)[0];
+  if (a) return calColorFor(who, a.calColor || '');
   const k = (store.children || []).filter((x) => x.id === who)[0];
   return calColorFor(who, k ? k.calColor : '');
 }
@@ -27507,6 +27759,8 @@ function calColorOf(who) {
 function calInitial(who) {
   if (!who || who === CAL_WHO_HOUSE_ID) return '\u00B7';
   if (who === 'me') return ((store.parent || {}).name || 'You').trim().charAt(0).toUpperCase();
+  const ad = (store.choreAdults || []).filter((x) => x.id === who)[0];
+  if (ad) return (ad.name || '?').trim().charAt(0).toUpperCase();
   const k = (store.children || []).filter((x) => x.id === who)[0];
   return ((k && k.name) || '?').trim().charAt(0).toUpperCase();
 }
@@ -27799,6 +28053,8 @@ function calOnDay(date, who) { return calAllIn(date, date, who); }
 function calWhoName(who) {
   if (!who || who === CAL_WHO_HOUSE_ID) return CAL_WHO_HOUSE;
   if (who === 'me') return (store.parent && store.parent.name) || 'You';
+  const a = (store.choreAdults || []).filter((x) => x.id === who)[0];
+  if (a) return a.name || 'Someone';
   const k = (store.children || []).filter((x) => x.id === who)[0];
   return k ? (k.name || 'Your child') : CAL_WHO_HOUSE;
 }
@@ -27806,6 +28062,21 @@ function calWhoName(who) {
 function calWhoOptions() {
   const out = [{ id: CAL_WHO_HOUSE_ID, label: CAL_WHO_HOUSE }];
   out.push({ id: 'me', label: (store.parent && store.parent.name) || 'You' });
+  /* THE OTHER ADULT GOES ON THE CALENDAR TOO.
+
+     Her words: it should show what the kids have plus what we have,
+     so we can manage it in one place, because if he has a meeting
+     then I am the one doing the swim run.
+
+     That handoff is the single most useful thing a family calendar
+     does and it was impossible, because the only people the calendar
+     knew were her and the children. The partner already exists in the
+     app, as somebody on the chore chart, so they are a person here
+     too and his meeting can sit next to her swim run in his own
+     colour. */
+  (store.choreAdults || []).forEach((a) => {
+    out.push({ id: a.id, label: a.name || 'Someone' });
+  });
   (store.children || []).forEach((k) => {
     if (lossMutes(k)) return;
     out.push({ id: k.id, label: k.name || 'Your child' });
@@ -28177,8 +28448,18 @@ function choreWeekTab() {
 }
 
 function choreWhoTab() {
-  const people = chorePeople();
+  /* HER RULE: ON ONE PERSON'S PAGE YOU SEE ONLY THEIRS.
+
+     Arriving from a child's profile names that child, and the chart
+     opens on them alone with a way back to everybody. Arriving from
+     the tab itself shows the whole house, which is what that tab is
+     for. */
+  const only = store.choreWho && chorePerson(store.choreWho) ? store.choreWho : '';
+  const people = only ? chorePeople().filter((p) => p.id === only) : chorePeople();
   return `
+  ${only ? `
+    <button class="chip" style="margin:0 0 12px" data-choreon="">
+      ${icon('people', 12, 'var(--deep)')} Show everybody</button>` : ''}
   ${people.map((p) => {
     const jobs = choreJobsFor(p.id);
     return `
