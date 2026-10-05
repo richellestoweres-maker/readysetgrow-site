@@ -296,6 +296,216 @@ export const LOSS_PRIVACY =
   'This is on your account only. It is never shared with the community, never used to choose what '
   + 'you are shown, and nobody you share a child with can see it.';
 
+/* ==================================================================
+   WHAT WILLOW SAYS
+
+   Her request, and the right one: a reference page is not the same as
+   somebody being there. The page tells them what the app has stopped
+   doing. Willow is the part that says I am sorry.
+
+   THE RULES FOR THIS, WHICH ARE STRICTER THAN ANYWHERE ELSE IN THE APP
+
+   She goes first, once, and then she waits. She does not check in
+   tomorrow. She does not ask how they are doing on a schedule. A
+   grief feature that keeps tapping somebody on the shoulder is a
+   grief feature nobody can bear to keep installed.
+
+   She does not say it happens for a reason, that it was probably
+   chromosomal, that at least they know they can get pregnant, that
+   one in five pregnancies end, or anything else that is true and is
+   not a comfort. The difference between a fact and a comfort is the
+   whole job here.
+
+   She does not ask a single question in her opening message. A person
+   who has just recorded this does not owe an AI an answer. What she
+   offers instead is a short list of things they can tap if they want
+   one, and silence if they do not.
+   ================================================================== */
+export const LOSS_WILLOW_OPEN =
+  'I am so sorry. I saw what you just recorded and I did not want you to have to be the one to '
+  + 'bring it up.\n\nI have stopped everything that was counting forward. Nothing in here is going '
+  + 'to congratulate you or ask you how many weeks you are.\n\nYou do not have to talk to me. I am '
+  + 'here if it helps, at whatever hour it is when it gets loud.';
+
+/* Offered as taps rather than asked as a question. Nothing in this
+   list assumes they want to do anything at all. */
+export const LOSS_WILLOW_OFFERS = [
+  { id: 'body',    label: 'What is happening to my body' },
+  { id: 'milk',    label: 'My milk has come in', needsMilk: true },
+  { id: 'nothing', label: 'I do not want to talk about it' },
+  { id: 'partner', label: 'My partner is not okay either' },
+  { id: 'tell',    label: 'What do I tell people' },
+  { id: 'kids',    label: 'What do I tell my other children' },
+  { id: 'again',   label: 'Will this happen again' },
+  { id: 'heavy',   label: 'I am not coping' },
+];
+
+export const LOSS_WILLOW_QUIET =
+  'That is completely allowed. I will not bring it up again.\n\nIf you want me later, I am in the '
+  + 'corner like always, and you can ask me about anything else in here without me mentioning this '
+  + 'at all.';
+
+/* ------------------------------------------------------------------
+   MILK AFTER A LOSS
+
+   Her specific ask, and the single most neglected thing in this whole
+   area. After a loss from around sixteen weeks, and sometimes
+   earlier, milk comes in. Nobody warns people. A parent wakes up
+   three days later engorged and leaking for a baby who is not there,
+   and it is physically painful and emotionally unbearable at once.
+
+   TWO PATHS AND NEITHER IS THE RECOMMENDED ONE
+
+   Most people want it to stop, and suppression is legitimate, normal
+   and nothing to feel guilty about. Some people find that expressing
+   and donating is the thing that carries them through, and for those
+   parents it is often described as the only part of it that felt like
+   it meant something.
+
+   Both are offered with equal weight and neither is framed as the
+   better one. Pushing donation at a grieving parent is coercive, and
+   hiding it from the ones who would want it takes away the one
+   choice they have left. So: here are both, here is how each works,
+   you decide, and you can change your mind.
+
+   WHY IT IS GATED ON HOW FAR ALONG THEY WERE
+
+   Offering milk donation to somebody who lost at seven weeks would be
+   grotesque. So this only appears when the app can work out that they
+   were far enough along for lactation to be likely, or when they tell
+   Willow it is happening.
+   ------------------------------------------------------------------ */
+export const LOSS_MILK_FROM_WEEK = 16;
+
+export const LOSS_MILK_TITLE = 'If your milk comes in';
+
+export const LOSS_MILK_WARN =
+  'Almost nobody is warned about this and it is cruel to find out by it happening. From around '
+  + 'sixteen weeks, and sometimes earlier, your body may make milk whatever else has happened. It '
+  + 'usually starts a couple of days after and it can be painful.';
+
+export const LOSS_MILK_CHOICE =
+  'There are two things people do and neither one is the right one. Some want it to stop as quickly '
+  + 'as possible. Some express, and some of those donate it. Plenty of parents say the donating was '
+  + 'the only part of the whole thing that felt like it meant something, and plenty of others find '
+  + 'the idea unbearable. Both of those are completely reasonable responses and nobody gets to tell '
+  + 'you which one you are.';
+
+export const LOSS_MILK_STOP_TITLE = 'If you want it to stop';
+
+export const LOSS_MILK_STOP = [
+  'A firm, supportive bra worn day and night, including while you sleep.',
+  'Cold packs, and plain ibuprofen or paracetamol if you can take them, for the swelling and the '
+    + 'ache.',
+  'Express only enough for comfort when you are painfully full, not until empty. Emptying tells '
+    + 'your body to make more, which is the opposite of what you want here.',
+  'Avoid heat, warm showers on your chest and any kind of pumping routine, all of which keep it '
+    + 'going.',
+  'Cabbage leaves in the bra are an old remedy that a lot of people swear by and the evidence for '
+    + 'is thin. It is harmless, so it is worth a try if you want one.',
+  'There are medicines that stop lactation and they are not right for everybody. Your provider can '
+    + 'tell you whether they are an option for you.',
+  'It usually settles within one to two weeks of leaving it alone, often sooner.',
+];
+
+export const LOSS_MILK_GIVE_TITLE = 'If you want to express and donate';
+
+export const LOSS_MILK_GIVE = [
+  'Milk banks do take donations from bereaved parents, and many of them have people whose job is '
+    + 'exactly this conversation. You will not have to explain yourself from scratch.',
+  'It goes to babies in neonatal intensive care, usually very premature ones, for whom donor milk '
+    + 'measurably lowers the risk of serious gut disease. It is not a gesture. It is treatment.',
+  'There is a screening process, usually a questionnaire and a blood test, and it is free to the '
+    + 'donor. Some medications and some medical histories rule it out, which is nobody\'s fault and '
+    + 'is worth finding out early rather than late.',
+  'Milk you have already frozen before the screening is often still usable. Ask before you throw '
+    + 'anything away.',
+  'You can donate once, or for a while, and stop whenever you want. Nobody is counting and nobody '
+    + 'will chase you.',
+  'If a milk bank cannot take yours, that is a rule about paperwork and not a verdict on you or on '
+    + 'what you were trying to do.',
+];
+
+export const LOSS_MILK_EITHER =
+  'You are allowed to change your mind in either direction, including halfway through, including '
+  + 'more than once.';
+
+export const LOSS_MILK_SOURCES = [
+  { org: 'HMBANA',
+    label: 'Human Milk Banking Association of North America, including donating after a loss and '
+      + 'how to find your nearest bank',
+    url: 'https://www.hmbana.org/' },
+  { org: 'NHS',
+    label: 'Stopping breastfeeding and relieving engorgement',
+    url: 'https://www.nhs.uk/conditions/baby/breastfeeding-and-bottle-feeding/breastfeeding-problems/' },
+];
+
+/* ------------------------------------------------------------------
+   WHAT SHE SAYS TO EACH OF THE TAPS
+
+   Short. Everything long lives on the page, and Willow's job in this
+   moment is to be a person rather than a leaflet.
+   ------------------------------------------------------------------ */
+export const LOSS_WILLOW_REPLIES = {
+  body:
+    'Bleeding and cramping for days to a couple of weeks is usual, often heavier than a period, and '
+    + 'how long varies hugely. A pregnancy test can stay positive for a while afterwards, which is '
+    + 'hormones clearing and not a sign anything was missed.\n\nThe ones that mean call someone now '
+    + 'rather than read: soaking a pad an hour for more than two hours, clots bigger than a golf '
+    + 'ball, a fever or discharge that smells wrong, severe or one sided pain, or feeling faint. '
+    + 'Those are all treatable and all time sensitive.',
+  milk:
+    'I am sorry. Almost nobody is warned this can happen and finding out by waking up to it is '
+    + 'brutal.\n\nIf you want it to stop: a firm bra day and night, cold packs, express only enough '
+    + 'for comfort rather than emptying, and keep heat off it. It usually settles in one to two '
+    + 'weeks.\n\nSome parents express and donate instead, to babies in intensive care, and describe '
+    + 'it as the only part of this that felt like it meant something. Others cannot bear the idea. '
+    + 'Both of those are reasonable and neither is what you are supposed to do.\n\nThere is more on '
+    + 'both, including how donating actually works, on the page.',
+  nothing: LOSS_WILLOW_QUIET,
+  partner:
+    'They have usually lost the same thing and been asked only how you are doing. That gap is one '
+    + 'of the most common things couples say did the lasting damage, and it is almost never anybody '
+    + 'being careless.\n\nGrief also rarely syncs up. One of you wanting to talk about it on the '
+    + 'day the other cannot is normal and is not a sign you are drifting apart.',
+  tell:
+    'You do not owe anybody the information, and you do not owe anybody privacy either. Both are '
+    + 'fine and you can change your mind.\n\n"We lost the baby and we are not up to talking about '
+    + 'it" is a complete sentence. So is asking one person to tell everybody else so you do not '
+    + 'have to say it twelve times.\n\nPeople will say unhelpful things. Nearly all of them are '
+    + 'frightened and reaching for anything. You do not owe them a gracious reply.',
+  kids:
+    'They usually need less detail and more certainty than adults expect. That the baby died, that '
+    + 'it was nobody\'s fault and nothing anybody did, that nobody else is ill, and that you are sad '
+    + 'and will still look after them.\n\nPlain words rather than "we lost the baby" or "gone to '
+    + 'sleep", both of which small children take literally and then worry about losing you or about '
+    + 'bedtime.\n\nThey will ask again, often at a strange moment, and that is them checking rather '
+    + 'than them being upset.',
+  again:
+    'One loss usually says nothing about the next pregnancy. Most people who have had one go on to '
+    + 'have a healthy pregnancy.\n\nRecurrent loss, counted as two or three depending where you '
+    + 'are, is worth investigating rather than enduring, and you can ask for that referral '
+    + 'yourself rather than waiting to be offered it.\n\nIf you are already thinking about trying '
+    + 'again, that is common and it does not mean you are not grieving. If you cannot stand the '
+    + 'thought, that is just as common.',
+  heavy:
+    'Grief is not a condition and does not need treating. But loss does raise the chance of '
+    + 'depression and anxiety, and those do respond to help.\n\nIf weeks are passing and you cannot '
+    + 'function, or the anxiety is constant, that is worth telling a professional. Postpartum '
+    + 'Support International covers loss and has a helpline.\n\nIf you are having thoughts of '
+    + 'harming yourself, please contact a crisis line or your local emergency number now rather '
+    + 'than waiting for an appointment. I am not able to be the right help for that, and it is the '
+    + 'one thing I will not pretend about.',
+};
+
+/* Whether milk is likely to be part of this, from how far along they
+   were. Unknown means not offered unprompted: a parent can still tap
+   it, and Willow answers, but she does not raise it. */
+export function lossMilkLikely(weeksAtLoss) {
+  const w = Number(weeksAtLoss);
+  return isFinite(w) && w >= LOSS_MILK_FROM_WEEK;
+}
+
 /* ------------------------------------------------------------------
    WHERE TO ACTUALLY GO
 
