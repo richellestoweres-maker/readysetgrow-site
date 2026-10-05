@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-05 18:18">
+<meta name="rsg-build" content="2026-10-05 18:43">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -647,6 +647,9 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
   background:var(--blush2);color:#7A3B27}
 .fcag-free{font-size:11.5px;color:var(--faint)}
 .fcag-add{flex:none;opacity:.5}
+
+.findchip.icon{padding:0;width:38px;min-width:38px;justify-content:center}
+.findchip.icon span{display:none}
 
 .hpair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 0;align-items:stretch}
 .hhalf{display:flex;flex-direction:column;background:#fff;border:1px solid rgba(74,103,65,.14);
@@ -1730,8 +1733,14 @@ textarea.inp{font:inherit;font-size:14px;line-height:1.55;resize:vertical}
 @media (min-width:700px){
   /* A real 7 column week, the way a wall display does it. */
   .fcweek{grid-template-columns:repeat(7,1fr);gap:6px}
-  .fcwd{grid-template-columns:1fr;gap:6px;padding:8px 6px;min-height:120px;
-    background:var(--surface2);border:1px solid var(--line2)}
+  /* flex rather than a one column grid. As a grid the day heading and
+     the chip box were being laid out as separate cells of the WEEK on
+     some widths, so Sunday's date and Sunday's entries ended up in
+     different columns and the whole block read as scrambled. A column
+     flex cannot do that. */
+  .fcwd{display:flex;flex-direction:column;gap:6px;padding:8px 6px;min-height:120px;
+    background:var(--surface2);border:1px solid var(--line2);align-items:stretch}
+  .fcwd-b{display:flex;flex-direction:column;gap:4px;min-width:0}
   .fcwd.today{background:var(--leaf2);border-color:var(--leaf)}
   .fcwd-h{flex-direction:column;gap:2px}
 }
@@ -2335,7 +2344,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-05 18:18';
+const BUILD_STAMP = '2026-10-05 18:43';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -63498,7 +63507,9 @@ function topBar(markOnly) {
     <div class="topbar-left">
       ${deep ? `<button class="backchip" data-back="offchild">${icon('back', 15, 'var(--deep)')} Back</button>`
         : (state.tab === 'home' && !state.view)
-            ? `${''}`
+            ? `${''}
+        <button class="findchip icon" data-go="screen" data-id="find"
+          aria-label="Search, or ask Willow">${icon('search', 17, 'var(--deep)')}</button>`
             : `<button class="findchip" data-go="screen" data-id="find" aria-label="Ask Willow or find a page">${icon('search', 16, 'var(--deep)')}<span>Ask</span></button>`}
     </div>
     ${mark}
@@ -66270,11 +66281,23 @@ function listsSave() {
     flushStore();
     render();
 }
+function calChipFlat(e) {
+    const col = calColorOf(e.who);
+    const reading = e.from === 'app';
+    return `
+  <span class="fcchip-e${reading ? ' soft' : ''}"
+    style="${reading ? 'color:' + esc(col.ink) + ';border:1px solid ' + esc(col.dot)
+        : 'background:' + esc(col.soft) + ';color:' + esc(col.ink)}">
+    ${e.time ? `<span class="fcchip-t">${esc(calTimeLabel(e.time))}</span> ` : ''}${esc(e.title)}
+  </span>`;
+}
 function profileWeekBlock() {
     const today = calToday();
-    const days = calWeekOf(today);
+    const days = calWeekFrom(today);
     const byDay = {};
     calAllIn(days[0], days[6], 'all').forEach((e) => {
+        if (String(e.id || '').indexOf('chore:') === 0)
+            return;
         if (!byDay[e.date])
             byDay[e.date] = [];
         byDay[e.date].push(e);
@@ -66298,7 +66321,7 @@ function profileWeekBlock() {
             <span class="fcwd-n">${p.getDate()}</span>
           </span>
           <span class="fcwd-b">
-            ${list.length ? list.slice(0, 4).map(calChipEl).join('')
+            ${list.length ? list.slice(0, 4).map(calChipFlat).join('')
             + (list.length > 4 ? `<span class="fcmore">and ${list.length - 4} more</span>` : '')
             : '<span class="fcwd-free"></span>'}
           </span>
@@ -66956,21 +66979,28 @@ function homeDayWidget(whoId, title) {
 }
 function homeTiles(c, l) {
     const tiles = [];
-    if (!choreLiveJobs().length && chorePeople().some((x) => x.kind === 'child')) {
-        tiles.push(homeTile({
-            icon: 'check', tone: 'leaf',
-            title: 'Jobs',
-            sub: 'Start a chart for the week',
-            go: 'data-go="screen" data-id="chores"',
-        }));
-    }
-    const ciDone = !!momCiSaved();
     tiles.push(homeTile({
         icon: 'sun', tone: 'blush',
         title: 'How today went',
-        sub: ciDone ? 'Logged for today' : '30 seconds, about the day',
+        sub: momCiSaved() ? 'Logged for today' : '30 seconds, about the day',
         go: 'data-go="screen" data-id="momlogs"',
     }));
+    if (showsBodyHalf(store.parent)) {
+        const ci = cycleInfoNow();
+        let csub = 'Log a period and this fills in';
+        if (ci && typeof ci.dayOfCycle === 'number') {
+            csub = 'Day ' + ci.dayOfCycle
+                + (typeof ci.daysToNext === 'number' && ci.daysToNext > 0
+                    ? ', next due in ' + ci.daysToNext + (ci.daysToNext === 1 ? ' day' : ' days')
+                    : (ci.daysLate ? ', ' + ci.daysLate + ' days late' : ''));
+        }
+        tiles.push(homeTile({
+            icon: 'drop', tone: 'blush',
+            title: 'Log your cycle',
+            sub: csub,
+            go: 'data-go="screen" data-id="mycycle"',
+        }));
+    }
     tiles.push(homeTile({
         icon: 'note', tone: 'blush',
         title: 'Everything logged for you',
@@ -66984,13 +67014,7 @@ function homeTiles(c, l) {
         sub: learn.title,
         go: 'data-go="learn" data-id="' + esc(learn.id) + '"',
     }));
-    return `
-  ${homeDayPair('all', "Today's jobs")}
-  <div class="htiles">${tiles.join('')}</div>
-  <div class="card liftcard">
-    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Today</p>
-    <p class="liftline">${esc(liftAffirmation())}</p>
-  </div>`;
+    return `<div class="htiles">${tiles.join('')}</div>`;
 }
 function screenHome(c) {
     if (homeCalm())
@@ -67012,12 +67036,12 @@ function screenHome(c) {
   </div>
   <div class="sc">
     ${calmSwitchChip()}
-    ${findBar()}
     ${installBanner()}
     ${''}
-    ${profileWeekBlock()}
-    ${''}
-    ${homeTiles(c, l)}
+    <div class="card liftcard">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Today</p>
+      <p class="liftline">${esc(affirmation)}</p>
+    </div>
     <div class="kidrow home">
       ${parentCircle()}
       ${kids.map(kidCircle).join('')}
@@ -67029,7 +67053,6 @@ function screenHome(c) {
         <span class="kidcirc-age">a child</span>
       </button>
     </div>
-    ${cycleNudge()}
     ${''}
     ${kids.length ? '' : `
     <div class="card flat" style="margin-top:2px">
@@ -67065,6 +67088,11 @@ function screenHome(c) {
     </button>` : ''}
     ${''}
     ${needHelpRow()}
+    ${''}
+    ${cycleNudge()}
+    ${homeTiles(c, l)}
+    ${homeDayPair('me', 'My jobs')}
+    ${profileWeekBlock()}
     ${bodyCareBlock()}
     ${memOnThisDay()}
     ${''}
@@ -67080,6 +67108,9 @@ function screenHome(c) {
       <h3 class="h3" style="font-size:16px;margin-top:5px">${esc(morning.title)}</h3>
       <p class="bodytext" style="margin-top:4px">${esc(morning.body)}</p>
     </div>` : ''}
+    ${''}
+    <p class="sect" style="margin-top:20px">Looking for something</p>
+    ${findBar()}
     ${duplicateCard()}
     ${isExampleChild(activeChild()) ? `
     <div class="card" style="border-left:3px solid var(--attention)">
