@@ -2899,6 +2899,10 @@ function render() {
   else if (v && v.type === 'lens') html = viewLens(c, v.id);
   else if (v && v.type === 'infection') html = viewInfection(v.id);
   else if (v && v.type === 'btopic') html = viewBTopic(v.id);
+  else if (v && v.type === 'ceat') html = viewCeatPhase(v.id);
+  else if (v && v.type === 'peat') html = viewPeatStage(v.id);
+  else if (v && v.type === 'screen' && v.id === 'nourish') html = screenNourish();
+  else if (v && v.type === 'screen' && v.id === 'pregeat') html = screenPregEat();
   else if (v && v.type === 'screen' && v.id === 'birthplan') html = screenBirthPlan();
   else if (v && v.type === 'screen' && v.id === 'now') html = screenNow(c);
   else if (v && v.type === 'screen' && v.id === 'momnow') html = screenMomNow();
@@ -10472,6 +10476,9 @@ function screenExpecting(c) {
           sub: 'Pain relief, tearing, who is with you', go: 'data-go="screen" data-id="birth"' })}
         ${homeTile({ icon: 'note', title: 'Induction',
           sub: 'The five numbers, and what to ask', go: 'data-go="screen" data-id="induction"' })}
+        ${homeTile({ icon: 'utensils', tone: 'leaf', title: 'Eating this trimester',
+          sub: 'What matters most at the week you are in',
+          go: 'data-go="screen" data-id="pregeat"' })}
       </div>
 
       <div class="szcard">
@@ -17812,6 +17819,267 @@ function cycleNudge() {
   </div>`;
 }
 
+/* ==================================================================
+   EATING FOR WHERE YOUR BODY IS
+
+   Her two requests: what to eat around a cycle, seeds included, and
+   what to eat through a pregnancy, keyed to where the pregnancy
+   actually is.
+
+   Everything about why each line carries a strength label, and why
+   seed cycling gets a straight answer rather than a yes or a no, is in
+   src/data/nourish.js.
+   ================================================================== */
+function nshPill(strength) {
+  const s = NSH_STRENGTH[strength];
+  if (!s) return '';
+  return `<span class="nshpill ${esc(s.tone)}">${esc(s.label)}</span>`;
+}
+
+/* One line of advice, with what it is worth attached to it rather than
+   in a footnote nobody reads. */
+function nshRow(item) {
+  return `
+  <div class="nshrow">
+    <div class="nshrow-h">
+      <span class="nshrow-t">${esc(item.t)}</span>
+      ${nshPill(item.s)}
+    </div>
+    <p class="nshrow-w">${esc(item.why)}</p>
+  </div>`;
+}
+
+function nshPhaseCard(ph, now) {
+  return `
+  <button class="pickcard${now ? ' urgent' : ''}" data-go="ceat" data-id="${esc(ph.id)}">
+    <span class="pickcard-ic">${icon(ph.ic, 17, now ? '#8A4433' : 'var(--deep)')}</span>
+    <span class="pickcard-t">${esc(ph.label)}</span>
+    <span class="pickcard-b">${esc(ph.eat.length)} things worth knowing</span>
+    ${now ? '<span class="pickcard-tag">You are here</span>' : ''}
+    <span class="pickcard-go">Read it ${icon('chev', 12, 'var(--deep)')}</span>
+  </button>`;
+}
+
+function screenNourish() {
+  const info = cycleInfoNow();
+  const here = ceatPhaseFor(info);
+  const list = periods();
+  const stats = cycleStats(list);
+  const steady = stats && stats.spread != null && stats.spread <= CYCLE_STEADY_SPREAD;
+
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="mycycle">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(CEAT_TITLE)}</h1>
+    <p class="sub">${esc(CEAT_SUB)}</p>
+  </div>
+  <div class="sc">
+
+    ${here ? `
+    <div class="szhero">
+      <span class="nshhero-ic">${icon(here.ic, 26, 'var(--deep)')}</span>
+      <div class="szhero-t">
+        <p class="szhero-wk">Day ${info.dayOfCycle} of about ${info.cycleLength}</p>
+        <p class="szhero-sz">${esc(here.label)}</p>
+        <p class="szhero-ms">${esc(here.body)}</p>
+      </div>
+    </div>` : `
+    <div class="card flat">
+      <p class="bodytext">Log a period date on your cycle page and this follows where you actually
+        are, rather than a textbook 28 days.</p>
+    </div>`}
+
+    ${here ? `
+    <p class="sect" style="margin-top:16px">Right now</p>
+    <div class="card">
+      ${here.eat.map(nshRow).join('')}
+      ${here.ask ? `<div class="callout" style="margin-top:10px"><p style="margin:0">${esc(here.ask)}</p></div>` : ''}
+    </div>` : ''}
+
+    ${!steady && list.length > 1 ? `
+    <div class="szcard blush">
+      <div class="szcard-h">
+        <span class="szcard-ic">${icon('info', 15, '#8A5F54')}</span>
+        <span class="szcard-t">Your cycles move about a bit</span>
+      </div>
+      <p class="bodytext" style="margin:0">${esc(CEAT_IRREGULAR)}</p>
+    </div>` : ''}
+
+    <p class="sect" style="margin-top:18px">Every phase</p>
+    <div class="pickgrid">
+      ${CEAT_PHASES.map((ph) => nshPhaseCard(ph, here && here.id === ph.id)).join('')}
+    </div>
+
+    <p class="sect" style="margin-top:18px">${esc(CEAT_SEEDS.title)}</p>
+    <div class="card">
+      <div class="nshseeds">
+        ${CEAT_SEEDS.protocol.map((r) => `
+        <div class="nshseed">
+          <p class="nshseed-p">${esc(r.phase)}</p>
+          <p class="nshseed-s">${esc(r.seeds)}</p>
+          <p class="nshseed-a">${esc(r.amount)}</p>
+        </div>`).join('')}
+      </div>
+      <div class="nshrow" style="border-top:1px solid var(--line2);margin-top:12px;padding-top:12px">
+        <div class="nshrow-h">
+          <span class="nshrow-t">What it claims</span>
+        </div>
+        <p class="nshrow-w">${esc(CEAT_SEEDS.claim)}</p>
+      </div>
+      <div class="nshrow">
+        <div class="nshrow-h">
+          <span class="nshrow-t">What is actually known</span>
+          ${nshPill('popular')}
+        </div>
+        <p class="nshrow-w">${esc(CEAT_SEEDS.evidence)}</p>
+      </div>
+      <div class="bpbox surrender" style="margin-top:11px">
+        <p class="bpbox-t">So, honestly</p>
+        <p class="bodytext" style="margin-top:7px">${esc(CEAT_SEEDS.verdict)}</p>
+        <p class="bodytext" style="margin-top:9px">${esc(CEAT_SEEDS.harm)}</p>
+      </div>
+      <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(CEAT_SEEDS.grind)}</p></div>
+    </div>
+
+    <p class="tiny" style="margin-top:14px">${esc(NSH_NOT_A_PLAN)}</p>
+    ${dsec('Sources', sourceRows(NSH_SOURCES))}
+    <p class="disclaimer">${esc(NSH_DISCLAIMER)}</p>
+  </div>`;
+}
+
+function viewCeatPhase(id) {
+  const ph = CEAT_PHASES.filter((x) => x.id === id)[0];
+  if (!ph) return emptyScreen('That could not be found.');
+  const others = CEAT_PHASES.filter((x) => x.id !== id);
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="nourish">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(ph.label)}</h1>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="eyebrow">${icon(ph.ic, 11, 'var(--sage)')} What is happening</p>
+      <p class="bodytext" style="margin-top:6px">${esc(ph.body)}</p>
+    </div>
+    <p class="sect" style="margin-top:16px">Worth knowing</p>
+    <div class="card">${ph.eat.map(nshRow).join('')}</div>
+    ${ph.ask ? `<div class="szcard blush">
+      <div class="szcard-h">
+        <span class="szcard-ic">${icon('info', 15, '#8A5F54')}</span>
+        <span class="szcard-t">Worth asking about</span>
+      </div>
+      <p class="bodytext" style="margin:0">${esc(ph.ask)}</p>
+    </div>` : ''}
+    <p class="sect" style="margin-top:18px">The other phases</p>
+    <div class="chips">
+      ${others.map((x) => `
+        <button class="chip" data-go="ceat" data-id="${esc(x.id)}">${esc(x.short)}</button>`).join('')}
+    </div>
+    <p class="tiny" style="margin-top:14px">${esc(NSH_NOT_A_PLAN)}</p>
+  </div>`;
+}
+
+/* ------------------------------------------------------------------
+   AND THE PREGNANCY SIDE
+   ------------------------------------------------------------------ */
+function screenPregEat() {
+  const kid = activeChild();
+  const where = (kid && isExpecting(kid)) ? expWhereFor(kid) : null;
+  const week = where ? where.week : null;
+  const here = week != null ? peatStageFor(week) : null;
+
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(PEAT_TITLE)}</h1>
+    <p class="sub">${esc(PEAT_SUB)}</p>
+  </div>
+  <div class="sc">
+
+    ${here ? `
+    <div class="szhero">
+      ${sizeArtSvg(week, 76, false) || `<span class="nshhero-ic">${icon(here.ic, 26, 'var(--deep)')}</span>`}
+      <div class="szhero-t">
+        <p class="szhero-wk">Week ${week} &middot; ${esc(here.label)}</p>
+        <p class="szhero-sz" style="font-size:17px">${esc(here.head)}</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:11px">
+      <p class="bodytext" style="margin:0">${esc(here.body)}</p>
+    </div>
+
+    <p class="sect" style="margin-top:16px">What matters most right now</p>
+    <div class="card">${here.keys.map(nshRow).join('')}</div>
+    ` : `
+    <div class="card flat">
+      <p class="bodytext">Open this from the profile of the baby you are expecting and it follows
+        the week you are actually in.</p>
+    </div>
+    <p class="sect" style="margin-top:16px">Every stage</p>
+    `}
+
+    <p class="sect" style="margin-top:18px">${here ? 'The other stages' : 'The stages'}</p>
+    <div class="pickgrid">
+      ${PEAT_STAGES.map((st) => `
+      <button class="pickcard${here && here.id === st.id ? ' urgent' : ''}"
+        data-go="peat" data-id="${esc(st.id)}">
+        <span class="pickcard-ic">${icon(st.ic, 17, here && here.id === st.id ? '#8A4433' : 'var(--deep)')}</span>
+        <span class="pickcard-t">${esc(st.label)}</span>
+        <span class="pickcard-b">${esc(st.head)}</span>
+        ${here && here.id === st.id ? '<span class="pickcard-tag">You are here</span>' : ''}
+        <span class="pickcard-go">Read it ${icon('chev', 12, 'var(--deep)')}</span>
+      </button>`).join('')}
+    </div>
+
+    <p class="sect" style="margin-top:18px">True the whole way through</p>
+    <div class="card">${PEAT_ALWAYS.map(nshRow).join('')}</div>
+
+    ${dsec(PEAT_AVOID.title, PEAT_AVOID.items.map((x) => `
+      <div class="quote">
+        <p class="sit">${esc(x.t)}</p>
+        <p class="why" style="margin-top:4px">${esc(x.why)}</p>
+      </div>`).join('')
+    + `<p class="tiny" style="margin-top:9px">${esc(PEAT_AVOID.note)}</p>`)}
+
+    <div class="szcard blush">
+      <div class="szcard-h">
+        <span class="szcard-ic">${icon('info', 15, '#8A5F54')}</span>
+        <span class="szcard-t">No weight guidance here</span>
+      </div>
+      <p class="bodytext" style="margin:0">${esc(PEAT_WEIGHT_NOTE)}</p>
+    </div>
+
+    <p class="tiny" style="margin-top:14px">${esc(NSH_NOT_A_PLAN)}</p>
+    ${dsec('Sources', sourceRows(NSH_SOURCES))}
+    <p class="disclaimer">${esc(NSH_DISCLAIMER)}</p>
+  </div>`;
+}
+
+function viewPeatStage(id) {
+  const st = PEAT_STAGES.filter((x) => x.id === id)[0];
+  if (!st) return emptyScreen('That could not be found.');
+  const others = PEAT_STAGES.filter((x) => x.id !== id);
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="pregeat">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(st.label)}</h1>
+    <p class="sub">${esc(st.head)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="bodytext" style="margin:0">${esc(st.body)}</p>
+    </div>
+    <p class="sect" style="margin-top:16px">What matters most</p>
+    <div class="card">${st.keys.map(nshRow).join('')}</div>
+    <p class="sect" style="margin-top:18px">The other stages</p>
+    <div class="chips">
+      ${others.map((x) => `
+        <button class="chip" data-go="peat" data-id="${esc(x.id)}">${esc(x.label)}</button>`).join('')}
+    </div>
+    <p class="tiny" style="margin-top:14px">${esc(NSH_NOT_A_PLAN)}</p>
+  </div>`;
+}
+
 function screenMyCycle(c) {
   const info = cycleInfoNow();
   const q = info
@@ -17829,6 +18097,14 @@ function screenMyCycle(c) {
     ${cycleWidget()}
 
     ${cyclogBlock('me', false)}
+
+    <button class="pickcard" style="width:100%;margin-top:13px"
+      data-go="screen" data-id="nourish">
+      <span class="pickcard-ic">${icon('utensils', 17, 'var(--deep)')}</span>
+      <span class="pickcard-t">${esc(CEAT_TITLE)}</span>
+      <span class="pickcard-b">${esc(CEAT_SUB)}</span>
+      <span class="pickcard-go">Where you are now ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>
 
     <div class="card leafy" style="margin-top:14px">
       <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Ask Willow</p>

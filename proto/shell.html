@@ -2313,6 +2313,38 @@ body.calpage .mark-holder{margin-bottom:-20px}
   @page{margin:16mm}
 }
 
+/* ------------------------------------------------------------------
+   EATING BY PHASE
+
+   The strength pill is the important bit of this stylesheet. Cycle
+   nutrition content online puts folic acid and something off Instagram
+   in identical type, and the pill is what stops this page doing the
+   same. Green for established, clay for thin or merely popular, and
+   never red, because none of this is a warning.
+   ------------------------------------------------------------------ */
+.nshpill{flex:none;font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  border-radius:999px;padding:3px 8px;line-height:1.3;white-space:nowrap}
+.nshpill.good{background:var(--leaf3);color:var(--deep)}
+.nshpill.warn{background:var(--blush2);color:#8A5F54}
+
+.nshrow{padding:11px 0;border-bottom:1px solid var(--line2)}
+.nshrow:first-child{padding-top:2px}
+.nshrow:last-child{border-bottom:0;padding-bottom:2px}
+.nshrow-h{display:flex;align-items:flex-start;gap:9px;justify-content:space-between}
+.nshrow-t{font-size:14px;font-weight:700;color:var(--ink);line-height:1.3}
+.nshrow-w{margin:5px 0 0;font-size:12.5px;line-height:1.55;color:var(--muted)}
+
+.nshhero-ic{width:62px;height:62px;border-radius:50%;background:#fff;flex:none;
+  display:flex;align-items:center;justify-content:center}
+
+.nshseeds{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.nshseed{background:var(--leaf3);border-radius:14px;padding:11px 11px 12px}
+.nshseed-p{margin:0;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--deep)}
+.nshseed-s{margin:5px 0 0;font-size:13.5px;font-weight:700;color:var(--ink);line-height:1.25}
+.nshseed-a{margin:4px 0 0;font-size:11px;color:var(--muted);line-height:1.4}
+@media (max-width:360px){.nshseeds{grid-template-columns:1fr}}
+
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 
