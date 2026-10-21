@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-05 22:18">
+<meta name="rsg-build" content="2026-10-21 19:58">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -2236,6 +2236,38 @@ body.calpage .mark-holder{margin-bottom:-20px}
   @page{margin:16mm}
 }
 
+/* ------------------------------------------------------------------
+   EATING BY PHASE
+
+   The strength pill is the important bit of this stylesheet. Cycle
+   nutrition content online puts folic acid and something off Instagram
+   in identical type, and the pill is what stops this page doing the
+   same. Green for established, clay for thin or merely popular, and
+   never red, because none of this is a warning.
+   ------------------------------------------------------------------ */
+.nshpill{flex:none;font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  border-radius:999px;padding:3px 8px;line-height:1.3;white-space:nowrap}
+.nshpill.good{background:var(--leaf3);color:var(--deep)}
+.nshpill.warn{background:var(--blush2);color:#8A5F54}
+
+.nshrow{padding:11px 0;border-bottom:1px solid var(--line2)}
+.nshrow:first-child{padding-top:2px}
+.nshrow:last-child{border-bottom:0;padding-bottom:2px}
+.nshrow-h{display:flex;align-items:flex-start;gap:9px;justify-content:space-between}
+.nshrow-t{font-size:14px;font-weight:700;color:var(--ink);line-height:1.3}
+.nshrow-w{margin:5px 0 0;font-size:12.5px;line-height:1.55;color:var(--muted)}
+
+.nshhero-ic{width:62px;height:62px;border-radius:50%;background:#fff;flex:none;
+  display:flex;align-items:center;justify-content:center}
+
+.nshseeds{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.nshseed{background:var(--leaf3);border-radius:14px;padding:11px 11px 12px}
+.nshseed-p{margin:0;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--deep)}
+.nshseed-s{margin:5px 0 0;font-size:13.5px;font-weight:700;color:var(--ink);line-height:1.25}
+.nshseed-a{margin:4px 0 0;font-size:11px;color:var(--muted);line-height:1.4}
+@media (max-width:360px){.nshseeds{grid-template-columns:1fr}}
+
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 <!--
@@ -2537,7 +2569,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-05 22:18';
+const BUILD_STAMP = '2026-10-21 19:58';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -12741,7 +12773,7 @@ const LOG_TYPES = [
         label: 'Milestone',
         group: 'development',
         icon: 'star',
-        minMonths: 0, maxMonths: 72,
+        minMonths: 0, maxMonths: 240,
         summaryTemplate: '{what}',
         fields: [
             { id: 'what', label: 'What they did', type: 'text', required: true },
@@ -12826,8 +12858,8 @@ function getLogGroupsForAge(months) {
 function getTimerLogTypes(months) {
     return getLogTypesForAge(months).filter((t) => t.hasTimer);
 }
-function summarizeLog(log, knownType) {
-    const type = knownType || getLogType(log && log.typeId);
+function summarizeLog(log) {
+    const type = getLogType(log && log.typeId);
     if (!type)
         return '';
     const values = (log && log.values) || {};
@@ -27544,6 +27576,296 @@ const PREG_WEEK_SOURCES = [
     { org: 'Tommy’s', label: 'Baby movements, and why counting kicks is no longer advised',
         url: 'https://www.tommys.org/pregnancy-information/im-pregnant/baby-movements-pregnancy' },
 ];
+const NSH_STRENGTH = {
+    solid: { label: 'Well established', tone: 'good' },
+    decent: { label: 'Decent evidence', tone: 'good' },
+    thin: { label: 'Thin evidence', tone: 'warn' },
+    popular: { label: 'Popular, barely studied', tone: 'warn' },
+};
+const NSH_NOT_A_PLAN = 'Worth knowing, not a plan to follow. Nothing here counts anything you ate or expects you to '
+    + 'change your week. Eat what you eat, and take the one or two lines that are useful.';
+const CEAT_TITLE = 'Eating around your cycle';
+const CEAT_SUB = 'What is actually happening each week, what the evidence supports, and what is just popular. '
+    + 'Labelled, so you can tell which is which.';
+const CEAT_PHASES = [
+    {
+        id: 'period',
+        label: 'Your period',
+        short: 'Bleeding',
+        ic: 'drop',
+        body: 'Iron goes out with the blood, and that is the one part of cycle nutrition that is not in '
+            + 'dispute. A heavy period is a genuine iron drain, and iron deficiency without anemia is '
+            + 'common and underdiagnosed in women who bleed heavily.',
+        eat: [
+            { t: 'Iron you absorb easily', why: 'Red meat, chicken thigh, sardines. Heme iron, which your '
+                    + 'body takes up several times better than the plant kind.', s: 'solid' },
+            { t: 'Plant iron with something sour or citrus', why: 'Lentils, beans, spinach, fortified '
+                    + 'cereal, alongside peppers, tomatoes, citrus or strawberries. Vitamin C alongside plant '
+                    + 'iron increases how much you absorb, substantially.', s: 'solid' },
+            { t: 'Tea and coffee away from the iron meal', why: 'The tannins bind iron and cut absorption. '
+                    + 'An hour either side of the meal is enough, and nobody has to give anything up.', s: 'solid' },
+            { t: 'Magnesium rich food', why: 'Pumpkin seeds, dark chocolate, beans, leafy greens. Magnesium '
+                    + 'has only been tested for cramps in combination with calcium, so the food is sensible and '
+                    + 'the supplement claim is ahead of the evidence.', s: 'thin' },
+        ],
+        ask: 'If your periods soak through protection, last more than 7 days, or you are exhausted in a '
+            + 'way that food is not touching, ask for a ferritin test rather than guessing. Iron is a '
+            + 'thing people take far too much of after reading an article.',
+    },
+    {
+        id: 'follicular',
+        label: 'The week or two after',
+        short: 'Follicular',
+        ic: 'leaf',
+        body: 'Estrogen is climbing and most people feel steadiest here. Nothing dramatic is needed. This '
+            + 'is the stretch where rebuilding iron stores after bleeding actually matters more than '
+            + 'anything fashionable.',
+        eat: [
+            { t: 'Keep the iron going a few more days', why: 'Stores refill slowly. The week after is doing '
+                    + 'more of that work than the week of.', s: 'solid' },
+            { t: 'Protein at breakfast', why: 'Not cycle specific, just the single change that most often '
+                    + 'makes a day feel less erratic. Eggs, yogurt, leftovers, whatever you will actually eat.',
+                s: 'decent' },
+            { t: 'Flax and pumpkin seeds, if you are doing seed cycling', why: 'This is the first half of '
+                    + 'the protocol. See the seed cycling card below for what is and is not known about it.',
+                s: 'popular' },
+        ],
+    },
+    {
+        id: 'ovulation',
+        label: 'Around ovulation',
+        short: 'Ovulation',
+        ic: 'sun',
+        body: 'A few days in the middle. If you are trying to conceive this is the window that matters, and '
+            + 'the nutrition that matters in it is the nutrition that matters before conception generally, '
+            + 'which is folate.',
+        eat: [
+            { t: 'Folate, and folic acid if there is any chance of pregnancy', why: 'Guidelines put folic '
+                    + 'acid at 400 to 800 micrograms a day for anyone who could become pregnant, started at '
+                    + 'least a month before. The neural tube closes within about 28 days of conception, which is '
+                    + 'before most people know. Leafy greens, beans, citrus, fortified grains.', s: 'solid' },
+            { t: 'Iodine, if you might conceive', why: 'Many bodies recommend 150 micrograms a day started '
+                    + 'before conception. Dairy, eggs, fish, iodised salt. First trimester iodine status has '
+                    + 'been linked to child verbal IQ.', s: 'solid' },
+            { t: 'Water, honestly', why: 'Cervical fluid changes here and people notice dehydration in it. '
+                    + 'Not a fertility intervention, just the dullest useful thing on the page.', s: 'thin' },
+        ],
+    },
+    {
+        id: 'luteal',
+        label: 'The week before your period',
+        short: 'Luteal',
+        ic: 'moon',
+        body: 'Progesterone is up, appetite often is too, and this is where premenstrual symptoms live. It '
+            + 'is also the only phase where supplements have been properly trialled, so it is the one with '
+            + 'real answers rather than vibes.',
+        eat: [
+            { t: 'Calcium, around 1,000 to 1,200 mg a day', why: 'This has the best trial evidence of '
+                    + 'anything in this part of the cycle. Multiple randomized trials and a meta analysis found '
+                    + 'calcium reduced premenstrual symptoms. Dairy, fortified plant milks, tinned fish with the '
+                    + 'bones, tofu set with calcium.', s: 'decent' },
+            { t: 'Carbohydrate, without apology', why: 'Appetite genuinely rises in the luteal phase and '
+                    + 'resting energy use goes up slightly. Fighting it tends to end in a worse week. This is '
+                    + 'the line this app will not hedge: eat the extra food.', s: 'decent' },
+            { t: 'Vitamin E, if cramps are the problem', why: 'Trials at roughly 100 to 400 IU a day found '
+                    + 'a small to moderate reduction in period pain after about 2 months. Nuts, seeds, '
+                    + 'sunflower oil, avocado. Worth asking a provider before taking it as a pill.', s: 'decent' },
+            { t: 'Oily fish, or fish oil', why: 'Fish oil at about 500 mg a day reduced period pain versus '
+                    + 'placebo in trials, though not pooled into a single estimate. Salmon, sardines, mackerel.',
+                s: 'thin' },
+            { t: 'Zinc', why: 'Trials found pain relief in later months rather than the first, which '
+                    + 'suggests it needs weeks rather than days. Oysters, beef, pumpkin seeds, chickpeas.',
+                s: 'thin' },
+            { t: 'Sesame and sunflower seeds, if you are doing seed cycling', why: 'The second half of the '
+                    + 'protocol. Both happen to be good sources of vitamin E and zinc, which may be most of what '
+                    + 'is going on.', s: 'popular' },
+        ],
+        ask: 'Vitamin D showed the largest effect on period pain in the meta analysis, but off the back '
+            + 'of only 2 trials using a single enormous dose before menstruation. That is a conversation '
+            + 'with a provider, not something to buy.',
+    },
+];
+const CEAT_SEEDS = {
+    title: 'Seed cycling, and what is actually known',
+    protocol: [
+        { phase: 'Day 1 until ovulation', seeds: 'Flaxseed and pumpkin seeds',
+            amount: '1 to 2 tablespoons of each, ground' },
+        { phase: 'Ovulation until your period', seeds: 'Sesame and sunflower seeds',
+            amount: '1 to 2 tablespoons of each, ground' },
+    ],
+    claim: 'The claim is that the seeds support estrogen in the first half of the cycle and progesterone in '
+        + 'the second, through their lignans and their fats and their zinc.',
+    evidence: 'What exists is one randomized trial from 2023, in women with PCOS, over 12 weeks, which found '
+        + 'improvements in FSH, LH and progesterone against controls. That is genuinely the first '
+        + 'published clinical evidence for the protocol, it has not been replicated, and it was in a '
+        + 'specific population rather than in people with ordinary cycles.',
+    verdict: 'So: not nonsense, not established. The honest version is that these are four nutritious seeds '
+        + 'and eating them daily is a good idea whatever the calendar says. Whether the timing adds '
+        + 'anything on top is unproven.',
+    harm: 'There is no real downside. Ground seeds, a couple of tablespoons, fibre and good fats. If '
+        + 'following the calendar is the thing that gets you eating them, the calendar has earned its '
+        + 'place.',
+    grind: 'Grind the flax. Whole flaxseed largely passes through undigested, which is the one practical '
+        + 'detail most posts leave out.',
+};
+const CEAT_IRREGULAR = 'If your cycles are irregular the phases below are guesses, and seed cycling by calendar has '
+    + 'nothing to anchor to. Some people switch on the new and full moon instead, which is a way of '
+    + 'having a rhythm rather than a biological claim.';
+const PEAT_TITLE = 'Eating while pregnant';
+const PEAT_SUB = 'What matters most right now, rather than everything at once. It changes as the weeks go, so this '
+    + 'page does too.';
+const PEAT_STAGES = [
+    {
+        id: 'early',
+        from: 0, to: 13,
+        label: 'The first trimester',
+        ic: 'leaf',
+        head: 'Almost nothing extra, and one thing that is urgent',
+        body: 'Energy needs barely move in the first trimester, somewhere around 70 to 85 extra calories a '
+            + 'day, which is a slice of toast. Eating well matters here. Eating more does not. And if you '
+            + 'are being sick, eating anything at all is the whole job, which is a real answer rather than '
+            + 'a consolation.',
+        keys: [
+            { t: 'Folic acid, 400 to 800 mcg a day', why: 'The urgent one. The neural tube closes within '
+                    + 'about 28 days of conception. Guidelines say start a month before conception and continue '
+                    + 'through about week 12. Total folate target in pregnancy is 600 mcg DFE a day, and about '
+                    + '36 percent of pregnant women in the US fall short on diet alone.', s: 'solid' },
+            { t: 'Iodine, 220 mcg a day', why: 'About 10 percent fall short, and median iodine status in '
+                    + 'pregnant women sits below the sufficiency threshold. Dairy, eggs, fish, iodised salt.',
+                s: 'solid' },
+            { t: 'Whatever stays down', why: 'Cold food smells less. Dry carbohydrate before standing up. '
+                    + 'Small and often beats proper meals. A week of crackers and apples is not a nutritional '
+                    + 'emergency and the prenatal vitamin is covering more than you think.', s: 'decent' },
+            { t: 'The prenatal, at a time of day you can keep it', why: 'At night with food, if mornings '
+                    + 'are the problem. A vitamin you have thrown up is not a vitamin you have taken.', s: 'decent' },
+        ],
+    },
+    {
+        id: 'mid',
+        from: 14, to: 27,
+        label: 'The second trimester',
+        ic: 'sun',
+        head: 'The stretch where eating is easiest',
+        body: 'Nausea usually eases and the bump is still manageable. Energy needs rise by roughly 260 to '
+            + '340 calories a day, which is a sandwich, not a second dinner. Protein needs go up by about '
+            + '9 grams a day over your baseline.',
+        keys: [
+            { t: 'Calcium, 1,000 mg a day', why: 'About 21 percent of pregnant women fall short. It is '
+                    + 'also the window where calcium supplementation is started for preeclampsia prevention in '
+                    + 'women with low intake, usually before 24 weeks, which is a provider conversation.',
+                s: 'solid' },
+            { t: 'One or two servings of oily fish a week', why: 'Guidelines aim this at an extra 700 to '
+                    + '1,400 mg of DHA a week. Salmon, sardines, mackerel, trout. One trial of 600 mg DHA daily '
+                    + 'in the second half of pregnancy found longer gestation and larger babies, though the '
+                    + 'neurodevelopment evidence is mixed.', s: 'decent' },
+            { t: 'Choline, 450 mg a day', why: 'The nutrient almost nobody mentions. Most pregnant women '
+                    + 'do not meet it and very few prenatal vitamins contain a meaningful amount, so this one '
+                    + 'has to come from food. Eggs, especially the yolks, plus meat, fish, beans.', s: 'solid' },
+            { t: 'Protein, about 9 g a day more than usual', why: 'Two servings a day across the first and '
+                    + 'second trimesters. Not a reason to count anything, just a reason to put something with '
+                    + 'protein in it at each meal.', s: 'solid' },
+        ],
+    },
+    {
+        id: 'late',
+        from: 28, to: 99,
+        label: 'The third trimester',
+        ic: 'moon',
+        head: 'Iron, protein, and the plumbing',
+        body: 'Energy needs rise most here, roughly 450 to 500 extra calories a day, and protein needs jump '
+            + 'to about 28 grams a day above baseline, three servings a day. Everything is also physically '
+            + 'harder, which is why the practical lines matter as much as the nutrients.',
+        keys: [
+            { t: 'Iron, 27 mg a day, and this is when it bites', why: 'Around 84 percent of pregnant women '
+                    + 'take in less than the estimated requirement from diet, and iron deficiency prevalence is '
+                    + 'about 25 percent in the third trimester. Red meat, sardines, beans and lentils with '
+                    + 'something citrus alongside, and tea or coffee an hour away from the meal.', s: 'solid' },
+            { t: 'Protein, about 28 g a day more, three servings', why: 'The biggest change of the whole '
+                    + 'pregnancy and the one people are most surprised by.', s: 'solid' },
+            { t: 'Fibre and water, for the obvious reason', why: 'Iron tablets and a slower gut make '
+                    + 'constipation close to universal. Fruit, vegetables, beans, whole grains, and more water '
+                    + 'than feels necessary. Worth doing before it is a problem rather than after.', s: 'decent' },
+            { t: 'Smaller meals, more often', why: 'There is less room. Heartburn and feeling full after '
+                    + 'three bites are mechanical, not dietary failures.', s: 'decent' },
+            { t: 'Keep the oily fish going', why: 'Most of the brain growth that DHA is for happens in this '
+                    + 'stretch.', s: 'decent' },
+        ],
+    },
+];
+const PEAT_ALWAYS = [
+    { t: 'Vitamin D, 15 mcg a day', why: 'Prenatal supplements matter for this one, since food sources '
+            + 'are few.', s: 'solid' },
+    { t: 'B12, 2.6 mcg a day', why: 'Worth a specific conversation if you do not eat animal products.',
+        s: 'solid' },
+    { t: 'Caffeine under 200 mg a day', why: 'About 1 cup of filter coffee, or 2 instant, or 2 to 4 '
+            + 'cups of tea.', s: 'solid' },
+    { t: 'No alcohol', why: 'The guidance is to avoid it entirely. No argument offered here because '
+            + 'there is not one to have.', s: 'solid' },
+];
+const PEAT_AVOID = {
+    title: 'The avoid list, and why each one is on it',
+    items: [
+        { t: 'High mercury fish', why: 'Shark, swordfish, ray, marlin. Tuna limited to 1 fresh steak or '
+                + '2 tins a week.' },
+        { t: 'Raw and undercooked', why: 'Raw or undercooked meat, raw fish including sushi and cold '
+                + 'smoked salmon, raw egg in homemade mayonnaise, mousse, cheesecake or tiramisu.' },
+        { t: 'Unpasteurised dairy', why: 'Including goat and sheep milk and anything made from them.' },
+        { t: 'Mould ripened and soft blue cheese', why: 'Brie, camembert, gorgonzola, Roquefort, unless '
+                + 'thoroughly cooked through.' },
+        { t: 'Cold cured meats, unless cooked', why: 'And unwashed produce, and raw sprouts.' },
+        { t: 'Liver, pate and fish liver oil', why: 'Preformed vitamin A, with an upper limit of 3,000 '
+                + 'mcg a day. Beta carotene from vegetables is not the same thing and is fine.' },
+        { t: 'Clams, mussels, oysters and scallops', why: 'Biotoxins that cooking does not destroy.' },
+    ],
+    note: 'Listeria and toxoplasmosis are most of the reasoning behind this list, and both have their '
+        + 'own page under Looking after yourself.',
+};
+const PEAT_WEIGHT_NOTE = 'There is no weight guidance on this page on purpose. Weight in pregnancy is between you and your '
+    + 'provider, who knows your starting point and your history. An app does not, and an app guessing '
+    + 'at it does harm.';
+function peatStageFor(week) {
+    const w = Number(week);
+    if (!isFinite(w))
+        return PEAT_STAGES[0];
+    return PEAT_STAGES.filter((s) => w >= s.from && w <= s.to)[0] || PEAT_STAGES[0];
+}
+function ceatPhaseFor(info) {
+    if (!info)
+        return null;
+    const day = Number(info.dayOfCycle);
+    const len = Number(info.cycleLength) || 28;
+    const ovDay = len - 14;
+    if (!isFinite(day))
+        return null;
+    if (day <= 5)
+        return CEAT_PHASES[0];
+    if (day < ovDay - 1)
+        return CEAT_PHASES[1];
+    if (day <= ovDay + 1)
+        return CEAT_PHASES[2];
+    return CEAT_PHASES[3];
+}
+const NSH_SOURCES = [
+    { org: 'NIH Office of Dietary Supplements',
+        label: 'Nutrient requirements in pregnancy, and how many women fall short of each',
+        url: 'https://ods.od.nih.gov/factsheets/Pregnancy-HealthProfessional/' },
+    { org: 'Institute of Obstetricians and Gynaecologists',
+        label: 'Nutrition during pregnancy, including energy and protein by trimester and the avoid list',
+        url: 'https://www.rcpi.ie/Portals/0/Document%20Repository/Institute%20of%20Obstetricians%20and%20Gynaecologists/National%20Clinical%20Guidelines/IOG_National%20Clinical%20Guidelines_Nutrition%20in%20pregnancy%20Guideline_2019.pdf' },
+    { org: 'ACOG',
+        label: 'Healthy eating during pregnancy',
+        url: 'https://www.acog.org/womens-health/faqs/healthy-eating-during-pregnancy' },
+    { org: 'Systematic review and meta analysis',
+        label: 'Micronutrients and period pain, which is where the vitamin E, zinc and vitamin D figures '
+            + 'come from, including how weak the authors say the evidence is',
+        url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7146731/' },
+    { org: 'Meta analysis',
+        label: 'Calcium and premenstrual syndrome',
+        url: 'https://www.clinmedkaz.org/download/the-effect-of-calcium-on-premenstrual-syndrome-a-meta-analysis-study-15827.pdf' },
+];
+const NSH_DISCLAIMER = 'Educational information, not medical advice and not a diet. Supplement doses in particular belong '
+    + 'to a provider who knows your bloodwork, especially iron and vitamin D, which are the two people '
+    + 'most often take too much of.';
 const BP_TITLE = 'Your birth plan';
 const BP_SUB = 'One page, only what you picked, ready to print or send. Take it to an appointment and talk it '
     + 'through, which is the part that actually makes a difference.';
@@ -52575,6 +52897,14 @@ function render() {
         html = viewInfection(v.id);
     else if (v && v.type === 'btopic')
         html = viewBTopic(v.id);
+    else if (v && v.type === 'ceat')
+        html = viewCeatPhase(v.id);
+    else if (v && v.type === 'peat')
+        html = viewPeatStage(v.id);
+    else if (v && v.type === 'screen' && v.id === 'nourish')
+        html = screenNourish();
+    else if (v && v.type === 'screen' && v.id === 'pregeat')
+        html = screenPregEat();
     else if (v && v.type === 'screen' && v.id === 'birthplan')
         html = screenBirthPlan();
     else if (v && v.type === 'screen' && v.id === 'now')
@@ -59488,6 +59818,9 @@ function screenExpecting(c) {
         sub: 'Pain relief, tearing, who is with you', go: 'data-go="screen" data-id="birth"' })}
         ${homeTile({ icon: 'note', title: 'Induction',
         sub: 'The five numbers, and what to ask', go: 'data-go="screen" data-id="induction"' })}
+        ${homeTile({ icon: 'utensils', tone: 'leaf', title: 'Eating this trimester',
+        sub: 'What matters most at the week you are in',
+        go: 'data-go="screen" data-id="pregeat"' })}
       </div>
       <div class="szcard">
         <div class="szcard-h">
@@ -65518,6 +65851,232 @@ function cycleNudge() {
     </div>
   </div>`;
 }
+function nshPill(strength) {
+    const s = NSH_STRENGTH[strength];
+    if (!s)
+        return '';
+    return `<span class="nshpill ${esc(s.tone)}">${esc(s.label)}</span>`;
+}
+function nshRow(item) {
+    return `
+  <div class="nshrow">
+    <div class="nshrow-h">
+      <span class="nshrow-t">${esc(item.t)}</span>
+      ${nshPill(item.s)}
+    </div>
+    <p class="nshrow-w">${esc(item.why)}</p>
+  </div>`;
+}
+function nshPhaseCard(ph, now) {
+    return `
+  <button class="pickcard${now ? ' urgent' : ''}" data-go="ceat" data-id="${esc(ph.id)}">
+    <span class="pickcard-ic">${icon(ph.ic, 17, now ? '#8A4433' : 'var(--deep)')}</span>
+    <span class="pickcard-t">${esc(ph.label)}</span>
+    <span class="pickcard-b">${esc(ph.eat.length)} things worth knowing</span>
+    ${now ? '<span class="pickcard-tag">You are here</span>' : ''}
+    <span class="pickcard-go">Read it ${icon('chev', 12, 'var(--deep)')}</span>
+  </button>`;
+}
+function screenNourish() {
+    const info = cycleInfoNow();
+    const here = ceatPhaseFor(info);
+    const list = periods();
+    const stats = cycleStats(list);
+    const steady = stats && stats.spread != null && stats.spread <= CYCLE_STEADY_SPREAD;
+    return `
+  <div class="sc-head">
+    <button class="back" data-back="mycycle">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(CEAT_TITLE)}</h1>
+    <p class="sub">${esc(CEAT_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${here ? `
+    <div class="szhero">
+      <span class="nshhero-ic">${icon(here.ic, 26, 'var(--deep)')}</span>
+      <div class="szhero-t">
+        <p class="szhero-wk">Day ${info.dayOfCycle} of about ${info.cycleLength}</p>
+        <p class="szhero-sz">${esc(here.label)}</p>
+        <p class="szhero-ms">${esc(here.body)}</p>
+      </div>
+    </div>` : `
+    <div class="card flat">
+      <p class="bodytext">Log a period date on your cycle page and this follows where you actually
+        are, rather than a textbook 28 days.</p>
+    </div>`}
+    ${here ? `
+    <p class="sect" style="margin-top:16px">Right now</p>
+    <div class="card">
+      ${here.eat.map(nshRow).join('')}
+      ${here.ask ? `<div class="callout" style="margin-top:10px"><p style="margin:0">${esc(here.ask)}</p></div>` : ''}
+    </div>` : ''}
+    ${!steady && list.length > 1 ? `
+    <div class="szcard blush">
+      <div class="szcard-h">
+        <span class="szcard-ic">${icon('info', 15, '#8A5F54')}</span>
+        <span class="szcard-t">Your cycles move about a bit</span>
+      </div>
+      <p class="bodytext" style="margin:0">${esc(CEAT_IRREGULAR)}</p>
+    </div>` : ''}
+    <p class="sect" style="margin-top:18px">Every phase</p>
+    <div class="pickgrid">
+      ${CEAT_PHASES.map((ph) => nshPhaseCard(ph, here && here.id === ph.id)).join('')}
+    </div>
+    <p class="sect" style="margin-top:18px">${esc(CEAT_SEEDS.title)}</p>
+    <div class="card">
+      <div class="nshseeds">
+        ${CEAT_SEEDS.protocol.map((r) => `
+        <div class="nshseed">
+          <p class="nshseed-p">${esc(r.phase)}</p>
+          <p class="nshseed-s">${esc(r.seeds)}</p>
+          <p class="nshseed-a">${esc(r.amount)}</p>
+        </div>`).join('')}
+      </div>
+      <div class="nshrow" style="border-top:1px solid var(--line2);margin-top:12px;padding-top:12px">
+        <div class="nshrow-h">
+          <span class="nshrow-t">What it claims</span>
+        </div>
+        <p class="nshrow-w">${esc(CEAT_SEEDS.claim)}</p>
+      </div>
+      <div class="nshrow">
+        <div class="nshrow-h">
+          <span class="nshrow-t">What is actually known</span>
+          ${nshPill('popular')}
+        </div>
+        <p class="nshrow-w">${esc(CEAT_SEEDS.evidence)}</p>
+      </div>
+      <div class="bpbox surrender" style="margin-top:11px">
+        <p class="bpbox-t">So, honestly</p>
+        <p class="bodytext" style="margin-top:7px">${esc(CEAT_SEEDS.verdict)}</p>
+        <p class="bodytext" style="margin-top:9px">${esc(CEAT_SEEDS.harm)}</p>
+      </div>
+      <div class="callout" style="margin-top:10px"><p style="margin:0">${esc(CEAT_SEEDS.grind)}</p></div>
+    </div>
+    <p class="tiny" style="margin-top:14px">${esc(NSH_NOT_A_PLAN)}</p>
+    ${dsec('Sources', sourceRows(NSH_SOURCES))}
+    <p class="disclaimer">${esc(NSH_DISCLAIMER)}</p>
+  </div>`;
+}
+function viewCeatPhase(id) {
+    const ph = CEAT_PHASES.filter((x) => x.id === id)[0];
+    if (!ph)
+        return emptyScreen('That could not be found.');
+    const others = CEAT_PHASES.filter((x) => x.id !== id);
+    return `
+  <div class="sc-head">
+    <button class="back" data-back="nourish">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(ph.label)}</h1>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="eyebrow">${icon(ph.ic, 11, 'var(--sage)')} What is happening</p>
+      <p class="bodytext" style="margin-top:6px">${esc(ph.body)}</p>
+    </div>
+    <p class="sect" style="margin-top:16px">Worth knowing</p>
+    <div class="card">${ph.eat.map(nshRow).join('')}</div>
+    ${ph.ask ? `<div class="szcard blush">
+      <div class="szcard-h">
+        <span class="szcard-ic">${icon('info', 15, '#8A5F54')}</span>
+        <span class="szcard-t">Worth asking about</span>
+      </div>
+      <p class="bodytext" style="margin:0">${esc(ph.ask)}</p>
+    </div>` : ''}
+    <p class="sect" style="margin-top:18px">The other phases</p>
+    <div class="chips">
+      ${others.map((x) => `
+        <button class="chip" data-go="ceat" data-id="${esc(x.id)}">${esc(x.short)}</button>`).join('')}
+    </div>
+    <p class="tiny" style="margin-top:14px">${esc(NSH_NOT_A_PLAN)}</p>
+  </div>`;
+}
+function screenPregEat() {
+    const kid = activeChild();
+    const where = (kid && isExpecting(kid)) ? expWhereFor(kid) : null;
+    const week = where ? where.week : null;
+    const here = week != null ? peatStageFor(week) : null;
+    return `
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(PEAT_TITLE)}</h1>
+    <p class="sub">${esc(PEAT_SUB)}</p>
+  </div>
+  <div class="sc">
+    ${here ? `
+    <div class="szhero">
+      ${sizeArtSvg(week, 76, false) || `<span class="nshhero-ic">${icon(here.ic, 26, 'var(--deep)')}</span>`}
+      <div class="szhero-t">
+        <p class="szhero-wk">Week ${week} &middot; ${esc(here.label)}</p>
+        <p class="szhero-sz" style="font-size:17px">${esc(here.head)}</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:11px">
+      <p class="bodytext" style="margin:0">${esc(here.body)}</p>
+    </div>
+    <p class="sect" style="margin-top:16px">What matters most right now</p>
+    <div class="card">${here.keys.map(nshRow).join('')}</div>
+    ` : `
+    <div class="card flat">
+      <p class="bodytext">Open this from the profile of the baby you are expecting and it follows
+        the week you are actually in.</p>
+    </div>
+    <p class="sect" style="margin-top:16px">Every stage</p>
+    `}
+    <p class="sect" style="margin-top:18px">${here ? 'The other stages' : 'The stages'}</p>
+    <div class="pickgrid">
+      ${PEAT_STAGES.map((st) => `
+      <button class="pickcard${here && here.id === st.id ? ' urgent' : ''}"
+        data-go="peat" data-id="${esc(st.id)}">
+        <span class="pickcard-ic">${icon(st.ic, 17, here && here.id === st.id ? '#8A4433' : 'var(--deep)')}</span>
+        <span class="pickcard-t">${esc(st.label)}</span>
+        <span class="pickcard-b">${esc(st.head)}</span>
+        ${here && here.id === st.id ? '<span class="pickcard-tag">You are here</span>' : ''}
+        <span class="pickcard-go">Read it ${icon('chev', 12, 'var(--deep)')}</span>
+      </button>`).join('')}
+    </div>
+    <p class="sect" style="margin-top:18px">True the whole way through</p>
+    <div class="card">${PEAT_ALWAYS.map(nshRow).join('')}</div>
+    ${dsec(PEAT_AVOID.title, PEAT_AVOID.items.map((x) => `
+      <div class="quote">
+        <p class="sit">${esc(x.t)}</p>
+        <p class="why" style="margin-top:4px">${esc(x.why)}</p>
+      </div>`).join('')
+        + `<p class="tiny" style="margin-top:9px">${esc(PEAT_AVOID.note)}</p>`)}
+    <div class="szcard blush">
+      <div class="szcard-h">
+        <span class="szcard-ic">${icon('info', 15, '#8A5F54')}</span>
+        <span class="szcard-t">No weight guidance here</span>
+      </div>
+      <p class="bodytext" style="margin:0">${esc(PEAT_WEIGHT_NOTE)}</p>
+    </div>
+    <p class="tiny" style="margin-top:14px">${esc(NSH_NOT_A_PLAN)}</p>
+    ${dsec('Sources', sourceRows(NSH_SOURCES))}
+    <p class="disclaimer">${esc(NSH_DISCLAIMER)}</p>
+  </div>`;
+}
+function viewPeatStage(id) {
+    const st = PEAT_STAGES.filter((x) => x.id === id)[0];
+    if (!st)
+        return emptyScreen('That could not be found.');
+    const others = PEAT_STAGES.filter((x) => x.id !== id);
+    return `
+  <div class="sc-head">
+    <button class="back" data-back="pregeat">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(st.label)}</h1>
+    <p class="sub">${esc(st.head)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="bodytext" style="margin:0">${esc(st.body)}</p>
+    </div>
+    <p class="sect" style="margin-top:16px">What matters most</p>
+    <div class="card">${st.keys.map(nshRow).join('')}</div>
+    <p class="sect" style="margin-top:18px">The other stages</p>
+    <div class="chips">
+      ${others.map((x) => `
+        <button class="chip" data-go="peat" data-id="${esc(x.id)}">${esc(x.label)}</button>`).join('')}
+    </div>
+    <p class="tiny" style="margin-top:14px">${esc(NSH_NOT_A_PLAN)}</p>
+  </div>`;
+}
 function screenMyCycle(c) {
     const info = cycleInfoNow();
     const q = info
@@ -65534,6 +66093,13 @@ function screenMyCycle(c) {
   <div class="sc">
     ${cycleWidget()}
     ${cyclogBlock('me', false)}
+    <button class="pickcard" style="width:100%;margin-top:13px"
+      data-go="screen" data-id="nourish">
+      <span class="pickcard-ic">${icon('utensils', 17, 'var(--deep)')}</span>
+      <span class="pickcard-t">${esc(CEAT_TITLE)}</span>
+      <span class="pickcard-b">${esc(CEAT_SUB)}</span>
+      <span class="pickcard-go">Where you are now ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>
     <div class="card leafy" style="margin-top:14px">
       <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Ask Willow</p>
       <p class="bodytext" style="margin-top:7px">Willow can see your dates and your averages, so she can
