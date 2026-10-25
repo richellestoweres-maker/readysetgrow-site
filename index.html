@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-25 04:34">
+<meta name="rsg-build" content="2026-10-25 04:43">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -2602,7 +2602,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-25 04:34';
+const BUILD_STAMP = '2026-10-25 04:43';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -66877,16 +66877,18 @@ function postSave() {
     if (store.photoBusy)
         return;
     store.posts = Array.isArray(store.posts) ? store.posts : [];
-    store.posts.unshift({
+    const wantsShare = d.visibility === 'public';
+    const fresh = {
         id: 'p' + Date.now() + Math.floor(Math.random() * 1000),
         text: text,
         photos: d.photos.slice(0, POST_MAX_FILES),
         files: d.files.slice(0, POST_MAX_FILES),
-        visibility: d.visibility === 'public' ? 'public' : 'private',
+        visibility: 'private',
         group: isGroupId(d.group || '') ? (d.group || '') : '',
         childId: d.childId || '',
         at: Date.now(),
-    });
+    };
+    store.posts.unshift(fresh);
     if (store.posts.length > 200)
         store.posts.length = 200;
     store.postDraft = null;
@@ -66897,6 +66899,16 @@ function postSave() {
     store.parentUpdatedAt = Date.now();
     flushStore();
     render();
+    if (wantsShare) {
+        feedShare(fresh).then((ok) => {
+            if (!ok)
+                return;
+            fresh.visibility = 'public';
+            store.parentUpdatedAt = Date.now();
+            flushStore();
+            render();
+        });
+    }
 }
 function postDelete(id) {
     const post = (store.posts || []).filter((p) => p.id === id)[0];
