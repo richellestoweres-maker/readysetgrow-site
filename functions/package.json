@@ -2,7 +2,7 @@
   "name": "readysetgrow-functions",
   "description": "The half of the app that stays awake so it can send a notification",
   "private": true,
-  "engines": { "node": "20" },
+  "engines": { "node": "22" },
   "main": "index.js",
   "type": "module",
   "dependencies": {
