@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-25 15:30">
+<meta name="rsg-build" content="2026-10-25 16:16">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -2382,6 +2382,14 @@ body.calpage .mark-holder{margin-bottom:-20px}
    buttons, so the inputs in it need telling to fill their cell. */
 .bpbar .inp{width:100%}
 
+/* The read back of everything she has recorded about her own body.
+   A tick and a line, so it scans as a list of facts rather than as
+   another set of controls she has to work out. */
+.rpsum{display:flex;align-items:flex-start;gap:8px;margin:0 0 7px;font-size:13.5px;
+  line-height:1.45;color:var(--ink)}
+.rpsum:last-child{margin-bottom:0}
+.rpsum svg{flex:none;margin-top:2px}
+
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 <!--
@@ -2683,7 +2691,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-25 15:30';
+const BUILD_STAMP = '2026-10-25 16:16';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -31959,27 +31967,27 @@ function birthdaySeenKey(who, ref) {
     return String(who) + ':' + t.y;
 }
 const REPRO_TITLE = 'Your reproductive health';
-const REPRO_SUB = 'Tick anything that applies. It only changes what the app shows you.';
+const REPRO_SUB = 'Tick anything that applies, now or in the past. It only changes what the app shows you.';
 const REPRO_PRIVACY = 'Only you can see this. It never reaches the community.';
 const REPRO_NONE = 'Nothing ticked yet.';
 const REPRO_CONDITIONS = [
     { id: 'pcos', label: 'PCOS', ic: 'circle',
         blurb: 'Polycystic ovary syndrome' },
     { id: 'endo', label: 'Endometriosis', ic: 'flower',
-        blurb: 'Including adenomyosis', stages: true },
+        blurb: 'Including adenomyosis', stages: true, when: true },
     { id: 'hydro', label: 'Hydrosalpinx', ic: 'drop',
-        blurb: 'Fluid in one or both tubes', sides: true },
-    { id: 'tied', label: 'Tubes tied', ic: 'shield',
-        blurb: 'Sterilisation, or removal' },
+        blurb: 'Fluid in one or both tubes', sides: true, when: true },
+    { id: 'tied', label: 'Tubes tied or removed', ic: 'shield',
+        blurb: 'Whichever operation it was', fixAlways: true },
     { id: 'ttc', label: 'Trying to conceive', ic: 'heart',
         blurb: 'However long it has been', months: true },
     { id: 'ivf', label: 'IVF or IUI', ic: 'leaf',
         blurb: 'In treatment, or about to be' },
     { id: 'dor', label: 'Low ovarian reserve', ic: 'moon',
         blurb: 'Low AMH, or told you have few eggs' },
-    { id: 'fibroids', label: 'Fibroids', ic: 'circle' },
+    { id: 'fibroids', label: 'Fibroids', ic: 'circle', when: true },
     { id: 'thyroid', label: 'Thyroid', ic: 'pill',
-        blurb: 'Under or over active' },
+        blurb: 'Under or over active', when: true },
     { id: 'loss', label: 'Recurrent loss', ic: 'heart',
         blurb: 'Two or more' },
     { id: 'male', label: 'Male factor', ic: 'user',
@@ -31987,6 +31995,48 @@ const REPRO_CONDITIONS = [
     { id: 'unexplained', label: 'Unexplained', ic: 'info',
         blurb: 'Everything came back normal' },
 ];
+const REPRO_WHEN = [
+    { id: 'now', label: 'I have this now' },
+    { id: 'past', label: 'Had it, it has been dealt with' },
+];
+const REPRO_FIXES = {
+    hydro: [
+        { id: 'removed', label: 'Tube or tubes removed', short: 'tubes removed',
+            note: 'A salpingectomy. The tube is gone, so the fluid cannot come back.' },
+        { id: 'clipped', label: 'Clipped or tied off', short: 'clipped',
+            note: 'Left in place but blocked at the womb end, so nothing washes back.' },
+        { id: 'drained', label: 'Drained', short: 'drained',
+            note: 'Aspirated rather than operated on. It can refill.' },
+        { id: 'other', label: 'Something else', short: 'treated' },
+    ],
+    tied: [
+        { id: 'tied', label: 'Tied or clipped', short: 'tied or clipped',
+            note: 'The tubes are still there.' },
+        { id: 'removed', label: 'Removed', short: 'tubes removed',
+            note: 'A salpingectomy. The tubes are gone.' },
+        { id: 'reversed', label: 'Since reversed', short: 'reversed' },
+    ],
+    endo: [
+        { id: 'excision', label: 'Excision surgery', short: 'excision' },
+        { id: 'ablation', label: 'Ablation', short: 'ablation' },
+        { id: 'hyst', label: 'Hysterectomy', short: 'hysterectomy' },
+        { id: 'meds', label: 'Managed with medication', short: 'on medication' },
+        { id: 'other', label: 'Something else', short: 'treated' },
+    ],
+    fibroids: [
+        { id: 'myo', label: 'Myomectomy', short: 'myomectomy' },
+        { id: 'embol', label: 'Embolisation', short: 'embolisation' },
+        { id: 'hyst', label: 'Hysterectomy', short: 'hysterectomy' },
+        { id: 'other', label: 'Something else', short: 'treated' },
+    ],
+    thyroid: [
+        { id: 'meds', label: 'On medication for it', short: 'on medication' },
+        { id: 'surgery', label: 'Surgery or radioiodine', short: 'surgery' },
+        { id: 'settled', label: 'Settled on its own', short: 'settled' },
+    ],
+};
+const REPRO_SUMMARY_TITLE = 'What you have told the app';
+const REPRO_SUMMARY_NOTE = 'This is everything it is holding. Untick anything that is wrong and it goes.';
 const ENDO_STAGES = [
     { id: '1', label: 'Stage 1', note: 'Minimal' },
     { id: '2', label: 'Stage 2', note: 'Mild' },
@@ -32325,6 +32375,69 @@ function reproTicked(rep) {
     const r = (rep && typeof rep === 'object') ? rep : {};
     return REPRO_CONDITIONS.filter((c) => r[c.id]);
 }
+function reproFixesFor(id) {
+    return REPRO_FIXES[id] || [];
+}
+function reproFixRow(id, fixId) {
+    return reproFixesFor(id).filter((f) => f.id === fixId)[0] || null;
+}
+function reproAsksFix(c, r) {
+    if (!c || !r || !r[c.id])
+        return false;
+    if (c.fixAlways)
+        return reproFixesFor(c.id).length > 0;
+    return c.when === true && r[c.id + ':when'] === 'past' && reproFixesFor(c.id).length > 0;
+}
+function reproLine(c, rep) {
+    const r = (rep && typeof rep === 'object') ? rep : {};
+    if (!c || !r[c.id])
+        return '';
+    const bits = [];
+    if (c.stages) {
+        const st = ENDO_STAGES.filter((x) => x.id === r[c.id + ':stage'])[0];
+        if (st)
+            bits.push(st.id === 'unknown' ? 'not staged' : st.label.toLowerCase());
+    }
+    if (c.sides) {
+        const sd = HYDRO_SIDES.filter((x) => x.id === r[c.id + ':side'])[0];
+        if (sd)
+            bits.push(sd.label.toLowerCase());
+    }
+    if (c.months) {
+        const tl = TTC_LENGTHS.filter((x) => x.id === r[c.id + ':length'])[0];
+        if (tl)
+            bits.push(tl.label.toLowerCase());
+    }
+    const fx = reproFixRow(c.id, r[c.id + ':fix']);
+    if (fx)
+        bits.push(fx.short || fx.label.toLowerCase());
+    if (c.when && r[c.id + ':when'] === 'past' && !fx)
+        bits.push('dealt with');
+    return c.label + (bits.length ? ', ' + bits.join(', ') : '');
+}
+function reproSummary(rep) {
+    return reproTicked(rep).map((c) => reproLine(c, rep)).filter(Boolean);
+}
+function reproTubesGone(rep) {
+    const r = (rep && typeof rep === 'object') ? rep : {};
+    if (r.tied && r['tied:fix'] === 'removed')
+        return true;
+    if (r.hydro && r['hydro:fix'] === 'removed' && r['hydro:side'] === 'both')
+        return true;
+    return false;
+}
+const REPRO_TUBES_GONE = 'You have recorded that both tubes are gone. IUI puts sperm into the womb rather than past a '
+    + 'blockage, so it is not a route that can work, and IVF is the one that bypasses the tubes '
+    + 'entirely. Nothing here about IUI applies to you.';
+const REPRO_PAST_NOTE = {
+    hydro: 'You have recorded this as dealt with. Everything below about treating it first is the '
+        + 'reason that mattered, and it is the part you have already done.',
+    endo: 'You have recorded this as dealt with. Endometriosis can come back after surgery, so this '
+        + 'is still worth knowing rather than closed.',
+    fibroids: 'You have recorded this as dealt with.',
+    thyroid: 'You have recorded this as treated. Thyroid levels are worth rechecking in pregnancy '
+        + 'even when they have been stable.',
+};
 const REPRO_SOURCES = [
     { org: 'International PCOS Guideline 2023',
         label: 'Diagnosis, letrozole first line, and inositol as experimental therapy for fertility',
@@ -67869,6 +67982,18 @@ function screenRepro() {
     <p class="tiny" style="margin-top:7px">${icon('shield', 11, 'var(--sage)')} ${esc(REPRO_PRIVACY)}</p>
   </div>
   <div class="sc">
+    ${''}
+    ${reproSummary(r).length ? `
+    <div class="card leafy" style="margin-bottom:13px">
+      <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} ${esc(REPRO_SUMMARY_TITLE)}</p>
+      <div style="margin-top:9px">
+        ${reproSummary(r).map((line) => `
+        <p class="rpsum">${icon('check', 13, 'var(--sage)')} <span>${esc(line)}</span></p>`).join('')}
+      </div>
+      ${reproTubesGone(r) ? `
+      <p class="tiny" style="margin-top:10px">${esc(REPRO_TUBES_GONE)}</p>` : ''}
+      <p class="tiny" style="margin-top:10px">${esc(REPRO_SUMMARY_NOTE)}</p>
+    </div>` : ''}
     ${REPRO_CONDITIONS.map((c) => {
         const on = !!r[c.id];
         const page = reproPageFor(c.id);
@@ -67897,10 +68022,30 @@ function screenRepro() {
             data-reprodetail="${esc(c.id)}" data-key="length" data-val="${esc(tl.id)}"
             aria-pressed="${r[c.id + ':length'] === tl.id}">${esc(tl.label)}</button>`).join('')}
       </div>` : ''}
+      ${''}
+      ${on && c.when ? `
+      <div class="chips" style="margin-top:10px">
+        ${REPRO_WHEN.map((w) => `
+          <button class="chip${r[c.id + ':when'] === w.id ? ' on' : ''}"
+            data-reprodetail="${esc(c.id)}" data-key="when" data-val="${esc(w.id)}"
+            aria-pressed="${r[c.id + ':when'] === w.id}">${esc(w.label)}</button>`).join('')}
+      </div>` : ''}
+      ${on && reproAsksFix(c, r) ? `
+      <p class="tiny" style="margin-top:10px">What was done about it</p>
+      <div class="chips" style="margin-top:5px">
+        ${reproFixesFor(c.id).map((f) => `
+          <button class="chip${r[c.id + ':fix'] === f.id ? ' on' : ''}"
+            data-reprodetail="${esc(c.id)}" data-key="fix" data-val="${esc(f.id)}"
+            aria-pressed="${r[c.id + ':fix'] === f.id}">${esc(f.label)}</button>`).join('')}
+      </div>
+      ${(() => {
+            const fx = reproFixesFor(c.id).filter((f) => f.id === r[c.id + ':fix'])[0];
+            return fx && fx.note ? `<p class="tiny" style="margin-top:6px">${esc(fx.note)}</p>` : '';
+        })()}` : ''}
       ${on && page ? `
       <button class="hhalf-go" style="width:100%;justify-content:center;margin-top:10px"
         data-go="repro" data-id="${esc(c.id)}">
-        Read about ${esc(c.label.toLowerCase())} ${icon('chev', 12, 'var(--deep)')}</button>` : ''}
+        Read about ${esc(page.title)} ${icon('chev', 12, 'var(--deep)')}</button>` : ''}
     </div>`;
     }).join('')}
     <button class="pickcard" style="width:100%;margin-top:6px" data-go="screen" data-id="tx">
@@ -67937,6 +68082,23 @@ function viewRepro(id) {
     <div class="card leafy">
       <p class="bodytext" style="margin:0">${esc(page.body)}</p>
     </div>
+    ${''}
+    ${r[id + ':when'] === 'past' && REPRO_PAST_NOTE[id] ? `
+    <div class="szcard" style="margin-top:12px">
+      <div class="szcard-h">
+        <span class="szcard-ic">${icon('check', 15, 'var(--deep)')}</span>
+        <span class="szcard-t">${esc(reproLine(REPRO_CONDITIONS.filter((x) => x.id === id)[0], r))}</span>
+      </div>
+      <p class="bodytext" style="margin:0">${esc(REPRO_PAST_NOTE[id])}</p>
+    </div>` : ''}
+    ${reproTubesGone(r) && (id === 'hydro' || id === 'tied') ? `
+    <div class="szcard blush" style="margin-top:12px">
+      <div class="szcard-h">
+        <span class="szcard-ic">${icon('info', 15, '#8A5F54')}</span>
+        <span class="szcard-t">What that means for treatment</span>
+      </div>
+      <p class="bodytext" style="margin:0">${esc(REPRO_TUBES_GONE)}</p>
+    </div>` : ''}
     <p class="sect" style="margin-top:16px">Worth knowing</p>
     <div class="card">${page.rows.map(nshRow).join('')}</div>
     ${page.ask && page.ask.length ? dsec('Worth asking', page.ask.map((q) => `
@@ -68136,7 +68298,8 @@ function screenTx() {
       ${txCard({ id: 'txpgt', ic: 'puzzle', t: esc(TX_PGT.title),
         b: 'PGT-A, mosaics, and the number to ask for instead.' })}
       ${txCard({ id: 'txiui', ic: 'clock', t: esc(TX_IUI.title),
-        b: 'The simpler route, and knowing in advance when to stop.' })}
+        b: 'The simpler route, and knowing in advance when to stop.',
+        tag: reproTubesGone(reproState()) ? 'Not your route' : '' })}
     </div>
     <button class="pickcard" style="width:100%;margin-top:10px"
       data-go="screen" data-id="reprosupp">
@@ -68232,7 +68395,16 @@ function screenTxGrade() { return txPage(TX_GRADE, txKv(TX_GRADE.parts)); }
 function screenTxIcsi() { return txPage(TX_ICSI); }
 function screenTxPgt() { return txPage(TX_PGT); }
 function screenTxIui() {
-    return txPage(TX_IUI, `<p class="sect" style="margin-top:16px">How a cycle runs</p>`
+    const gone = reproTubesGone(reproState());
+    const head = gone ? `
+  <div class="szcard blush" style="margin-top:12px">
+    <div class="szcard-h">
+      <span class="szcard-ic">${icon('info', 15, '#8A5F54')}</span>
+      <span class="szcard-t">This one is not your route</span>
+    </div>
+    <p class="bodytext" style="margin:0">${esc(REPRO_TUBES_GONE)}</p>
+  </div>` : '';
+    return txPage(TX_IUI, head + `<p class="sect" style="margin-top:16px">How a cycle runs</p>`
         + txKv(TX_IUI.steps).replace('style="margin-top:12px"', 'style="margin-top:0"'));
 }
 function txFormOpen(which) {
