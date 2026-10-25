@@ -44,7 +44,8 @@
 
 export const REPRO_TITLE = 'Your reproductive health';
 
-export const REPRO_SUB = 'Tick anything that applies. It only changes what the app shows you.';
+export const REPRO_SUB =
+  'Tick anything that applies, now or in the past. It only changes what the app shows you.';
 
 export const REPRO_PRIVACY = 'Only you can see this. It never reaches the community.';
 
@@ -57,20 +58,20 @@ export const REPRO_CONDITIONS = [
   { id: 'pcos', label: 'PCOS', ic: 'circle',
     blurb: 'Polycystic ovary syndrome' },
   { id: 'endo', label: 'Endometriosis', ic: 'flower',
-    blurb: 'Including adenomyosis', stages: true },
+    blurb: 'Including adenomyosis', stages: true, when: true },
   { id: 'hydro', label: 'Hydrosalpinx', ic: 'drop',
-    blurb: 'Fluid in one or both tubes', sides: true },
-  { id: 'tied', label: 'Tubes tied', ic: 'shield',
-    blurb: 'Sterilisation, or removal' },
+    blurb: 'Fluid in one or both tubes', sides: true, when: true },
+  { id: 'tied', label: 'Tubes tied or removed', ic: 'shield',
+    blurb: 'Whichever operation it was', fixAlways: true },
   { id: 'ttc', label: 'Trying to conceive', ic: 'heart',
     blurb: 'However long it has been', months: true },
   { id: 'ivf', label: 'IVF or IUI', ic: 'leaf',
     blurb: 'In treatment, or about to be' },
   { id: 'dor', label: 'Low ovarian reserve', ic: 'moon',
     blurb: 'Low AMH, or told you have few eggs' },
-  { id: 'fibroids', label: 'Fibroids', ic: 'circle' },
+  { id: 'fibroids', label: 'Fibroids', ic: 'circle', when: true },
   { id: 'thyroid', label: 'Thyroid', ic: 'pill',
-    blurb: 'Under or over active' },
+    blurb: 'Under or over active', when: true },
   { id: 'loss', label: 'Recurrent loss', ic: 'heart',
     blurb: 'Two or more' },
   { id: 'male', label: 'Male factor', ic: 'user',
@@ -78,6 +79,64 @@ export const REPRO_CONDITIONS = [
   { id: 'unexplained', label: 'Unexplained', ic: 'info',
     blurb: 'Everything came back normal' },
 ];
+
+/* NOW, OR BEHIND YOU.
+
+   A tick used to mean "I have this", which is wrong for anybody whose
+   tube has been taken out or whose endometriosis has been excised. It
+   is also the difference between a page telling her to go and get
+   something done and a page telling her what it means that it is
+   already done. */
+export const REPRO_WHEN = [
+  { id: 'now', label: 'I have this now' },
+  { id: 'past', label: 'Had it, it has been dealt with' },
+];
+
+/* WHAT WAS ACTUALLY DONE.
+
+   "Treated" covers operations that do completely different things. A
+   tube that was clipped is still there; a tube that was removed is
+   not, and that second one decides whether IUI is even possible. */
+export const REPRO_FIXES = {
+  hydro: [
+    { id: 'removed', label: 'Tube or tubes removed', short: 'tubes removed',
+      note: 'A salpingectomy. The tube is gone, so the fluid cannot come back.' },
+    { id: 'clipped', label: 'Clipped or tied off', short: 'clipped',
+      note: 'Left in place but blocked at the womb end, so nothing washes back.' },
+    { id: 'drained', label: 'Drained', short: 'drained',
+      note: 'Aspirated rather than operated on. It can refill.' },
+    { id: 'other', label: 'Something else', short: 'treated' },
+  ],
+  tied: [
+    { id: 'tied', label: 'Tied or clipped', short: 'tied or clipped',
+      note: 'The tubes are still there.' },
+    { id: 'removed', label: 'Removed', short: 'tubes removed',
+      note: 'A salpingectomy. The tubes are gone.' },
+    { id: 'reversed', label: 'Since reversed', short: 'reversed' },
+  ],
+  endo: [
+    { id: 'excision', label: 'Excision surgery', short: 'excision' },
+    { id: 'ablation', label: 'Ablation', short: 'ablation' },
+    { id: 'hyst', label: 'Hysterectomy', short: 'hysterectomy' },
+    { id: 'meds', label: 'Managed with medication', short: 'on medication' },
+    { id: 'other', label: 'Something else', short: 'treated' },
+  ],
+  fibroids: [
+    { id: 'myo', label: 'Myomectomy', short: 'myomectomy' },
+    { id: 'embol', label: 'Embolisation', short: 'embolisation' },
+    { id: 'hyst', label: 'Hysterectomy', short: 'hysterectomy' },
+    { id: 'other', label: 'Something else', short: 'treated' },
+  ],
+  thyroid: [
+    { id: 'meds', label: 'On medication for it', short: 'on medication' },
+    { id: 'surgery', label: 'Surgery or radioiodine', short: 'surgery' },
+    { id: 'settled', label: 'Settled on its own', short: 'settled' },
+  ],
+};
+
+export const REPRO_SUMMARY_TITLE = 'What you have told the app';
+export const REPRO_SUMMARY_NOTE =
+  'This is everything it is holding. Untick anything that is wrong and it goes.';
 
 export const ENDO_STAGES = [
   { id: '1', label: 'Stage 1', note: 'Minimal' },
@@ -474,6 +533,84 @@ export function reproTicked(rep) {
   const r = (rep && typeof rep === 'object') ? rep : {};
   return REPRO_CONDITIONS.filter((c) => r[c.id]);
 }
+
+export function reproFixesFor(id) {
+  return REPRO_FIXES[id] || [];
+}
+
+function reproFixRow(id, fixId) {
+  return reproFixesFor(id).filter((f) => f.id === fixId)[0] || null;
+}
+
+/* Whether the fix row should show at all. A condition that is behind
+   her gets asked what was done about it; tubes tied is itself the
+   operation, so it is always asked. */
+export function reproAsksFix(c, r) {
+  if (!c || !r || !r[c.id]) return false;
+  if (c.fixAlways) return reproFixesFor(c.id).length > 0;
+  return c.when === true && r[c.id + ':when'] === 'past' && reproFixesFor(c.id).length > 0;
+}
+
+/* ONE LINE PER THING SHE HAS TOLD IT.
+
+   Read back in her own order of importance: what it is, then the
+   detail that changes the advice, then whether it is behind her. The
+   point is that she can look at the top of the screen and see the app
+   has actually kept all of it. */
+export function reproLine(c, rep) {
+  const r = (rep && typeof rep === 'object') ? rep : {};
+  if (!c || !r[c.id]) return '';
+  const bits = [];
+  if (c.stages) {
+    const st = ENDO_STAGES.filter((x) => x.id === r[c.id + ':stage'])[0];
+    if (st) bits.push(st.id === 'unknown' ? 'not staged' : st.label.toLowerCase());
+  }
+  if (c.sides) {
+    const sd = HYDRO_SIDES.filter((x) => x.id === r[c.id + ':side'])[0];
+    if (sd) bits.push(sd.label.toLowerCase());
+  }
+  if (c.months) {
+    const tl = TTC_LENGTHS.filter((x) => x.id === r[c.id + ':length'])[0];
+    if (tl) bits.push(tl.label.toLowerCase());
+  }
+  const fx = reproFixRow(c.id, r[c.id + ':fix']);
+  if (fx) bits.push(fx.short || fx.label.toLowerCase());
+  if (c.when && r[c.id + ':when'] === 'past' && !fx) bits.push('dealt with');
+  return c.label + (bits.length ? ', ' + bits.join(', ') : '');
+}
+
+export function reproSummary(rep) {
+  return reproTicked(rep).map((c) => reproLine(c, rep)).filter(Boolean);
+}
+
+/* A CONSEQUENCE THE APP SHOULD ACTUALLY KNOW.
+
+   With both tubes gone, IUI cannot work, because IUI puts sperm in the
+   womb rather than past a blockage. Telling somebody who has had a
+   bilateral salpingectomy to consider IUI would be worse than saying
+   nothing, so every page that mentions it checks this first. */
+export function reproTubesGone(rep) {
+  const r = (rep && typeof rep === 'object') ? rep : {};
+  if (r.tied && r['tied:fix'] === 'removed') return true;
+  if (r.hydro && r['hydro:fix'] === 'removed' && r['hydro:side'] === 'both') return true;
+  return false;
+}
+
+export const REPRO_TUBES_GONE =
+  'You have recorded that both tubes are gone. IUI puts sperm into the womb rather than past a '
+  + 'blockage, so it is not a route that can work, and IVF is the one that bypasses the tubes '
+  + 'entirely. Nothing here about IUI applies to you.';
+
+/* What a page says differently once the thing is behind her. */
+export const REPRO_PAST_NOTE = {
+  hydro: 'You have recorded this as dealt with. Everything below about treating it first is the '
+    + 'reason that mattered, and it is the part you have already done.',
+  endo: 'You have recorded this as dealt with. Endometriosis can come back after surgery, so this '
+    + 'is still worth knowing rather than closed.',
+  fibroids: 'You have recorded this as dealt with.',
+  thyroid: 'You have recorded this as treated. Thyroid levels are worth rechecking in pregnancy '
+    + 'even when they have been stable.',
+};
 
 export const REPRO_SOURCES = [
   { org: 'International PCOS Guideline 2023',
