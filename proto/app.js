@@ -2901,6 +2901,7 @@ function render() {
   else if (v && v.type === 'btopic') html = viewBTopic(v.id);
   else if (v && v.type === 'ceat') html = viewCeatPhase(v.id);
   else if (v && v.type === 'peat') html = viewPeatStage(v.id);
+  else if (v && v.type === 'screen' && v.id === 'pubprofile') html = screenPubProfile();
   else if (v && v.type === 'screen' && v.id === 'nourish') html = screenNourish();
   else if (v && v.type === 'screen' && v.id === 'pregeat') html = screenPregEat();
   else if (v && v.type === 'screen' && v.id === 'birthplan') html = screenBirthPlan();
@@ -3700,6 +3701,26 @@ function initControls() {
       }
       else if (a === 'retry') { feed.tried = false; feedLoad(true); }
       else if (a === 'react') feedReact(t.dataset.id, t.dataset.r);
+      else if (a === 'repost') { feedRepost(t.dataset.id); return; }
+      else if (a === 'profile') {
+        /* A repost names the original author but does not carry their
+           uid, so the only thing to go on is the username. Looked up
+           among the posts already loaded rather than queried, since a
+           username is not a key anywhere. */
+        let uid = t.dataset.id || '';
+        const u = t.dataset.u || '';
+        if (!uid && u) {
+          const hit = (feed.posts || []).concat(feed.mine || [])
+            .filter((x) => x.username === u && x.authorUid && !isRepost(x))[0];
+          uid = hit ? hit.authorUid : '';
+        }
+        if (!uid) { store.feedError = 'That parent has not posted anything else yet.'; render(); return; }
+        pub.loaded = '';
+        navPush();
+        state.view = { type: 'screen', id: 'pubprofile' };
+        pubLoad(uid, u);
+        return;
+      }
       else if (a === 'reportopen') { feed.reporting = t.dataset.id; render(); }
       else if (a === 'reportclose') { feed.reporting = ''; render(); }
       else if (a === 'report') feedReport(t.dataset.id, t.dataset.reason);
@@ -15101,13 +15122,19 @@ function feedCard(p, opts) {
   const mine = p.authorUid === myUid();
   const line = statusLine(p.status);
 
+  const rp = isRepost(p);
   return `
   <div class="card postcard">
+    ${rp ? `<p class="rpline">${icon('run', 11, 'var(--sage)')} ${esc(p.username || 'A parent')}${
+    mine ? ' (you)' : ''} reposted</p>` : ''}
     <div style="display:flex;gap:10px;align-items:center">
       <span class="feedav">${icon('user', 16, 'var(--deep)')}</span>
       <span class="grow">
-        <span class="post-who">${esc(p.username || 'A parent')}${mine ? ' (you)' : ''}</span>
-        <span class="post-when">${esc(postWhen(p.at))}</span>
+        <button class="post-who linkname" data-feed="profile"
+          data-id="${esc(rp ? '' : (p.authorUid || ''))}" data-u="${esc(rp ? (p.repostUser || '') : (p.username || ''))}"
+          >${esc(rp ? (p.repostUser || 'A parent') : (p.username || 'A parent'))}${
+    (!rp && mine) ? ' (you)' : ''}</button>
+        <span class="post-when">${esc(postWhen(rp ? (p.repostAt || p.at) : p.at))}</span>
       </span>
       ${o.queue ? `<span class="post-vis">${icon('clock', 11, 'var(--muted)')} Waiting</span>` : ''}
     </div>
@@ -15157,6 +15184,20 @@ function feedCard(p, opts) {
             data-id="${esc(p.id)}" data-r="${esc(r.id)}" title="${esc(r.label)}" aria-label="${esc(r.label)}">
             <span class="emo">${r.glyph}</span>
           </button>`).join('')}
+        ${(() => {
+    /* A repost of a repost points at the original, so the chain never
+       gets deeper than one and the count stays meaningful. */
+    const target = isRepost(p) ? p.repostOf : p.id;
+    const all = (feed.posts || []).concat(feed.mine || []);
+    const did = myRepostOf(all, target, myUid());
+    const n = repostCount(all, target);
+    return `<button class="reactbtn rp${did ? ' on' : ''}" data-feed="repost"
+            data-id="${esc(target)}" title="${esc(did ? REPOST_UNDO : REPOST_LABEL)}"
+            aria-label="${esc(did ? REPOST_UNDO : REPOST_LABEL)}"
+            ${feed.busy === target ? 'disabled' : ''}>
+            ${icon('run', 14, did ? 'var(--deep)' : 'var(--muted)')}${n ? `<span class="tagn">${n}</span>` : ''}
+          </button>`;
+  })()}
       </div>
     </div>
 
@@ -16104,6 +16145,126 @@ function forumBlock() {
   if (forum.room == null) return screenForumRooms();
   if (forum.thread) return screenForumThread(forum.room, forum.thread);
   return screenForumRoom(forum.room);
+}
+
+/* ------------------------------------------------------------------
+   REPOST
+   ------------------------------------------------------------------ */
+async function feedRepost(id) {
+  if (!feedOn()) { store.feedError = 'Reposting needs an account and a connection.'; render(); return; }
+  const original = (feed.posts || []).filter((p) => p.id === id)[0]
+    || (feed.mine || []).filter((p) => p.id === id)[0];
+  if (!original) return;
+  if (!store.parent.username) { store.feedError = 'Pick a username first.'; render(); return; }
+
+  const already = myRepostOf(feed.posts.concat(feed.mine || []), id, myUid());
+  feed.busy = id;
+  store.feedError = '';
+  render();
+  const fs = cloud.mod;
+  try {
+    if (already) {
+      /* Tapping it again takes it back down, which is what the button
+         says it does. Only ever her own repost, never the original. */
+      await fs.deleteDoc(fs.doc(cloud.db, 'feed', already.id));
+      feed.posts = feed.posts.filter((x) => x.id !== already.id);
+      feed.mine = (feed.mine || []).filter((x) => x.id !== already.id);
+    } else {
+      const doc = repostDocFrom(original, store.parent.username, myUid(), myFeedBand());
+      const ref = await fs.addDoc(fs.collection(cloud.db, 'feed'), doc);
+      const row = Object.assign({ id: ref.id }, doc);
+      feed.posts = [row].concat(feed.posts);
+      feed.mine = [row].concat(feed.mine || []);
+    }
+  } catch (err) {
+    store.feedError = 'That did not go through. Try again in a moment.';
+  }
+  feed.busy = '';
+  render();
+}
+
+/* ------------------------------------------------------------------
+   A PUBLIC PROFILE, QUERIED FROM POSTS
+
+   Nothing here reads the other person's account. It asks the feed which
+   posts carry their uid, so the only thing it can possibly show is what
+   they already made public.
+   ------------------------------------------------------------------ */
+const pub = { uid: '', username: '', posts: [], loading: false, error: '', loaded: '' };
+
+async function pubLoad(uid, username) {
+  if (!uid) return;
+  pub.uid = uid;
+  pub.username = username || pub.username || '';
+  if (pub.loaded === uid) return;
+  if (!feedOn()) { pub.error = 'Profiles need a connection.'; render(); return; }
+  pub.loading = true;
+  pub.error = '';
+  pub.posts = [];
+  render();
+  try {
+    const rows = await feedQuery('feed', [['authorUid', '==', uid]], 'at', 'desc', FEED_PAGE);
+    /* Only what is up. A held or removed post of theirs is between them
+       and a moderator, not something a stranger gets to read. */
+    pub.posts = rows.filter((r) => r.status === FEED_STATUS.live || uid === myUid());
+    if (!pub.username) {
+      const named = pub.posts.filter((r) => r.username)[0];
+      pub.username = named ? named.username : '';
+    }
+    pub.loaded = uid;
+  } catch (err) {
+    pub.error = 'Could not load that profile.';
+  }
+  pub.loading = false;
+  render();
+}
+
+function screenPubProfile() {
+  const uid = pub.uid;
+  const mine = uid === myUid();
+  const name = pub.username || 'A parent';
+  const blocked = blockedList().indexOf(uid) !== -1;
+
+  if (!uid) return emptyScreen('No profile to show.');
+
+  if (blocked && !mine) {
+    return `
+    <div class="sc-head">
+      <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+      <h1 class="title sm" style="margin-top:6px">${esc(name)}</h1>
+    </div>
+    <div class="sc">
+      <div class="card flat">
+        <p class="bodytext">${esc(PROF_BLOCKED)}</p>
+        <button class="btn ghost" style="width:100%;margin-top:11px"
+          data-feed="unblock" data-id="${esc(uid)}">${esc(PROF_UNBLOCK)}</button>
+      </div>
+    </div>`;
+  }
+
+  const rows = pub.posts;
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <div class="pubhead">
+      <span class="pubav">${esc(String(name).trim().charAt(0).toUpperCase())}</span>
+      <div>
+        <h1 class="title sm" style="margin:0">${esc(name)}${mine ? ' (you)' : ''}</h1>
+        <p class="sub" style="margin-top:3px">${esc(PROF_POSTS(rows.length))}</p>
+      </div>
+    </div>
+    <p class="tiny" style="margin-top:8px">${esc(mine ? PROF_MINE_NOTE : PROF_PRIVATE_NOTE)}</p>
+  </div>
+  <div class="sc">
+    ${pub.loading ? '<p class="tiny">Loading...</p>' : ''}
+    ${pub.error ? `<div class="card flat"><p class="bodytext">${esc(pub.error)}</p></div>` : ''}
+    ${!pub.loading && !rows.length && !pub.error ? `
+      <div class="card flat"><p class="bodytext">${esc(mine ? PROF_EMPTY_MINE : PROF_EMPTY)}</p></div>` : ''}
+    ${rows.map((p) => feedCard(p, { live: p.status === FEED_STATUS.live })).join('')}
+    ${!mine && rows.length ? `
+      <button class="chip tiny" style="margin-top:12px"
+        data-feed="block" data-id="${esc(uid)}">Block ${esc(name)}</button>` : ''}
+  </div>`;
 }
 
 function screenCommunity(c) {
@@ -24079,6 +24240,15 @@ function screenMyProfile() {
       : (p.username ? '@' + esc(p.username) : 'Add a username in Settings')}</p>
   </div>
   <div class="sc">
+
+    ${p.username ? `
+    <button class="pickcard" style="width:100%;margin-bottom:12px"
+      data-feed="profile" data-id="${esc(myUid() || '')}" data-u="${esc(p.username)}">
+      <span class="pickcard-ic">${icon('people', 17, 'var(--deep)')}</span>
+      <span class="pickcard-t">What other parents see</span>
+      <span class="pickcard-b">Your public posts, as they appear to everybody else.</span>
+      <span class="pickcard-go">Open ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>` : ''}
 
     <div class="profstats">
       <span><b>${posts.length}</b> post${posts.length === 1 ? '' : 's'}</span>
