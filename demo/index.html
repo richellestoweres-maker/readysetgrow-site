@@ -2392,6 +2392,73 @@ body.calpage .mark-holder{margin-bottom:-20px}
 .pubav{width:46px;height:46px;border-radius:50%;flex:none;background:var(--sage);color:#fff;
   font-size:19px;font-weight:700;display:flex;align-items:center;justify-content:center}
 
+
+/* ------------------------------------------------------------------
+   TREATMENT: IVF, ICSI AND IUI
+
+   A cycle is the one part of this app that really is a numbered
+   sequence, so the walkthrough is numbered and the number is a solid
+   disc rather than a label: somebody halfway through wants to find
+   step 5 at a glance, not read nine headings.
+
+   The milestone list is the spine of the log. A hit one goes quiet
+   and ticked, an unhit one keeps its Log button, and the whole thing
+   reads top to bottom as how far through you are.
+   ------------------------------------------------------------------ */
+.txstep{display:grid;grid-template-columns:26px 1fr;gap:11px;padding:13px 0;
+  border-bottom:1px solid var(--line2)}
+.txstep:first-child{padding-top:3px}
+.txstep:last-child{border-bottom:0;padding-bottom:3px}
+.txstep-n{width:26px;height:26px;border-radius:50%;background:var(--sage);color:#fff;
+  font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center;
+  font-variant-numeric:tabular-nums}
+.txstep-t{margin:1px 0 0;font-size:14.5px;font-weight:700;color:var(--ink);line-height:1.25}
+.txstep-w{margin:4px 0 0;font-size:11.5px;font-weight:600;color:var(--deep);
+  display:flex;align-items:center;gap:5px}
+.txstep-b{margin:7px 0 0;font-size:13px;line-height:1.55;color:var(--ink)}
+.txstep-note{margin:7px 0 0;font-size:12.5px;line-height:1.55;color:var(--muted);
+  padding-left:10px;border-left:2px solid var(--leaf2)}
+
+.txkv{padding:10px 0;border-bottom:1px solid var(--line2)}
+.txkv:first-child{padding-top:2px}
+.txkv:last-child{border-bottom:0;padding-bottom:2px}
+.txkv-k{margin:0;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--deep)}
+.txkv-v{margin:5px 0 0;font-size:13px;line-height:1.55;color:var(--ink)}
+
+.txline{display:flex;align-items:flex-start;gap:9px;padding:10px 0;
+  border-bottom:1px solid var(--line2)}
+.txline:first-child{padding-top:2px}
+.txline:last-child{border-bottom:0;padding-bottom:2px}
+.txline-ic{flex:none;margin-top:2px;display:flex}
+.txline-b{flex:1;min-width:0}
+.txline-t{margin:0;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3;
+  overflow-wrap:anywhere}
+.txline-s{margin:3px 0 0;font-size:11.5px;line-height:1.45;color:var(--muted);
+  font-variant-numeric:tabular-nums}
+
+.txmile{display:flex;align-items:center;gap:9px;padding:9px 0;
+  border-bottom:1px solid var(--line2)}
+.txmile:first-child{padding-top:2px}
+.txmile:last-child{border-bottom:0;padding-bottom:2px}
+.txmile-ic{flex:none;display:flex}
+.txmile .txline-t{color:var(--faint);font-weight:600}
+.txmile.on .txline-t{color:var(--ink);font-weight:700}
+.txmile .chip{flex:none}
+
+/* The three monitoring numbers, side by side, because that is how
+   they are read out and how they are written on the scan sheet. */
+.txfields{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+.txfield{display:flex;flex-direction:column;gap:4px;min-width:0}
+.txfield-l{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--deep)}
+.txfield .inp{width:100%;padding:9px 10px;font-variant-numeric:tabular-nums}
+@media (max-width:340px){.txfields{grid-template-columns:1fr 1fr}}
+
+/* The date and time pair in the forms. The bar was built for two
+   buttons, so the inputs in it need telling to fill their cell. */
+.bpbar .inp{width:100%}
+
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 
@@ -2452,7 +2519,7 @@ body.calpage .mark-holder{margin-bottom:-20px}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-25 15:00';
+const BUILD_STAMP = '2026-10-25 15:30';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -41179,6 +41246,446 @@ const REPRO_DISCLAIMER =
   'Educational information, not a diagnosis and not medical advice. Everything here belongs in a '
   + 'conversation with a provider who can actually examine you and see your results.';
 
+/* ===== src/data/treatment.js ===== */
+/**
+ * Ready Set Grow: IVF, ICSI and IUI
+ * ------------------------------------------------------------------
+ * Built because she went through it. Bilateral salpingectomy for
+ * bilateral hydrosalpinx, a son from IVF with ICSI, and embryos still
+ * frozen. The gap she named is real: clinics explain the next
+ * appointment and almost nobody explains the whole shape of it, so
+ * people arrive at retrieval day not knowing what twilight sedation
+ * is, and get an embryo report full of numbers and letters nobody
+ * translates.
+ *
+ * WHERE THIS IS DELIBERATELY UNFLATTERING
+ * Two things in here will contradict what a clinic may have said.
+ * ICSI without a male factor does not improve live birth, and ASRM
+ * says so plainly. PGT-A has not been shown to work as a universal
+ * screen. Both are sold widely. Saying so is the point, and both are
+ * written so that somebody who already had them does not read it as
+ * having been conned: ICSI is the right answer for male factor and for
+ * PGT-M, and PGT-A may help at 38 to 41.
+ *
+ * ON GRADES
+ * The single most useful fact about embryo grading is that the inner
+ * cell mass letter carries more weight than the number, and that a
+ * C still becomes a baby about 28 percent of the time. People stare at
+ * these reports for months. They deserve the real numbers.
+ */
+
+const TX_TITLE = 'IVF, ICSI and IUI';
+const TX_SUB = 'The whole shape of it, not just the next appointment.';
+
+const TX_KINDS = [
+  { id: 'ivf', label: 'IVF', blurb: 'Stimulation, retrieval, lab, transfer' },
+  { id: 'iui', label: 'IUI', blurb: 'Timed insemination' },
+];
+
+/* ------------------------------------------------------------------
+   THE IVF WALKTHROUGH
+   ------------------------------------------------------------------ */
+const TX_IVF_STEPS = [
+  {
+    id: 'baseline', n: 1, label: 'Baseline', when: 'Day 2 or 3 of a period',
+    what: 'Bloods and a scan to check nothing is already growing and the ovaries are quiet. Some '
+      + 'protocols put you on the pill or an injection for a couple of weeks first.',
+    note: 'A cyst at baseline can delay a cycle. It is common, it is not a failure, and it usually '
+      + 'resolves on its own.',
+  },
+  {
+    id: 'stim', n: 2, label: 'Stimulation', when: 'About 8 to 12 days',
+    what: 'Injections, usually nightly, to grow many follicles at once instead of the one your body '
+      + 'would pick. Often a second injection partway through to stop you ovulating early.',
+    note: 'Bloating, tiredness and feeling emotional are the usual three. The needles are small and '
+      + 'subcutaneous, which almost everybody finds easier than they feared.',
+  },
+  {
+    id: 'monitor', n: 3, label: 'Monitoring', when: 'Every 2 or 3 days',
+    what: 'Scans count and measure follicles, bloods track oestradiol. The dose gets adjusted off '
+      + 'these numbers.',
+    note: 'Follicle count is not egg count. Some follicles are empty and some hold an immature egg. '
+      + 'Expect the final number to be lower than the scan suggested.',
+  },
+  {
+    id: 'trigger', n: 4, label: 'The trigger', when: 'Exactly 34 to 36 hours before retrieval',
+    what: 'One injection that finishes the eggs maturing. The timing is the most precise thing in '
+      + 'the whole cycle.',
+    note: 'Set two alarms. Taken late or missed, the eggs are not ready and the retrieval can be '
+      + 'lost. This is the one instruction worth reading back to the nurse.',
+  },
+  {
+    id: 'retrieval', n: 5, label: 'Retrieval', when: 'About 20 minutes',
+    what: 'A needle guided by ultrasound through the vaginal wall into each ovary, draining the '
+      + 'follicles. You are asleep.',
+    note: 'See the retrieval day page for the anaesthetic and what afterwards feels like.',
+  },
+  {
+    id: 'fert', n: 6, label: 'Fertilisation', when: 'That afternoon',
+    what: 'Either conventional IVF, where eggs and sperm are put together, or ICSI, where one sperm '
+      + 'is injected into each mature egg.',
+    note: 'You get a fertilisation report the next morning. Not every egg is mature, and not every '
+      + 'mature egg fertilises. Both drops are normal and neither is anybody\'s fault.',
+  },
+  {
+    id: 'lab', n: 7, label: 'The lab days', when: 'Day 1 to day 5 or 6',
+    what: 'Numbers fall at every stage. Eggs, then mature eggs, then fertilised, then dividing, then '
+      + 'blastocysts. Most clinics call on day 1, day 3 and day 5.',
+    note: 'The drop between day 3 and day 5 is the steepest and the most frightening. It is also the '
+      + 'most normal part of the whole process.',
+  },
+  {
+    id: 'transfer', n: 8, label: 'Transfer, or freeze', when: 'Day 5, or a later cycle',
+    what: 'A catheter places one embryo in the womb. No anaesthetic, a full bladder, a few minutes. '
+      + 'Many clinics freeze everything and transfer in a later, calmer cycle instead.',
+    note: 'A freeze-all is often the better plan, not a setback. It avoids transferring into a body '
+      + 'still full of stimulation hormones.',
+  },
+  {
+    id: 'wait', n: 9, label: 'The wait', when: 'About 9 to 14 days',
+    what: 'A blood test for hCG, the beta. Usually repeated 48 hours later to see whether it is '
+      + 'rising properly.',
+    note: 'Home tests can pick up a trigger shot still leaving your system and give a false positive. '
+      + 'The beta is the one that counts.',
+  },
+];
+
+const TX_IVF_INTRO =
+  'Numbers fall at every single stage, and nobody warns you how steeply. That is the shape of it, '
+  + 'not a sign anything went wrong.';
+
+/* ------------------------------------------------------------------
+   RETRIEVAL DAY
+
+   She named twilight anaesthesia specifically. Worth being precise,
+   because "twilight" is a word patients are given and clinicians are
+   not, and the difference matters when somebody is frightened.
+   ------------------------------------------------------------------ */
+const TX_RETRIEVAL = {
+  title: 'Retrieval day',
+  head: 'What twilight actually means',
+  rows: [
+    { t: 'It is sedation, not general anaesthetic', s: 'solid',
+      why: 'Usually monitored anaesthesia care, given by an anaesthetist through a drip, most often '
+        + 'propofol. You are asleep and you will not remember it, but you are breathing on your own '
+        + 'and there is no breathing tube. That is the difference from a general.' },
+    { t: 'Nothing to eat or drink beforehand', s: 'solid',
+      why: 'Usually from midnight. This is not fussiness: sedation with a full stomach risks '
+        + 'aspiration. Eating will get your slot cancelled, so ask for the exact cut off time.' },
+    { t: 'The procedure itself is about 20 minutes', s: 'solid',
+      why: 'An hour or so in recovery afterwards, then home the same day. You cannot drive and you '
+        + 'cannot be alone for the rest of it.' },
+    { t: 'Bloating, cramping and spotting are expected', s: 'solid',
+      why: 'The usual list is bloating, a feeling of fullness, cramps, spotting and constipation, '
+        + 'mostly settling within a day. Paracetamol is usually enough.' },
+    { t: 'You may not feel normal until your next period', s: 'decent',
+      why: 'Which tends to arrive about 10 days later and is often heavier than usual. Feeling off '
+        + 'for a fortnight is not a complication.' },
+  ],
+  ohss: {
+    title: 'When to ring them, not wait',
+    body: 'Ovarian hyperstimulation is the one real risk worth knowing the signs of.',
+    signs: [
+      'Putting on more than a pound in 24 hours',
+      'Vomiting, or unable to keep fluids down',
+      'Shortness of breath, or pain on breathing in',
+      'Passing much less urine than usual',
+      'A belly that is tight, swollen and painful rather than just bloated',
+    ],
+    close: 'Any of these is a phone call now rather than at the next appointment. It is treatable '
+      + 'and it gets worse if left.',
+  },
+};
+
+/* ------------------------------------------------------------------
+   EMBRYO GRADING
+   ------------------------------------------------------------------ */
+const TX_GRADE = {
+  title: 'Embryo grading',
+  head: 'What 4AA and 3BC actually mean',
+  intro:
+    'A blastocyst grade is a number and two letters, such as 4AA. The number is how expanded it is, '
+    + 'the first letter is the inner cell mass, which becomes the baby, and the second is the '
+    + 'trophectoderm, which becomes the placenta.',
+  parts: [
+    { k: 'The number, 1 to 6', v: 'How far the blastocyst has expanded. 3 is expanding, 4 is fully '
+      + 'expanded, 5 is starting to hatch out of its shell, 6 has hatched.' },
+    { k: 'First letter, the baby part', v: 'A is many tightly packed cells, B is fewer and looser, '
+      + 'C is very few.' },
+    { k: 'Second letter, the placenta part', v: 'A is many cells forming a neat layer, B is fewer, '
+      + 'C is very few and uneven.' },
+  ],
+  rows: [
+    { t: 'The first letter matters most', s: 'decent',
+      why: 'In 10,482 single frozen transfers, inner cell mass grade was the strongest predictor of '
+        + 'live birth: 54.6 percent for A, 41.3 percent for B, 28.5 percent for C.' },
+    { t: 'A C grade still becomes a baby', s: 'decent',
+      why: 'Roughly 28 percent of the time for an ICM of C, and about 33 percent for a '
+        + 'trophectoderm of C. Lower is less likely, not hopeless, and plenty of people reading '
+        + 'their report as a verdict are reading it wrong.' },
+      { t: 'B and A placenta grades are about the same', s: 'decent',
+      why: 'Trophectoderm A and B did not differ significantly in that study. Only C was lower.' },
+    { t: 'Grading is a human eye, not a measurement', s: 'solid',
+      why: 'Two embryologists grade the same embryo differently often enough that a single letter '
+        + 'is not worth agonising over. It is used to choose the order of transfer, not to predict '
+        + 'your child.' },
+    { t: 'Grade is not the same as chromosomally normal', s: 'solid',
+      why: 'A beautiful embryo can be aneuploid and an average one can be euploid. Morphology and '
+        + 'genetics are two different things.' },
+  ],
+  ask: ['Which embryo are you transferring, and why that one first?',
+    'What were the day 3 numbers as well as the day 5 grades?'],
+};
+
+/* ------------------------------------------------------------------
+   ICSI
+   ------------------------------------------------------------------ */
+const TX_ICSI = {
+  title: 'ICSI',
+  head: 'The right answer for some cycles, and sold for most',
+  intro:
+    'One sperm is injected directly into each mature egg, instead of letting eggs and sperm find '
+    + 'each other. It was invented for male factor infertility and it transformed it.',
+  rows: [
+    { t: 'For male factor it is the treatment', s: 'solid',
+      why: 'Low count, poor movement, poor shape, or sperm retrieved surgically. This is what it is '
+        + 'for and it works.' },
+    { t: 'Without a male factor it does not improve live birth', s: 'solid',
+      why: 'ASRM: routine use of ICSI for nonmale factor infertility is not recommended. It is '
+        + 'specifically not recommended for unexplained infertility, low egg yield, low reserve, '
+        + 'older age, or PGT-A. Randomised trials in 2024 and 2025 found no difference, and two '
+        + 'large population studies suggested non-indicated ICSI may do slightly worse.' },
+    { t: 'It does raise fertilisation, which is not the same thing', s: 'solid',
+      why: 'More eggs fertilise and total fertilisation failure is rarer. That is why it feels '
+        + 'safer and why it is offered. It does not carry through to more babies.' },
+    { t: 'It is the right call after a failed fertilisation', s: 'solid',
+      why: 'Previous poor or no fertilisation with conventional IVF is a genuine indication, and so '
+        + 'is PGT-M, where stray sperm would contaminate the test, and previously frozen eggs.' },
+    { t: 'If you already had it, this is not a mistake you made', s: 'solid',
+      why: 'Many clinics use ICSI as standard. The reason to know the evidence is the next cycle and '
+        + 'the next invoice, not the last one.' },
+  ],
+  ask: ['Is ICSI indicated for us specifically, or is it your default?',
+    'What does it add to the cost?'],
+};
+
+/* ------------------------------------------------------------------
+   PGT-A
+   ------------------------------------------------------------------ */
+const TX_PGT = {
+  title: 'Genetic testing of embryos',
+  head: 'Not proven as a test for everybody',
+  intro:
+    'PGT-A biopsies a few cells from the placenta part of a blastocyst and counts chromosomes. '
+    + 'PGT-M is a different test, looking for one specific inherited condition.',
+  rows: [
+    { t: 'As a universal screen, it is not established', s: 'solid',
+      why: 'ASRM: the value of PGT-A as a universal screening test for all patients undergoing IVF '
+        + 'has not been demonstrated. The largest trial found cumulative live birth of 77.2 percent '
+        + 'with it against 81.8 percent without.' },
+    { t: 'It may help between 38 and 41', s: 'thin',
+      why: 'One trial in that age band found higher live birth per transfer, 52.9 against 24.2 '
+        + 'percent, but only 68 percent of the tested group reached a transfer at all. Most of the '
+        + 'rest of the evidence is retrospective.' },
+    { t: 'It can lead to discarding embryos that would have worked', s: 'solid',
+      why: 'In one study about 1 in 6 embryos with reproductive potential would have been thrown '
+        + 'away for mosaicism or a false aneuploid result. Mosaic embryos can implant and produce '
+        + 'healthy babies.' },
+    { t: 'Not for donor eggs, and not for male factor alone', s: 'solid',
+      why: 'ASRM says the evidence argues against routine PGT-A in donor egg cycles, and that it '
+        + 'should not be used for male factor alone or for advanced paternal age.' },
+    { t: 'Per transfer looks better than per cycle, on purpose', s: 'solid',
+      why: 'Testing removes embryos before transfer, so the ones left look better. Ask for live '
+        + 'birth per cycle started, which is the number that includes the cycles that never reached '
+        + 'a transfer.' },
+  ],
+  ask: ['What is your live birth per cycle started, with and without testing, at my age?',
+    'What is your policy on mosaic embryos?'],
+};
+
+/* ------------------------------------------------------------------
+   IUI
+   ------------------------------------------------------------------ */
+const TX_IUI = {
+  title: 'IUI',
+  head: 'Simpler, cheaper, and worth knowing when to stop',
+  intro:
+    'Washed sperm is placed directly into the womb around ovulation, either on your natural cycle '
+    + 'or with tablets or low dose injections to help you release an egg.',
+  steps: [
+    { k: 'Day 2 or 3', v: 'Baseline scan, and start letrozole or clomid if you are using them.' },
+    { k: 'Around day 10 to 12', v: 'A scan to see how many follicles are growing and how big.' },
+    { k: 'Trigger', v: 'An injection to time ovulation, or ovulation strips if it is unmedicated.' },
+    { k: 'Insemination', v: 'A catheter, a few minutes, no anaesthetic, usually 24 to 36 hours '
+      + 'after the trigger. Mild cramping and that is all.' },
+    { k: 'Two weeks', v: 'Often progesterone support, then a test.' },
+  ],
+  rows: [
+    { t: 'Roughly 10 to 20 percent a cycle under 35', s: 'decent',
+      why: 'Falling to 8 to 12 percent at 35 to 37, 5 to 8 percent at 38 to 40, and under 5 percent '
+        + 'over 40. Medicated cycles do better than natural ones.' },
+    { t: 'Most of the success is in the first three cycles', s: 'decent',
+      why: 'Around 88 to 90 percent of IUI pregnancies happen within three cycles and about 95 '
+        + 'percent within four. After that each extra cycle adds very little.' },
+    { t: 'Which is why there is a stopping point', s: 'decent',
+      why: 'Commonly 3 to 4 cycles under 35, 2 to 3 at 35 to 37, 1 to 2 at 38 to 39, and going '
+        + 'straight to IVF at 40 and over. Worth agreeing the number before you start, rather than '
+        + 'deciding it one disappointed month at a time.' },
+    { t: 'It needs at least one open tube', s: 'solid',
+      why: 'IUI puts sperm in the womb, not past a blockage. With both tubes blocked or removed it '
+        + 'cannot work, and IVF is the route.' },
+  ],
+  ask: ['How many cycles would you do before recommending IVF?',
+    'Is this medicated or natural, and why?'],
+};
+
+/* ------------------------------------------------------------------
+   LOGGING A CYCLE
+   ------------------------------------------------------------------ */
+const TX_LOG_TITLE = 'Your cycle';
+const TX_LOG_SUB = 'Medications, appointments and numbers, in one place to take with you.';
+
+const TX_MED_COMMON = [
+  'Gonal-F', 'Follistim', 'Menopur', 'Rekovelle', 'Cetrotide', 'Ganirelix', 'Orgalutran',
+  'Ovidrel', 'Pregnyl', 'Lupron trigger', 'Progesterone in oil', 'Crinone', 'Utrogestan',
+  'Estrace', 'Letrozole', 'Clomid', 'Metformin', 'Prednisolone', 'Aspirin', 'Clexane',
+];
+
+/* count is the question asked when logging it. unit is how the number
+   reads back afterwards, because "Mature eggs, how many mature: 11"
+   is the question still attached to its own answer. */
+const TX_MILESTONES = [
+  { id: 'start', label: 'Started stimulation' },
+  { id: 'trigger', label: 'Trigger shot', timed: true },
+  { id: 'retrieval', label: 'Retrieval', count: 'Eggs retrieved', unit: 'eggs' },
+  { id: 'mature', label: 'Mature eggs', count: 'How many were mature', unit: 'mature' },
+  { id: 'fert', label: 'Fertilised', count: 'How many fertilised', unit: 'fertilised' },
+  { id: 'day3', label: 'Day 3 report', count: 'How many still growing', unit: 'still growing' },
+  { id: 'day5', label: 'Blastocysts', count: 'How many blastocysts', unit: 'blasts' },
+  { id: 'frozen', label: 'Frozen', count: 'How many frozen', unit: 'frozen' },
+  { id: 'transfer', label: 'Transfer' },
+  { id: 'beta', label: 'Beta test', count: 'The hCG number', unit: 'hCG' },
+];
+
+const TX_APPT_FIELDS = [
+  { id: 'follicles', label: 'Follicles' },
+  { id: 'e2', label: 'Oestradiol' },
+  { id: 'lining', label: 'Lining, mm' },
+];
+
+const TX_LOG_EMPTY = 'Nothing logged yet.';
+const TX_LOG_NONE = 'No cycle started. Start one to log medications and appointments.';
+const TX_START = 'Start a cycle';
+const TX_END = 'Close this cycle';
+const TX_ADD_MED = 'Log a medication';
+const TX_ADD_APPT = 'Log an appointment';
+const TX_ADD_MILE = 'Log a milestone';
+
+/* ------------------------------------------------------------------
+   WILLOW, ON A CYCLE
+
+   Same rule as everywhere: she speaks when something happened, once
+   each, and never otherwise.
+   ------------------------------------------------------------------ */
+const TX_WILLOW = {
+  started: {
+    id: 'started',
+    say:
+      'You have started a cycle. One thing worth knowing before anything else: the numbers fall at '
+      + 'every single stage, and steeply.\n\nFollicles are more than eggs. Eggs are more than mature '
+      + 'eggs. Mature eggs are more than fertilised. And the drop between day 3 and day 5 is the '
+      + 'steepest of all. None of that is a sign anything has gone wrong. It is simply the shape of '
+      + 'the process, and knowing it in advance is the difference between a hard phone call and a '
+      + 'frightening one.',
+    offers: [
+      { id: 'shape', label: 'Walk me through the whole thing' },
+      { id: 'trigger', label: 'What about the trigger shot' },
+      { id: 'supps', label: 'Should I be taking anything' },
+      { id: 'no', label: 'Not now' },
+    ],
+  },
+  trigger: {
+    id: 'trigger',
+    say:
+      'You have logged the trigger. This is the most time critical instruction in the whole cycle: '
+      + 'retrieval is 34 to 36 hours after it, and the eggs are not ready if it goes in late.\n\n'
+      + 'Set two alarms. Read the time back to your nurse. And nothing to eat or drink from midnight '
+      + 'before the retrieval, because sedation on a full stomach is the one thing that gets a slot '
+      + 'cancelled.',
+    offers: [
+      { id: 'retrieval', label: 'What is retrieval day like' },
+      { id: 'twilight', label: 'What is twilight sedation' },
+      { id: 'no', label: 'Not now' },
+    ],
+  },
+  retrieval: {
+    id: 'retrieval',
+    say:
+      'Retrieval done. Bloating, cramping, spotting and constipation are all expected and usually '
+      + 'settle within a day.\n\nThe one thing to watch for is hyperstimulation. Ring them, rather '
+      + 'than waiting for the next appointment, if you put on more than a pound in a day, cannot '
+      + 'keep fluids down, get short of breath, or are passing much less urine than usual. It is '
+      + 'treatable and it gets worse if left.',
+    offers: [
+      { id: 'grades', label: 'Explain the embryo report' },
+      { id: 'ohss', label: 'More on hyperstimulation' },
+      { id: 'no', label: 'Not now' },
+    ],
+  },
+};
+
+const TX_WILLOW_REPLIES = {
+  shape: 'Baseline, then 8 to 12 days of injections, scans every 2 or 3 days, a trigger shot timed '
+    + 'to the hour, retrieval under sedation about 36 hours later, fertilisation that afternoon, '
+    + 'then calls on day 1, day 3 and day 5 as the numbers come down. Then either a transfer or a '
+    + 'freeze-all, and a blood test about 9 to 14 days after. The full version with what each stage '
+    + 'feels like is on the IVF page.',
+  trigger: 'It finishes the eggs maturing and retrieval is 34 to 36 hours later, which is the '
+    + 'tightest timing in the cycle. Late or missed and the eggs are not ready. Two alarms, and read '
+    + 'the time back to the nurse rather than trusting the text message.',
+  retrieval: 'About 20 minutes, asleep, a needle guided by ultrasound into each ovary. An hour in '
+    + 'recovery, then home the same day. You cannot drive and should not be on your own. Expect '
+    + 'bloating and cramps for a day or so, and to not feel quite right until your next period, '
+    + 'which usually comes about 10 days later.',
+  twilight: 'It is sedation rather than a general anaesthetic. An anaesthetist gives it through a '
+    + 'drip, usually propofol. You are asleep and will not remember any of it, but you breathe on '
+    + 'your own and there is no breathing tube. That is the whole difference, and it is why you are '
+    + 'home the same day.',
+  grades: 'A grade like 4AA is a number and two letters. The number is how expanded it is, the '
+    + 'first letter is the part that becomes the baby, the second is the part that becomes the '
+    + 'placenta. The first letter matters most: in a study of over 10,000 transfers, live birth was '
+    + '54.6 percent for an A, 41.3 for a B and 28.5 for a C. A C is less likely, not hopeless.',
+  ohss: 'Ring them now rather than waiting if you gain more than a pound in 24 hours, are vomiting '
+    + 'or cannot keep fluids down, are short of breath, are passing much less urine, or your belly '
+    + 'is tight and painful rather than just bloated. They will usually bring you in for a scan and '
+    + 'bloods. It is treatable and it gets worse if left.',
+  supps: 'Folic acid is the one that is not in doubt. Vitamin D if you are actually low. Everything '
+    + 'else, including CoQ10, is sold with more confidence than the trials support. Important: tell '
+    + 'the clinic everything you are taking, because some supplements affect bleeding or interact '
+    + 'with the protocol, and a few clinics ask you to stop specific ones before retrieval.',
+  no: 'Fine. It is all on the treatment pages whenever you want it.',
+};
+
+const TX_SUPP_NOTE =
+  'Tell your clinic everything you are taking. Some affect bleeding or interact with the protocol, '
+  + 'and some clinics ask you to stop specific ones before retrieval.';
+
+const TX_SOURCES = [
+  { org: 'ASRM, 2026 committee opinion',
+    label: 'ICSI for nonmale factor indications, and that routine use is not recommended',
+    url: 'https://www.asrm.org/practice-guidance/practice-committee-documents/intracytoplasmic-sperm-injection-for-nonmale-factor-indications-a-committee-opinion-2026/' },
+  { org: 'ASRM, 2024 committee opinion',
+    label: 'PGT-A, including mosaicism and embryos discarded that had potential',
+    url: 'https://www.asrm.org/practice-guidance/practice-committee-documents/the-use-of-preimplantation-genetic-testing-for-aneuploidy-a-committee-opinion-2024/' },
+  { org: 'Frontiers in Endocrinology',
+    label: 'Blastocyst grading and live birth across 10,482 single frozen transfers',
+    url: 'https://www.frontiersin.org/journals/endocrinology/articles/10.3389/fendo.2021.621221/full' },
+];
+
+const TX_DISCLAIMER =
+  'Educational information, not medical advice. Your clinic\'s protocol and your own numbers always '
+  + 'come first, and anything here that contradicts them is a question to ask, not an instruction.';
+
 /* ===== src/data/cycleLog.js ===== */
 /**
  * Ready Set Grow: The day log
@@ -42809,6 +43316,32 @@ const FIND_INDEX = [
   { title: 'Lists',
     words: 'list lists grocery groceries shopping to do todo pack packing wish list what to ask appointment questions shared checklist',
     go: { screen: 'lists' } },
+
+  /* FERTILITY TREATMENT.
+
+     Somebody mid cycle types the word they were given at the clinic,
+     not the word on the screen, so the walkthrough answers to stims,
+     trigger, retrieval, beta and twilight as well as to IVF. */
+  { title: 'IVF, ICSI and IUI', where: 'Your cycle, Reproductive health',
+    words: 'ivf icsi iui fertility treatment clinic cycle stimulation stims injections '
+      + 'trigger shot retrieval egg collection transfer frozen freeze all beta two week wait '
+      + 'embryologist protocol antagonist',
+    go: { screen: 'tx' } },
+  { title: 'Retrieval day', where: 'IVF, ICSI and IUI',
+    words: 'retrieval egg collection twilight sedation anaesthesia anesthesia propofol asleep '
+      + 'fasting nil by mouth ohss hyperstimulation bloated recovery',
+    go: { screen: 'txret' } },
+  { title: 'Embryo grading', where: 'IVF, ICSI and IUI',
+    words: 'embryo grading grade blastocyst blast 4aa 3bc inner cell mass trophectoderm day 5 '
+      + 'day 3 report euploid aneuploid mosaic quality',
+    go: { screen: 'txgrade' } },
+  { title: 'Genetic testing of embryos', where: 'IVF, ICSI and IUI',
+    words: 'pgt pgta pgtm genetic testing embryo biopsy aneuploidy chromosomes mosaic screening',
+    go: { screen: 'txpgt' } },
+  { title: 'Logging an IVF or IUI cycle', where: 'IVF, ICSI and IUI, Your cycle',
+    words: 'log medications meds dose injections appointment follicles oestradiol estradiol e2 '
+      + 'lining millimetres milestones eggs fertilised frozen beta track treatment cycle',
+    go: { screen: 'txlog' } },
 ];
 
 function findNorm(s) {
@@ -64171,6 +64704,14 @@ function render() {
   else if (v && v.type === 'repro') html = viewRepro(v.id);
   else if (v && v.type === 'screen' && v.id === 'repro') html = screenRepro();
   else if (v && v.type === 'screen' && v.id === 'reprosupp') html = screenReproSupp();
+  else if (v && v.type === 'screen' && v.id === 'tx') html = screenTx();
+  else if (v && v.type === 'screen' && v.id === 'txivf') html = screenTxIvf();
+  else if (v && v.type === 'screen' && v.id === 'txret') html = screenTxRet();
+  else if (v && v.type === 'screen' && v.id === 'txgrade') html = screenTxGrade();
+  else if (v && v.type === 'screen' && v.id === 'txicsi') html = screenTxIcsi();
+  else if (v && v.type === 'screen' && v.id === 'txpgt') html = screenTxPgt();
+  else if (v && v.type === 'screen' && v.id === 'txiui') html = screenTxIui();
+  else if (v && v.type === 'screen' && v.id === 'txlog') html = screenTxLog();
   else if (v && v.type === 'screen' && v.id === 'nourish') html = screenNourish();
   else if (v && v.type === 'screen' && v.id === 'pregeat') html = screenPregEat();
   else if (v && v.type === 'screen' && v.id === 'birthplan') html = screenBirthPlan();
@@ -64800,7 +65341,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -65896,6 +66437,63 @@ function initControls() {
       reproWillowCheck();
     } else if (t.dataset.reproask) {
       reproWillowReply(t.dataset.reproask);
+      return;
+    } else if (t.dataset.txstart) {
+      txStart(t.dataset.txstart);
+      store.txForm = '';
+    } else if (t.dataset.txclose) {
+      txClose();
+      store.txForm = '';
+    } else if (t.hasAttribute('data-txform')) {
+      /* Cancel carries an empty value, and an empty string is falsy, so
+         this tests for the attribute rather than reading it. */
+      store.txForm = t.dataset.txform || '';
+      store.txMileId = '';
+    } else if (t.dataset.txmile) {
+      store.txForm = 'mile';
+      store.txMileId = t.dataset.txmile;
+    } else if (t.dataset.txmedpick) {
+      /* Fills the box rather than saving, so a dose still has to be
+         typed. A tap that saved a drug with no dose would make the log
+         worse than a note on a fridge. */
+      const f = document.getElementById('txmedname');
+      if (f) { f.value = t.dataset.txmedpick; f.focus(); }
+      return;
+    } else if (t.dataset.txdel) {
+      txRemove(t.dataset.txdel, t.dataset.id || '');
+    } else if (t.dataset.txsave) {
+      const which = t.dataset.txsave;
+      const val = (id) => {
+        const f = document.getElementById(id);
+        return String(f ? f.value : '').replace(/\s+/g, ' ').trim();
+      };
+      if (which === 'med') {
+        const name = val('txmedname').slice(0, 40);
+        if (!name) { store.txForm = ''; render(); return; }
+        txAdd('meds', {
+          name: name, dose: val('txmeddose').slice(0, 24),
+          day: val('txmedday') || txToday(), at: calTimeLabel(val('txmedtime')),
+        });
+      } else if (which === 'appt') {
+        const row = { note: val('txapptnote').slice(0, 50), day: val('txapptday') || txToday() };
+        TX_APPT_FIELDS.forEach((f) => { row[f.id] = val('txappt_' + f.id).slice(0, 8); });
+        txAdd('appts', row);
+      } else if (which === 'mile') {
+        const m = txMile(store.txMileId);
+        if (!m) { store.txForm = ''; render(); return; }
+        txAdd('miles', {
+          mid: m.id, day: val('txmileday') || txToday(),
+          count: m.count ? val('txmilecount').slice(0, 8) : '',
+          at: m.timed ? calTimeLabel(val('txmiletime')) : '',
+        });
+        /* The nudge comes off the milestone, which is the only place
+           the app knows something actually happened. */
+        txWillowCheck(m.id);
+      }
+      store.txForm = '';
+      store.txMileId = '';
+    } else if (t.dataset.txask) {
+      txWillowReply(t.dataset.txask);
       return;
     } else if (t.dataset.forum) {
       const act = t.dataset.forum;
@@ -80144,6 +80742,15 @@ function screenRepro() {
     </div>`;
   }).join('')}
 
+    <button class="pickcard" style="width:100%;margin-top:6px" data-go="screen" data-id="tx">
+      <span class="pickcard-ic">${icon('chart', 17, 'var(--deep)')}</span>
+      <span class="pickcard-t">${esc(TX_TITLE)}</span>
+      <span class="pickcard-b">${esc(TX_SUB)}</span>
+      ${txOpen() ? `<span class="pickcard-tag">${esc(txKindLabel(txOpen()))}, day ${
+    txDayOf(txOpen())}</span>` : ''}
+      <span class="pickcard-go">Open ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>
+
     <button class="pickcard" style="width:100%;margin-top:6px" data-go="screen" data-id="reprosupp">
       <span class="pickcard-ic">${icon('pill', 17, 'var(--deep)')}</span>
       <span class="pickcard-t">${esc(REPRO_SUPP.title)}</span>
@@ -80212,6 +80819,538 @@ function screenReproSupp() {
 
     ${dsec('Sources', sourceRows(REPRO_SOURCES))}
     <p class="disclaimer">${esc(REPRO_DISCLAIMER)}</p>
+  </div>`;
+}
+
+/* ==================================================================
+   TREATMENT: IVF, ICSI AND IUI
+
+   Her ask, almost word for word: walk them through it, explain embryo
+   grading, explain what twilight sedation actually is, explain the
+   supplements, walk through IUI, and let somebody log their meds and
+   appointments while it is happening.
+
+   Two halves. The reading half is fixed pages. The logging half is a
+   cycle on her own account record, which only she can read, and which
+   syncs with the rest of the parent payload for free.
+
+   Willow speaks three times across a whole cycle and then stops. Not
+   because there is nothing else to say, but because a woman mid
+   stimulation does not need an app with opinions.
+   ================================================================== */
+function txState() {
+  if (!store.parent.tx || typeof store.parent.tx !== 'object') store.parent.tx = {};
+  if (!Array.isArray(store.parent.tx.cycles)) store.parent.tx.cycles = [];
+  return store.parent.tx;
+}
+
+function txCycles() {
+  return txState().cycles;
+}
+
+/* The one being lived in right now. Anything else is history. */
+function txOpen() {
+  return txCycles().filter((c) => c && !c.closedAt)[0] || null;
+}
+
+function txSave() {
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+}
+
+function txId() {
+  return 't' + Date.now() + Math.floor(Math.random() * 1000);
+}
+
+function txStart(kind) {
+  if (txOpen()) return;
+  txCycles().push({
+    id: txId(), kind: kind === 'iui' ? 'iui' : 'ivf',
+    startedAt: Date.now(), meds: [], appts: [], miles: [],
+  });
+  txSave();
+}
+
+function txClose() {
+  const c = txOpen();
+  if (!c) return;
+  c.closedAt = Date.now();
+  txSave();
+}
+
+function txList(c, which) {
+  if (!c) return [];
+  if (!Array.isArray(c[which])) c[which] = [];
+  return c[which];
+}
+
+function txAdd(which, row) {
+  const c = txOpen();
+  if (!c) return null;
+  row.id = txId();
+  txList(c, which).push(row);
+  txSave();
+  return row;
+}
+
+function txRemove(which, id) {
+  const c = txOpen();
+  if (!c) return;
+  c[which] = txList(c, which).filter((r) => r.id !== id);
+  txSave();
+}
+
+function txKindLabel(c) {
+  const k = TX_KINDS.filter((x) => x.id === (c && c.kind))[0];
+  return k ? k.label : 'IVF';
+}
+
+/* Day 1 is the day she started, not the day after. Somebody counting
+   "day 6 of stims" out loud means the sixth day she injected. */
+function txDayOf(c) {
+  if (!c || !c.startedAt) return 1;
+  const a = new Date(c.startedAt); a.setHours(0, 0, 0, 0);
+  const b = new Date(); b.setHours(0, 0, 0, 0);
+  return Math.max(1, Math.round((b - a) / 86400000) + 1);
+}
+
+function txMile(id) {
+  return TX_MILESTONES.filter((m) => m.id === id)[0] || null;
+}
+
+function txDayKey(ms) {
+  const d = new Date(ms == null ? Date.now() : ms);
+  if (!isFinite(d.getTime())) return '';
+  const p = (n) => (n < 10 ? '0' + n : '' + n);
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+
+function txToday() { return txDayKey(Date.now()); }
+
+/* WILLOW, THREE TIMES, ONCE EACH.
+
+   Fired off a logged milestone rather than off opening a screen, so
+   she only ever speaks about something that actually happened. The
+   flags sit on the parent record so the phone and the laptop do not
+   each get a turn. */
+function txWillowCheck(mid) {
+  if (!store.parent || store.onboard && store.onboard.open) return;
+  const which = TX_WILLOW[mid === 'start' ? 'started' : mid];
+  if (!which) return;
+  const seen = store.parent.txSaid && typeof store.parent.txSaid === 'object'
+    ? store.parent.txSaid : (store.parent.txSaid = {});
+  if (seen[which.id]) return;
+  seen[which.id] = true;
+  const n = nudgeState();
+  n.text = which.say;
+  n.at = Date.now();
+  n.gone = false;
+  n.kind = 'tx';
+  n.opener = '';
+  n.txId = which.id;
+  txSave();
+}
+
+function txWillowOffers() {
+  const n = nudgeState();
+  const which = TX_WILLOW[n.txId];
+  return which ? which.offers : [];
+}
+
+function txWillowReply(id) {
+  const text = TX_WILLOW_REPLIES[id];
+  if (!text) return;
+  willow.open = true;
+  willow.stick = true;
+  if (!Array.isArray(willow.turns)) willow.turns = [];
+  willow.turns.push({ who: 'willow', text: text });
+  if (id === 'no') nudgeState().gone = true;
+  render();
+}
+
+/* ------------------------------------------------------------------
+   THE HUB
+   ------------------------------------------------------------------ */
+function txCard(opt) {
+  return `
+  <button class="pickcard" data-go="screen" data-id="${esc(opt.id)}">
+    <span class="pickcard-ic">${icon(opt.ic, 17, 'var(--deep)')}</span>
+    <span class="pickcard-t">${esc(opt.t)}</span>
+    <span class="pickcard-b">${esc(opt.b)}</span>
+    ${opt.tag ? `<span class="pickcard-tag">${esc(opt.tag)}</span>` : ''}
+    <span class="pickcard-go">${esc(opt.go || 'Read it')} ${icon('chev', 12, 'var(--deep)')}</span>
+  </button>`;
+}
+
+function screenTx() {
+  const c = txOpen();
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="repro">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(TX_TITLE)}</h1>
+    <p class="sub">${esc(TX_SUB)}</p>
+  </div>
+  <div class="sc">
+    <button class="pickcard${c ? ' urgent' : ''}" data-go="screen" data-id="txlog"
+      style="width:100%">
+      <span class="pickcard-ic">${icon('note', 17, c ? '#8A4433' : 'var(--deep)')}</span>
+      <span class="pickcard-t">${esc(TX_LOG_TITLE)}</span>
+      <span class="pickcard-b">${esc(TX_LOG_SUB)}</span>
+      ${c ? `<span class="pickcard-tag">${esc(txKindLabel(c))}, day ${txDayOf(c)}</span>` : ''}
+      <span class="pickcard-go">${c ? 'Open it' : 'Start one'} ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>
+
+    <p class="sect" style="margin-top:18px">Understanding it</p>
+    <div class="pickgrid">
+      ${txCard({ id: 'txivf', ic: 'calendar', t: 'The IVF walkthrough',
+    b: 'All nine stages, what each one is for and what it feels like.' })}
+      ${txCard({ id: 'txret', ic: 'moon', t: esc(TX_RETRIEVAL.title),
+    b: 'What twilight sedation actually is, and the signs to ring about.' })}
+      ${txCard({ id: 'txgrade', ic: 'flower', t: esc(TX_GRADE.title),
+    b: 'Reading 4AA and 3BC without reading them as a verdict.' })}
+      ${txCard({ id: 'txicsi', ic: 'drop', t: esc(TX_ICSI.title),
+    b: 'When it is the treatment, and when it is just on the invoice.' })}
+      ${txCard({ id: 'txpgt', ic: 'puzzle', t: esc(TX_PGT.title),
+    b: 'PGT-A, mosaics, and the number to ask for instead.' })}
+      ${txCard({ id: 'txiui', ic: 'clock', t: esc(TX_IUI.title),
+    b: 'The simpler route, and knowing in advance when to stop.' })}
+    </div>
+
+    <button class="pickcard" style="width:100%;margin-top:10px"
+      data-go="screen" data-id="reprosupp">
+      <span class="pickcard-ic">${icon('pill', 17, 'var(--deep)')}</span>
+      <span class="pickcard-t">${esc(REPRO_SUPP.title)}</span>
+      <span class="pickcard-b">${esc(TX_SUPP_NOTE)}</span>
+      <span class="pickcard-go">Read it ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>
+
+    ${dsec('Sources', sourceRows(TX_SOURCES))}
+    <p class="disclaimer">${esc(TX_DISCLAIMER)}</p>
+  </div>`;
+}
+
+/* ------------------------------------------------------------------
+   THE WALKTHROUGH
+
+   Numbered, because this one genuinely is a sequence and the order is
+   the information. The "when" sits with the step rather than in a
+   separate column, because almost everybody's first question about a
+   stage is how long it lasts.
+   ------------------------------------------------------------------ */
+function screenTxIvf() {
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="tx">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">The IVF walkthrough</h1>
+    <p class="sub">Baseline to beta, in order.</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy"><p class="bodytext" style="margin:0">${esc(TX_IVF_INTRO)}</p></div>
+    <div class="card" style="margin-top:12px">
+      ${TX_IVF_STEPS.map((s) => `
+      <div class="txstep">
+        <span class="txstep-n">${s.n}</span>
+        <div>
+          <p class="txstep-t">${esc(s.label)}</p>
+          <p class="txstep-w">${icon('clock', 11, 'var(--sage)')} ${esc(s.when)}</p>
+          <p class="txstep-b">${esc(s.what)}</p>
+          <p class="txstep-note">${esc(s.note)}</p>
+        </div>
+      </div>`).join('')}
+    </div>
+    <div class="pickgrid" style="margin-top:14px">
+      ${txCard({ id: 'txret', ic: 'moon', t: esc(TX_RETRIEVAL.title), b: 'Retrieval day in detail.' })}
+      ${txCard({ id: 'txgrade', ic: 'flower', t: esc(TX_GRADE.title), b: 'Reading the embryo report.' })}
+    </div>
+    <p class="disclaimer">${esc(TX_DISCLAIMER)}</p>
+  </div>`;
+}
+
+/* ------------------------------------------------------------------
+   RETRIEVAL DAY
+
+   The hyperstimulation signs are the one thing on this screen that
+   could matter within the hour, so they get the alarm treatment and
+   they sit above the sources rather than at the bottom of a list.
+   ------------------------------------------------------------------ */
+function screenTxRet() {
+  const o = TX_RETRIEVAL.ohss;
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="tx">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(TX_RETRIEVAL.title)}</h1>
+    <p class="sub">${esc(TX_RETRIEVAL.head)}</p>
+  </div>
+  <div class="sc">
+    <div class="card">${TX_RETRIEVAL.rows.map(nshRow).join('')}</div>
+
+    <div class="szcard blush" style="margin-top:14px">
+      <div class="szcard-h">
+        <span class="szcard-ic">${icon('info', 15, '#8A5F54')}</span>
+        <span class="szcard-t">${esc(o.title)}</span>
+      </div>
+      <p class="bodytext" style="margin:0">${esc(o.body)}</p>
+      <ul class="dlist" style="margin-top:9px">
+        ${o.signs.map((s) => `<li>${esc(s)}</li>`).join('')}
+      </ul>
+      <p class="bodytext" style="margin-top:9px">${esc(o.close)}</p>
+    </div>
+
+    <p class="disclaimer">${esc(TX_DISCLAIMER)}</p>
+  </div>`;
+}
+
+/* ------------------------------------------------------------------
+   EMBRYO GRADING, ICSI, PGT-A, IUI
+
+   The same page shape: what it is, then what is worth knowing with
+   the evidence label on each line, then the questions to take to the
+   clinic. One function, four pages, because they really are the same
+   page and four near copies is how three of them drift.
+   ------------------------------------------------------------------ */
+function txPage(p, extra) {
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="tx">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(p.title)}</h1>
+    <p class="sub">${esc(p.head)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy"><p class="bodytext" style="margin:0">${esc(p.intro)}</p></div>
+    ${extra || ''}
+    <p class="sect" style="margin-top:16px">Worth knowing</p>
+    <div class="card">${p.rows.map(nshRow).join('')}</div>
+    ${p.ask && p.ask.length ? dsec('Worth asking them', p.ask.map((q) => `
+      <div class="quote"><p class="q">${esc('“' + q + '”')}</p></div>`).join('')) : ''}
+    <p class="disclaimer">${esc(TX_DISCLAIMER)}</p>
+  </div>`;
+}
+
+function txKv(rows) {
+  return `
+  <div class="card" style="margin-top:12px">
+    ${rows.map((r) => `
+    <div class="txkv">
+      <p class="txkv-k">${esc(r.k)}</p>
+      <p class="txkv-v">${esc(r.v)}</p>
+    </div>`).join('')}
+  </div>`;
+}
+
+function screenTxGrade() { return txPage(TX_GRADE, txKv(TX_GRADE.parts)); }
+function screenTxIcsi() { return txPage(TX_ICSI); }
+function screenTxPgt() { return txPage(TX_PGT); }
+function screenTxIui() {
+  return txPage(TX_IUI, `<p class="sect" style="margin-top:16px">How a cycle runs</p>`
+    + txKv(TX_IUI.steps).replace('style="margin-top:12px"', 'style="margin-top:0"'));
+}
+
+/* ------------------------------------------------------------------
+   THE LOG
+
+   Three things get written down during a cycle and they are not the
+   same shape: a drug and a dose, an appointment with three numbers
+   on it, and a milestone with a count. Three small forms rather than
+   one clever one.
+   ------------------------------------------------------------------ */
+function txFormOpen(which) {
+  return store.txForm === which;
+}
+
+function txLogLine(opt) {
+  return `
+  <div class="txline">
+    <span class="txline-ic">${icon(opt.ic, 14, 'var(--sage)')}</span>
+    <div class="txline-b">
+      <p class="txline-t">${esc(opt.t)}</p>
+      ${opt.s ? `<p class="txline-s">${esc(opt.s)}</p>` : ''}
+    </div>
+    <button class="rewx" data-txdel="${esc(opt.which)}" data-id="${esc(opt.id)}"
+      aria-label="Remove">${icon('close', 14, 'var(--faint)')}</button>
+  </div>`;
+}
+
+function screenTxLog() {
+  const c = txOpen();
+  const past = txCycles().filter((x) => x && x.closedAt);
+
+  if (!c) {
+    return `
+    <div class="sc-head">
+      <button class="back" data-back="tx">${icon('back', 15, 'var(--deep)')} Back</button>
+      <h1 class="title sm" style="margin-top:6px">${esc(TX_LOG_TITLE)}</h1>
+      <p class="sub">${esc(TX_LOG_SUB)}</p>
+    </div>
+    <div class="sc">
+      <div class="card">
+        <p class="bodytext" style="margin:0">${esc(TX_LOG_NONE)}</p>
+        <div class="chips" style="margin-top:12px">
+          ${TX_KINDS.map((k) => `
+          <button class="chip" data-txstart="${esc(k.id)}">${esc(TX_START)}: ${esc(k.label)}</button>`).join('')}
+        </div>
+        <p class="tiny" style="margin-top:10px">${TX_KINDS.map((k) => esc(k.label) + ' — '
+    + esc(k.blurb)).join('. ')}.</p>
+      </div>
+      ${past.length ? `
+      <p class="sect" style="margin-top:18px">Before</p>
+      <div class="card">
+        ${past.slice().reverse().map((x) => `
+        <div class="txline">
+          <span class="txline-ic">${icon('check', 14, 'var(--sage)')}</span>
+          <div class="txline-b">
+            <p class="txline-t">${esc(txKindLabel(x))}, ${esc(calDayLabel(txDayKey(x.startedAt)))}</p>
+            <p class="txline-s">${txList(x, 'miles').length} milestones, ${
+    txList(x, 'appts').length} appointments, ${txList(x, 'meds').length} medications</p>
+          </div>
+        </div>`).join('')}
+      </div>` : ''}
+      <p class="disclaimer">${esc(TX_DISCLAIMER)}</p>
+    </div>`;
+  }
+
+  const meds = txList(c, 'meds');
+  const appts = txList(c, 'appts');
+  const miles = txList(c, 'miles');
+  const done = {};
+  miles.forEach((m) => { done[m.mid] = m; });
+
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="tx">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(TX_LOG_TITLE)}</h1>
+    <p class="sub">${esc(txKindLabel(c))}, day ${txDayOf(c)}. ${esc(TX_LOG_SUB)}</p>
+  </div>
+  <div class="sc">
+
+    ${/* MILESTONES FIRST.
+          They are the spine of a cycle and they are what somebody
+          reads back to a nurse. Meds and appointments are the detail
+          underneath. */''}
+    <p class="sect">Where you are</p>
+    <div class="card">
+      ${TX_MILESTONES.map((m) => {
+    const hit = done[m.id];
+    return `
+      <div class="txmile${hit ? ' on' : ''}">
+        <span class="txmile-ic">${icon(hit ? 'check' : 'circle', 13,
+    hit ? 'var(--sage)' : 'var(--faint)')}</span>
+        <div class="txline-b">
+          <p class="txline-t">${esc(m.label)}</p>
+          ${hit ? `<p class="txline-s">${esc(calDayLabel(hit.day))}${
+    hit.count ? ' · ' + esc(hit.count) + (m.unit ? ' ' + esc(m.unit) : '') : ''}${
+    hit.at ? ' · ' + esc(hit.at) : ''}</p>` : ''}
+        </div>
+        ${hit ? `
+        <button class="rewx" data-txdel="miles" data-id="${esc(hit.id)}"
+          aria-label="Remove">${icon('close', 14, 'var(--faint)')}</button>`
+    : `<button class="chip tiny" data-txmile="${esc(m.id)}">Log</button>`}
+      </div>`;
+  }).join('')}
+    </div>
+
+    ${txFormOpen('mile') && store.txMileId ? (() => {
+    const m = txMile(store.txMileId);
+    if (!m) return '';
+    return `
+    <div class="card" style="margin-top:10px">
+      <p class="eyebrow">${icon('check', 11, 'var(--sage)')} ${esc(m.label)}</p>
+      <p class="tiny" style="margin-top:9px">Which day</p>
+      <input id="txmileday" class="inp" type="date" value="${esc(txToday())}" style="margin-top:5px">
+      ${m.count ? `
+      <p class="tiny" style="margin-top:9px">${esc(m.count)}</p>
+      <input id="txmilecount" class="inp" inputmode="numeric" maxlength="8" style="margin-top:5px">` : ''}
+      ${m.timed ? `
+      <p class="tiny" style="margin-top:9px">What time (the one thing worth writing down exactly)</p>
+      <input id="txmiletime" class="inp" type="time" style="margin-top:5px">` : ''}
+      <div class="bpbar" style="margin-top:11px">
+        <button class="btn" data-txsave="mile">Save it</button>
+        <button class="btn ghost" data-txform="">Cancel</button>
+      </div>
+    </div>`;
+  })() : ''}
+
+    ${/* MEDICATIONS */''}
+    <p class="sect" style="margin-top:18px">Medications</p>
+    <div class="card">
+      ${meds.length ? meds.slice().reverse().map((m) => txLogLine({
+    which: 'meds', id: m.id, ic: 'pill', t: m.name,
+    s: [m.dose, m.at ? m.at : '', calDayLabel(m.day)].filter(Boolean).join(' · '),
+  })).join('') : `<p class="tiny">${esc(TX_LOG_EMPTY)}</p>`}
+    </div>
+    ${txFormOpen('med') ? `
+    <div class="card" style="margin-top:10px">
+      <p class="eyebrow">${icon('pill', 11, 'var(--sage)')} ${esc(TX_ADD_MED)}</p>
+      <input id="txmedname" class="inp" style="margin-top:8px" maxlength="40"
+        placeholder="What it is called">
+      <div class="chips" style="margin-top:8px">
+        ${TX_MED_COMMON.map((n) => `
+        <button class="chip tiny" data-txmedpick="${esc(n)}">${esc(n)}</button>`).join('')}
+      </div>
+      <p class="tiny" style="margin-top:9px">Dose</p>
+      <input id="txmeddose" class="inp" style="margin-top:5px" maxlength="24"
+        placeholder="225 iu, 2 tablets, 1 ml">
+      <p class="tiny" style="margin-top:9px">Day and time</p>
+      <div class="bpbar" style="margin-top:5px">
+        <input id="txmedday" class="inp" type="date" value="${esc(txToday())}">
+        <input id="txmedtime" class="inp" type="time">
+      </div>
+      <div class="bpbar" style="margin-top:11px">
+        <button class="btn" data-txsave="med">Save it</button>
+        <button class="btn ghost" data-txform="">Cancel</button>
+      </div>
+    </div>`
+    : `<button class="btn ghost" style="width:100%;margin-top:9px" data-txform="med">
+      ${icon('plus', 14, 'var(--deep)')} ${esc(TX_ADD_MED)}</button>`}
+
+    ${/* APPOINTMENTS. The three numbers are the ones every monitoring
+          scan produces and the ones nobody can ever remember by the
+          time they are asked for them. */''}
+    <p class="sect" style="margin-top:18px">Appointments</p>
+    <div class="card">
+      ${appts.length ? appts.slice().reverse().map((a) => txLogLine({
+    which: 'appts', id: a.id, ic: 'calendar',
+    t: a.note || 'Monitoring',
+    s: [calDayLabel(a.day)].concat(TX_APPT_FIELDS
+      .filter((f) => a[f.id])
+      .map((f) => f.label + ': ' + a[f.id])).join(' · '),
+  })).join('') : `<p class="tiny">${esc(TX_LOG_EMPTY)}</p>`}
+    </div>
+    ${txFormOpen('appt') ? `
+    <div class="card" style="margin-top:10px">
+      <p class="eyebrow">${icon('calendar', 11, 'var(--sage)')} ${esc(TX_ADD_APPT)}</p>
+      <input id="txapptnote" class="inp" style="margin-top:8px" maxlength="50"
+        placeholder="Monitoring scan, baseline, consult">
+      <p class="tiny" style="margin-top:9px">Which day</p>
+      <input id="txapptday" class="inp" type="date" value="${esc(txToday())}" style="margin-top:5px">
+      <p class="tiny" style="margin-top:9px">Their numbers, if they gave you any</p>
+      <div class="txfields">
+        ${TX_APPT_FIELDS.map((f) => `
+        <label class="txfield">
+          <span class="txfield-l">${esc(f.label)}</span>
+          <input id="txappt_${esc(f.id)}" class="inp" inputmode="numeric" maxlength="8">
+        </label>`).join('')}
+      </div>
+      <div class="bpbar" style="margin-top:11px">
+        <button class="btn" data-txsave="appt">Save it</button>
+        <button class="btn ghost" data-txform="">Cancel</button>
+      </div>
+    </div>`
+    : `<button class="btn ghost" style="width:100%;margin-top:9px" data-txform="appt">
+      ${icon('plus', 14, 'var(--deep)')} ${esc(TX_ADD_APPT)}</button>`}
+
+    <div class="card leafy" style="margin-top:16px">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Ask Willow</p>
+      <p class="bodytext" style="margin-top:7px">She can see what you have logged, so she can answer
+        about your own numbers rather than the average ones.</p>
+      <button class="btn" style="width:100%;margin-top:11px" data-mycycle="ask"
+        data-q="${esc('Looking at what I have logged this cycle so far, is there anything worth '
+    + 'knowing or worth asking my clinic?')}">Ask about this cycle</button>
+    </div>
+
+    <button class="btn ghost" style="width:100%;margin-top:14px" data-txclose="1">
+      ${esc(TX_END)}</button>
+
+    <p class="disclaimer">${esc(TX_DISCLAIMER)}</p>
   </div>`;
 }
 
@@ -94165,6 +95304,21 @@ function willowPanel() {
         <div class="chips" style="gap:6px">
           ${offers.map((o) => `
             <button class="chip" data-reproask="${esc(o.id)}">${esc(o.label)}</button>`).join('')}
+        </div>`;
+      })()}
+
+      ${/* And again for a treatment cycle. Three moments in a whole
+            round of IVF, each once, and "not now" ends it. */''}
+      ${(() => {
+        const n = nudgeState();
+        if (n.kind !== 'tx' || n.gone) return '';
+        const offers = txWillowOffers();
+        if (!offers.length) return '';
+        return `
+        <p class="tiny" style="margin:10px 2px 6px">Only if you want to</p>
+        <div class="chips" style="gap:6px">
+          ${offers.map((o) => `
+            <button class="chip" data-txask="${esc(o.id)}">${esc(o.label)}</button>`).join('')}
         </div>`;
       })()}
     </div>
