@@ -82,6 +82,7 @@ order = [
     ('feed',                SRC/'data/feed.js'),
     ('fireflies',           SRC/'data/fireflies.js'),
     ('groups',              SRC/'data/groups.js'),
+    ('forum',               SRC/'data/forum.js'),
     ('outings',             SRC/'data/outings.js'),
     ('privacy',             SRC/'data/privacy.js'),
     ('sharing',             SRC/'data/sharing.js'),

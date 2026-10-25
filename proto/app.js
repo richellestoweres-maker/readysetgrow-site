@@ -3068,6 +3068,13 @@ function render() {
     && feed.view === 'flies';
   if (!skyOnScreen) fliesUnwatch();
 
+  /* The room listeners come down with the tab, for the same reason the
+     sky's does: a live listener behind a screen nobody is looking at is
+     a bill and a battery. */
+  const commOnScreen = state.tab === 'community'
+    || (v && v.type === 'screen' && v.id === 'community');
+  if (!commOnScreen && forum.unsub) forumUnwatch();
+
   /* Computed after every redirect above has had its say, so the key
      describes the screen that was actually painted. */
   const nowRoute = routeKey();
@@ -3214,6 +3221,8 @@ function initControls() {
     state.name = e.target.value; render();
   });
   document.addEventListener('input', (e) => {
+    if (e.target.id === 'forumIn') { forum.draft = e.target.value; return; }
+    if (e.target.id === 'forumReplyIn') { forum.replyDraft = e.target.value; return; }
     if (e.target.matches && e.target.matches('[data-bpfield]')) {
       /* Saved as she types, with no repaint, because a page that
          redraws on every keystroke loses the caret and she would have
@@ -3521,7 +3530,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -4586,6 +4595,50 @@ function initControls() {
     } else if (t.dataset.bpflex) {
       const kid = bpKid();
       if (kid) bpSet('flex', bpMeta(kid).flex === false);
+    } else if (t.dataset.forum) {
+      const act = t.dataset.forum;
+      if (act === 'rooms') {
+        forumUnwatch();
+        forum.room = null; forum.thread = null; forum.posts = []; forum.replies = [];
+        forum.compose = false; forum.error = ''; forum.note = ''; forum.asking = '';
+      } else if (act === 'open') {
+        const room = t.dataset.room || '';
+        forum.thread = null; forum.replies = []; forum.error = ''; forum.asking = '';
+        if (forum.room !== room) { forum.room = room; forum.posts = []; forumWatch(room); }
+      } else if (act === 'thread') {
+        forum.thread = t.dataset.id;
+        forum.replyDraft = ''; forum.error = ''; forum.asking = '';
+        forumWatchThread(t.dataset.room || forum.room, t.dataset.id);
+      } else if (act === 'compose') {
+        forum.compose = true; forum.error = '';
+      } else if (act === 'close') {
+        forum.compose = false; forum.draft = ''; forum.error = '';
+      } else if (act === 'send') {
+        const el = document.getElementById('forumIn');
+        forum.draft = el ? el.value : forum.draft;
+        forumSend(t.dataset.room || forum.room, '', forum.draft);
+        return;
+      } else if (act === 'sendreply') {
+        const el = document.getElementById('forumReplyIn');
+        forum.replyDraft = el ? el.value : forum.replyDraft;
+        forumSend(t.dataset.room || forum.room, t.dataset.post, forum.replyDraft);
+        return;
+      } else if (act === 'ask') {
+        forum.asking = t.dataset.key || '';
+      } else if (act === 'keep') {
+        forum.asking = '';
+      } else if (act === 'del') {
+        forumRemove(t.dataset.room || forum.room, t.dataset.post || t.dataset.id,
+          t.dataset.post ? t.dataset.id : '');
+        return;
+      } else if (act === 'block') {
+        const id = t.dataset.id;
+        if (id && blockedList().indexOf(id) === -1) store.blocked = blockedList().concat([id]);
+        forum.thread = null;
+      } else if (act === 'name') {
+        state.view = { type: 'screen', id: 'settings' };
+        settingsJump = 'username';
+      }
     } else if (t.dataset.bagadd) {
       store.bagAdd = t.dataset.bagadd === 'open' ? (t.dataset.cat || 'own') : null;
     } else if (t.dataset.bagaddsave) {
@@ -15611,6 +15664,448 @@ function commWaitingCard() {
   </div>`;
 }
 
+/* ==================================================================
+   THE FORUM
+
+   Rooms, posts, and the thing the Community tab never had: replies.
+   Everything about why it lives at community/{room}/posts, and what
+   that path costs in server side moderation, is in src/data/forum.js.
+   ================================================================== */
+const forum = {
+  room: null,        // which room is open, null means the list of rooms
+  thread: null,      // which post is open inside it
+  posts: [],         // posts in the open room, live
+  replies: [],       // replies in the open thread, live
+  counts: {},        // postId -> reply count, for the room list
+  lastReply: {},     // postId -> newest reply time, so a live thread floats
+  unsub: null,       // the room listener
+  unsubReplies: null,
+  loading: false,
+  error: '',
+  busy: false,
+  compose: false,    // is the new post box open
+  draft: '',
+  replyDraft: '',
+  asking: '',        // id pending a delete confirmation
+  note: '',          // a support message shown alongside a post that went up
+};
+
+function forumOn() {
+  return !!(cloud.db && cloud.mod && myUid());
+}
+
+function forumName() {
+  return String((store.parent && store.parent.username) || '').trim();
+}
+
+/* Everything hangs off this one path, so there is a single place to
+   change if the rules ever move. */
+function forumPosts(roomId) {
+  return cloud.mod.collection(cloud.db, 'community', roomId || 'general', 'posts');
+}
+
+function forumReplyColl(roomId, postId) {
+  return cloud.mod.collection(cloud.db, 'community', roomId || 'general', 'posts', postId, 'replies');
+}
+
+/* LIVE, NOT FETCHED ONCE.
+
+   onSnapshot rather than getDocs, because two parents in the same room
+   at the same time is the entire point and a feed you have to reload
+   is the bug this was built to fix. Torn down whenever the room
+   changes or the tab leaves, so a listener never outlives the screen
+   that wanted it. */
+function forumWatch(roomId) {
+  forumUnwatch();
+  if (!forumOn()) return;
+  const fs = cloud.mod;
+  forum.loading = true;
+  forum.error = '';
+  try {
+    const q = fs.query(forumPosts(roomId), fs.orderBy('at', 'desc'), fs.limit(FORUM_PAGE));
+    forum.unsub = fs.onSnapshot(q, (snap) => {
+      const rows = [];
+      snap.forEach((d) => rows.push(Object.assign({ id: d.id }, d.data())));
+      forum.posts = rows;
+      forum.loading = false;
+      forum.error = '';
+      render();
+      forumCountReplies(roomId, rows);
+    }, (err) => {
+      /* A missing index on the ordered query is the one failure worth
+         recovering from rather than reporting, same reasoning as
+         feedQuery. Everything else is shown. */
+      const code = String((err && (err.code || err.message)) || '');
+      if (/index/i.test(code)) { forumWatchPlain(roomId); return; }
+      forum.loading = false;
+      forum.error = code;
+      render();
+    });
+  } catch (err) {
+    forum.loading = false;
+    forum.error = String((err && err.message) || err);
+    render();
+  }
+}
+
+function forumWatchPlain(roomId) {
+  const fs = cloud.mod;
+  try {
+    forum.unsub = fs.onSnapshot(fs.query(forumPosts(roomId), fs.limit(FORUM_PAGE)), (snap) => {
+      const rows = [];
+      snap.forEach((d) => rows.push(Object.assign({ id: d.id }, d.data())));
+      rows.sort((a, b) => (Number(b.at) || 0) - (Number(a.at) || 0));
+      forum.posts = rows;
+      forum.loading = false;
+      render();
+      forumCountReplies(roomId, rows);
+    }, (err) => {
+      forum.loading = false;
+      forum.error = String((err && (err.code || err.message)) || err);
+      render();
+    });
+  } catch (err) {
+    forum.loading = false;
+    forum.error = String((err && err.message) || err);
+    render();
+  }
+}
+
+function forumUnwatch() {
+  try { if (forum.unsub) forum.unsub(); } catch (err) {}
+  try { if (forum.unsubReplies) forum.unsubReplies(); } catch (err) {}
+  forum.unsub = null;
+  forum.unsubReplies = null;
+}
+
+/* The reply count under each post in the room list. One small read per
+   post, capped, and failures are silent because a missing count is
+   cosmetic and an error banner over a working room is not. */
+async function forumCountReplies(roomId, rows) {
+  if (!forumOn()) return;
+  const fs = cloud.mod;
+  const list = (rows || []).slice(0, 30);
+  let changed = false;
+  for (let i = 0; i < list.length; i += 1) {
+    const p = list[i];
+    try {
+      const snap = await fs.getDocs(fs.query(forumReplyColl(roomId, p.id), fs.limit(FORUM_REPLY_PAGE)));
+      if (forum.counts[p.id] !== snap.size) { forum.counts[p.id] = snap.size; changed = true; }
+      let newest = 0;
+      snap.forEach((d) => { const t = Number((d.data() || {}).at) || 0; if (t > newest) newest = t; });
+      if (newest && forum.lastReply[p.id] !== newest) { forum.lastReply[p.id] = newest; changed = true; }
+    } catch (err) { /* cosmetic */ }
+  }
+  if (changed) render();
+}
+
+function forumWatchThread(roomId, postId) {
+  try { if (forum.unsubReplies) forum.unsubReplies(); } catch (err) {}
+  forum.unsubReplies = null;
+  forum.replies = [];
+  if (!forumOn()) return;
+  const fs = cloud.mod;
+  try {
+    forum.unsubReplies = fs.onSnapshot(fs.query(forumReplyColl(roomId, postId), fs.limit(FORUM_REPLY_PAGE)),
+      (snap) => {
+        const rows = [];
+        snap.forEach((d) => rows.push(Object.assign({ id: d.id }, d.data())));
+        /* Oldest first in a thread, because a conversation reads
+           downward. The room list is the other way round. */
+        rows.sort((a, b) => (Number(a.at) || 0) - (Number(b.at) || 0));
+        forum.replies = rows;
+        render();
+      }, (err) => {
+        forum.error = String((err && (err.code || err.message)) || err);
+        render();
+      });
+  } catch (err) {
+    forum.error = String((err && err.message) || err);
+    render();
+  }
+}
+
+/* The write. The moderation check runs BEFORE the document is created,
+   not after, because the community rules do not enforce a held state
+   the way the old feed rules did, so there is no server to correct it
+   afterwards. If the check says no, nothing goes up at all. */
+async function forumSend(roomId, postId, text) {
+  const isReply = !!postId;
+  const max = isReply ? FORUM_REPLY_MAX : FORUM_MAX;
+  const body = forumClean(text, max);
+  if (!forumBodyOk(body, max)) { forum.error = 'Write something first.'; render(); return false; }
+  if (!forumOn()) { forum.error = 'The rooms need a connection.'; render(); return false; }
+  if (!forumName()) { forum.error = 'Pick a name first.'; render(); return false; }
+
+  forum.busy = true;
+  forum.error = '';
+  render();
+
+  try {
+    const verdict = (typeof commCheckAll === 'function')
+      ? await commCheckAll(body, groupLabel(roomId || ''))
+      : null;
+    const act = verdict && verdict.action;
+    /* A SUPPORT VERDICT IS NOT A REFUSAL.
+       Somebody writing that they are not coping has done the hardest
+       part already. Blocking that post would be the cruellest possible
+       response, so it goes up, and the resources are shown alongside
+       rather than instead. A warn goes up too. Only hold and remove
+       stop the write, and they stop it before anything is created,
+       because unlike the old feed path there is no server side status
+       here to correct it afterwards. */
+    if (act === 'hold' || act === 'remove') {
+      forum.busy = false;
+      forum.error = (verdict && verdict.say)
+        || 'That one has been held rather than posted, and somebody will look at it.';
+      render();
+      return false;
+    }
+    forum.note = (act === 'support' && verdict && verdict.say) ? verdict.say : '';
+
+    const doc = {
+      authorUid: myUid(),
+      username: forumName(),
+      body: body,
+      at: Date.now(),
+      room: String(roomId || ''),
+    };
+    await cloud.mod.addDoc(isReply ? forumReplyColl(roomId, postId) : forumPosts(roomId), doc);
+    forum.busy = false;
+    if (isReply) forum.replyDraft = ''; else { forum.draft = ''; forum.compose = false; }
+    forum.error = '';
+    render();
+    return true;
+  } catch (err) {
+    forum.busy = false;
+    forum.error = FORUM_OFFLINE;
+    render();
+    return false;
+  }
+}
+
+async function forumRemove(roomId, postId, replyId) {
+  if (!forumOn()) return;
+  forum.busy = true; render();
+  try {
+    const ref = replyId
+      ? cloud.mod.doc(cloud.db, 'community', roomId || 'general', 'posts', postId, 'replies', replyId)
+      : cloud.mod.doc(cloud.db, 'community', roomId || 'general', 'posts', postId);
+    await cloud.mod.deleteDoc(ref);
+    forum.asking = '';
+    if (!replyId && forum.thread === postId) { forum.thread = null; forumWatchThread(roomId, ''); }
+  } catch (err) {
+    forum.error = 'That could not be deleted. It may already be gone.';
+  }
+  forum.busy = false;
+  render();
+}
+
+function forumVisible(rows) {
+  const blocked = blockedList();
+  return (rows || []).filter((r) => r && blocked.indexOf(r.authorUid) === -1);
+}
+
+/* ------------------------------------------------------------------
+   THE ROOMS, ON SCREEN
+   ------------------------------------------------------------------ */
+function forumGate() {
+  if (!auth.user) {
+    return `
+    <div class="card flat">
+      <p class="eyebrow">${esc(FORUM_NEED_ACCOUNT.title)}</p>
+      <p class="bodytext" style="margin-top:6px">${esc(FORUM_NEED_ACCOUNT.body)}</p>
+      <button class="btn" style="width:100%;margin-top:11px" data-go="screen" data-id="settings">
+        Set up an account</button>
+    </div>`;
+  }
+  if (!forumName()) {
+    return `
+    <div class="card flat">
+      <p class="eyebrow">${esc(FORUM_NEED_NAME.title)}</p>
+      <p class="bodytext" style="margin-top:6px">${esc(FORUM_NEED_NAME.body)}</p>
+      <button class="btn" style="width:100%;margin-top:11px" data-forum="name">
+        ${esc(FORUM_NEED_NAME.cta)}</button>
+    </div>`;
+  }
+  return '';
+}
+
+function forumAuthorLine(row, now) {
+  const mine = row.authorUid === myUid();
+  return `
+  <div class="fmwho">
+    <span class="fmav">${esc(String(row.username || '?').trim().charAt(0).toUpperCase())}</span>
+    <span class="fmname">${esc(row.username || 'A parent')}${mine ? ' (' + FORUM_YOURS + ')' : ''}</span>
+    <span class="fmwhen">${esc(forumWhen(row.at, now))}</span>
+  </div>`;
+}
+
+/* The row controls. Delete only ever appears on your own, and report
+   and block only ever on somebody else's, so neither can be tapped by
+   accident on the wrong one. */
+function forumRowTools(row, roomId, postId) {
+  const mine = row.authorUid === myUid();
+  const key = (postId ? 'r:' : 'p:') + row.id;
+  if (mine) {
+    if (forum.asking === key) {
+      return `
+      <div class="fmtools">
+        <span class="tiny" style="margin-right:auto">${esc(FORUM_DELETE_ASK)}</span>
+        <button class="chip tiny danger" data-forum="del" data-id="${esc(row.id)}"
+          data-post="${esc(postId || '')}" data-room="${esc(roomId)}">${esc(FORUM_DELETE_YES)}</button>
+        <button class="chip tiny" data-forum="keep">${esc(FORUM_DELETE_NO)}</button>
+      </div>`;
+    }
+    return `
+    <div class="fmtools">
+      <button class="chip tiny" data-forum="ask" data-key="${esc(key)}">${esc(FORUM_DELETE)}</button>
+    </div>`;
+  }
+  return `
+  <div class="fmtools">
+    <button class="chip tiny" data-feed="report" data-id="${esc(row.id)}">Report</button>
+    <button class="chip tiny" data-forum="block" data-id="${esc(row.authorUid)}">Block</button>
+  </div>`;
+}
+
+function screenForumRooms() {
+  const gate = forumGate();
+  return `
+  <p class="sect" style="margin-top:4px">${esc(FORUM_TITLE)}</p>
+  <p class="tiny" style="margin:0 0 4px">${esc(FORUM_SUB)}</p>
+  ${gate}
+  <div class="pickgrid">
+    ${GROUPS.map((g) => `
+    <button class="pickcard${g.heavy ? ' urgent' : ''}" data-forum="open" data-room="${esc(g.id)}">
+      <span class="pickcard-ic">${icon(g.heavy ? 'heart' : 'chat', 17,
+    g.heavy ? '#A85A44' : 'var(--deep)')}</span>
+      <span class="pickcard-t">${esc(g.label)}</span>
+      <span class="pickcard-b">${esc(g.blurb)}</span>
+      <span class="pickcard-go">Go in ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>`).join('')}
+  </div>
+  <div class="card flat" style="margin-top:13px">
+    <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} How these rooms work</p>
+    ${FORUM_RULES_SHORT.map((x) => `<p class="tiny" style="margin-top:6px">${esc(x)}</p>`).join('')}
+  </div>`;
+}
+
+function screenForumRoom(roomId) {
+  const g = GROUPS.filter((x) => x.id === roomId)[0] || { label: 'Room', about: '' };
+  const gate = forumGate();
+  const rows = forumVisible(forum.posts);
+  const sorted = forumSort(rows, forum.counts, forum.lastReply);
+  const now = Date.now();
+
+  return `
+  <button class="back" data-forum="rooms" style="margin-bottom:8px">
+    ${icon('back', 15, 'var(--deep)')} All rooms</button>
+  <p class="sect" style="margin:0">${esc(g.label)}</p>
+  <p class="tiny" style="margin:4px 0 0">${esc(g.about || '')}</p>
+  ${g.note ? `<div class="callout" style="margin-top:10px"><p style="margin:0">${esc(g.note)}</p></div>` : ''}
+
+  ${gate}
+
+  ${!gate ? (forum.compose ? `
+    <div class="card" style="margin-top:12px">
+      <textarea class="inp" id="forumIn" rows="4" maxlength="${FORUM_MAX}"
+        placeholder="${esc(FORUM_POST_PH)}">${esc(forum.draft)}</textarea>
+      <div class="bpbar" style="margin-top:10px">
+        <button class="btn" data-forum="send" data-room="${esc(roomId)}"
+          ${forum.busy ? 'disabled' : ''}>
+          ${forum.busy ? esc(FORUM_SENDING) : esc(FORUM_POST_BTN)}</button>
+        <button class="btn ghost" data-forum="close">${esc(FORUM_CANCEL)}</button>
+      </div>
+    </div>` : `
+    <button class="btn" style="width:100%;margin-top:12px" data-forum="compose">
+      ${icon('plus', 14, '#fff')} ${esc(FORUM_START)}</button>`) : ''}
+
+  ${forum.error ? `<div class="callout" style="margin-top:10px"><p style="margin:0">${esc(forum.error)}</p></div>` : ''}
+  ${forum.note ? `<div class="card leafy" style="margin-top:10px"><p class="bodytext" style="margin:0">${esc(forum.note)}</p></div>` : ''}
+
+  ${forum.loading && !sorted.length ? `
+    <p class="tiny" style="margin-top:14px">Opening the room...</p>` : ''}
+
+  ${!forum.loading && !sorted.length && !gate ? `
+    <div class="card flat" style="margin-top:12px">
+      <p class="eyebrow">${esc(FORUM_EMPTY_ROOM.title)}</p>
+      <p class="bodytext" style="margin-top:6px">${esc(FORUM_EMPTY_ROOM.body)}</p>
+    </div>` : ''}
+
+  ${sorted.map((p) => {
+    const n = forum.counts[p.id];
+    return `
+    <div class="fmpost">
+      ${forumAuthorLine(p, now)}
+      <p class="fmbody">${esc(p.body)}</p>
+      <div class="fmfoot">
+        <button class="fmopen" data-forum="thread" data-id="${esc(p.id)}" data-room="${esc(roomId)}">
+          ${icon('chat', 13, 'var(--deep)')}
+          ${n ? esc(FORUM_REPLY_COUNT(n)) : 'Reply'}</button>
+        ${forumRowTools(p, roomId, '')}
+      </div>
+    </div>`;
+  }).join('')}
+
+  ${g.heavy ? `<p class="tiny" style="margin-top:14px">${esc(FORUM_SAFETY_NOTE)}</p>` : ''}`;
+}
+
+function screenForumThread(roomId, postId) {
+  const g = GROUPS.filter((x) => x.id === roomId)[0] || { label: 'Room' };
+  const post = forum.posts.filter((p) => p.id === postId)[0];
+  const now = Date.now();
+  if (!post) {
+    return `
+    <button class="back" data-forum="open" data-room="${esc(roomId)}" style="margin-bottom:8px">
+      ${icon('back', 15, 'var(--deep)')} ${esc(g.label)}</button>
+    <div class="card flat"><p class="bodytext">That post is no longer here. It may have been
+      deleted by whoever wrote it.</p></div>`;
+  }
+  const replies = forumVisible(forum.replies);
+
+  return `
+  <button class="back" data-forum="open" data-room="${esc(roomId)}" style="margin-bottom:8px">
+    ${icon('back', 15, 'var(--deep)')} ${esc(g.label)}</button>
+
+  <div class="fmpost lead">
+    ${forumAuthorLine(post, now)}
+    <p class="fmbody">${esc(post.body)}</p>
+    <div class="fmfoot">${forumRowTools(post, roomId, '')}</div>
+  </div>
+
+  <p class="sect" style="margin-top:16px">${replies.length
+    ? esc(FORUM_REPLY_COUNT(replies.length)) : 'Replies'}</p>
+
+  ${!replies.length ? `<p class="tiny" style="margin:0 0 4px">${esc(FORUM_NO_REPLIES)}</p>` : ''}
+
+  ${replies.map((r) => `
+    <div class="fmreply">
+      ${forumAuthorLine(r, now)}
+      <p class="fmbody">${esc(r.body)}</p>
+      <div class="fmfoot">${forumRowTools(r, roomId, postId)}</div>
+    </div>`).join('')}
+
+  ${forumGate() || `
+  <div class="card" style="margin-top:12px">
+    <textarea class="inp" id="forumReplyIn" rows="3" maxlength="${FORUM_REPLY_MAX}"
+      placeholder="${esc(FORUM_REPLY_PH)}">${esc(forum.replyDraft)}</textarea>
+    <button class="btn" style="width:100%;margin-top:10px" data-forum="sendreply"
+      data-room="${esc(roomId)}" data-post="${esc(postId)}" ${forum.busy ? 'disabled' : ''}>
+      ${forum.busy ? esc(FORUM_SENDING) : esc(FORUM_REPLY_BTN)}</button>
+  </div>`}
+
+  ${forum.error ? `<div class="callout" style="margin-top:10px"><p style="margin:0">${esc(forum.error)}</p></div>` : ''}`;
+}
+
+/* One entry point, so the Community tab decides between the three
+   views in a single place. */
+function forumBlock() {
+  if (forum.room == null) return screenForumRooms();
+  if (forum.thread) return screenForumThread(forum.room, forum.thread);
+  return screenForumRoom(forum.room);
+}
+
 function screenCommunity(c) {
   const signedIn = !!auth.user;
   const blocked = blockedList();
@@ -15640,7 +16135,11 @@ function screenCommunity(c) {
     : feed.view === 'mine' ? 'mine'
     : feed.view === 'feed' ? 'feed'
     : feed.view === 'rooms' ? 'rooms'
-      : feed.view === 'foryou' ? 'foryou' : 'flies';
+    : feed.view === 'foryou' ? 'foryou'
+      /* Rooms is the front door now. Fireflies was, and it is lovely,
+         but she has people arriving to talk and the first screen has to
+         be the one where talking happens. */
+      : feed.view === 'flies' ? 'flies' : 'rooms';
 
   /* The sky is live while it is on screen and listening to nothing at
      all when it is not. Started here, torn down in render(). */
@@ -15653,6 +16152,11 @@ function screenCommunity(c) {
     ${tab === 'flies' ? `
       <h1 class="title">${esc(FIREFLY_SUB)}</h1>
       <p class="sub">Every light is somebody up with a child.</p>
+    ` : tab === 'rooms' ? `
+      <h1 class="title sm">${esc(forum.room == null ? FORUM_TITLE
+    : (GROUPS.filter((g) => g.id === forum.room)[0] || { label: FORUM_TITLE }).label)}</h1>
+      <p class="sub">${esc(forum.room == null ? FORUM_SUB
+    : 'Everybody in here is a parent. Say what is going on.')}</p>
     ` : `
       <h1 class="title">${esc(FEED_TITLE)}</h1>
       <p class="sub">${esc(FEED_SUB)}</p>
@@ -15719,37 +16223,18 @@ function screenCommunity(c) {
       <p class="tiny" style="margin:-4px 0 10px">${esc(MOD_REPORTED_NOTE)}</p>
       ${feed.reported.map((p) => feedCard(p, { report: p.report })).join('')}` : ''}
     ` : tab === 'rooms' ? `
-      <p class="sect">${esc(GROUPS_TITLE)}</p>
-      <p class="tiny" style="margin:-4px 0 10px">${esc(GROUPS_INTRO)}</p>
-      ${GROUPS.map((g) => `
-        <button class="lrow" data-feed="room" data-g="${esc(g.id)}" style="align-items:flex-start">
-          <span class="licon">${icon(g.heavy ? 'heart' : 'people', 17, g.heavy ? 'var(--taupe)' : 'var(--sage)')}</span>
-          <span class="grow">
-            <span style="display:block;font-size:14px;font-weight:600;color:var(--ink)">${esc(g.label)}</span>
-            <span class="tiny" style="display:block;margin-top:2px">${esc(g.blurb)}</span>
-            <span class="tiny" style="display:block;margin-top:3px;color:var(--faint)">
-              ${counts[g.id] ? esc(counts[g.id] + (counts[g.id] === 1 ? ' post' : ' posts') + ' right now') : 'Quiet in here'}
-            </span>
-          </span>
-          <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
-        </button>`).join('')}
+      ${/* THE FORUM.
 
-      ${/* REQUEST, NOT CREATE.
+            Her note, October 2026: she has mothers waiting to join and
+            the tab had to work as a forum. It did not, because nothing
+            in it could be replied to. This block is the forum: rooms,
+            posts inside them, and replies underneath those, all live.
 
-            Every room somebody makes is a new place that has to be
-            read, and most of them end up holding 1 post, which makes
-            the whole place look abandoned. A request gives the same
-            signal with none of that: the same ask arriving 8 times is
-            a room worth making, and it gets made properly rather than
-            by whoever asked first. */''}
-      <div class="card flat" style="margin-top:13px">
-        <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Somewhere missing</p>
-        <p class="tiny" style="margin-top:4px">If there is no room for the thing you are in the
-        middle of, say so. Rooms get made when the same one is asked for a few times, which keeps
-        them busy enough to be worth opening.</p>
-        <button class="btn ghost sm" style="width:100%;margin-top:11px" data-roomask="1">
-          Ask for a room</button>
-      </div>
+            The old version of this tab filtered the flat feed by room,
+            which looked like rooms and behaved like a noticeboard. It
+            is gone rather than kept alongside, because two things both
+            called Rooms is worse than either. */''}
+      ${forumBlock()}
 
       ${dsec('How this room works', `
         <p class="bodytext" style="margin:0 0 9px">${esc(CR_SAFETY.notAdvice)}</p>

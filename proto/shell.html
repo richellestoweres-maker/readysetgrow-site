@@ -2345,6 +2345,39 @@ body.calpage .mark-holder{margin-bottom:-20px}
 .nshseed-a{margin:4px 0 0;font-size:11px;color:var(--muted);line-height:1.4}
 @media (max-width:360px){.nshseeds{grid-template-columns:1fr}}
 
+/* ------------------------------------------------------------------
+   THE FORUM
+
+   A post has to read as somebody talking, so the author line is small
+   and quiet and the words are the biggest thing in the card. A reply
+   is visually subordinate to the post it answers, indented and on a
+   tinted ground, so a thread reads downward as a conversation rather
+   than as a list of equal announcements.
+   ------------------------------------------------------------------ */
+.fmpost{background:#fff;border:1px solid rgba(74,103,65,.14);border-radius:18px;
+  padding:13px 14px 11px;margin-top:10px}
+.fmpost.lead{border-left:3px solid var(--sage)}
+.fmreply{background:var(--leaf3);border:1px solid rgba(74,103,65,.12);border-radius:16px;
+  padding:11px 12px 9px;margin:8px 0 0 14px}
+
+.fmwho{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.fmav{width:24px;height:24px;border-radius:50%;flex:none;background:var(--sage);color:#fff;
+  font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.fmname{font-size:12.5px;font-weight:700;color:var(--ink);min-width:0;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.fmwhen{font-size:11px;color:var(--faint);margin-left:auto;flex:none}
+
+.fmbody{margin:0;font-size:14.5px;line-height:1.6;color:var(--ink);white-space:pre-wrap;
+  overflow-wrap:anywhere}
+
+.fmfoot{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:9px;
+  border-top:1px solid var(--line2);flex-wrap:wrap}
+.fmopen{appearance:none;border:0;background:none;padding:0;font:inherit;font-size:12px;
+  font-weight:700;color:var(--deep);cursor:pointer;display:flex;align-items:center;gap:5px}
+.fmtools{display:flex;align-items:center;gap:6px;margin-left:auto;flex-wrap:wrap}
+.chip.tiny{font-size:11px;padding:4px 9px;min-height:0}
+.chip.tiny.danger{background:#FCF2EE;border-color:#DDA192;color:#8A4433}
+
 .sronly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 
