@@ -477,3 +477,101 @@ export function countReactions(rows) {
   });
   return out;
 }
+
+/* ==================================================================
+   REPOSTS AND PUBLIC PROFILES
+
+   What she asked for: Everyone should behave like a timeline. Post
+   something short, hashtag it, like it, repost somebody else's, and see
+   which hashtags are actually busy. Then a profile that shows what you
+   have posted, the way it looks to everybody else.
+
+   Most of that was already here. Hashtags are parsed out of the text
+   and are tappable, reactions are one document per person per post, and
+   the trending list counts real tags over a rolling week and refuses to
+   call anything trending unless two different people posted it. The two
+   things missing were a repost and a profile.
+
+   WHY A REPOST IS A NEW POST AND NOT A COUNTER
+
+   It could have been a number on the original. It is a whole post
+   instead, carrying the original author's name and words, because that
+   is what makes it show up in the timelines of people who follow the
+   reposter rather than the author, which is the entire point of a
+   repost. It also means a repost can be deleted by the person who made
+   it without touching the original.
+
+   WHY A PUBLIC PROFILE NEEDS NO NEW PERMISSIONS
+
+   The obvious way to build one is to read the other person's account
+   record, and that is forbidden: a user document is readable only by
+   its owner, deliberately, and it is where private things live. But
+   every public post already carries authorUid and username and sits in
+   a collection any signed in parent may read. So a profile is a query
+   over posts rather than a look at a person, which gives exactly the
+   right answer: it can only ever show what was already public.
+   ================================================================== */
+
+export const REPOST_LABEL = 'Repost';
+export const REPOST_UNDO = 'Undo repost';
+export const REPOST_BY = (who) => esc0(who) + ' reposted';
+export const REPOST_ORIGINAL = 'Originally by';
+
+/* Kept tiny and local so this module stays free of DOM helpers. */
+function esc0(s) { return String(s == null ? '' : s); }
+
+export function isRepost(p) {
+  return !!(p && p.repostOf);
+}
+
+/* Has this person already reposted that one, among the posts loaded.
+   Client side on purpose: a query per post to find out would be a read
+   per row on every repaint. */
+export function myRepostOf(posts, originalId, uid) {
+  return (posts || []).filter((p) => p && p.repostOf === originalId && p.authorUid === uid)[0] || null;
+}
+
+export function repostCount(posts, originalId) {
+  const seen = {};
+  (posts || []).forEach((p) => {
+    if (p && p.repostOf === originalId && p.authorUid) seen[p.authorUid] = true;
+  });
+  return Object.keys(seen).length;
+}
+
+/* The document a repost writes. Everything the feed rules require is
+   carried over from the original, including the tags, so a reposted
+   post still counts toward the hashtag it was about. */
+export function repostDocFrom(original, username, uid, band) {
+  return {
+    authorUid: uid,
+    username: username,
+    body: String((original && original.body) || ''),
+    at: Date.now(),
+    group: String((original && original.group) || ''),
+    tags: Array.isArray(original && original.tags) ? original.tags.slice(0, 5) : [],
+    band: String(band || (original && original.band) || ''),
+    status: String((original && original.status) || 'live'),
+    repostOf: String((original && original.id) || ''),
+    repostUser: String((original && original.username) || ''),
+    repostAt: Number((original && original.at) || 0) || 0,
+  };
+}
+
+/* ------------------------------------------------------------------
+   A PROFILE, BUILT FROM POSTS
+   ------------------------------------------------------------------ */
+export const PROF_POSTS = (n) => (n === 1 ? '1 post' : n + ' posts');
+export const PROF_EMPTY = 'Nothing posted yet.';
+export const PROF_EMPTY_MINE = 'Nothing public yet. Anything you share to Community shows up here.';
+export const PROF_PRIVATE_NOTE = 'This is everything they have shared publicly.';
+export const PROF_MINE_NOTE = 'This is what other parents see.';
+export const PROF_BLOCKED = 'You have blocked this person. Unblock them to see their posts.';
+export const PROF_UNBLOCK = 'Unblock';
+
+export function postsBy(posts, uid) {
+  return (posts || [])
+    .filter((p) => p && p.authorUid === uid)
+    .slice()
+    .sort((a, b) => (Number(b.at) || 0) - (Number(a.at) || 0));
+}
