@@ -2902,6 +2902,9 @@ function render() {
   else if (v && v.type === 'ceat') html = viewCeatPhase(v.id);
   else if (v && v.type === 'peat') html = viewPeatStage(v.id);
   else if (v && v.type === 'screen' && v.id === 'pubprofile') html = screenPubProfile();
+  else if (v && v.type === 'repro') html = viewRepro(v.id);
+  else if (v && v.type === 'screen' && v.id === 'repro') html = screenRepro();
+  else if (v && v.type === 'screen' && v.id === 'reprosupp') html = screenReproSupp();
   else if (v && v.type === 'screen' && v.id === 'nourish') html = screenNourish();
   else if (v && v.type === 'screen' && v.id === 'pregeat') html = screenPregEat();
   else if (v && v.type === 'screen' && v.id === 'birthplan') html = screenBirthPlan();
@@ -3531,7 +3534,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -4616,6 +4619,18 @@ function initControls() {
     } else if (t.dataset.bpflex) {
       const kid = bpKid();
       if (kid) bpSet('flex', bpMeta(kid).flex === false);
+    } else if (t.dataset.repro) {
+      const id = t.dataset.repro;
+      reproSet(id, !reproState()[id]);
+      /* Ticking trying to conceive can immediately cross the threshold,
+         so the check runs here rather than waiting for a reload. */
+      reproWillowCheck();
+    } else if (t.dataset.reprodetail) {
+      reproDetail(t.dataset.reprodetail, t.dataset.key, t.dataset.val);
+      reproWillowCheck();
+    } else if (t.dataset.reproask) {
+      reproWillowReply(t.dataset.reproask);
+      return;
     } else if (t.dataset.forum) {
       const act = t.dataset.forum;
       if (act === 'rooms') {
@@ -18722,7 +18737,220 @@ function viewPeatStage(id) {
   </div>`;
 }
 
+/* ==================================================================
+   REPRODUCTIVE HEALTH
+
+   What she can record about her own body, a page per condition, and
+   Willow speaking up only when the app has actually noticed something.
+   All of it on her own account record, which only she can read.
+   ================================================================== */
+function reproState() {
+  if (!store.parent.repro || typeof store.parent.repro !== 'object') store.parent.repro = {};
+  return store.parent.repro;
+}
+
+function reproSet(id, on) {
+  const r = reproState();
+  if (on) r[id] = true; else delete r[id];
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+}
+
+function reproDetail(id, key, val) {
+  const r = reproState();
+  r[id + ':' + key] = val;
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+}
+
+function reproAge() {
+  const b = store.parent && store.parent.birthday;
+  if (!b) return null;
+  const d = new Date(b + 'T00:00:00');
+  if (!isFinite(d.getTime())) return null;
+  return Math.floor((Date.now() - d.getTime()) / (365.25 * 86400000));
+}
+
+/* WILLOW ONLY SPEAKS WHEN SOMETHING WAS NOTICED.
+
+   Her rule. Two triggers, each fires once and then never again:
+   cycles that have genuinely drifted, and trying to conceive for past
+   the threshold where she is entitled to be investigated. Marked on
+   the parent record so it cannot repeat across devices. */
+function reproWillowCheck() {
+  if (!store.parent || store.onboard && store.onboard.open) return;
+  const seen = store.parent.reproSaid && typeof store.parent.reproSaid === 'object'
+    ? store.parent.reproSaid : (store.parent.reproSaid = {});
+
+  if (!seen.irregular && reproIrregular(cycleStats(periods()))) {
+    seen.irregular = true;
+    const n = nudgeState();
+    n.text = REPRO_WILLOW.irregular.say;
+    n.at = Date.now();
+    n.gone = false;
+    n.kind = 'repro';
+    /* opener is the question typed into her box if she taps through,
+       so it has to be a sentence. The trigger id lives in its own
+       field, which is what reproWillowOffers reads. */
+    n.opener = '';
+    n.reproId = 'irregular';
+    store.parentUpdatedAt = Date.now();
+    flushStore();
+    return;
+  }
+
+  const r = reproState();
+  if (!seen.ttcYear && r.ttc && reproTtcThresholdMet(r['ttc:length'], reproAge())) {
+    seen.ttcYear = true;
+    const n = nudgeState();
+    n.text = REPRO_WILLOW.ttcYear.say;
+    n.at = Date.now();
+    n.gone = false;
+    n.kind = 'repro';
+    n.opener = '';
+    n.reproId = 'ttcYear';
+    store.parentUpdatedAt = Date.now();
+    flushStore();
+  }
+}
+
+function reproWillowOffers() {
+  const n = nudgeState();
+  const which = REPRO_WILLOW[n.reproId];
+  return which ? which.offers : [];
+}
+
+function reproWillowReply(id) {
+  const text = REPRO_WILLOW_REPLIES[id];
+  if (!text) return;
+  willow.open = true;
+  willow.stick = true;
+  if (!Array.isArray(willow.turns)) willow.turns = [];
+  willow.turns.push({ who: 'willow', text: text });
+  const n = nudgeState();
+  if (id === 'no') { n.gone = true; }
+  render();
+}
+
+function screenRepro() {
+  const r = reproState();
+  const ticked = reproTicked(r);
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="mycycle">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(REPRO_TITLE)}</h1>
+    <p class="sub">${esc(REPRO_SUB)}</p>
+    <p class="tiny" style="margin-top:7px">${icon('shield', 11, 'var(--sage)')} ${esc(REPRO_PRIVACY)}</p>
+  </div>
+  <div class="sc">
+    ${REPRO_CONDITIONS.map((c) => {
+    const on = !!r[c.id];
+    const page = reproPageFor(c.id);
+    return `
+    <div class="card" style="margin-bottom:9px">
+      ${tickRow(on, c.label, c.blurb || '', 'data-repro="' + esc(c.id) + '"')}
+      ${on && c.stages ? `
+      <div class="chips" style="margin-top:10px">
+        ${ENDO_STAGES.map((st) => `
+          <button class="chip${r[c.id + ':stage'] === st.id ? ' on' : ''}"
+            data-reprodetail="${esc(c.id)}" data-key="stage" data-val="${esc(st.id)}"
+            aria-pressed="${r[c.id + ':stage'] === st.id}">${esc(st.label)}</button>`).join('')}
+      </div>
+      <p class="tiny" style="margin-top:6px">${esc((ENDO_STAGES.filter((x) => x.id === r[c.id + ':stage'])[0] || {}).note || '')}</p>` : ''}
+      ${on && c.sides ? `
+      <div class="chips" style="margin-top:10px">
+        ${HYDRO_SIDES.map((sd) => `
+          <button class="chip${r[c.id + ':side'] === sd.id ? ' on' : ''}"
+            data-reprodetail="${esc(c.id)}" data-key="side" data-val="${esc(sd.id)}"
+            aria-pressed="${r[c.id + ':side'] === sd.id}">${esc(sd.label)}</button>`).join('')}
+      </div>` : ''}
+      ${on && c.months ? `
+      <div class="chips" style="margin-top:10px">
+        ${TTC_LENGTHS.map((tl) => `
+          <button class="chip${r[c.id + ':length'] === tl.id ? ' on' : ''}"
+            data-reprodetail="${esc(c.id)}" data-key="length" data-val="${esc(tl.id)}"
+            aria-pressed="${r[c.id + ':length'] === tl.id}">${esc(tl.label)}</button>`).join('')}
+      </div>` : ''}
+      ${on && page ? `
+      <button class="hhalf-go" style="width:100%;justify-content:center;margin-top:10px"
+        data-go="repro" data-id="${esc(c.id)}">
+        Read about ${esc(c.label.toLowerCase())} ${icon('chev', 12, 'var(--deep)')}</button>` : ''}
+    </div>`;
+  }).join('')}
+
+    <button class="pickcard" style="width:100%;margin-top:6px" data-go="screen" data-id="reprosupp">
+      <span class="pickcard-ic">${icon('pill', 17, 'var(--deep)')}</span>
+      <span class="pickcard-t">${esc(REPRO_SUPP.title)}</span>
+      <span class="pickcard-b">Sorted by evidence, not by how often you are told to take it.</span>
+      <span class="pickcard-go">Read it ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>
+
+    ${!ticked.length ? `<p class="tiny" style="margin-top:12px">${esc(REPRO_NONE)}</p>` : ''}
+    ${dsec('Sources', sourceRows(REPRO_SOURCES))}
+    <p class="disclaimer">${esc(REPRO_DISCLAIMER)}</p>
+  </div>`;
+}
+
+function viewRepro(id) {
+  const page = reproPageFor(id);
+  if (!page) return emptyScreen('That could not be found.');
+  const r = reproState();
+  const others = Object.keys(REPRO_PAGES).filter((k) => k !== id && r[k]);
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="repro">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(page.title)}</h1>
+    <p class="sub">${esc(page.head)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="bodytext" style="margin:0">${esc(page.body)}</p>
+    </div>
+    <p class="sect" style="margin-top:16px">Worth knowing</p>
+    <div class="card">${page.rows.map(nshRow).join('')}</div>
+    ${page.ask && page.ask.length ? dsec('Worth asking', page.ask.map((q) => `
+      <div class="quote"><p class="q">${esc('\u201C' + q + '\u201D')}</p></div>`).join('')) : ''}
+    ${others.length ? `
+      <p class="sect" style="margin-top:18px">Your other ones</p>
+      <div class="chips">
+        ${others.map((k) => `<button class="chip" data-go="repro" data-id="${esc(k)}">${
+    esc(REPRO_PAGES[k].title)}</button>`).join('')}
+      </div>` : ''}
+    <p class="disclaimer">${esc(REPRO_DISCLAIMER)}</p>
+  </div>`;
+}
+
+function screenReproSupp() {
+  const b = REPRO_SUPP.book;
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="repro">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(REPRO_SUPP.title)}</h1>
+  </div>
+  <div class="sc">
+    <div class="card leafy"><p class="bodytext" style="margin:0">${esc(REPRO_SUPP.intro)}</p></div>
+    <div class="card" style="margin-top:12px">${REPRO_SUPP.rows.map(nshRow).join('')}</div>
+
+    <p class="sect" style="margin-top:18px">${esc(b.title)}</p>
+    <div class="card">
+      <p class="bodytext" style="margin:0">${esc(b.body)}</p>
+      <div class="szcard blush" style="margin-top:11px">
+        <div class="szcard-h">
+          <span class="szcard-ic">${icon('info', 15, '#8A5F54')}</span>
+          <span class="szcard-t">Where it runs ahead of the evidence</span>
+        </div>
+        <p class="bodytext" style="margin:0">${esc(b.caveat)}</p>
+      </div>
+      <p class="bodytext" style="margin-top:11px;font-style:italic">${esc(b.verdict)}</p>
+    </div>
+
+    ${dsec('Sources', sourceRows(REPRO_SOURCES))}
+    <p class="disclaimer">${esc(REPRO_DISCLAIMER)}</p>
+  </div>`;
+}
+
 function screenMyCycle(c) {
+  setTimeout(() => { try { reproWillowCheck(); } catch (e) {} }, 0);
   const info = cycleInfoNow();
   const q = info
     ? 'Looking at my cycle so far, is there anything worth noticing or mentioning to a doctor?'
@@ -18741,6 +18969,14 @@ function screenMyCycle(c) {
     ${cyclogBlock('me', false)}
 
     <button class="pickcard" style="width:100%;margin-top:13px"
+      data-go="screen" data-id="repro">
+      <span class="pickcard-ic">${icon('heart', 17, 'var(--deep)')}</span>
+      <span class="pickcard-t">${esc(REPRO_TITLE)}</span>
+      <span class="pickcard-b">PCOS, endometriosis, trying to conceive, IVF and the rest.</span>
+      <span class="pickcard-go">Open ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>
+
+    <button class="pickcard" style="width:100%;margin-top:10px"
       data-go="screen" data-id="nourish">
       <span class="pickcard-ic">${icon('utensils', 17, 'var(--deep)')}</span>
       <span class="pickcard-t">${esc(CEAT_TITLE)}</span>
@@ -32647,6 +32883,22 @@ function willowPanel() {
         <div class="chips" style="gap:6px">
           ${lossWillowOffers(kid).map((o) => `
             <button class="chip" data-lossask="${esc(o.id)}">${esc(o.label)}</button>`).join('')}
+        </div>`;
+      })()}
+
+      ${/* The same pattern for the reproductive health nudges. She
+            noticed something, so she offers a way in rather than
+            asking a question, and "not now" closes it for good. */''}
+      ${(() => {
+        const n = nudgeState();
+        if (n.kind !== 'repro' || n.gone) return '';
+        const offers = reproWillowOffers();
+        if (!offers.length) return '';
+        return `
+        <p class="tiny" style="margin:10px 2px 6px">Only if you want to</p>
+        <div class="chips" style="gap:6px">
+          ${offers.map((o) => `
+            <button class="chip" data-reproask="${esc(o.id)}">${esc(o.label)}</button>`).join('')}
         </div>`;
       })()}
     </div>

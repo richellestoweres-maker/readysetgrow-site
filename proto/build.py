@@ -112,6 +112,7 @@ order = [
     ('childSections',       SRC/'data/childSections.js'),
     ('signLanguage',        SRC/'data/signLanguage.js'),
     ('cycle',               SRC/'data/cycle.js'),
+    ('repro',               SRC/'data/repro.js'),
     ('cycleLog',            SRC/'data/cycleLog.js'),
     ('sexEd',               SRC/'data/sexEd.js'),
     ('willowShort',         SRC/'data/willowShort.js'),
