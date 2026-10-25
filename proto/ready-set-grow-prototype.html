@@ -2438,7 +2438,7 @@ body.calpage .mark-holder{margin-bottom:-20px}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-25 03:44';
+const BUILD_STAMP = '2026-10-25 03:52';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -76832,11 +76832,7 @@ function screenCommunity(c) {
     : feed.view === 'mine' ? 'mine'
     : feed.view === 'feed' ? 'feed'
     : feed.view === 'rooms' ? 'rooms'
-    : feed.view === 'foryou' ? 'foryou'
-      /* Rooms is the front door now. Fireflies was, and it is lovely,
-         but she has people arriving to talk and the first screen has to
-         be the one where talking happens. */
-      : feed.view === 'flies' ? 'flies' : 'rooms';
+      : feed.view === 'foryou' ? 'foryou' : 'flies';
 
   /* The sky is live while it is on screen and listening to nothing at
      all when it is not. Started here, torn down in render(). */

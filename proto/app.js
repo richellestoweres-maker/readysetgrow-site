@@ -16135,11 +16135,7 @@ function screenCommunity(c) {
     : feed.view === 'mine' ? 'mine'
     : feed.view === 'feed' ? 'feed'
     : feed.view === 'rooms' ? 'rooms'
-    : feed.view === 'foryou' ? 'foryou'
-      /* Rooms is the front door now. Fireflies was, and it is lovely,
-         but she has people arriving to talk and the first screen has to
-         be the one where talking happens. */
-      : feed.view === 'flies' ? 'flies' : 'rooms';
+      : feed.view === 'foryou' ? 'foryou' : 'flies';
 
   /* The sky is live while it is on screen and listening to nothing at
      all when it is not. Started here, torn down in render(). */
