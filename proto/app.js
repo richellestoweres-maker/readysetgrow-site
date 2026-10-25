@@ -2905,6 +2905,14 @@ function render() {
   else if (v && v.type === 'repro') html = viewRepro(v.id);
   else if (v && v.type === 'screen' && v.id === 'repro') html = screenRepro();
   else if (v && v.type === 'screen' && v.id === 'reprosupp') html = screenReproSupp();
+  else if (v && v.type === 'screen' && v.id === 'tx') html = screenTx();
+  else if (v && v.type === 'screen' && v.id === 'txivf') html = screenTxIvf();
+  else if (v && v.type === 'screen' && v.id === 'txret') html = screenTxRet();
+  else if (v && v.type === 'screen' && v.id === 'txgrade') html = screenTxGrade();
+  else if (v && v.type === 'screen' && v.id === 'txicsi') html = screenTxIcsi();
+  else if (v && v.type === 'screen' && v.id === 'txpgt') html = screenTxPgt();
+  else if (v && v.type === 'screen' && v.id === 'txiui') html = screenTxIui();
+  else if (v && v.type === 'screen' && v.id === 'txlog') html = screenTxLog();
   else if (v && v.type === 'screen' && v.id === 'nourish') html = screenNourish();
   else if (v && v.type === 'screen' && v.id === 'pregeat') html = screenPregEat();
   else if (v && v.type === 'screen' && v.id === 'birthplan') html = screenBirthPlan();
@@ -3534,7 +3542,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -4630,6 +4638,63 @@ function initControls() {
       reproWillowCheck();
     } else if (t.dataset.reproask) {
       reproWillowReply(t.dataset.reproask);
+      return;
+    } else if (t.dataset.txstart) {
+      txStart(t.dataset.txstart);
+      store.txForm = '';
+    } else if (t.dataset.txclose) {
+      txClose();
+      store.txForm = '';
+    } else if (t.hasAttribute('data-txform')) {
+      /* Cancel carries an empty value, and an empty string is falsy, so
+         this tests for the attribute rather than reading it. */
+      store.txForm = t.dataset.txform || '';
+      store.txMileId = '';
+    } else if (t.dataset.txmile) {
+      store.txForm = 'mile';
+      store.txMileId = t.dataset.txmile;
+    } else if (t.dataset.txmedpick) {
+      /* Fills the box rather than saving, so a dose still has to be
+         typed. A tap that saved a drug with no dose would make the log
+         worse than a note on a fridge. */
+      const f = document.getElementById('txmedname');
+      if (f) { f.value = t.dataset.txmedpick; f.focus(); }
+      return;
+    } else if (t.dataset.txdel) {
+      txRemove(t.dataset.txdel, t.dataset.id || '');
+    } else if (t.dataset.txsave) {
+      const which = t.dataset.txsave;
+      const val = (id) => {
+        const f = document.getElementById(id);
+        return String(f ? f.value : '').replace(/\s+/g, ' ').trim();
+      };
+      if (which === 'med') {
+        const name = val('txmedname').slice(0, 40);
+        if (!name) { store.txForm = ''; render(); return; }
+        txAdd('meds', {
+          name: name, dose: val('txmeddose').slice(0, 24),
+          day: val('txmedday') || txToday(), at: calTimeLabel(val('txmedtime')),
+        });
+      } else if (which === 'appt') {
+        const row = { note: val('txapptnote').slice(0, 50), day: val('txapptday') || txToday() };
+        TX_APPT_FIELDS.forEach((f) => { row[f.id] = val('txappt_' + f.id).slice(0, 8); });
+        txAdd('appts', row);
+      } else if (which === 'mile') {
+        const m = txMile(store.txMileId);
+        if (!m) { store.txForm = ''; render(); return; }
+        txAdd('miles', {
+          mid: m.id, day: val('txmileday') || txToday(),
+          count: m.count ? val('txmilecount').slice(0, 8) : '',
+          at: m.timed ? calTimeLabel(val('txmiletime')) : '',
+        });
+        /* The nudge comes off the milestone, which is the only place
+           the app knows something actually happened. */
+        txWillowCheck(m.id);
+      }
+      store.txForm = '';
+      store.txMileId = '';
+    } else if (t.dataset.txask) {
+      txWillowReply(t.dataset.txask);
       return;
     } else if (t.dataset.forum) {
       const act = t.dataset.forum;
@@ -18878,6 +18943,15 @@ function screenRepro() {
     </div>`;
   }).join('')}
 
+    <button class="pickcard" style="width:100%;margin-top:6px" data-go="screen" data-id="tx">
+      <span class="pickcard-ic">${icon('chart', 17, 'var(--deep)')}</span>
+      <span class="pickcard-t">${esc(TX_TITLE)}</span>
+      <span class="pickcard-b">${esc(TX_SUB)}</span>
+      ${txOpen() ? `<span class="pickcard-tag">${esc(txKindLabel(txOpen()))}, day ${
+    txDayOf(txOpen())}</span>` : ''}
+      <span class="pickcard-go">Open ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>
+
     <button class="pickcard" style="width:100%;margin-top:6px" data-go="screen" data-id="reprosupp">
       <span class="pickcard-ic">${icon('pill', 17, 'var(--deep)')}</span>
       <span class="pickcard-t">${esc(REPRO_SUPP.title)}</span>
@@ -18946,6 +19020,538 @@ function screenReproSupp() {
 
     ${dsec('Sources', sourceRows(REPRO_SOURCES))}
     <p class="disclaimer">${esc(REPRO_DISCLAIMER)}</p>
+  </div>`;
+}
+
+/* ==================================================================
+   TREATMENT: IVF, ICSI AND IUI
+
+   Her ask, almost word for word: walk them through it, explain embryo
+   grading, explain what twilight sedation actually is, explain the
+   supplements, walk through IUI, and let somebody log their meds and
+   appointments while it is happening.
+
+   Two halves. The reading half is fixed pages. The logging half is a
+   cycle on her own account record, which only she can read, and which
+   syncs with the rest of the parent payload for free.
+
+   Willow speaks three times across a whole cycle and then stops. Not
+   because there is nothing else to say, but because a woman mid
+   stimulation does not need an app with opinions.
+   ================================================================== */
+function txState() {
+  if (!store.parent.tx || typeof store.parent.tx !== 'object') store.parent.tx = {};
+  if (!Array.isArray(store.parent.tx.cycles)) store.parent.tx.cycles = [];
+  return store.parent.tx;
+}
+
+function txCycles() {
+  return txState().cycles;
+}
+
+/* The one being lived in right now. Anything else is history. */
+function txOpen() {
+  return txCycles().filter((c) => c && !c.closedAt)[0] || null;
+}
+
+function txSave() {
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+}
+
+function txId() {
+  return 't' + Date.now() + Math.floor(Math.random() * 1000);
+}
+
+function txStart(kind) {
+  if (txOpen()) return;
+  txCycles().push({
+    id: txId(), kind: kind === 'iui' ? 'iui' : 'ivf',
+    startedAt: Date.now(), meds: [], appts: [], miles: [],
+  });
+  txSave();
+}
+
+function txClose() {
+  const c = txOpen();
+  if (!c) return;
+  c.closedAt = Date.now();
+  txSave();
+}
+
+function txList(c, which) {
+  if (!c) return [];
+  if (!Array.isArray(c[which])) c[which] = [];
+  return c[which];
+}
+
+function txAdd(which, row) {
+  const c = txOpen();
+  if (!c) return null;
+  row.id = txId();
+  txList(c, which).push(row);
+  txSave();
+  return row;
+}
+
+function txRemove(which, id) {
+  const c = txOpen();
+  if (!c) return;
+  c[which] = txList(c, which).filter((r) => r.id !== id);
+  txSave();
+}
+
+function txKindLabel(c) {
+  const k = TX_KINDS.filter((x) => x.id === (c && c.kind))[0];
+  return k ? k.label : 'IVF';
+}
+
+/* Day 1 is the day she started, not the day after. Somebody counting
+   "day 6 of stims" out loud means the sixth day she injected. */
+function txDayOf(c) {
+  if (!c || !c.startedAt) return 1;
+  const a = new Date(c.startedAt); a.setHours(0, 0, 0, 0);
+  const b = new Date(); b.setHours(0, 0, 0, 0);
+  return Math.max(1, Math.round((b - a) / 86400000) + 1);
+}
+
+function txMile(id) {
+  return TX_MILESTONES.filter((m) => m.id === id)[0] || null;
+}
+
+function txDayKey(ms) {
+  const d = new Date(ms == null ? Date.now() : ms);
+  if (!isFinite(d.getTime())) return '';
+  const p = (n) => (n < 10 ? '0' + n : '' + n);
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+
+function txToday() { return txDayKey(Date.now()); }
+
+/* WILLOW, THREE TIMES, ONCE EACH.
+
+   Fired off a logged milestone rather than off opening a screen, so
+   she only ever speaks about something that actually happened. The
+   flags sit on the parent record so the phone and the laptop do not
+   each get a turn. */
+function txWillowCheck(mid) {
+  if (!store.parent || store.onboard && store.onboard.open) return;
+  const which = TX_WILLOW[mid === 'start' ? 'started' : mid];
+  if (!which) return;
+  const seen = store.parent.txSaid && typeof store.parent.txSaid === 'object'
+    ? store.parent.txSaid : (store.parent.txSaid = {});
+  if (seen[which.id]) return;
+  seen[which.id] = true;
+  const n = nudgeState();
+  n.text = which.say;
+  n.at = Date.now();
+  n.gone = false;
+  n.kind = 'tx';
+  n.opener = '';
+  n.txId = which.id;
+  txSave();
+}
+
+function txWillowOffers() {
+  const n = nudgeState();
+  const which = TX_WILLOW[n.txId];
+  return which ? which.offers : [];
+}
+
+function txWillowReply(id) {
+  const text = TX_WILLOW_REPLIES[id];
+  if (!text) return;
+  willow.open = true;
+  willow.stick = true;
+  if (!Array.isArray(willow.turns)) willow.turns = [];
+  willow.turns.push({ who: 'willow', text: text });
+  if (id === 'no') nudgeState().gone = true;
+  render();
+}
+
+/* ------------------------------------------------------------------
+   THE HUB
+   ------------------------------------------------------------------ */
+function txCard(opt) {
+  return `
+  <button class="pickcard" data-go="screen" data-id="${esc(opt.id)}">
+    <span class="pickcard-ic">${icon(opt.ic, 17, 'var(--deep)')}</span>
+    <span class="pickcard-t">${esc(opt.t)}</span>
+    <span class="pickcard-b">${esc(opt.b)}</span>
+    ${opt.tag ? `<span class="pickcard-tag">${esc(opt.tag)}</span>` : ''}
+    <span class="pickcard-go">${esc(opt.go || 'Read it')} ${icon('chev', 12, 'var(--deep)')}</span>
+  </button>`;
+}
+
+function screenTx() {
+  const c = txOpen();
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="repro">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(TX_TITLE)}</h1>
+    <p class="sub">${esc(TX_SUB)}</p>
+  </div>
+  <div class="sc">
+    <button class="pickcard${c ? ' urgent' : ''}" data-go="screen" data-id="txlog"
+      style="width:100%">
+      <span class="pickcard-ic">${icon('note', 17, c ? '#8A4433' : 'var(--deep)')}</span>
+      <span class="pickcard-t">${esc(TX_LOG_TITLE)}</span>
+      <span class="pickcard-b">${esc(TX_LOG_SUB)}</span>
+      ${c ? `<span class="pickcard-tag">${esc(txKindLabel(c))}, day ${txDayOf(c)}</span>` : ''}
+      <span class="pickcard-go">${c ? 'Open it' : 'Start one'} ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>
+
+    <p class="sect" style="margin-top:18px">Understanding it</p>
+    <div class="pickgrid">
+      ${txCard({ id: 'txivf', ic: 'calendar', t: 'The IVF walkthrough',
+    b: 'All nine stages, what each one is for and what it feels like.' })}
+      ${txCard({ id: 'txret', ic: 'moon', t: esc(TX_RETRIEVAL.title),
+    b: 'What twilight sedation actually is, and the signs to ring about.' })}
+      ${txCard({ id: 'txgrade', ic: 'flower', t: esc(TX_GRADE.title),
+    b: 'Reading 4AA and 3BC without reading them as a verdict.' })}
+      ${txCard({ id: 'txicsi', ic: 'drop', t: esc(TX_ICSI.title),
+    b: 'When it is the treatment, and when it is just on the invoice.' })}
+      ${txCard({ id: 'txpgt', ic: 'puzzle', t: esc(TX_PGT.title),
+    b: 'PGT-A, mosaics, and the number to ask for instead.' })}
+      ${txCard({ id: 'txiui', ic: 'clock', t: esc(TX_IUI.title),
+    b: 'The simpler route, and knowing in advance when to stop.' })}
+    </div>
+
+    <button class="pickcard" style="width:100%;margin-top:10px"
+      data-go="screen" data-id="reprosupp">
+      <span class="pickcard-ic">${icon('pill', 17, 'var(--deep)')}</span>
+      <span class="pickcard-t">${esc(REPRO_SUPP.title)}</span>
+      <span class="pickcard-b">${esc(TX_SUPP_NOTE)}</span>
+      <span class="pickcard-go">Read it ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>
+
+    ${dsec('Sources', sourceRows(TX_SOURCES))}
+    <p class="disclaimer">${esc(TX_DISCLAIMER)}</p>
+  </div>`;
+}
+
+/* ------------------------------------------------------------------
+   THE WALKTHROUGH
+
+   Numbered, because this one genuinely is a sequence and the order is
+   the information. The "when" sits with the step rather than in a
+   separate column, because almost everybody's first question about a
+   stage is how long it lasts.
+   ------------------------------------------------------------------ */
+function screenTxIvf() {
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="tx">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">The IVF walkthrough</h1>
+    <p class="sub">Baseline to beta, in order.</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy"><p class="bodytext" style="margin:0">${esc(TX_IVF_INTRO)}</p></div>
+    <div class="card" style="margin-top:12px">
+      ${TX_IVF_STEPS.map((s) => `
+      <div class="txstep">
+        <span class="txstep-n">${s.n}</span>
+        <div>
+          <p class="txstep-t">${esc(s.label)}</p>
+          <p class="txstep-w">${icon('clock', 11, 'var(--sage)')} ${esc(s.when)}</p>
+          <p class="txstep-b">${esc(s.what)}</p>
+          <p class="txstep-note">${esc(s.note)}</p>
+        </div>
+      </div>`).join('')}
+    </div>
+    <div class="pickgrid" style="margin-top:14px">
+      ${txCard({ id: 'txret', ic: 'moon', t: esc(TX_RETRIEVAL.title), b: 'Retrieval day in detail.' })}
+      ${txCard({ id: 'txgrade', ic: 'flower', t: esc(TX_GRADE.title), b: 'Reading the embryo report.' })}
+    </div>
+    <p class="disclaimer">${esc(TX_DISCLAIMER)}</p>
+  </div>`;
+}
+
+/* ------------------------------------------------------------------
+   RETRIEVAL DAY
+
+   The hyperstimulation signs are the one thing on this screen that
+   could matter within the hour, so they get the alarm treatment and
+   they sit above the sources rather than at the bottom of a list.
+   ------------------------------------------------------------------ */
+function screenTxRet() {
+  const o = TX_RETRIEVAL.ohss;
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="tx">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(TX_RETRIEVAL.title)}</h1>
+    <p class="sub">${esc(TX_RETRIEVAL.head)}</p>
+  </div>
+  <div class="sc">
+    <div class="card">${TX_RETRIEVAL.rows.map(nshRow).join('')}</div>
+
+    <div class="szcard blush" style="margin-top:14px">
+      <div class="szcard-h">
+        <span class="szcard-ic">${icon('info', 15, '#8A5F54')}</span>
+        <span class="szcard-t">${esc(o.title)}</span>
+      </div>
+      <p class="bodytext" style="margin:0">${esc(o.body)}</p>
+      <ul class="dlist" style="margin-top:9px">
+        ${o.signs.map((s) => `<li>${esc(s)}</li>`).join('')}
+      </ul>
+      <p class="bodytext" style="margin-top:9px">${esc(o.close)}</p>
+    </div>
+
+    <p class="disclaimer">${esc(TX_DISCLAIMER)}</p>
+  </div>`;
+}
+
+/* ------------------------------------------------------------------
+   EMBRYO GRADING, ICSI, PGT-A, IUI
+
+   The same page shape: what it is, then what is worth knowing with
+   the evidence label on each line, then the questions to take to the
+   clinic. One function, four pages, because they really are the same
+   page and four near copies is how three of them drift.
+   ------------------------------------------------------------------ */
+function txPage(p, extra) {
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="tx">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(p.title)}</h1>
+    <p class="sub">${esc(p.head)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy"><p class="bodytext" style="margin:0">${esc(p.intro)}</p></div>
+    ${extra || ''}
+    <p class="sect" style="margin-top:16px">Worth knowing</p>
+    <div class="card">${p.rows.map(nshRow).join('')}</div>
+    ${p.ask && p.ask.length ? dsec('Worth asking them', p.ask.map((q) => `
+      <div class="quote"><p class="q">${esc('“' + q + '”')}</p></div>`).join('')) : ''}
+    <p class="disclaimer">${esc(TX_DISCLAIMER)}</p>
+  </div>`;
+}
+
+function txKv(rows) {
+  return `
+  <div class="card" style="margin-top:12px">
+    ${rows.map((r) => `
+    <div class="txkv">
+      <p class="txkv-k">${esc(r.k)}</p>
+      <p class="txkv-v">${esc(r.v)}</p>
+    </div>`).join('')}
+  </div>`;
+}
+
+function screenTxGrade() { return txPage(TX_GRADE, txKv(TX_GRADE.parts)); }
+function screenTxIcsi() { return txPage(TX_ICSI); }
+function screenTxPgt() { return txPage(TX_PGT); }
+function screenTxIui() {
+  return txPage(TX_IUI, `<p class="sect" style="margin-top:16px">How a cycle runs</p>`
+    + txKv(TX_IUI.steps).replace('style="margin-top:12px"', 'style="margin-top:0"'));
+}
+
+/* ------------------------------------------------------------------
+   THE LOG
+
+   Three things get written down during a cycle and they are not the
+   same shape: a drug and a dose, an appointment with three numbers
+   on it, and a milestone with a count. Three small forms rather than
+   one clever one.
+   ------------------------------------------------------------------ */
+function txFormOpen(which) {
+  return store.txForm === which;
+}
+
+function txLogLine(opt) {
+  return `
+  <div class="txline">
+    <span class="txline-ic">${icon(opt.ic, 14, 'var(--sage)')}</span>
+    <div class="txline-b">
+      <p class="txline-t">${esc(opt.t)}</p>
+      ${opt.s ? `<p class="txline-s">${esc(opt.s)}</p>` : ''}
+    </div>
+    <button class="rewx" data-txdel="${esc(opt.which)}" data-id="${esc(opt.id)}"
+      aria-label="Remove">${icon('close', 14, 'var(--faint)')}</button>
+  </div>`;
+}
+
+function screenTxLog() {
+  const c = txOpen();
+  const past = txCycles().filter((x) => x && x.closedAt);
+
+  if (!c) {
+    return `
+    <div class="sc-head">
+      <button class="back" data-back="tx">${icon('back', 15, 'var(--deep)')} Back</button>
+      <h1 class="title sm" style="margin-top:6px">${esc(TX_LOG_TITLE)}</h1>
+      <p class="sub">${esc(TX_LOG_SUB)}</p>
+    </div>
+    <div class="sc">
+      <div class="card">
+        <p class="bodytext" style="margin:0">${esc(TX_LOG_NONE)}</p>
+        <div class="chips" style="margin-top:12px">
+          ${TX_KINDS.map((k) => `
+          <button class="chip" data-txstart="${esc(k.id)}">${esc(TX_START)}: ${esc(k.label)}</button>`).join('')}
+        </div>
+        <p class="tiny" style="margin-top:10px">${TX_KINDS.map((k) => esc(k.label) + ' — '
+    + esc(k.blurb)).join('. ')}.</p>
+      </div>
+      ${past.length ? `
+      <p class="sect" style="margin-top:18px">Before</p>
+      <div class="card">
+        ${past.slice().reverse().map((x) => `
+        <div class="txline">
+          <span class="txline-ic">${icon('check', 14, 'var(--sage)')}</span>
+          <div class="txline-b">
+            <p class="txline-t">${esc(txKindLabel(x))}, ${esc(calDayLabel(txDayKey(x.startedAt)))}</p>
+            <p class="txline-s">${txList(x, 'miles').length} milestones, ${
+    txList(x, 'appts').length} appointments, ${txList(x, 'meds').length} medications</p>
+          </div>
+        </div>`).join('')}
+      </div>` : ''}
+      <p class="disclaimer">${esc(TX_DISCLAIMER)}</p>
+    </div>`;
+  }
+
+  const meds = txList(c, 'meds');
+  const appts = txList(c, 'appts');
+  const miles = txList(c, 'miles');
+  const done = {};
+  miles.forEach((m) => { done[m.mid] = m; });
+
+  return `
+  <div class="sc-head">
+    <button class="back" data-back="tx">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(TX_LOG_TITLE)}</h1>
+    <p class="sub">${esc(txKindLabel(c))}, day ${txDayOf(c)}. ${esc(TX_LOG_SUB)}</p>
+  </div>
+  <div class="sc">
+
+    ${/* MILESTONES FIRST.
+          They are the spine of a cycle and they are what somebody
+          reads back to a nurse. Meds and appointments are the detail
+          underneath. */''}
+    <p class="sect">Where you are</p>
+    <div class="card">
+      ${TX_MILESTONES.map((m) => {
+    const hit = done[m.id];
+    return `
+      <div class="txmile${hit ? ' on' : ''}">
+        <span class="txmile-ic">${icon(hit ? 'check' : 'circle', 13,
+    hit ? 'var(--sage)' : 'var(--faint)')}</span>
+        <div class="txline-b">
+          <p class="txline-t">${esc(m.label)}</p>
+          ${hit ? `<p class="txline-s">${esc(calDayLabel(hit.day))}${
+    hit.count ? ' · ' + esc(hit.count) + (m.unit ? ' ' + esc(m.unit) : '') : ''}${
+    hit.at ? ' · ' + esc(hit.at) : ''}</p>` : ''}
+        </div>
+        ${hit ? `
+        <button class="rewx" data-txdel="miles" data-id="${esc(hit.id)}"
+          aria-label="Remove">${icon('close', 14, 'var(--faint)')}</button>`
+    : `<button class="chip tiny" data-txmile="${esc(m.id)}">Log</button>`}
+      </div>`;
+  }).join('')}
+    </div>
+
+    ${txFormOpen('mile') && store.txMileId ? (() => {
+    const m = txMile(store.txMileId);
+    if (!m) return '';
+    return `
+    <div class="card" style="margin-top:10px">
+      <p class="eyebrow">${icon('check', 11, 'var(--sage)')} ${esc(m.label)}</p>
+      <p class="tiny" style="margin-top:9px">Which day</p>
+      <input id="txmileday" class="inp" type="date" value="${esc(txToday())}" style="margin-top:5px">
+      ${m.count ? `
+      <p class="tiny" style="margin-top:9px">${esc(m.count)}</p>
+      <input id="txmilecount" class="inp" inputmode="numeric" maxlength="8" style="margin-top:5px">` : ''}
+      ${m.timed ? `
+      <p class="tiny" style="margin-top:9px">What time (the one thing worth writing down exactly)</p>
+      <input id="txmiletime" class="inp" type="time" style="margin-top:5px">` : ''}
+      <div class="bpbar" style="margin-top:11px">
+        <button class="btn" data-txsave="mile">Save it</button>
+        <button class="btn ghost" data-txform="">Cancel</button>
+      </div>
+    </div>`;
+  })() : ''}
+
+    ${/* MEDICATIONS */''}
+    <p class="sect" style="margin-top:18px">Medications</p>
+    <div class="card">
+      ${meds.length ? meds.slice().reverse().map((m) => txLogLine({
+    which: 'meds', id: m.id, ic: 'pill', t: m.name,
+    s: [m.dose, m.at ? m.at : '', calDayLabel(m.day)].filter(Boolean).join(' · '),
+  })).join('') : `<p class="tiny">${esc(TX_LOG_EMPTY)}</p>`}
+    </div>
+    ${txFormOpen('med') ? `
+    <div class="card" style="margin-top:10px">
+      <p class="eyebrow">${icon('pill', 11, 'var(--sage)')} ${esc(TX_ADD_MED)}</p>
+      <input id="txmedname" class="inp" style="margin-top:8px" maxlength="40"
+        placeholder="What it is called">
+      <div class="chips" style="margin-top:8px">
+        ${TX_MED_COMMON.map((n) => `
+        <button class="chip tiny" data-txmedpick="${esc(n)}">${esc(n)}</button>`).join('')}
+      </div>
+      <p class="tiny" style="margin-top:9px">Dose</p>
+      <input id="txmeddose" class="inp" style="margin-top:5px" maxlength="24"
+        placeholder="225 iu, 2 tablets, 1 ml">
+      <p class="tiny" style="margin-top:9px">Day and time</p>
+      <div class="bpbar" style="margin-top:5px">
+        <input id="txmedday" class="inp" type="date" value="${esc(txToday())}">
+        <input id="txmedtime" class="inp" type="time">
+      </div>
+      <div class="bpbar" style="margin-top:11px">
+        <button class="btn" data-txsave="med">Save it</button>
+        <button class="btn ghost" data-txform="">Cancel</button>
+      </div>
+    </div>`
+    : `<button class="btn ghost" style="width:100%;margin-top:9px" data-txform="med">
+      ${icon('plus', 14, 'var(--deep)')} ${esc(TX_ADD_MED)}</button>`}
+
+    ${/* APPOINTMENTS. The three numbers are the ones every monitoring
+          scan produces and the ones nobody can ever remember by the
+          time they are asked for them. */''}
+    <p class="sect" style="margin-top:18px">Appointments</p>
+    <div class="card">
+      ${appts.length ? appts.slice().reverse().map((a) => txLogLine({
+    which: 'appts', id: a.id, ic: 'calendar',
+    t: a.note || 'Monitoring',
+    s: [calDayLabel(a.day)].concat(TX_APPT_FIELDS
+      .filter((f) => a[f.id])
+      .map((f) => f.label + ': ' + a[f.id])).join(' · '),
+  })).join('') : `<p class="tiny">${esc(TX_LOG_EMPTY)}</p>`}
+    </div>
+    ${txFormOpen('appt') ? `
+    <div class="card" style="margin-top:10px">
+      <p class="eyebrow">${icon('calendar', 11, 'var(--sage)')} ${esc(TX_ADD_APPT)}</p>
+      <input id="txapptnote" class="inp" style="margin-top:8px" maxlength="50"
+        placeholder="Monitoring scan, baseline, consult">
+      <p class="tiny" style="margin-top:9px">Which day</p>
+      <input id="txapptday" class="inp" type="date" value="${esc(txToday())}" style="margin-top:5px">
+      <p class="tiny" style="margin-top:9px">Their numbers, if they gave you any</p>
+      <div class="txfields">
+        ${TX_APPT_FIELDS.map((f) => `
+        <label class="txfield">
+          <span class="txfield-l">${esc(f.label)}</span>
+          <input id="txappt_${esc(f.id)}" class="inp" inputmode="numeric" maxlength="8">
+        </label>`).join('')}
+      </div>
+      <div class="bpbar" style="margin-top:11px">
+        <button class="btn" data-txsave="appt">Save it</button>
+        <button class="btn ghost" data-txform="">Cancel</button>
+      </div>
+    </div>`
+    : `<button class="btn ghost" style="width:100%;margin-top:9px" data-txform="appt">
+      ${icon('plus', 14, 'var(--deep)')} ${esc(TX_ADD_APPT)}</button>`}
+
+    <div class="card leafy" style="margin-top:16px">
+      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Ask Willow</p>
+      <p class="bodytext" style="margin-top:7px">She can see what you have logged, so she can answer
+        about your own numbers rather than the average ones.</p>
+      <button class="btn" style="width:100%;margin-top:11px" data-mycycle="ask"
+        data-q="${esc('Looking at what I have logged this cycle so far, is there anything worth '
+    + 'knowing or worth asking my clinic?')}">Ask about this cycle</button>
+    </div>
+
+    <button class="btn ghost" style="width:100%;margin-top:14px" data-txclose="1">
+      ${esc(TX_END)}</button>
+
+    <p class="disclaimer">${esc(TX_DISCLAIMER)}</p>
   </div>`;
 }
 
@@ -32899,6 +33505,21 @@ function willowPanel() {
         <div class="chips" style="gap:6px">
           ${offers.map((o) => `
             <button class="chip" data-reproask="${esc(o.id)}">${esc(o.label)}</button>`).join('')}
+        </div>`;
+      })()}
+
+      ${/* And again for a treatment cycle. Three moments in a whole
+            round of IVF, each once, and "not now" ends it. */''}
+      ${(() => {
+        const n = nudgeState();
+        if (n.kind !== 'tx' || n.gone) return '';
+        const offers = txWillowOffers();
+        if (!offers.length) return '';
+        return `
+        <p class="tiny" style="margin:10px 2px 6px">Only if you want to</p>
+        <div class="chips" style="gap:6px">
+          ${offers.map((o) => `
+            <button class="chip" data-txask="${esc(o.id)}">${esc(o.label)}</button>`).join('')}
         </div>`;
       })()}
     </div>
