@@ -18908,6 +18908,23 @@ function screenRepro() {
     <p class="tiny" style="margin-top:7px">${icon('shield', 11, 'var(--sage)')} ${esc(REPRO_PRIVACY)}</p>
   </div>
   <div class="sc">
+    ${/* EVERYTHING IT IS HOLDING, IN ONE PLACE.
+
+          She asked whether the app remembers all of it. It did, but
+          there was nowhere she could look and see that it had, which
+          is not the same thing. This reads it all back. */''}
+    ${reproSummary(r).length ? `
+    <div class="card leafy" style="margin-bottom:13px">
+      <p class="eyebrow">${icon('shield', 11, 'var(--sage)')} ${esc(REPRO_SUMMARY_TITLE)}</p>
+      <div style="margin-top:9px">
+        ${reproSummary(r).map((line) => `
+        <p class="rpsum">${icon('check', 13, 'var(--sage)')} <span>${esc(line)}</span></p>`).join('')}
+      </div>
+      ${reproTubesGone(r) ? `
+      <p class="tiny" style="margin-top:10px">${esc(REPRO_TUBES_GONE)}</p>` : ''}
+      <p class="tiny" style="margin-top:10px">${esc(REPRO_SUMMARY_NOTE)}</p>
+    </div>` : ''}
+
     ${REPRO_CONDITIONS.map((c) => {
     const on = !!r[c.id];
     const page = reproPageFor(c.id);
@@ -18936,10 +18953,36 @@ function screenRepro() {
             data-reprodetail="${esc(c.id)}" data-key="length" data-val="${esc(tl.id)}"
             aria-pressed="${r[c.id + ':length'] === tl.id}">${esc(tl.label)}</button>`).join('')}
       </div>` : ''}
+      ${/* NOW, OR BEHIND HER.
+
+            Without this a tick means "I have this", which is wrong for
+            anybody whose tube has been taken out, and it is the whole
+            difference between a page telling her to go and get
+            something done and a page telling her what it means that it
+            is already done. */''}
+      ${on && c.when ? `
+      <div class="chips" style="margin-top:10px">
+        ${REPRO_WHEN.map((w) => `
+          <button class="chip${r[c.id + ':when'] === w.id ? ' on' : ''}"
+            data-reprodetail="${esc(c.id)}" data-key="when" data-val="${esc(w.id)}"
+            aria-pressed="${r[c.id + ':when'] === w.id}">${esc(w.label)}</button>`).join('')}
+      </div>` : ''}
+      ${on && reproAsksFix(c, r) ? `
+      <p class="tiny" style="margin-top:10px">What was done about it</p>
+      <div class="chips" style="margin-top:5px">
+        ${reproFixesFor(c.id).map((f) => `
+          <button class="chip${r[c.id + ':fix'] === f.id ? ' on' : ''}"
+            data-reprodetail="${esc(c.id)}" data-key="fix" data-val="${esc(f.id)}"
+            aria-pressed="${r[c.id + ':fix'] === f.id}">${esc(f.label)}</button>`).join('')}
+      </div>
+      ${(() => {
+    const fx = reproFixesFor(c.id).filter((f) => f.id === r[c.id + ':fix'])[0];
+    return fx && fx.note ? `<p class="tiny" style="margin-top:6px">${esc(fx.note)}</p>` : '';
+  })()}` : ''}
       ${on && page ? `
       <button class="hhalf-go" style="width:100%;justify-content:center;margin-top:10px"
         data-go="repro" data-id="${esc(c.id)}">
-        Read about ${esc(c.label.toLowerCase())} ${icon('chev', 12, 'var(--deep)')}</button>` : ''}
+        Read about ${esc(page.title)} ${icon('chev', 12, 'var(--deep)')}</button>` : ''}
     </div>`;
   }).join('')}
 
@@ -18980,6 +19023,25 @@ function viewRepro(id) {
     <div class="card leafy">
       <p class="bodytext" style="margin:0">${esc(page.body)}</p>
     </div>
+    ${/* A page that opens by telling her to get something done, when
+          she has already had it done, reads as an app that was not
+          listening. */''}
+    ${r[id + ':when'] === 'past' && REPRO_PAST_NOTE[id] ? `
+    <div class="szcard" style="margin-top:12px">
+      <div class="szcard-h">
+        <span class="szcard-ic">${icon('check', 15, 'var(--deep)')}</span>
+        <span class="szcard-t">${esc(reproLine(REPRO_CONDITIONS.filter((x) => x.id === id)[0], r))}</span>
+      </div>
+      <p class="bodytext" style="margin:0">${esc(REPRO_PAST_NOTE[id])}</p>
+    </div>` : ''}
+    ${reproTubesGone(r) && (id === 'hydro' || id === 'tied') ? `
+    <div class="szcard blush" style="margin-top:12px">
+      <div class="szcard-h">
+        <span class="szcard-ic">${icon('info', 15, '#8A5F54')}</span>
+        <span class="szcard-t">What that means for treatment</span>
+      </div>
+      <p class="bodytext" style="margin:0">${esc(REPRO_TUBES_GONE)}</p>
+    </div>` : ''}
     <p class="sect" style="margin-top:16px">Worth knowing</p>
     <div class="card">${page.rows.map(nshRow).join('')}</div>
     ${page.ask && page.ask.length ? dsec('Worth asking', page.ask.map((q) => `
@@ -19214,7 +19276,8 @@ function screenTx() {
       ${txCard({ id: 'txpgt', ic: 'puzzle', t: esc(TX_PGT.title),
     b: 'PGT-A, mosaics, and the number to ask for instead.' })}
       ${txCard({ id: 'txiui', ic: 'clock', t: esc(TX_IUI.title),
-    b: 'The simpler route, and knowing in advance when to stop.' })}
+    b: 'The simpler route, and knowing in advance when to stop.',
+    tag: reproTubesGone(reproState()) ? 'Not your route' : '' })}
     </div>
 
     <button class="pickcard" style="width:100%;margin-top:10px"
@@ -19342,7 +19405,19 @@ function screenTxGrade() { return txPage(TX_GRADE, txKv(TX_GRADE.parts)); }
 function screenTxIcsi() { return txPage(TX_ICSI); }
 function screenTxPgt() { return txPage(TX_PGT); }
 function screenTxIui() {
-  return txPage(TX_IUI, `<p class="sect" style="margin-top:16px">How a cycle runs</p>`
+  /* Somebody who has recorded that both tubes are gone should not be
+     read a page about a treatment that cannot work for her. It says so
+     at the top rather than four screens down. */
+  const gone = reproTubesGone(reproState());
+  const head = gone ? `
+  <div class="szcard blush" style="margin-top:12px">
+    <div class="szcard-h">
+      <span class="szcard-ic">${icon('info', 15, '#8A5F54')}</span>
+      <span class="szcard-t">This one is not your route</span>
+    </div>
+    <p class="bodytext" style="margin:0">${esc(REPRO_TUBES_GONE)}</p>
+  </div>` : '';
+  return txPage(TX_IUI, head + `<p class="sect" style="margin-top:16px">How a cycle runs</p>`
     + txKv(TX_IUI.steps).replace('style="margin-top:12px"', 'style="margin-top:0"'));
 }
 
