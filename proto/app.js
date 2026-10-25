@@ -18892,16 +18892,37 @@ function postSave() {
      hole in it, so the button is off until the upload lands. */
   if (store.photoBusy) return;
   store.posts = Array.isArray(store.posts) ? store.posts : [];
-  store.posts.unshift({
+  /* WHY THIS SAVES AS PRIVATE EVEN WHEN SHE PICKED SHARE TO COMMUNITY.
+
+     Her report, October 2026: "confused how this works, is this when
+     you post on your own profile?" She was right to be confused,
+     because this was broken.
+
+     Picking "Share to Community" on a NEW post only wrote the word
+     public onto her own record. Nothing was ever sent anywhere, because
+     postSave never called feedShare. Flipping an EXISTING post to
+     public did call it and did work, so the feature looked implemented
+     and failed only on the path everybody actually uses, which is
+     writing something and sharing it in one go.
+
+     So the post is created private and the share is attempted straight
+     after. It becomes public only once the write to the shared feed has
+     actually landed, which is what postSetVisibility already says in
+     its own comment: it only counts as public once it is. If the share
+     is refused, by the filter or by a dead connection, the post stays
+     and stays private, and feedShare has already told her why. */
+  const wantsShare = d.visibility === 'public';
+  const fresh = {
     id: 'p' + Date.now() + Math.floor(Math.random() * 1000),
     text: text,
     photos: d.photos.slice(0, POST_MAX_FILES),
     files: d.files.slice(0, POST_MAX_FILES),
-    visibility: d.visibility === 'public' ? 'public' : 'private',
+    visibility: 'private',
     group: isGroupId(d.group || '') ? (d.group || '') : '',
     childId: d.childId || '',
     at: Date.now(),
-  });
+  };
+  store.posts.unshift(fresh);
   /* Kept to a sensible number so the account record cannot grow without
      limit. Photos are the heavy part. */
   if (store.posts.length > 200) store.posts.length = 200;
@@ -18918,6 +18939,16 @@ function postSave() {
   store.parentUpdatedAt = Date.now();
   flushStore();
   render();
+
+  if (wantsShare) {
+    feedShare(fresh).then((ok) => {
+      if (!ok) return;
+      fresh.visibility = 'public';
+      store.parentUpdatedAt = Date.now();
+      flushStore();
+      render();
+    });
+  }
 }
 
 function postDelete(id) {
