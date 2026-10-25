@@ -175,6 +175,32 @@ export const FIND_INDEX = [
   { title: 'Lists',
     words: 'list lists grocery groceries shopping to do todo pack packing wish list what to ask appointment questions shared checklist',
     go: { screen: 'lists' } },
+
+  /* FERTILITY TREATMENT.
+
+     Somebody mid cycle types the word they were given at the clinic,
+     not the word on the screen, so the walkthrough answers to stims,
+     trigger, retrieval, beta and twilight as well as to IVF. */
+  { title: 'IVF, ICSI and IUI', where: 'Your cycle, Reproductive health',
+    words: 'ivf icsi iui fertility treatment clinic cycle stimulation stims injections '
+      + 'trigger shot retrieval egg collection transfer frozen freeze all beta two week wait '
+      + 'embryologist protocol antagonist',
+    go: { screen: 'tx' } },
+  { title: 'Retrieval day', where: 'IVF, ICSI and IUI',
+    words: 'retrieval egg collection twilight sedation anaesthesia anesthesia propofol asleep '
+      + 'fasting nil by mouth ohss hyperstimulation bloated recovery',
+    go: { screen: 'txret' } },
+  { title: 'Embryo grading', where: 'IVF, ICSI and IUI',
+    words: 'embryo grading grade blastocyst blast 4aa 3bc inner cell mass trophectoderm day 5 '
+      + 'day 3 report euploid aneuploid mosaic quality',
+    go: { screen: 'txgrade' } },
+  { title: 'Genetic testing of embryos', where: 'IVF, ICSI and IUI',
+    words: 'pgt pgta pgtm genetic testing embryo biopsy aneuploidy chromosomes mosaic screening',
+    go: { screen: 'txpgt' } },
+  { title: 'Logging an IVF or IUI cycle', where: 'IVF, ICSI and IUI, Your cycle',
+    words: 'log medications meds dose injections appointment follicles oestradiol estradiol e2 '
+      + 'lining millimetres milestones eggs fertilised frozen beta track treatment cycle',
+    go: { screen: 'txlog' } },
 ];
 
 function findNorm(s) {
