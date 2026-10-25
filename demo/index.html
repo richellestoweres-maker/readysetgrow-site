@@ -2438,7 +2438,7 @@ body.calpage .mark-holder{margin-bottom:-20px}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-25 03:58';
+const BUILD_STAMP = '2026-10-25 04:34';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -59930,19 +59930,27 @@ function nlFirstTab(months) {
  * promising nothing.
  */
 
+/* THE SECOND LINE IS NOT PADDING.
+
+   The explanation of how moderation works was far too long and she was
+   right to cut it, but what it PROMISED is not decorative: that you are
+   told when something happens to your post, which rule it touched, and
+   that a person will look again if you ask. The app implements all
+   three, several places in the world require them of an automated
+   filter, and a rules page that quietly drops them is a rules page that
+   has stopped being true. So it is two short sentences instead of a
+   paragraph, and the commitments survive.
+
+   The old first line also claimed anybody could start their own room.
+   That has never been true: the rooms are a fixed list and there is a
+   request flow instead, for the reason written next to it. Removed
+   rather than shortened, because an inaccurate promise is worse than a
+   long one. */
 const CR_INTRO = [
-  'Welcome to the Ready Set Grow community. This is a place for parents and caregivers to ask '
-    + 'the questions they are too tired to google, to say the thing they cannot say out loud yet, '
-    + 'and to hear from somebody who has been awake at the same hour for the same reason. You can '
-    + 'post in any forum here, and you can start your own if the room you need does not exist '
-    + 'yet.',
-  'Here is how moderation works, so nothing feels like a mystery. Some posts are checked '
-    + 'automatically the moment you hit post, because this app is run by a very small team and a '
-    + 'real person cannot read everything the minute it goes up. If something happens to your '
-    + 'post, you will always be told what happened, which rule it touched, and what in the post '
-    + 'triggered it, and you will always have a way to ask a human to look again. Automated '
-    + 'checks get things wrong sometimes. When that happens it is our mistake to fix, not yours '
-    + 'to apologize for.',
+  'A place to ask the questions you are too tired to google, and to hear from somebody awake at '
+    + 'the same hour for the same reason.',
+  'Some posts are checked automatically when you post them. If something happens to yours you '
+    + 'will be told which rule it touched, and you can always ask a person to look again.',
 ];
 
 const CR_RULES = [
