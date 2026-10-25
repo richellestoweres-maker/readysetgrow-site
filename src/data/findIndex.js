@@ -31,6 +31,15 @@ export const FIND_INDEX = [
 
   { title: 'Your cycle and period log', where: 'Home, Your cycle', go: { screen: 'mycycle' },
     words: 'period cycle log period flow mood symptoms cramps fertile window ovulation late period flo pms birth control' },
+  { title: 'PCOS, endometriosis and trying to conceive', where: 'Home, Your cycle', go: { screen: 'repro' },
+    words: 'pcos polycystic ovary endometriosis endo stage adenomyosis tubes tied sterilisation '
+      + 'ligation hydrosalpinx bilateral blocked tubes ttc trying to conceive infertility infertile '
+      + 'ivf iui icsi fertility amh ovarian reserve low amh fibroids thyroid recurrent miscarriage '
+      + 'male factor unexplained letrozole clomid metformin irregular periods' },
+  { title: 'Fertility supplements, and what the trials show', where: 'Home, Your cycle', go: { screen: 'reprosupp' },
+    words: 'supplements coq10 coenzyme q10 dhea inositol myo-inositol melatonin vitamin d omega 3 '
+      + 'folic acid egg quality it starts with the egg rebecca fett fertility vitamins' },
+
   { title: 'Eating around your cycle', where: 'Home, Your cycle', go: { screen: 'nourish' },
     words: 'food eat eating nutrition diet seed cycling seeds flax pumpkin sesame sunflower iron '
       + 'calcium magnesium zinc vitamin e cramps pms period pain luteal follicular ovulation phase '
