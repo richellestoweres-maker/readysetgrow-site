@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-25 14:26">
+<meta name="rsg-build" content="2026-10-25 15:00">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -2616,7 +2616,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-25 14:26';
+const BUILD_STAMP = '2026-10-25 15:00';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -31891,6 +31891,392 @@ function birthdaySeenKey(who, ref) {
     const t = cycleToday(ref);
     return String(who) + ':' + t.y;
 }
+const REPRO_TITLE = 'Your reproductive health';
+const REPRO_SUB = 'Tick anything that applies. It only changes what the app shows you.';
+const REPRO_PRIVACY = 'Only you can see this. It never reaches the community.';
+const REPRO_NONE = 'Nothing ticked yet.';
+const REPRO_CONDITIONS = [
+    { id: 'pcos', label: 'PCOS', ic: 'circle',
+        blurb: 'Polycystic ovary syndrome' },
+    { id: 'endo', label: 'Endometriosis', ic: 'flower',
+        blurb: 'Including adenomyosis', stages: true },
+    { id: 'hydro', label: 'Hydrosalpinx', ic: 'drop',
+        blurb: 'Fluid in one or both tubes', sides: true },
+    { id: 'tied', label: 'Tubes tied', ic: 'shield',
+        blurb: 'Sterilisation, or removal' },
+    { id: 'ttc', label: 'Trying to conceive', ic: 'heart',
+        blurb: 'However long it has been', months: true },
+    { id: 'ivf', label: 'IVF or IUI', ic: 'leaf',
+        blurb: 'In treatment, or about to be' },
+    { id: 'dor', label: 'Low ovarian reserve', ic: 'moon',
+        blurb: 'Low AMH, or told you have few eggs' },
+    { id: 'fibroids', label: 'Fibroids', ic: 'circle' },
+    { id: 'thyroid', label: 'Thyroid', ic: 'pill',
+        blurb: 'Under or over active' },
+    { id: 'loss', label: 'Recurrent loss', ic: 'heart',
+        blurb: 'Two or more' },
+    { id: 'male', label: 'Male factor', ic: 'user',
+        blurb: 'On his side of it' },
+    { id: 'unexplained', label: 'Unexplained', ic: 'info',
+        blurb: 'Everything came back normal' },
+];
+const ENDO_STAGES = [
+    { id: '1', label: 'Stage 1', note: 'Minimal' },
+    { id: '2', label: 'Stage 2', note: 'Mild' },
+    { id: '3', label: 'Stage 3', note: 'Moderate' },
+    { id: '4', label: 'Stage 4', note: 'Severe' },
+    { id: 'unknown', label: 'Not staged', note: 'Or nobody told me' },
+];
+const HYDRO_SIDES = [
+    { id: 'one', label: 'One side' },
+    { id: 'both', label: 'Both sides' },
+    { id: 'unknown', label: 'Not sure' },
+];
+const TTC_LENGTHS = [
+    { id: 'u6', label: 'Under 6 months', months: 3 },
+    { id: '6to12', label: '6 to 12 months', months: 9 },
+    { id: '1to2', label: '1 to 2 years', months: 18 },
+    { id: 'over2', label: 'Over 2 years', months: 30 },
+];
+const REPRO_PAGES = {
+    pcos: {
+        title: 'PCOS',
+        head: 'A diagnosis of exclusion, and the most over-marketed condition in women\'s health',
+        body: 'It is diagnosed on 2 of 3 things, once other causes are ruled out: signs of high androgens, '
+            + 'cycles that do not come regularly, and either polycystic ovaries on a scan or a raised AMH. '
+            + 'If you have irregular cycles and high androgens, you do not need a scan at all to be '
+            + 'diagnosed.',
+        rows: [
+            { t: 'Either a scan or AMH, not both', s: 'solid',
+                why: 'The 2023 international guideline allows AMH to stand in for the scan in adults, and '
+                    + 'deliberately says to use one or the other, to stop the overdiagnosis that comes from '
+                    + 'counting both.' },
+            { t: 'Different rules under 18', s: 'solid',
+                why: 'An adolescent needs both high androgens and irregular cycles. Scans and AMH are not '
+                    + 'recommended at that age because too many normal teenagers look polycystic.' },
+            { t: 'Letrozole is first line for ovulation, not clomid', s: 'solid',
+                why: 'The guideline recommends it over clomiphene for ovulation, pregnancy and live birth. '
+                    + 'It is still used off label in a lot of places, so you may have to ask for it by name.' },
+            { t: 'Metformin is mainly metabolic', s: 'solid',
+                why: 'Recommended at a BMI of 25 or over for the metabolic side. It can help fertility on '
+                    + 'its own, but there are more effective ovulation drugs.' },
+            { t: 'Inositol is not a fertility treatment', s: 'thin',
+                why: 'This is the one people will argue with. The guideline calls it experimental therapy '
+                    + 'for infertility and does not recommend it, because the benefit and risk are both too '
+                    + 'uncertain. It is cheap and low harm, so taking it is a reasonable personal choice. It '
+                    + 'is not a treatment, and it is not a reason to delay seeing somebody.' },
+        ],
+        ask: ['Can we use letrozole rather than clomid?',
+            'Should my insulin and lipids be checked?',
+            'Was anything else ruled out before this diagnosis?'],
+    },
+    endo: {
+        title: 'Endometriosis',
+        head: 'The stage was never about your pain',
+        body: 'The four stages come from a system built to predict fertility, scored on ovarian disease and '
+            + 'adhesions. Stages 1 and 2 are minimal to mild, 3 and 4 moderate to severe.',
+        rows: [
+            { t: 'Your stage does not predict your pain', s: 'solid',
+                why: 'The European guideline says the staging system neither predicts the severity of pain '
+                    + 'nor the complexity of surgery. Stage 4 with almost no symptoms happens, and so does '
+                    + 'stage 1 with pain that stops a life. If anybody has used your stage to tell you how '
+                    + 'much it should hurt, they were wrong.' },
+            { t: 'Where it is matters more than the stage', s: 'decent',
+                why: 'Superficial, ovarian endometrioma and deep endometriosis behave differently and are '
+                    + 'treated differently. That subtype is more useful than the number.' },
+            { t: 'Most women with endometriosis are fertile', s: 'solid',
+                why: 'An estimated 60 to 70 percent. It is not a sentence, and it is worth hearing before '
+                    + 'anything else.' },
+            { t: 'Hormone treatment does not improve fertility', s: 'solid',
+                why: 'Not recommended while trying to conceive. It has not been shown to raise the chance '
+                    + 'of pregnancy. It is still useful for pain if you are not trying right now.' },
+            { t: 'Surgery on an endometrioma has a cost', s: 'solid',
+                why: 'Removing lesions can improve the chance of conceiving naturally, but operating on an '
+                    + 'ovarian endometrioma risks the ovary itself. That trade is a conversation to have out '
+                    + 'loud before anybody books it.' },
+            { t: 'Pregnancy is not a cure', s: 'solid',
+                why: 'It is still said. It is not true, and it is not a reason to have a baby.' },
+        ],
+        ask: ['Which subtype do I have, not just which stage?',
+            'If surgery is suggested, what happens to my ovarian reserve?',
+            'What is my Endometriosis Fertility Index?'],
+    },
+    hydro: {
+        title: 'Hydrosalpinx',
+        head: 'The one thing worth treating before IVF, and the numbers are not close',
+        body: 'A blocked tube filled with fluid. It matters for IVF beyond the blockage itself, because the '
+            + 'fluid can wash back into the womb and work against an embryo that was otherwise fine.',
+        rows: [
+            { t: 'Untreated, it roughly halves the odds', s: 'solid',
+                why: 'In tubal infertility, pregnancy was about 20 percent with a hydrosalpinx against 31 '
+                    + 'percent without, and delivery 13 against 23 percent per transfer. Pregnancy loss was '
+                    + 'about 74 percent higher.' },
+            { t: 'Treating it first changes the result', s: 'solid',
+                why: 'In a randomised trial, clinical pregnancy was 37 percent after the tube was removed '
+                    + 'against 24 percent with no intervention, and delivery 29 against 16 percent. The '
+                    + 'benefit was largest in women whose hydrosalpinx was visible on ultrasound.' },
+            { t: 'Removal or clipping, both count', s: 'decent',
+                why: 'The 2025 WHO guideline conditionally suggests removing the tube or blocking it at the '
+                    + 'uterine end before IVF. A 2025 network meta analysis found no clear live birth '
+                    + 'difference between the strategies, so which operation is a surgical judgement rather '
+                    + 'than a settled answer.' },
+            { t: 'Both sides is a real conversation about your ovaries', s: 'decent',
+                why: 'Taking both tubes is definitive, but it disturbs the blood supply to both ovaries, '
+                    + 'and bilateral surgery showed a larger drop in AMH in one meta analysis. Clipping the '
+                    + 'tubes instead leaves them in place and may be preferred with low reserve, previous '
+                    + 'ovarian surgery or dense adhesions.' },
+            { t: 'Draining it is a fallback, not a fix', s: 'decent',
+                why: 'Aspiration is for when surgery is not possible or not wanted. It comes back.' },
+            { t: 'Collecting eggs before surgery is sometimes offered', s: 'thin',
+                why: 'Stimulating and freezing embryos first, then operating before transfer. The evidence '
+                    + 'on that order is observational and conflicting.' },
+        ],
+        ask: ['Is mine communicating with the womb, and is it visible on ultrasound?',
+            'Removal or clipping, and what does that do to my AMH?',
+            'If both sides, can we freeze embryos before the surgery?'],
+    },
+    tied: {
+        title: 'Tubes tied',
+        head: 'Still options, and they are different options',
+        body: 'Sterilisation is meant to be permanent and is one of the most effective contraceptives there '
+            + 'is. If you want to conceive afterwards there are two routes, and which one suits depends on '
+            + 'what was actually done to the tubes.',
+        rows: [
+            { t: 'Reversal or IVF, and it depends on the operation', s: 'decent',
+                why: 'Clips and rings leave more tube to rejoin than burning or removal does. If the tubes '
+                    + 'were removed entirely, reversal is not possible and IVF is the route. Ask which was '
+                    + 'done, and ask for the operation note.' },
+            { t: 'Age is the strongest factor in either route', s: 'solid',
+                why: 'More than the surgery itself. A reversal at 30 and a reversal at 42 are different '
+                    + 'propositions and a clinic should say so plainly.' },
+            { t: 'Reversal carries an ectopic risk', s: 'solid',
+                why: 'A rejoined tube is more likely to hold a pregnancy in the wrong place. Worth knowing '
+                    + 'the early signs, and worth an early scan if you do conceive.' },
+        ],
+        ask: ['What exactly was done to my tubes, and can I have the operation note?',
+            'For my age, would reversal or IVF give the better chance?'],
+    },
+    ttc: {
+        title: 'Trying to conceive',
+        head: 'There is a line, and it exists so nobody waits politely for years',
+        body: 'Not conceiving after 12 months of regular unprotected sex is the definition of infertility, '
+            + 'and it is 6 months if you are 35 or over. That is not a verdict. It is the point at which '
+            + 'you are entitled to be looked at rather than reassured.',
+        rows: [
+            { t: '12 months, or 6 if you are 35 or over', s: 'solid',
+                why: 'Both numbers are thresholds for investigation, not diagnoses. Earlier if you already '
+                    + 'know about irregular cycles, endometriosis, a tube problem, or anything on his side.' },
+            { t: 'Both of you get tested, at the same time', s: 'solid',
+                why: 'Male factor is involved in roughly half of cases and a semen analysis is quick, cheap '
+                    + 'and non invasive. A workup that tests only the woman first is a workup that wastes '
+                    + 'months.' },
+            { t: 'Timing matters less than frequency', s: 'decent',
+                why: 'Every 1 to 2 days across the fertile window beats trying to hit a single day. Apps '
+                    + 'and strips predict a window, not an event, and sex on a schedule costs more than it '
+                    + 'buys for most couples.' },
+            { t: 'A Mediterranean pattern: worth doing, not proven', s: 'thin',
+                why: 'The systematic review of 8 studies found 4 showed an association with assisted '
+                    + 'reproduction outcomes and 4 found nothing, and graded almost all of them low or very '
+                    + 'low quality. All observational, so none of it establishes cause. It is a good way to '
+                    + 'eat for reasons that have nothing to do with fertility, which is the honest case for '
+                    + 'it.' },
+            { t: 'Folic acid, and start before', s: 'solid',
+                why: '400 to 800 micrograms a day, from at least a month before conception. This is the one '
+                    + 'supplement that is not in doubt.' },
+        ],
+        ask: ['Can we both be tested, including a semen analysis?',
+            'Given my age and how long it has been, should we be referred now?'],
+    },
+    ivf: {
+        title: 'IVF and IUI',
+        head: 'The questions worth asking before you start paying',
+        body: 'Clinics differ enormously in what they offer, what they charge for, and how they report '
+            + 'success. These are the questions that change what you get.',
+        rows: [
+            { t: 'Ask for live birth per cycle started, by your age group', s: 'solid',
+                why: 'Not pregnancy per transfer, which is the flattering number. Per cycle started, live '
+                    + 'birth, your age band, at that clinic.' },
+            { t: 'Ask which add ons are evidence based', s: 'solid',
+                why: 'A great many extras are sold alongside IVF with thin or no evidence behind them. A '
+                    + 'good clinic will tell you which of its own add ons it cannot justify.' },
+            { t: 'A hydrosalpinx should be dealt with first', s: 'solid',
+                why: 'See the hydrosalpinx page. This is the clearest example of something worth fixing '
+                    + 'before a transfer rather than after a failed one.' },
+            { t: 'For endometriosis, surgery before IVF is not routine', s: 'solid',
+                why: 'The European guideline finds no clear benefit from medical or surgical treatment '
+                    + 'before IVF, with specific exceptions such as significant pain or an endometrioma '
+                    + 'blocking access to the ovary.' },
+        ],
+        ask: ['What is your live birth rate per cycle started for my age?',
+            'Which of your add ons would you not pay for yourself?',
+            'What is the plan if this cycle does not work?'],
+    },
+    dor: {
+        title: 'Low ovarian reserve',
+        head: 'It tells you about quantity, not about whether you can conceive',
+        body: 'AMH and antral follicle count estimate how many eggs are left. They predict how you will '
+            + 'respond to stimulation. They are much weaker at predicting whether you will conceive '
+            + 'naturally.',
+        rows: [
+            { t: 'A low AMH is not a diagnosis of infertility', s: 'solid',
+                why: 'It is a response predictor. Women with low AMH conceive naturally, and the number on '
+                    + 'its own should not be used to tell you otherwise.' },
+            { t: 'Age still outweighs the number', s: 'solid',
+                why: 'Egg quality tracks age more closely than it tracks reserve. A low AMH at 30 and a low '
+                    + 'AMH at 42 mean different things.' },
+            { t: 'DHEA and CoQ10 are not established', s: 'thin',
+                why: 'See the supplements page. Both are widely sold for this and neither has the trial '
+                    + 'evidence that the marketing implies.' },
+        ],
+        ask: ['What is my antral follicle count alongside my AMH?',
+            'Does this change the protocol you would use?'],
+    },
+};
+const REPRO_SUPP = {
+    title: 'Supplements, and what the trials actually show',
+    intro: 'Sorted by how good the evidence is rather than by how often you will be told to take it. Some '
+        + 'of these are cheap and harmless and a reasonable thing to try. None of them is a treatment, '
+        + 'and none is a reason to wait longer before being seen.',
+    rows: [
+        { t: 'Folic acid, 400 to 800 mcg', s: 'solid',
+            why: 'Not in doubt, and start at least a month before conception. The neural tube closes '
+                + 'within about 28 days, before most people know.' },
+        { t: 'Vitamin D, if you are low', s: 'decent',
+            why: 'In PCOS it has been linked to better ovulation and pregnancy rates and lower '
+                + 'miscarriage. Worth testing rather than guessing, and worth not megadosing.' },
+        { t: 'Myo-inositol, if you have PCOS', s: 'thin',
+            why: 'The best studied of the fashionable ones, with several small trials in PCOS showing '
+                + 'more mature eggs and better fertilisation. Results are mixed and the 2023 guideline '
+                + 'still calls it experimental for fertility. Reasonable to try, not a treatment.' },
+        { t: 'CoQ10', s: 'thin',
+            why: 'The headline supplement of the egg quality world. The human randomised trials are '
+                + 'described as inconclusive, and most of the striking results are in aged mice. Some '
+                + 'studies in poor responders reported better embryo quality. Plausible, unproven, and '
+                + 'expensive.' },
+        { t: 'Melatonin', s: 'thin',
+            why: 'Good mechanistic reasoning, inconsistent human results, and no agreed dose. Not a '
+                + 'sleeping tablet you should start on your own while trying.' },
+        { t: 'DHEA', s: 'thin',
+            why: 'Sold hard for low reserve on the back of very little. It is a hormone, it has side '
+                + 'effects, and it should not be taken without a clinic monitoring it.' },
+        { t: 'Omega-3', s: 'thin',
+            why: 'Limited human data and unclear dosing. Oily fish is a good idea anyway.' },
+    ],
+    book: {
+        title: 'On It Starts With the Egg',
+        body: 'It is better than most of the genre. The 90 day framing is real: the eggs ovulating in 3 '
+            + 'months are maturing now, which is why anything you change takes a season to show up. It '
+            + 'also pushes people towards their own numbers and their own clinic rather than away from '
+            + 'them.',
+        caveat: 'Where it runs ahead of the evidence is the supplement case. CoQ10, DHEA and melatonin are '
+            + 'presented with more confidence than the trials support, and the plastics and BPA advice '
+            + 'rests on much thinner ground than the folic acid advice does. None of it is likely to harm '
+            + 'you. Some of it will cost a lot of money for an effect nobody has demonstrated.',
+        verdict: 'Worth reading. Worth reading alongside the labels on this page rather than instead of them.',
+    },
+};
+const REPRO_WILLOW = {
+    irregular: {
+        id: 'irregular',
+        say: 'I noticed your cycles are moving around more than usual. That is worth mentioning to '
+            + 'somebody, not worrying about tonight.\n\nA spread of more than about a week between your '
+            + 'shortest and longest cycle is the thing a provider wants to hear, and irregular cycles are '
+            + 'the most common reason PCOS or a thyroid problem gets picked up. Neither is an emergency '
+            + 'and both are manageable once somebody has looked.',
+        offers: [
+            { id: 'pcos', label: 'What is PCOS, actually' },
+            { id: 'thyroid', label: 'Could it be my thyroid' },
+            { id: 'track', label: 'What should I be writing down' },
+            { id: 'no', label: 'Not now' },
+        ],
+    },
+    ttcYear: {
+        id: 'ttcYear',
+        say: 'You have had trying to conceive ticked for a while now, and there is a line I would rather '
+            + 'you knew about than found out later.\n\nTwelve months without conceiving, or six if you '
+            + 'are 35 or over, is the point where you are entitled to be investigated rather than '
+            + 'reassured. That is not a verdict and it does not mean anything is wrong. It means you can '
+            + 'stop waiting politely.',
+        offers: [
+            { id: 'tests', label: 'What should we both be tested for' },
+            { id: 'diet', label: 'Does diet actually help' },
+            { id: 'supps', label: 'What about supplements' },
+            { id: 'no', label: 'Not now' },
+        ],
+    },
+};
+const REPRO_WILLOW_REPLIES = {
+    pcos: 'It is diagnosed on 2 of 3 things, once other causes are ruled out: signs of high '
+        + 'androgens, cycles that do not come regularly, and either polycystic ovaries on a scan or a '
+        + 'raised AMH. If you have irregular cycles and high androgens you do not need a scan at all. '
+        + 'If it does turn out to be PCOS, letrozole rather than clomid is what the 2023 guideline '
+        + 'recommends first for ovulation, which is worth knowing because it is still used off label in '
+        + 'a lot of places and you may have to ask for it.',
+    thyroid: 'An under or over active thyroid changes cycles and is found with a blood test, which '
+        + 'is one of the first things worth asking for when cycles go irregular. It is common, it is '
+        + 'treatable, and it is easy to miss because the symptoms look like ordinary exhaustion.',
+    track: 'The first day of each period is the one thing that matters most, because the gap between '
+        + 'them is what tells a provider whether this is irregular or just varied. Flow, pain and any '
+        + 'bleeding between periods are worth a line too. You do not need to track your temperature '
+        + 'unless somebody has asked you to.',
+    tests: 'Both of you, at the same time. For him a semen analysis, which is quick and cheap and '
+        + 'involved in roughly half of cases. For you, bloods across the cycle, thyroid, and usually a '
+        + 'look at whether the tubes are open. A workup that tests only you first is a workup that '
+        + 'wastes months.',
+    diet: 'Honestly? Weaker than you will be told. The systematic review of the Mediterranean pattern '
+        + 'and assisted reproduction found half the studies showed an association and half showed '
+        + 'nothing, and graded nearly all of them low quality. All of it observational. It is a good '
+        + 'way to eat for other reasons, and it is not the thing standing between you and a pregnancy.',
+    supps: 'Folic acid is the one that is not in doubt. Vitamin D if you are actually low. '
+        + 'Everything else, including CoQ10 and DHEA, is sold with far more confidence than the trials '
+        + 'support. Cheap and harmless ones are a reasonable personal choice. None of them is a reason '
+        + 'to wait longer before being seen.',
+    no: 'That is completely fine. It is on your cycle page whenever you want it.',
+};
+const REPRO_IRREGULAR_SPREAD = 8;
+const REPRO_IRREGULAR_MIN_CYCLES = 3;
+function reproIrregular(stats) {
+    if (!stats)
+        return false;
+    const n = Number(stats.cycles != null ? stats.cycles : (stats.count || stats.n || 0));
+    const spread = Number(stats.spread);
+    if (!isFinite(spread) || n < REPRO_IRREGULAR_MIN_CYCLES)
+        return false;
+    return spread >= REPRO_IRREGULAR_SPREAD;
+}
+function reproTtcThresholdMet(ttcLengthId, ageYears) {
+    const row = TTC_LENGTHS.filter((t) => t.id === ttcLengthId)[0];
+    if (!row)
+        return false;
+    const limit = (Number(ageYears) >= 35) ? 6 : 12;
+    return row.months >= limit;
+}
+function reproPageFor(id) {
+    return REPRO_PAGES[id] || null;
+}
+function reproTicked(rep) {
+    const r = (rep && typeof rep === 'object') ? rep : {};
+    return REPRO_CONDITIONS.filter((c) => r[c.id]);
+}
+const REPRO_SOURCES = [
+    { org: 'International PCOS Guideline 2023',
+        label: 'Diagnosis, letrozole first line, and inositol as experimental therapy for fertility',
+        url: 'https://www.monash.edu/__data/assets/pdf_file/0003/3371133/PCOS-Guideline-Summary-2023.pdf' },
+    { org: 'ESHRE',
+        label: 'Endometriosis, including that the stage predicts neither pain nor surgical complexity',
+        url: 'https://www.eshre.eu/-/media/sitecore-files/Guidelines/Endometriosis/ESHRE-ENDOMETRIOSIS-patient-Guideline_21032022.pdf' },
+    { org: 'Medicina, 2026 review',
+        label: 'Hydrosalpinx before IVF, the outcome figures and the bilateral trade off',
+        url: 'https://www.mdpi.com/1648-9144/62/10/1959' },
+    { org: 'European Journal of Public Health',
+        label: 'Mediterranean diet and assisted reproduction, the systematic review graded low quality',
+        url: 'https://academic.oup.com/eurpub/article/35/5/960/8197054' },
+    { org: 'Frontiers in Cell and Developmental Biology',
+        label: 'Supplements and egg quality, including how thin the CoQ10 and DHEA evidence is',
+        url: 'https://www.frontiersin.org/journals/cell-and-developmental-biology/articles/10.3389/fcell.2025.1619758/full' },
+];
+const REPRO_DISCLAIMER = 'Educational information, not a diagnosis and not medical advice. Everything here belongs in a '
+    + 'conversation with a provider who can actually examine you and see your results.';
 const CYCLOG_TITLE = 'How today felt';
 const CYCLOG_SUB = 'Flow, mood, and what your body was doing. Takes about 10 seconds and '
     + 'answers the questions you get asked in a 5 minute appointment.';
@@ -33175,6 +33561,14 @@ const FIND_INDEX = [
         words: 'domestic violence abuse unsafe partner cps child protective services trafficking hotline leave safety plan' },
     { title: 'Your cycle and period log', where: 'Home, Your cycle', go: { screen: 'mycycle' },
         words: 'period cycle log period flow mood symptoms cramps fertile window ovulation late period flo pms birth control' },
+    { title: 'PCOS, endometriosis and trying to conceive', where: 'Home, Your cycle', go: { screen: 'repro' },
+        words: 'pcos polycystic ovary endometriosis endo stage adenomyosis tubes tied sterilisation '
+            + 'ligation hydrosalpinx bilateral blocked tubes ttc trying to conceive infertility infertile '
+            + 'ivf iui icsi fertility amh ovarian reserve low amh fibroids thyroid recurrent miscarriage '
+            + 'male factor unexplained letrozole clomid metformin irregular periods' },
+    { title: 'Fertility supplements, and what the trials show', where: 'Home, Your cycle', go: { screen: 'reprosupp' },
+        words: 'supplements coq10 coenzyme q10 dhea inositol myo-inositol melatonin vitamin d omega 3 '
+            + 'folic acid egg quality it starts with the egg rebecca fett fertility vitamins' },
     { title: 'Eating around your cycle', where: 'Home, Your cycle', go: { screen: 'nourish' },
         words: 'food eat eating nutrition diet seed cycling seeds flax pumpkin sesame sunflower iron '
             + 'calcium magnesium zinc vitamin e cramps pms period pain luteal follicular ovulation phase '
@@ -53025,6 +53419,12 @@ function render() {
         html = viewPeatStage(v.id);
     else if (v && v.type === 'screen' && v.id === 'pubprofile')
         html = screenPubProfile();
+    else if (v && v.type === 'repro')
+        html = viewRepro(v.id);
+    else if (v && v.type === 'screen' && v.id === 'repro')
+        html = screenRepro();
+    else if (v && v.type === 'screen' && v.id === 'reprosupp')
+        html = screenReproSupp();
     else if (v && v.type === 'screen' && v.id === 'nourish')
         html = screenNourish();
     else if (v && v.type === 'screen' && v.id === 'pregeat')
@@ -53584,7 +53984,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -55015,6 +55415,19 @@ function initControls() {
             const kid = bpKid();
             if (kid)
                 bpSet('flex', bpMeta(kid).flex === false);
+        }
+        else if (t.dataset.repro) {
+            const id = t.dataset.repro;
+            reproSet(id, !reproState()[id]);
+            reproWillowCheck();
+        }
+        else if (t.dataset.reprodetail) {
+            reproDetail(t.dataset.reprodetail, t.dataset.key, t.dataset.val);
+            reproWillowCheck();
+        }
+        else if (t.dataset.reproask) {
+            reproWillowReply(t.dataset.reproask);
+            return;
         }
         else if (t.dataset.forum) {
             const act = t.dataset.forum;
@@ -66841,7 +67254,202 @@ function viewPeatStage(id) {
     <p class="tiny" style="margin-top:14px">${esc(NSH_NOT_A_PLAN)}</p>
   </div>`;
 }
+function reproState() {
+    if (!store.parent.repro || typeof store.parent.repro !== 'object')
+        store.parent.repro = {};
+    return store.parent.repro;
+}
+function reproSet(id, on) {
+    const r = reproState();
+    if (on)
+        r[id] = true;
+    else
+        delete r[id];
+    store.parentUpdatedAt = Date.now();
+    flushStore();
+}
+function reproDetail(id, key, val) {
+    const r = reproState();
+    r[id + ':' + key] = val;
+    store.parentUpdatedAt = Date.now();
+    flushStore();
+}
+function reproAge() {
+    const b = store.parent && store.parent.birthday;
+    if (!b)
+        return null;
+    const d = new Date(b + 'T00:00:00');
+    if (!isFinite(d.getTime()))
+        return null;
+    return Math.floor((Date.now() - d.getTime()) / (365.25 * 86400000));
+}
+function reproWillowCheck() {
+    if (!store.parent || store.onboard && store.onboard.open)
+        return;
+    const seen = store.parent.reproSaid && typeof store.parent.reproSaid === 'object'
+        ? store.parent.reproSaid : (store.parent.reproSaid = {});
+    if (!seen.irregular && reproIrregular(cycleStats(periods()))) {
+        seen.irregular = true;
+        const n = nudgeState();
+        n.text = REPRO_WILLOW.irregular.say;
+        n.at = Date.now();
+        n.gone = false;
+        n.kind = 'repro';
+        n.opener = '';
+        n.reproId = 'irregular';
+        store.parentUpdatedAt = Date.now();
+        flushStore();
+        return;
+    }
+    const r = reproState();
+    if (!seen.ttcYear && r.ttc && reproTtcThresholdMet(r['ttc:length'], reproAge())) {
+        seen.ttcYear = true;
+        const n = nudgeState();
+        n.text = REPRO_WILLOW.ttcYear.say;
+        n.at = Date.now();
+        n.gone = false;
+        n.kind = 'repro';
+        n.opener = '';
+        n.reproId = 'ttcYear';
+        store.parentUpdatedAt = Date.now();
+        flushStore();
+    }
+}
+function reproWillowOffers() {
+    const n = nudgeState();
+    const which = REPRO_WILLOW[n.reproId];
+    return which ? which.offers : [];
+}
+function reproWillowReply(id) {
+    const text = REPRO_WILLOW_REPLIES[id];
+    if (!text)
+        return;
+    willow.open = true;
+    willow.stick = true;
+    if (!Array.isArray(willow.turns))
+        willow.turns = [];
+    willow.turns.push({ who: 'willow', text: text });
+    const n = nudgeState();
+    if (id === 'no') {
+        n.gone = true;
+    }
+    render();
+}
+function screenRepro() {
+    const r = reproState();
+    const ticked = reproTicked(r);
+    return `
+  <div class="sc-head">
+    <button class="back" data-back="mycycle">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(REPRO_TITLE)}</h1>
+    <p class="sub">${esc(REPRO_SUB)}</p>
+    <p class="tiny" style="margin-top:7px">${icon('shield', 11, 'var(--sage)')} ${esc(REPRO_PRIVACY)}</p>
+  </div>
+  <div class="sc">
+    ${REPRO_CONDITIONS.map((c) => {
+        const on = !!r[c.id];
+        const page = reproPageFor(c.id);
+        return `
+    <div class="card" style="margin-bottom:9px">
+      ${tickRow(on, c.label, c.blurb || '', 'data-repro="' + esc(c.id) + '"')}
+      ${on && c.stages ? `
+      <div class="chips" style="margin-top:10px">
+        ${ENDO_STAGES.map((st) => `
+          <button class="chip${r[c.id + ':stage'] === st.id ? ' on' : ''}"
+            data-reprodetail="${esc(c.id)}" data-key="stage" data-val="${esc(st.id)}"
+            aria-pressed="${r[c.id + ':stage'] === st.id}">${esc(st.label)}</button>`).join('')}
+      </div>
+      <p class="tiny" style="margin-top:6px">${esc((ENDO_STAGES.filter((x) => x.id === r[c.id + ':stage'])[0] || {}).note || '')}</p>` : ''}
+      ${on && c.sides ? `
+      <div class="chips" style="margin-top:10px">
+        ${HYDRO_SIDES.map((sd) => `
+          <button class="chip${r[c.id + ':side'] === sd.id ? ' on' : ''}"
+            data-reprodetail="${esc(c.id)}" data-key="side" data-val="${esc(sd.id)}"
+            aria-pressed="${r[c.id + ':side'] === sd.id}">${esc(sd.label)}</button>`).join('')}
+      </div>` : ''}
+      ${on && c.months ? `
+      <div class="chips" style="margin-top:10px">
+        ${TTC_LENGTHS.map((tl) => `
+          <button class="chip${r[c.id + ':length'] === tl.id ? ' on' : ''}"
+            data-reprodetail="${esc(c.id)}" data-key="length" data-val="${esc(tl.id)}"
+            aria-pressed="${r[c.id + ':length'] === tl.id}">${esc(tl.label)}</button>`).join('')}
+      </div>` : ''}
+      ${on && page ? `
+      <button class="hhalf-go" style="width:100%;justify-content:center;margin-top:10px"
+        data-go="repro" data-id="${esc(c.id)}">
+        Read about ${esc(c.label.toLowerCase())} ${icon('chev', 12, 'var(--deep)')}</button>` : ''}
+    </div>`;
+    }).join('')}
+    <button class="pickcard" style="width:100%;margin-top:6px" data-go="screen" data-id="reprosupp">
+      <span class="pickcard-ic">${icon('pill', 17, 'var(--deep)')}</span>
+      <span class="pickcard-t">${esc(REPRO_SUPP.title)}</span>
+      <span class="pickcard-b">Sorted by evidence, not by how often you are told to take it.</span>
+      <span class="pickcard-go">Read it ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>
+    ${!ticked.length ? `<p class="tiny" style="margin-top:12px">${esc(REPRO_NONE)}</p>` : ''}
+    ${dsec('Sources', sourceRows(REPRO_SOURCES))}
+    <p class="disclaimer">${esc(REPRO_DISCLAIMER)}</p>
+  </div>`;
+}
+function viewRepro(id) {
+    const page = reproPageFor(id);
+    if (!page)
+        return emptyScreen('That could not be found.');
+    const r = reproState();
+    const others = Object.keys(REPRO_PAGES).filter((k) => k !== id && r[k]);
+    return `
+  <div class="sc-head">
+    <button class="back" data-back="repro">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(page.title)}</h1>
+    <p class="sub">${esc(page.head)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="bodytext" style="margin:0">${esc(page.body)}</p>
+    </div>
+    <p class="sect" style="margin-top:16px">Worth knowing</p>
+    <div class="card">${page.rows.map(nshRow).join('')}</div>
+    ${page.ask && page.ask.length ? dsec('Worth asking', page.ask.map((q) => `
+      <div class="quote"><p class="q">${esc('\u201C' + q + '\u201D')}</p></div>`).join('')) : ''}
+    ${others.length ? `
+      <p class="sect" style="margin-top:18px">Your other ones</p>
+      <div class="chips">
+        ${others.map((k) => `<button class="chip" data-go="repro" data-id="${esc(k)}">${esc(REPRO_PAGES[k].title)}</button>`).join('')}
+      </div>` : ''}
+    <p class="disclaimer">${esc(REPRO_DISCLAIMER)}</p>
+  </div>`;
+}
+function screenReproSupp() {
+    const b = REPRO_SUPP.book;
+    return `
+  <div class="sc-head">
+    <button class="back" data-back="repro">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm" style="margin-top:6px">${esc(REPRO_SUPP.title)}</h1>
+  </div>
+  <div class="sc">
+    <div class="card leafy"><p class="bodytext" style="margin:0">${esc(REPRO_SUPP.intro)}</p></div>
+    <div class="card" style="margin-top:12px">${REPRO_SUPP.rows.map(nshRow).join('')}</div>
+    <p class="sect" style="margin-top:18px">${esc(b.title)}</p>
+    <div class="card">
+      <p class="bodytext" style="margin:0">${esc(b.body)}</p>
+      <div class="szcard blush" style="margin-top:11px">
+        <div class="szcard-h">
+          <span class="szcard-ic">${icon('info', 15, '#8A5F54')}</span>
+          <span class="szcard-t">Where it runs ahead of the evidence</span>
+        </div>
+        <p class="bodytext" style="margin:0">${esc(b.caveat)}</p>
+      </div>
+      <p class="bodytext" style="margin-top:11px;font-style:italic">${esc(b.verdict)}</p>
+    </div>
+    ${dsec('Sources', sourceRows(REPRO_SOURCES))}
+    <p class="disclaimer">${esc(REPRO_DISCLAIMER)}</p>
+  </div>`;
+}
 function screenMyCycle(c) {
+    setTimeout(() => { try {
+        reproWillowCheck();
+    }
+    catch (e) { } }, 0);
     const info = cycleInfoNow();
     const q = info
         ? 'Looking at my cycle so far, is there anything worth noticing or mentioning to a doctor?'
@@ -66858,6 +67466,13 @@ function screenMyCycle(c) {
     ${cycleWidget()}
     ${cyclogBlock('me', false)}
     <button class="pickcard" style="width:100%;margin-top:13px"
+      data-go="screen" data-id="repro">
+      <span class="pickcard-ic">${icon('heart', 17, 'var(--deep)')}</span>
+      <span class="pickcard-t">${esc(REPRO_TITLE)}</span>
+      <span class="pickcard-b">PCOS, endometriosis, trying to conceive, IVF and the rest.</span>
+      <span class="pickcard-go">Open ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>
+    <button class="pickcard" style="width:100%;margin-top:10px"
       data-go="screen" data-id="nourish">
       <span class="pickcard-ic">${icon('utensils', 17, 'var(--deep)')}</span>
       <span class="pickcard-t">${esc(CEAT_TITLE)}</span>
@@ -77769,6 +78384,21 @@ function willowPanel() {
         <div class="chips" style="gap:6px">
           ${lossWillowOffers(kid).map((o) => `
             <button class="chip" data-lossask="${esc(o.id)}">${esc(o.label)}</button>`).join('')}
+        </div>`;
+    })()}
+      ${''}
+      ${(() => {
+        const n = nudgeState();
+        if (n.kind !== 'repro' || n.gone)
+            return '';
+        const offers = reproWillowOffers();
+        if (!offers.length)
+            return '';
+        return `
+        <p class="tiny" style="margin:10px 2px 6px">Only if you want to</p>
+        <div class="chips" style="gap:6px">
+          ${offers.map((o) => `
+            <button class="chip" data-reproask="${esc(o.id)}">${esc(o.label)}</button>`).join('')}
         </div>`;
     })()}
     </div>
