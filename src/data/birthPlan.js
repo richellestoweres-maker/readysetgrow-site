@@ -37,15 +37,11 @@
 export const BP_TITLE = 'Your birth plan';
 
 export const BP_SUB =
-  'One page, only what you picked, ready to print or send. Take it to an appointment and talk it '
-  + 'through, which is the part that actually makes a difference.';
+  'One page, ready to print or send. Talk it through at an appointment.';
 
 export const BP_WHY = {
   title: 'Short on purpose',
-  body:
-    'The evidence on birth plans points one way. They help when they have been discussed with your '
-    + 'midwife or doctor beforehand, and a long one handed in on the day tends not to get read. One '
-    + 'side of one page is what the people receiving it ask for.',
+  body: 'Birth plans help most when you have talked them through beforehand. One side of one page is what gets read.',
 };
 
 /* ------------------------------------------------------------------
@@ -394,7 +390,7 @@ export const BP_EMPTY = {
 export const BP_PRINT = 'Print it';
 export const BP_SHARE = 'Send a copy';
 export const BP_PRINT_HINT =
-  'On a phone this opens the print sheet, where Save as PDF is usually the first option.';
+  'On a phone this opens the print sheet, where Save as PDF is usually first.';
 export const BP_FILENAME = 'birth-plan.txt';
 
 export const BP_TALK = {

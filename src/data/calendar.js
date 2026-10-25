@@ -736,9 +736,7 @@ export function calFeedOn(id, prefs) {
 export const CAL_FEEDS_TITLE = 'What fills this in by itself';
 
 export const CAL_FEEDS_INTRO =
-  'Everything below is worked out from what is already in the app, so you never type it twice. Turn '
-  + 'off anything you would rather not see. Nothing here is ever posted anywhere, and turning one '
-  + 'off changes the calendar only, not the screen it comes from.';
+  'Turn off anything you would rather not see.';
 
 export const CAL_VAX_OFF =
   'Nothing is shown here until you start a vaccine record for a child, either by writing down a dose '

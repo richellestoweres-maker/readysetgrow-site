@@ -208,8 +208,7 @@ export const VAX_RECORD_HOW = {
 };
 
 export const VAX_RECORD_NOTE =
-  'This is your copy, not an official one. Schools and travel usually want the record from the '
-  + 'practice or the state registry, and this is the thing that tells you what to ask them for.';
+  'Your copy, not an official one. Schools and travel usually want the practice or state record.';
 
 export const VAX_SCHEDULE_SOURCES = [
   { label: 'Child and adolescent immunization schedule', org: 'Centers for Disease Control and Prevention', url: 'https://www.cdc.gov/vaccines/hcp/imz-schedules/child-adolescent-notes.html' },

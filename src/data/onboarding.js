@@ -114,13 +114,10 @@ export const ONBOARD_SEX = [
   { id: '', label: 'Rather not say' },
 ];
 export const ONBOARD_SEX_NOTE =
-  'Only used for growth charts, which are drawn differently, and for the parts about puberty. '
-  + 'Nothing else in the app changes, and you can change it or clear it whenever you like.';
+  'Used for growth charts and the puberty sections. Change it any time.';
 
 export const ONBOARD_NEEDS_NOTE =
-  'If something about how they learn or how their day goes has a name, or you think it might, '
-  + 'turning it on here reshapes the whole app around them rather than adding a page about it. '
-  + 'Nothing here is a diagnosis and nothing is shared.';
+  'Turning one on reshapes the app around them. Change it any time.';
 export const ONBOARD_NEEDS_NONE = 'Nothing yet, or still working it out';
 
 /* The very first thing a new parent reads. Written, never generated,

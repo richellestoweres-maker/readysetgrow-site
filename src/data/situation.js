@@ -27,8 +27,7 @@
  */
 
 export const SITUATION_INTRO =
-  'None of this is required, and none of it is ever shown to anybody else. It only decides which '
-  + 'parts of the app are worth your time. Leave anything blank and nothing is missing.';
+  'Leave anything blank. None of it is shown to anybody else.';
 
 export const SITUATION_PRIVACY =
   'This stays on your account. The community only ever sees your username, never any of this.';
@@ -87,8 +86,7 @@ export const CONCEIVE_PATHS = [
 ];
 
 export const CONCEIVE_NOTE =
-  'This only changes which appointments, timelines and terms the app uses, so it is talking about '
-  + 'your actual situation rather than a generic one. Rather not say is a complete answer.';
+  'Changes which timelines and terms the app uses.';
 
 /* ------------------------------------------------------------------
  * HOW SHE PARENTS
@@ -160,9 +158,7 @@ export const REFERS_TO = [
 ];
 
 export const REFERS_TO_NOTE =
-  'This is only so the app writes about you correctly. It changes nothing about what you are shown, '
-  + 'and it is never shared with anybody. What you are shown is decided by a separate question, '
-  + 'because guessing that from a pronoun would be wrong in both directions.';
+  'So the app uses the right words for you.';
 
 /* The version that actually goes on the screen. The long one above is
    kept because the privacy page quotes this kind of thing properly,

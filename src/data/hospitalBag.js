@@ -520,18 +520,17 @@ export const BAG_ADD_WHERE = 'Which part of the bag';
 export const BAG_REMOVED_TITLE = 'Taken off your list';
 
 export const BAG_REMOVED_NOTE =
-  'Still here if you change your mind. Nothing is ever deleted for good.';
+  'Still here if you change your mind.';
 
 export const BAG_PUT_BACK = 'Put it back';
 
 export const BAG_OWN_EMPTY =
-  'Nothing of your own yet. Your own pillow, the charger that actually reaches, a snack somebody '
-  + 'smuggles in. Whatever this list does not know about you.';
+  'Your own pillow, the charger that reaches, whatever this list does not know about you.';
 
 export const BAG_TIPS_TITLE = 'Things people wish they had known';
 
 export const BAG_TIPS_INTRO =
-  'The items that surprise people. Tap one to pack it.';
+  'Tap one to pack it.';
 
 export const BAG_ITEM_IDS = getAllItems().map((i) => i.id);
 

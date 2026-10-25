@@ -5881,15 +5881,10 @@ export const DAYS_SOURCES = [
 ];
 
 export const DAYS_INTRO =
-  'No 2 days with the same child are the same day, and running the same plan through all of them is '
-  + 'how a parent ends up believing they are bad at this. Pick the kind of day it actually is, and '
-  + 'change the plan rather than the child.';
+  'Pick the kind of day you are actually having.';
 
 export const KIT_INTRO =
-  'Free things first, on purpose. Most of what gets sold for this is not the thing that helps, and '
-  + 'a good deal of it has thinner evidence behind it than the packaging suggests. Where that is '
-  + 'true it is said here, along with the honest other half, which is that something cheap that '
-  + 'makes your child comfortable is worth trying whatever a study found.';
+  'Free things first.';
 
 export const MOMENTS_INTRO =
   'What is actually happening underneath, which is almost never what it looks like from the outside, '

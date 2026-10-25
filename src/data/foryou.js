@@ -189,15 +189,13 @@ export function curatedFor(band) {
 
 export const TRENDING_TITLE = 'What people are talking about';
 export const TRENDING_THIN =
-  'Not enough posts yet for anything to be genuinely trending, so these are topics rather than a '
-  + 'leaderboard. Tap one to start it off.';
+  'Tap one to start it off.';
 export const FORYOU_TITLE = 'For you';
 export const FORYOU_SUB =
-  'Sorted by whether somebody with a child about the same age as yours wrote it. Nothing else goes '
-  + 'into it, and nothing about your child leaves your phone to make it work.';
+  'Posts from parents at the same stage as you.';
 export const FORYOU_NO_BAND =
-  'Add a birthday to a child and this sorts itself around their age. Until then it is everything, newest first.';
-export const TAG_HINT = 'Put a # in front of a word and it becomes a topic other people can find.';
+  'Add a birthday to a child and this sorts around their age.';
+export const TAG_HINT = 'Put a # in front of a word to make it a topic.';
 
 /* ------------------------------------------------------------------
    WILLOW'S DAILY POST

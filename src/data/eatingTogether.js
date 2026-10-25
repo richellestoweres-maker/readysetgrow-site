@@ -162,5 +162,4 @@ export const MILK_KEPT_NOTE =
   + 'profile. Untick it whenever you are done and this tidies itself away.';
 
 export const MILK_GONE_NOTE =
-  'Milk, formula and starting solids have moved out of the way now they are past two. If you are '
-  + 'still nursing or pumping, tick it on your own profile and it all comes back.';
+  'Still nursing or pumping? Tick it on your own profile.';

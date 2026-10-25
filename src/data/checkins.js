@@ -220,9 +220,7 @@ export const CHECKIN_INTRO =
 export const CHECKIN_NOTE_PROMPT = 'Anything worth remembering about today';
 
 export const CHECKIN_PATTERN_NOTE =
-  'This notices patterns. It does not mean anything on its own, and it is not a measure of how '
-  + 'anybody is doing as a parent. A run of hard days is worth mentioning to your pediatrician, '
-  + 'and so is a stretch of good ones, because both say something about what is working.';
+  'Patterns only. Not a measure of how you are doing as a parent.';
 
 export const CHECKIN_STREAK_LINES = {
   first: 'First one down.',

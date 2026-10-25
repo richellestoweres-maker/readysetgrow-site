@@ -46,9 +46,7 @@ export const OUT_TITLE = 'Outings';
 export const OUT_SUB = 'Going places with them, from an afternoon out to a flight.';
 
 export const OUT_INTRO =
-  'Leaving the house with a small child is a logistics problem, and it is a solvable one. Most of '
-  + 'what makes it awful is carrying things you did not need to carry and not knowing a rule until '
-  + 'somebody stops you at a gate.';
+  'What to take, and what you can leave at home.';
 
 /* ------------------------------------------------------------------
  * DO NOT CARRY IT
@@ -683,9 +681,7 @@ export function outLensLabels(lensIds) {
 }
 
 export const OUT_LENS_NOTE =
-  'These are on this list because of the support lenses you have turned on for them. Nothing here '
-  + 'is a requirement and nothing here is a diagnosis. They are the things parents in the same '
-  + 'situation say they wish somebody had told them to pack.';
+  'From the support lenses you turned on. Nothing here is required.';
 
 export const OUT_LENS_NONE =
   'If your child needs something the standard list does not cover, turn on a support lens for them '

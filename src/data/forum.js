@@ -56,13 +56,11 @@
 export const FORUM_TITLE = 'Rooms';
 
 export const FORUM_SUB =
-  'Pick a room and talk to whoever is in it. Everybody here is a parent and nobody uses their real '
-  + 'name unless they want to.';
+  'Pick a room and talk to whoever is in it.';
 
 export const FORUM_EMPTY_ROOM = {
   title: 'Nobody has started anything here yet',
-  body: 'Which is an opportunity rather than a problem. The first post in a room is the one that '
-    + 'decides what the room is for.',
+  body: 'Be the first.',
 };
 
 export const FORUM_START = 'Start something';
@@ -82,15 +80,13 @@ export const FORUM_REPLY_PAGE = 200;
 
 export const FORUM_NEED_NAME = {
   title: 'Pick a name first',
-  body: 'Other parents see this instead of your real name. It can be anything. Change it any time '
-    + 'in your settings.',
+  body: 'Other parents see this instead of your real name.',
   cta: 'Choose a name',
 };
 
 export const FORUM_NEED_ACCOUNT = {
   title: 'The rooms need an account',
-  body: 'Only so that what you write can be yours, and so you can delete it. Nothing you post is '
-    + 'attached to your real name or to any child on your profile.',
+  body: 'So your posts are yours and you can delete them.',
 };
 
 export const FORUM_REPLY_COUNT = (n) => (n === 1 ? '1 reply' : n + ' replies');
@@ -170,5 +166,4 @@ export const FORUM_RULES_SHORT = [
 ];
 
 export const FORUM_SAFETY_NOTE =
-  'If you are in danger of hurting yourself or anybody else, please do not wait for a reply. Call '
-  + 'or text 988, any hour, free.';
+  'If you are in danger of hurting yourself or anybody else, call or text 988. Any hour, free.';

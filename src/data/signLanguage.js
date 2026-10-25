@@ -42,9 +42,7 @@
  */
 
 export const SIGN_INTRO =
-  'Signing is worth doing whether or not your child is deaf. For a hearing baby it gives them a '
-  + 'way to tell you what they want months before they can say it. For a deaf or hard of hearing '
-  + 'child it is something much bigger than that, and the section below says so plainly.';
+  'Worth doing whether or not your child is deaf. It gives them a way to tell you what they want months before they can say it.';
 
 /* ------------------------------------------------------------------
  * THE PART THAT IS NOT OPTIONAL
@@ -474,8 +472,7 @@ export const EXTRA_SIGNS = [
 
 export const SIGN_STAGE_TITLE = 'Where to start, and what comes next';
 export const SIGN_STAGE_INTRO =
-  'Signing is not one thing you do at one age. It starts before they can sit up and it can end in a '
-  + 'language on a transcript, and what to do changes completely along the way.';
+  'What to do changes a lot with age.';
 export const SIGN_STAGE_NOT_LATE =
   'If you are starting at three, or at eight, you have not missed anything. Start at the band that '
   + 'fits them now and use the earlier signs as the first words.';

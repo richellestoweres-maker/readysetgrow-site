@@ -29,9 +29,7 @@
  */
 
 export const LENS_VARIATION_NOTE =
-  'No child does all of this, and plenty of children do things that are not here at all. ' +
-  'Read it looking for the 2 or 3 lines that sound like your child, and let the rest go. ' +
-  'A short list of matches does not mean a mild version of anything, and a long one does not mean a severe version.';
+  'No child does all of this, and plenty do things that are not here.';
 
 export const LENS_AGE_BANDS = [
   { id: 'baby', label: 'Birth to 2', short: 'Baby and toddler', minMonths: 0, maxMonths: 24 },

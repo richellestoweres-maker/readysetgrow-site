@@ -55,8 +55,7 @@ export const NSH_STRENGTH = {
 };
 
 export const NSH_NOT_A_PLAN =
-  'Worth knowing, not a plan to follow. Nothing here counts anything you ate or expects you to '
-  + 'change your week. Eat what you eat, and take the one or two lines that are useful.';
+  'Worth knowing, not a plan to follow.';
 
 /* ==================================================================
    PART ONE: AROUND YOUR CYCLE
@@ -65,8 +64,7 @@ export const NSH_NOT_A_PLAN =
 export const CEAT_TITLE = 'Eating around your cycle';
 
 export const CEAT_SUB =
-  'What is actually happening each week, what the evidence supports, and what is just popular. '
-  + 'Labelled, so you can tell which is which.';
+  'What the evidence supports, and what is just popular.';
 
 /* The four phases, worked out from her own cycle length and her own
    ovulation estimate rather than from a 28 day textbook, because the
@@ -210,9 +208,7 @@ export const CEAT_SEEDS = {
 };
 
 export const CEAT_IRREGULAR =
-  'If your cycles are irregular the phases below are guesses, and seed cycling by calendar has '
-  + 'nothing to anchor to. Some people switch on the new and full moon instead, which is a way of '
-  + 'having a rhythm rather than a biological claim.';
+  'Your cycles move about, so these phases are estimates.';
 
 /* ==================================================================
    PART TWO: THROUGH A PREGNANCY
@@ -225,8 +221,7 @@ export const CEAT_IRREGULAR =
 export const PEAT_TITLE = 'Eating while pregnant';
 
 export const PEAT_SUB =
-  'What matters most right now, rather than everything at once. It changes as the weeks go, so this '
-  + 'page does too.';
+  'What matters most at the week you are in.';
 
 export const PEAT_STAGES = [
   {
@@ -343,9 +338,7 @@ export const PEAT_AVOID = {
 };
 
 export const PEAT_WEIGHT_NOTE =
-  'There is no weight guidance on this page on purpose. Weight in pregnancy is between you and your '
-  + 'provider, who knows your starting point and your history. An app does not, and an app guessing '
-  + 'at it does harm.';
+  'Weight in pregnancy is between you and your provider.';
 
 export function peatStageFor(week) {
   const w = Number(week);
@@ -387,6 +380,4 @@ export const NSH_SOURCES = [
 ];
 
 export const NSH_DISCLAIMER =
-  'Educational information, not medical advice and not a diet. Supplement doses in particular belong '
-  + 'to a provider who knows your bloodwork, especially iron and vitamin D, which are the two people '
-  + 'most often take too much of.';
+  'Not medical advice. Supplement doses belong to a provider who knows your bloodwork, especially iron and vitamin D.';

@@ -35,9 +35,7 @@ export const DIAPER_TITLE = 'How many diapers';
 export const DIAPER_SUB = 'What you will actually get through, and how many to send.';
 
 export const DIAPER_INTRO =
-  'Nobody tells you this number and everybody needs it. Here is roughly what a day looks like at '
-  + 'each age, what to send to daycare, and how much to buy without ending up with 4 unopened '
-  + 'packs of a size they have grown out of.';
+  'Roughly what a day looks like at each age, and how much to buy.';
 
 /* ------------------------------------------------------------------
  * PER DAY, BY AGE
@@ -263,12 +261,7 @@ export const DIAPER_HEALTH_NOTE =
    the honest thing is to say so on the screen rather than dress a
    marketing table up as guidance. */
 export const DIAPER_SOURCE_NOTE =
-  'Worth knowing where these come from. The top of the range, up to 12 a day for an infant and '
-  + '80 to 100 dollars a month, is from the National Diaper Bank Network, who work on '
-  + 'diaper need and do not sell diapers. The age by age breakdown is the industry\u2019s own, because '
-  + 'nobody else publishes one, and the companies behind it sell diapers. Treat the ranges as a '
-  + 'starting point for your own arithmetic rather than a target, and after 2 weeks your own '
-  + 'count beats anybody\u2019s table.';
+  'Ranges from the National Diaper Bank Network and manufacturer guides.';
 
 export const DIAPER_SOURCES = [
   { org: 'National Diaper Bank Network', label: 'What diaper need is, and how many a baby uses', url: 'https://nationaldiaperbanknetwork.org/wp-content/uploads/2022/12/NDBN_DiaperNeed_Overview_Dec_2022-.pdf' },

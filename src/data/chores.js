@@ -250,8 +250,7 @@ export const CHORES = [
 ];
 
 export const CHORE_INTRO =
-  'A chart is not really about getting the house clean. It is about a child knowing that this '
-  + 'house runs on somebody doing things, that they are somebody, and that what they did is seen.';
+  'Pick a few jobs that suit their age.';
 
 export const CHORE_WHY = {
   title: 'Why bother with a chart at all',

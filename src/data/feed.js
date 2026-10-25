@@ -379,8 +379,7 @@ export function statusFor(body) {
 export const MOD_TITLE = 'Needs a look';
 export const MOD_EMPTY = 'Nothing needs you right now.';
 export const MOD_NOTE =
-  'Nobody but you sees this tab, and nothing in the room is waiting on you. Posts go up by '
-  + 'themselves. This is only the handful the filter held, and anything people have reported.';
+  'Posts go up on their own. These are the few the filter held.';
 
 export const MOD_HELD_TITLE = 'Held by the filter';
 export const MOD_HELD_NOTE =

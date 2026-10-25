@@ -40,8 +40,7 @@ export const SHARE_TITLE = 'Sharing a child';
 export const SHARE_SUB = 'Let somebody else see and add to a child, without giving them your account.';
 
 export const SHARE_INTRO =
-  'You keep the record. They get to open it, log a feed, mark a milestone, and see everything you '
-  + 'see about that child. You choose which children, and you can take it back at any time.';
+  'They can open the record, log a feed and mark a milestone. You choose which children, and you can stop it any time.';
 
 /* Unambiguous alphabet. No O or 0, no I or 1, no S or 5, because this
    gets read out over the phone at least as often as it gets copied. */

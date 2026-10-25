@@ -52,10 +52,7 @@ export const REW_FROM_MONTHS = 36;
 export const REW_TO_MONTHS = 216;
 
 export const REW_AGE_NOTE =
-  'Starts landing around 3, once a star and a job are connected in their head. It does not stop at '
-  + 'the end of childhood, it changes shape: a six year old is saving for the indoor play place, a '
-  + 'fifteen year old is saving for a lift into town and no questions asked. The rewards below move '
-  + 'with them.';
+  'The rewards change as they grow.';
 
 export const REW_OFF_TITLE = 'Stars are off for this child';
 
@@ -212,13 +209,10 @@ export function rewAgeFraming(months) {
 }
 
 export const REW_IDEAS_NOTE =
-  'Only the ones that suit their age are shown. Time and choice work better than things and cost '
-  + 'nothing, which is also why they last, but a real object at the end of a fortnight of saving is '
-  + 'the one most children are actually working for. Change any of these or write your own.';
+  'Only the ones that suit their age. Change any of these or write your own.';
 
 export const REW_FOOD_NOTE =
-  'Nothing here is a pudding or a treat to eat. Food used as a reward is the one that tends to '
-  + 'backfire later, so picking the dinner is on the list and earning dessert is not.';
+  'Nothing here is food. Using food as a reward tends to backfire.';
 
 export const REW_NEW_PLACEHOLDER = 'What they are working towards';
 

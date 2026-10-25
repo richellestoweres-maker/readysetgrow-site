@@ -56,9 +56,7 @@ export const LENS_DISCLAIMER =
   "child's development, your pediatrician is the right place to start.";
 
 export const UNDERSTANDING_INTRO =
-  'This section is about how your child experiences the world, not about what is wrong with them. ' +
-  'Nothing here is a diagnosis. It is here so that the behavior you are seeing makes more sense, ' +
-  'because behavior that makes sense is much easier to respond to well.';
+  'How your child experiences the world. Nothing here is a diagnosis.';
 
 /* Groups exist so the toggle list reads as categories rather than as
  * one long alphabetical wall of conditions. Order here is the order

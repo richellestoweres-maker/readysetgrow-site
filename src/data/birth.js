@@ -313,10 +313,7 @@ export const PREF_ROWS = [
   },
 ];
 
-export const PREF_CESAREAN_NOTE = 'The one worth filling in even if you are sure it will not '
-  + 'happen is the last one. Unexpected intervention is what most strongly goes with women feeling '
-  + 'the birth went badly, and having said in advance what you would want in that room is the one '
-  + 'thing that makes it less of a shock.';
+export const PREF_CESAREAN_NOTE = 'Worth filling in even if you are sure it will not happen.';
 
 export const PREF_SAVE_NOTE = 'Kept on this baby’s profile. Nothing about it is sent anywhere '
   + 'by the app.';
