@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-25 03:44">
+<meta name="rsg-build" content="2026-10-25 03:58">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -2602,7 +2602,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-25 03:44';
+const BUILD_STAMP = '2026-10-25 03:58';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -3486,9 +3486,7 @@ const STAGE_IDS = STAGES.map((s) => s.id);
 const LENS_DISCLAIMER = 'Support lenses help Ready Set Grow suggest strategies that many families find useful. ' +
     'They are not a diagnosis and they are not an assessment. If you have questions about your ' +
     "child's development, your pediatrician is the right place to start.";
-const UNDERSTANDING_INTRO = 'This section is about how your child experiences the world, not about what is wrong with them. ' +
-    'Nothing here is a diagnosis. It is here so that the behavior you are seeing makes more sense, ' +
-    'because behavior that makes sense is much easier to respond to well.';
+const UNDERSTANDING_INTRO = 'How your child experiences the world. Nothing here is a diagnosis.';
 const LENS_GROUPS = [
     {
         id: 'attention',
@@ -4970,9 +4968,7 @@ function findLensesByTerm(term) {
     });
 }
 const LENS_IDS = SUPPORT_LENSES.map((l) => l.id);
-const LENS_VARIATION_NOTE = 'No child does all of this, and plenty of children do things that are not here at all. ' +
-    'Read it looking for the 2 or 3 lines that sound like your child, and let the rest go. ' +
-    'A short list of matches does not mean a mild version of anything, and a long one does not mean a severe version.';
+const LENS_VARIATION_NOTE = 'No child does all of this, and plenty do things that are not here.';
 const LENS_AGE_BANDS = [
     { id: 'baby', label: 'Birth to 2', short: 'Baby and toddler', minMonths: 0, maxMonths: 24 },
     { id: 'early', label: '2 to 5', short: 'Preschool', minMonths: 24, maxMonths: 60 },
@@ -13958,12 +13954,11 @@ const BAG_ADD_TITLE = 'Add something of your own';
 const BAG_ADD_PLACEHOLDER = 'What else goes in the bag';
 const BAG_ADD_WHERE = 'Which part of the bag';
 const BAG_REMOVED_TITLE = 'Taken off your list';
-const BAG_REMOVED_NOTE = 'Still here if you change your mind. Nothing is ever deleted for good.';
+const BAG_REMOVED_NOTE = 'Still here if you change your mind.';
 const BAG_PUT_BACK = 'Put it back';
-const BAG_OWN_EMPTY = 'Nothing of your own yet. Your own pillow, the charger that actually reaches, a snack somebody '
-    + 'smuggles in. Whatever this list does not know about you.';
+const BAG_OWN_EMPTY = 'Your own pillow, the charger that reaches, whatever this list does not know about you.';
 const BAG_TIPS_TITLE = 'Things people wish they had known';
-const BAG_TIPS_INTRO = 'The items that surprise people. Tap one to pack it.';
+const BAG_TIPS_INTRO = 'Tap one to pack it.';
 const BAG_ITEM_IDS = getAllItems().map((i) => i.id);
 const HOSPITAL_BAG_SOURCES = [
     {
@@ -17284,9 +17279,7 @@ function checkinRows(lenses) {
 const CHECKIN_INTRO = '30 seconds, once a day. Enough of them and you can see the shape of a month instead of '
     + 'trying to remember it.';
 const CHECKIN_NOTE_PROMPT = 'Anything worth remembering about today';
-const CHECKIN_PATTERN_NOTE = 'This notices patterns. It does not mean anything on its own, and it is not a measure of how '
-    + 'anybody is doing as a parent. A run of hard days is worth mentioning to your pediatrician, '
-    + 'and so is a stretch of good ones, because both say something about what is working.';
+const CHECKIN_PATTERN_NOTE = 'Patterns only. Not a measure of how you are doing as a parent.';
 const CHECKIN_STREAK_LINES = {
     first: 'First one down.',
     going: 'Checked in for {n} days in a row.',
@@ -17515,8 +17508,7 @@ function liftPrompt(kind, context) {
     return '';
 }
 const LIFT_DAILY_LIMIT = 6;
-const SITUATION_INTRO = 'None of this is required, and none of it is ever shown to anybody else. It only decides which '
-    + 'parts of the app are worth your time. Leave anything blank and nothing is missing.';
+const SITUATION_INTRO = 'Leave anything blank. None of it is shown to anybody else.';
 const SITUATION_PRIVACY = 'This stays on your account. The community only ever sees your username, never any of this.';
 const PARENT_STAGES = [
     { id: 'expecting', label: 'Expecting',
@@ -17558,8 +17550,7 @@ const CONCEIVE_PATHS = [
     { id: 'surrogacy', label: 'Surrogacy' },
     { id: 'private', label: 'Rather not say' },
 ];
-const CONCEIVE_NOTE = 'This only changes which appointments, timelines and terms the app uses, so it is talking about '
-    + 'your actual situation rather than a generic one. Rather not say is a complete answer.';
+const CONCEIVE_NOTE = 'Changes which timelines and terms the app uses.';
 const PARENT_ROLES = [
     { id: 'birth', label: 'Birth parent' },
     { id: 'partner', label: 'My partner gave birth' },
@@ -17590,9 +17581,7 @@ const REFERS_TO = [
     { id: 'they', label: 'They and them', help: 'Or if you would rather not pick one.' },
     { id: 'name', label: 'Just use my name', help: 'The app writes around it.' },
 ];
-const REFERS_TO_NOTE = 'This is only so the app writes about you correctly. It changes nothing about what you are shown, '
-    + 'and it is never shared with anybody. What you are shown is decided by a separate question, '
-    + 'because guessing that from a pronoun would be wrong in both directions.';
+const REFERS_TO_NOTE = 'So the app uses the right words for you.';
 const REFERS_TO_SHORT = 'Only so the app writes about you correctly.';
 function calledByLabel(parent) {
     const p = parent || {};
@@ -19270,11 +19259,8 @@ const ONBOARD_SEX = [
     { id: 'm', label: 'Boy' },
     { id: '', label: 'Rather not say' },
 ];
-const ONBOARD_SEX_NOTE = 'Only used for growth charts, which are drawn differently, and for the parts about puberty. '
-    + 'Nothing else in the app changes, and you can change it or clear it whenever you like.';
-const ONBOARD_NEEDS_NOTE = 'If something about how they learn or how their day goes has a name, or you think it might, '
-    + 'turning it on here reshapes the whole app around them rather than adding a page about it. '
-    + 'Nothing here is a diagnosis and nothing is shared.';
+const ONBOARD_SEX_NOTE = 'Used for growth charts and the puberty sections. Change it any time.';
+const ONBOARD_NEEDS_NOTE = 'Turning one on reshapes the app around them. Change it any time.';
 const ONBOARD_NEEDS_NONE = 'Nothing yet, or still working it out';
 const ONBOARD_HELLO = [
     'I am here to help you with whatever this stage of parenting is throwing at you. '
@@ -20123,9 +20109,7 @@ function calFeedOn(id, prefs) {
     return !!(f && f.defaultOn);
 }
 const CAL_FEEDS_TITLE = 'What fills this in by itself';
-const CAL_FEEDS_INTRO = 'Everything below is worked out from what is already in the app, so you never type it twice. Turn '
-    + 'off anything you would rather not see. Nothing here is ever posted anywhere, and turning one '
-    + 'off changes the calendar only, not the screen it comes from.';
+const CAL_FEEDS_INTRO = 'Turn off anything you would rather not see.';
 const CAL_VAX_OFF = 'Nothing is shown here until you start a vaccine record for a child, either by writing down a dose '
     + 'they have had or by marking one you are not giving. Whether and when to vaccinate is yours to '
     + 'decide and the app does not assume either way.';
@@ -20237,10 +20221,7 @@ const REW_SUB = 'Jobs on the chart earn stars. Stars buy something the family ag
     + 'for a child, because this suits some children and not others.';
 const REW_FROM_MONTHS = 36;
 const REW_TO_MONTHS = 216;
-const REW_AGE_NOTE = 'Starts landing around 3, once a star and a job are connected in their head. It does not stop at '
-    + 'the end of childhood, it changes shape: a six year old is saving for the indoor play place, a '
-    + 'fifteen year old is saving for a lift into town and no questions asked. The rewards below move '
-    + 'with them.';
+const REW_AGE_NOTE = 'The rewards change as they grow.';
 const REW_OFF_TITLE = 'Stars are off for this child';
 const REW_OFF_BODY = [
     'Reward charts help some children a great deal and make things worse for others, and which one it '
@@ -20355,11 +20336,8 @@ function rewAgeFraming(months) {
         return 'Geared to this age: friends, outings, and something real at the end of saving.';
     return 'Geared to this age: money, freedom and time, because that is what is actually worth having now.';
 }
-const REW_IDEAS_NOTE = 'Only the ones that suit their age are shown. Time and choice work better than things and cost '
-    + 'nothing, which is also why they last, but a real object at the end of a fortnight of saving is '
-    + 'the one most children are actually working for. Change any of these or write your own.';
-const REW_FOOD_NOTE = 'Nothing here is a pudding or a treat to eat. Food used as a reward is the one that tends to '
-    + 'backfire later, so picking the dinner is on the list and earning dessert is not.';
+const REW_IDEAS_NOTE = 'Only the ones that suit their age. Change any of these or write your own.';
+const REW_FOOD_NOTE = 'Nothing here is food. Using food as a reward tends to backfire.';
 const REW_NEW_PLACEHOLDER = 'What they are working towards';
 const REW_EMPTY = {
     title: 'Nothing to work towards yet',
@@ -21243,8 +21221,7 @@ function statusFor(body) {
 }
 const MOD_TITLE = 'Needs a look';
 const MOD_EMPTY = 'Nothing needs you right now.';
-const MOD_NOTE = 'Nobody but you sees this tab, and nothing in the room is waiting on you. Posts go up by '
-    + 'themselves. This is only the handful the filter held, and anything people have reported.';
+const MOD_NOTE = 'Posts go up on their own. These are the few the filter held.';
 const MOD_HELD_TITLE = 'Held by the filter';
 const MOD_HELD_NOTE = 'A dose or a set of contact details. Most of these are fine and go straight up.';
 const MOD_REPORTED_TITLE = 'Reported by somebody';
@@ -21498,12 +21475,10 @@ function groupCounts(posts) {
 }
 const GROUP_IDS = GROUPS.map((g) => g.id);
 const FORUM_TITLE = 'Rooms';
-const FORUM_SUB = 'Pick a room and talk to whoever is in it. Everybody here is a parent and nobody uses their real '
-    + 'name unless they want to.';
+const FORUM_SUB = 'Pick a room and talk to whoever is in it.';
 const FORUM_EMPTY_ROOM = {
     title: 'Nobody has started anything here yet',
-    body: 'Which is an opportunity rather than a problem. The first post in a room is the one that '
-        + 'decides what the room is for.',
+    body: 'Be the first.',
 };
 const FORUM_START = 'Start something';
 const FORUM_POST_PH = 'What is going on';
@@ -21517,14 +21492,12 @@ const FORUM_PAGE = 100;
 const FORUM_REPLY_PAGE = 200;
 const FORUM_NEED_NAME = {
     title: 'Pick a name first',
-    body: 'Other parents see this instead of your real name. It can be anything. Change it any time '
-        + 'in your settings.',
+    body: 'Other parents see this instead of your real name.',
     cta: 'Choose a name',
 };
 const FORUM_NEED_ACCOUNT = {
     title: 'The rooms need an account',
-    body: 'Only so that what you write can be yours, and so you can delete it. Nothing you post is '
-        + 'attached to your real name or to any child on your profile.',
+    body: 'So your posts are yours and you can delete them.',
 };
 const FORUM_REPLY_COUNT = (n) => (n === 1 ? '1 reply' : n + ' replies');
 const FORUM_NO_REPLIES = 'No replies yet. Being first is a kindness.';
@@ -21591,13 +21564,10 @@ const FORUM_RULES_SHORT = [
     'What gets said in a room stays in the room.',
     'Report anything cruel. It gets looked at.',
 ];
-const FORUM_SAFETY_NOTE = 'If you are in danger of hurting yourself or anybody else, please do not wait for a reply. Call '
-    + 'or text 988, any hour, free.';
+const FORUM_SAFETY_NOTE = 'If you are in danger of hurting yourself or anybody else, call or text 988. Any hour, free.';
 const OUT_TITLE = 'Outings';
 const OUT_SUB = 'Going places with them, from an afternoon out to a flight.';
-const OUT_INTRO = 'Leaving the house with a small child is a logistics problem, and it is a solvable one. Most of '
-    + 'what makes it awful is carrying things you did not need to carry and not knowing a rule until '
-    + 'somebody stops you at a gate.';
+const OUT_INTRO = 'What to take, and what you can leave at home.';
 const OUT_RENT = {
     title: 'Rent it, do not haul it',
     headline: 'You can have a crib, a high chair and a stroller waiting at the other end. Most parents have no idea.',
@@ -22127,9 +22097,7 @@ function outLensLabels(lensIds) {
         .filter((id) => OUT_LENS_PACK[id])
         .map((id) => OUT_LENS_PACK[id].label);
 }
-const OUT_LENS_NOTE = 'These are on this list because of the support lenses you have turned on for them. Nothing here '
-    + 'is a requirement and nothing here is a diagnosis. They are the things parents in the same '
-    + 'situation say they wish somebody had told them to pack.';
+const OUT_LENS_NOTE = 'From the support lenses you turned on. Nothing here is required.';
 const OUT_LENS_NONE = 'If your child needs something the standard list does not cover, turn on a support lens for them '
     + 'under Understanding and this list will change to match.';
 const OUT_TRIPS = [
@@ -22414,8 +22382,7 @@ const CONTENT_REVIEW = {
 };
 const SHARE_TITLE = 'Sharing a child';
 const SHARE_SUB = 'Let somebody else see and add to a child, without giving them your account.';
-const SHARE_INTRO = 'You keep the record. They get to open it, log a feed, mark a milestone, and see everything you '
-    + 'see about that child. You choose which children, and you can take it back at any time.';
+const SHARE_INTRO = 'They can open the record, log a feed and mark a milestone. You choose which children, and you can stop it any time.';
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRTUVWXY2346789';
 const CODE_LENGTH = 10;
 function makeShareCode() {
@@ -22583,9 +22550,7 @@ function sharedWithLine(n) {
 }
 const DIAPER_TITLE = 'How many diapers';
 const DIAPER_SUB = 'What you will actually get through, and how many to send.';
-const DIAPER_INTRO = 'Nobody tells you this number and everybody needs it. Here is roughly what a day looks like at '
-    + 'each age, what to send to daycare, and how much to buy without ending up with 4 unopened '
-    + 'packs of a size they have grown out of.';
+const DIAPER_INTRO = 'Roughly what a day looks like at each age, and how much to buy.';
 const DIAPER_BANDS = [
     {
         id: 'newborn',
@@ -22762,12 +22727,7 @@ const DIAPER_HEALTH_NOTE = 'One thing here is medical rather than practical. In 
     + 'newborn has is the simplest measure of whether enough milk is going in, and too few is a reason '
     + 'to be seen rather than a reason to buy more. That is covered properly on the Feeding screen '
     + 'under the newborn rhythm.';
-const DIAPER_SOURCE_NOTE = 'Worth knowing where these come from. The top of the range, up to 12 a day for an infant and '
-    + '80 to 100 dollars a month, is from the National Diaper Bank Network, who work on '
-    + 'diaper need and do not sell diapers. The age by age breakdown is the industry\u2019s own, because '
-    + 'nobody else publishes one, and the companies behind it sell diapers. Treat the ranges as a '
-    + 'starting point for your own arithmetic rather than a target, and after 2 weeks your own '
-    + 'count beats anybody\u2019s table.';
+const DIAPER_SOURCE_NOTE = 'Ranges from the National Diaper Bank Network and manufacturer guides.';
 const DIAPER_SOURCES = [
     { org: 'National Diaper Bank Network', label: 'What diaper need is, and how many a baby uses', url: 'https://nationaldiaperbanknetwork.org/wp-content/uploads/2022/12/NDBN_DiaperNeed_Overview_Dec_2022-.pdf' },
     { org: 'National Diaper Bank Network', label: 'Find a diaper bank near you', url: 'https://nationaldiaperbanknetwork.org/' },
@@ -22965,8 +22925,7 @@ const CHORES = [
     { id: 'a-holidays', label: 'Holidays, childcare and cover', area: 'house', adult: true, minutes: 40, stars: 0 },
     { id: 'a-restock', label: 'Notice what is running out', area: 'house', adult: true, minutes: 15, stars: 0 },
 ];
-const CHORE_INTRO = 'A chart is not really about getting the house clean. It is about a child knowing that this '
-    + 'house runs on somebody doing things, that they are somebody, and that what they did is seen.';
+const CHORE_INTRO = 'Pick a few jobs that suit their age.';
 const CHORE_WHY = {
     title: 'Why bother with a chart at all',
     items: [
@@ -24555,8 +24514,7 @@ const VAX_RECORD_HOW = {
         'If you have decided against one, mark it as not being given. It will read as settled rather than sitting there looking overdue forever.',
     ],
 };
-const VAX_RECORD_NOTE = 'This is your copy, not an official one. Schools and travel usually want the record from the '
-    + 'practice or the state registry, and this is the thing that tells you what to ask them for.';
+const VAX_RECORD_NOTE = 'Your copy, not an official one. Schools and travel usually want the practice or state record.';
 const VAX_SCHEDULE_SOURCES = [
     { label: 'Child and adolescent immunization schedule', org: 'Centers for Disease Control and Prevention', url: 'https://www.cdc.gov/vaccines/hcp/imz-schedules/child-adolescent-notes.html' },
     { label: 'Recommended childhood and adolescent immunization schedule, 2026', org: 'American Academy of Pediatrics', url: 'https://publications.aap.org/pediatrics/article/157/3/e2025075754/206175/Recommended-Childhood-and-Adolescent-Immunization' },
@@ -24921,13 +24879,11 @@ function curatedFor(band) {
     return mine.concat(any).slice(0, TRENDING_SHOW);
 }
 const TRENDING_TITLE = 'What people are talking about';
-const TRENDING_THIN = 'Not enough posts yet for anything to be genuinely trending, so these are topics rather than a '
-    + 'leaderboard. Tap one to start it off.';
+const TRENDING_THIN = 'Tap one to start it off.';
 const FORYOU_TITLE = 'For you';
-const FORYOU_SUB = 'Sorted by whether somebody with a child about the same age as yours wrote it. Nothing else goes '
-    + 'into it, and nothing about your child leaves your phone to make it work.';
-const FORYOU_NO_BAND = 'Add a birthday to a child and this sorts itself around their age. Until then it is everything, newest first.';
-const TAG_HINT = 'Put a # in front of a word and it becomes a topic other people can find.';
+const FORYOU_SUB = 'Posts from parents at the same stage as you.';
+const FORYOU_NO_BAND = 'Add a birthday to a child and this sorts around their age.';
+const TAG_HINT = 'Put a # in front of a word to make it a topic.';
 const WILLOW_POST_TITLE = 'Willow has written something';
 const WILLOW_POST_NOTE = 'She writes one of these each morning. Read it, change anything you like, and press post. '
     + 'Nothing goes up on its own.';
@@ -27711,11 +27667,9 @@ const NSH_STRENGTH = {
     thin: { label: 'Thin evidence', tone: 'warn' },
     popular: { label: 'Popular, barely studied', tone: 'warn' },
 };
-const NSH_NOT_A_PLAN = 'Worth knowing, not a plan to follow. Nothing here counts anything you ate or expects you to '
-    + 'change your week. Eat what you eat, and take the one or two lines that are useful.';
+const NSH_NOT_A_PLAN = 'Worth knowing, not a plan to follow.';
 const CEAT_TITLE = 'Eating around your cycle';
-const CEAT_SUB = 'What is actually happening each week, what the evidence supports, and what is just popular. '
-    + 'Labelled, so you can tell which is which.';
+const CEAT_SUB = 'What the evidence supports, and what is just popular.';
 const CEAT_PHASES = [
     {
         id: 'period',
@@ -27837,12 +27791,9 @@ const CEAT_SEEDS = {
     grind: 'Grind the flax. Whole flaxseed largely passes through undigested, which is the one practical '
         + 'detail most posts leave out.',
 };
-const CEAT_IRREGULAR = 'If your cycles are irregular the phases below are guesses, and seed cycling by calendar has '
-    + 'nothing to anchor to. Some people switch on the new and full moon instead, which is a way of '
-    + 'having a rhythm rather than a biological claim.';
+const CEAT_IRREGULAR = 'Your cycles move about, so these phases are estimates.';
 const PEAT_TITLE = 'Eating while pregnant';
-const PEAT_SUB = 'What matters most right now, rather than everything at once. It changes as the weeks go, so this '
-    + 'page does too.';
+const PEAT_SUB = 'What matters most at the week you are in.';
 const PEAT_STAGES = [
     {
         id: 'early',
@@ -27949,9 +27900,7 @@ const PEAT_AVOID = {
     note: 'Listeria and toxoplasmosis are most of the reasoning behind this list, and both have their '
         + 'own page under Looking after yourself.',
 };
-const PEAT_WEIGHT_NOTE = 'There is no weight guidance on this page on purpose. Weight in pregnancy is between you and your '
-    + 'provider, who knows your starting point and your history. An app does not, and an app guessing '
-    + 'at it does harm.';
+const PEAT_WEIGHT_NOTE = 'Weight in pregnancy is between you and your provider.';
 function peatStageFor(week) {
     const w = Number(week);
     if (!isFinite(w))
@@ -27992,17 +27941,12 @@ const NSH_SOURCES = [
         label: 'Calcium and premenstrual syndrome',
         url: 'https://www.clinmedkaz.org/download/the-effect-of-calcium-on-premenstrual-syndrome-a-meta-analysis-study-15827.pdf' },
 ];
-const NSH_DISCLAIMER = 'Educational information, not medical advice and not a diet. Supplement doses in particular belong '
-    + 'to a provider who knows your bloodwork, especially iron and vitamin D, which are the two people '
-    + 'most often take too much of.';
+const NSH_DISCLAIMER = 'Not medical advice. Supplement doses belong to a provider who knows your bloodwork, especially iron and vitamin D.';
 const BP_TITLE = 'Your birth plan';
-const BP_SUB = 'One page, only what you picked, ready to print or send. Take it to an appointment and talk it '
-    + 'through, which is the part that actually makes a difference.';
+const BP_SUB = 'One page, ready to print or send. Talk it through at an appointment.';
 const BP_WHY = {
     title: 'Short on purpose',
-    body: 'The evidence on birth plans points one way. They help when they have been discussed with your '
-        + 'midwife or doctor beforehand, and a long one handed in on the day tends not to get read. One '
-        + 'side of one page is what the people receiving it ask for.',
+    body: 'Birth plans help most when you have talked them through beforehand. One side of one page is what gets read.',
 };
 const BP_FIELDS = [
     { id: 'name', g: 'you', label: 'Your name', ph: 'The name you want to be called' },
@@ -28285,7 +28229,7 @@ const BP_EMPTY = {
 };
 const BP_PRINT = 'Print it';
 const BP_SHARE = 'Send a copy';
-const BP_PRINT_HINT = 'On a phone this opens the print sheet, where Save as PDF is usually the first option.';
+const BP_PRINT_HINT = 'On a phone this opens the print sheet, where Save as PDF is usually first.';
 const BP_FILENAME = 'birth-plan.txt';
 const BP_TALK = {
     title: 'Take it to an appointment',
@@ -29869,10 +29813,7 @@ const PREF_ROWS = [
         ],
     },
 ];
-const PREF_CESAREAN_NOTE = 'The one worth filling in even if you are sure it will not '
-    + 'happen is the last one. Unexpected intervention is what most strongly goes with women feeling '
-    + 'the birth went badly, and having said in advance what you would want in that room is the one '
-    + 'thing that makes it less of a shock.';
+const PREF_CESAREAN_NOTE = 'Worth filling in even if you are sure it will not happen.';
 const PREF_SAVE_NOTE = 'Kept on this baby’s profile. Nothing about it is sent anywhere '
     + 'by the app.';
 const PREF_EMPTY = 'Nothing picked yet. Choose only what you have a view on.';
@@ -31067,8 +31008,7 @@ function showsTableContent(months) {
 }
 const MILK_KEPT_NOTE = 'Milk and weaning are still here because you have breastfeeding or pumping ticked on your own '
     + 'profile. Untick it whenever you are done and this tidies itself away.';
-const MILK_GONE_NOTE = 'Milk, formula and starting solids have moved out of the way now they are past two. If you are '
-    + 'still nursing or pumping, tick it on your own profile and it all comes back.';
+const MILK_GONE_NOTE = 'Still nursing or pumping? Tick it on your own profile.';
 const CHILD_SECTIONS = [
     { id: 'checkin', label: '' },
     { id: 'plan', label: '' },
@@ -31124,9 +31064,7 @@ function isDailySection(id, months) {
     return DAILY.indexOf(id) !== -1;
 }
 const REST_LABEL = 'Everything else about them';
-const SIGN_INTRO = 'Signing is worth doing whether or not your child is deaf. For a hearing baby it gives them a '
-    + 'way to tell you what they want months before they can say it. For a deaf or hard of hearing '
-    + 'child it is something much bigger than that, and the section below says so plainly.';
+const SIGN_INTRO = 'Worth doing whether or not your child is deaf. It gives them a way to tell you what they want months before they can say it.';
 const WHY_IT_MATTERS = {
     title: 'If your child is deaf or hard of hearing',
     headline: 'For a deaf or hard of hearing child, this is not an enrichment activity. It is language access, and the clock is real.',
@@ -31501,8 +31439,7 @@ const EXTRA_SIGNS = [
     { word: 'What', how: 'Both hands out, palms up, shaken slightly.', hook: 'The universal shrug, and in ASL it is a real sign.', why: 'One of the first 3 question signs.' },
 ];
 const SIGN_STAGE_TITLE = 'Where to start, and what comes next';
-const SIGN_STAGE_INTRO = 'Signing is not one thing you do at one age. It starts before they can sit up and it can end in a '
-    + 'language on a transcript, and what to do changes completely along the way.';
+const SIGN_STAGE_INTRO = 'What to do changes a lot with age.';
 const SIGN_STAGE_NOT_LATE = 'If you are starting at three, or at eight, you have not missed anything. Start at the band that '
     + 'fits them now and use the earlier signs as the first words.';
 const HOW_TO_PRACTICE = {
@@ -48776,13 +48713,8 @@ const DAYS_SOURCES = [
             + 'adequate sleep as protective factors',
         url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC13286575/' },
 ];
-const DAYS_INTRO = 'No 2 days with the same child are the same day, and running the same plan through all of them is '
-    + 'how a parent ends up believing they are bad at this. Pick the kind of day it actually is, and '
-    + 'change the plan rather than the child.';
-const KIT_INTRO = 'Free things first, on purpose. Most of what gets sold for this is not the thing that helps, and '
-    + 'a good deal of it has thinner evidence behind it than the packaging suggests. Where that is '
-    + 'true it is said here, along with the honest other half, which is that something cheap that '
-    + 'makes your child comfortable is worth trying whatever a study found.';
+const DAYS_INTRO = 'Pick the kind of day you are actually having.';
+const KIT_INTRO = 'Free things first.';
 const MOMENTS_INTRO = 'What is actually happening underneath, which is almost never what it looks like from the outside, '
     + 'and what to do about it in the moment rather than afterward.';
 function daysFor(lensId) {
@@ -64725,8 +64657,7 @@ function screenCommunity(c) {
         : feed.view === 'mine' ? 'mine'
             : feed.view === 'feed' ? 'feed'
                 : feed.view === 'rooms' ? 'rooms'
-                    : feed.view === 'foryou' ? 'foryou'
-                        : feed.view === 'flies' ? 'flies' : 'rooms';
+                    : feed.view === 'foryou' ? 'foryou' : 'flies';
     if (tab === 'flies' && signedIn && !fly.stop)
         setTimeout(() => fliesWatch(), 0);
     return `
@@ -74132,7 +74063,7 @@ function forYouBlock() {
     </div>` : `
     <p class="tiny" style="margin:0 0 10px">${esc(band ? FORYOU_SUB : FORYOU_NO_BAND)}</p>`}
   ${band && !feed.tag ? `
-    <p class="tiny" style="margin:0 0 10px;color:var(--faint)">Leaning towards ${esc(bandLabel(band).toLowerCase())}.</p>` : ''}
+` : ''}
   ${trendingBlock()}
   ${feed.loading ? `<div class="card flat"><p class="bodytext">Loading.</p></div>` : ''}
   ${!feed.loading && !ordered.length ? `
