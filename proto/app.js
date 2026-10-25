@@ -28124,7 +28124,7 @@ function forYouBlock() {
     <p class="tiny" style="margin:0 0 10px">${esc(band ? FORYOU_SUB : FORYOU_NO_BAND)}</p>`}
 
   ${band && !feed.tag ? `
-    <p class="tiny" style="margin:0 0 10px;color:var(--faint)">Leaning towards ${esc(bandLabel(band).toLowerCase())}.</p>` : ''}
+` : ''}
 
   ${trendingBlock()}
 
