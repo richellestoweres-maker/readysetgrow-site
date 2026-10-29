@@ -1460,7 +1460,7 @@ const state = {};
  'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'bpTab', 'sexedTab',
  'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab', 'crTab', 'calTab',
  'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift', 'lists', 'deletedListIds', 'listOpen', 'rewards', 'rewardLog', 'rewKid', 'rewOwnOpen',
- 'cycTab', 'cyclogDate', 'famTab',
+ 'cycTab', 'cyclogDate', 'famTab', 'rtTab', 'rtWho', 'rtOpen',
  'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -2992,6 +2992,7 @@ function render() {
   }
   else if (v && v.type === 'momnow') html = screenMomNowOne(v.id);
   else if (state.tab === 'welcome') html = screenWelcome(c);
+  else if (v && v.type === 'screen' && v.id === 'routines') html = screenRoutines(c);
   else if (state.tab === 'planner') html = screenPlanner(c);
   else if (state.tab === 'discover') html = screenDiscover(c);
   else if (state.tab === 'more') html = screenMore(c);
@@ -3618,7 +3619,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask],[data-obmore],[data-cyctab],[data-cycday],[data-famtab],[data-famgo],[data-cycnote]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask],[data-obmore],[data-cyctab],[data-cycday],[data-famtab],[data-famgo],[data-cycnote],[data-rttab],[data-rtwho],[data-rtopen],[data-rttick],[data-rtday]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -5147,6 +5148,19 @@ function initControls() {
       if (t.dataset.sexed === 'sti') {
         store.sexedSti = store.sexedSti === t.dataset.id ? '' : t.dataset.id;
       }
+    } else if (t.dataset.rttab) {
+      store.rtTab = t.dataset.rttab;
+    } else if (t.dataset.rtwho) {
+      store.rtWho = t.dataset.rtwho;
+      store.rtOpen = '';
+    } else if (t.dataset.rtopen !== undefined) {
+      store.rtOpen = t.dataset.rtopen || '';
+    } else if (t.dataset.rttick) {
+      const k = rtKid();
+      if (k) rtTick(k, t.dataset.rttick, t.dataset.step || '');
+    } else if (t.dataset.rtday) {
+      const k = rtKid();
+      if (k) rtDayToggle(k, t.dataset.rtday, Number(t.dataset.day) || 0);
     } else if (t.dataset.famtab) {
       store.famTab = t.dataset.famtab;
     } else if (t.dataset.famgo) {
@@ -25661,11 +25675,9 @@ function screenPlanner(c) {
     b: 'Shopping, packing, questions to ask.' })}
     </div>
     ${store.children && store.children.length ? `
-    <p class="sect" style="margin-top:18px">Routines</p>
-    <div class="card">
-      <p class="bodytext" style="margin:0">${esc(PLANNER_ROUTINE_NOTE)}</p>
-      <button class="btn ghost" style="width:100%;margin-top:11px" data-go="screen" data-id="sleep">
-        ${icon('moon', 14, 'var(--deep)')} Open today's rhythm</button>
+    <div class="pickgrid one" style="margin-top:10px">
+      ${hubCard({ id: 'routines', ic: 'moon', t: 'Routines',
+    b: 'Morning, bedtime, naps and after school, timed step by step.' })}
     </div>` : ''}
     <p class="disclaimer">${esc(PLANNER_NOTE)}</p>
   </div>`;
@@ -25891,6 +25903,299 @@ function screenFamily(c) {
     ${!shared.length ? `
     <p class="tiny" style="margin-top:10px">Nothing shared with you yet. A code from another
     parent brings their child in here.</p>` : ''}` : ''}
+  </div>`;
+}
+
+/* ==================================================================
+   ROUTINES, BUILT TO HER MOCKUP
+
+   The engine for this has been in the app since September and almost
+   none of it was reachable. Thirteen templates across four kinds, each
+   step carrying its own minutes, and a builder that times the whole
+   thing backwards from when they need to be asleep or out the door.
+   Only bedtime was ever shown, buried inside the sleep screen.
+
+   So this screen is mostly plumbing rather than invention: the same
+   builder, every type, one card each, and the two things it genuinely
+   lacked, ticking a step off and choosing which days it runs.
+   ================================================================== */
+const RT_TABS = [
+  { id: 'daily', label: 'Daily' },
+  { id: 'weekly', label: 'Weekly' },
+  { id: 'templates', label: 'Templates' },
+];
+
+/* The anchor each kind is timed against, and a sensible hour to start
+   from before she sets her own. Bedtime borrows the sleep engine's
+   answer when there is one, because that number is already worked out
+   from this child's naps and age. */
+const RT_LOOK = {
+  bedtime: { icon: 'moon', tint: 'tint-sky', anchorLabel: 'Asleep by', fallback: '19:30' },
+  morning: { icon: 'sun', tint: 'tint-gold', anchorLabel: 'Out the door by', fallback: '07:45' },
+  nap: { icon: 'moon', tint: 'tint-sage', anchorLabel: 'Asleep by', fallback: '13:00' },
+  afterschool: { icon: 'home', tint: 'tint-rose', anchorLabel: 'Home at', fallback: '15:15' },
+};
+
+function rtTab() {
+  const t = store.rtTab;
+  return RT_TABS.some((x) => x.id === t) ? t : 'daily';
+}
+
+/* Who the screen is about. Defaults to whoever is open elsewhere so
+   coming here from a child's card does not lose them. */
+function rtWho() {
+  const w = store.rtWho;
+  if (w && store.children.some((k) => k.id === w)) return w;
+  return store.activeChildId || (store.children[0] || {}).id || '';
+}
+
+function rtKid() {
+  const id = rtWho();
+  return store.children.filter((k) => k.id === id)[0] || null;
+}
+
+function rtMonths(kid) {
+  if (!kid || !kid.birthday) return null;
+  const s = getAgeSummary({ name: kid.name, birthday: kid.birthday });
+  return s && s.age ? s.age.totalMonths : null;
+}
+
+/* ---------- what she has chosen, per child ---------- */
+function rtAnchors(kid) {
+  if (!kid.routineAt || typeof kid.routineAt !== 'object') kid.routineAt = {};
+  return kid.routineAt;
+}
+
+function rtAnchor(kid, type) {
+  const a = rtAnchors(kid)[type];
+  if (a) return a;
+  /* The sleep screen works a bedtime out from this child's naps and
+     age, and this should eventually borrow that number rather than
+     keep a second one. Not wired yet, deliberately: one default she
+     can change beats two answers that disagree. */
+  return (RT_LOOK[type] || {}).fallback || '19:30';
+}
+
+/* buildRoutine wants "7:30 PM", the time input gives "19:30". */
+function clock24(label) {
+  const m = /^(\d{1,2}):(\d{2})\s*(am|pm)?$/i.exec(String(label || '').trim());
+  if (!m) return String(label || '');
+  let h = Number(m[1]);
+  const mins = m[2];
+  const ap = (m[3] || '').toLowerCase();
+  if (ap === 'pm' && h < 12) h += 12;
+  if (ap === 'am' && h === 12) h = 0;
+  return (h < 10 ? '0' + h : h) + ':' + mins;
+}
+
+function clock12(hhmm) {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(String(hhmm || ''));
+  if (!m) return String(hhmm || '');
+  let h = Number(m[1]);
+  const ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12; if (h === 0) h = 12;
+  return h + ':' + m[2] + ' ' + ap;
+}
+
+function rtDays(kid, type) {
+  if (!kid.routineDays || typeof kid.routineDays !== 'object') kid.routineDays = {};
+  const d = kid.routineDays[type];
+  return Array.isArray(d) ? d : [0, 1, 2, 3, 4, 5, 6];
+}
+
+function rtDayToggle(kid, type, day) {
+  if (!kid.routineDays || typeof kid.routineDays !== 'object') kid.routineDays = {};
+  const cur = rtDays(kid, type).slice();
+  const at = cur.indexOf(day);
+  if (at === -1) cur.push(day); else cur.splice(at, 1);
+  kid.routineDays[type] = cur.sort((a, b) => a - b);
+  kid.updatedAt = Date.now();
+  flushStore();
+}
+
+/* ---------- ticking a step off ---------- */
+function rtDone(kid) {
+  if (!kid.routineDone || typeof kid.routineDone !== 'object') kid.routineDone = {};
+  const day = ciToday();
+  if (!kid.routineDone[day] || typeof kid.routineDone[day] !== 'object') kid.routineDone[day] = {};
+  /* Only today and yesterday are kept. A routine is a thing you do,
+     not a record you keep, and a year of ticks would sync forever. */
+  Object.keys(kid.routineDone).forEach((d) => {
+    if (d < ciToday() && kid.routineDone[d] && Object.keys(kid.routineDone).length > 2) {
+      delete kid.routineDone[d];
+    }
+  });
+  return kid.routineDone[day];
+}
+
+function rtIsDone(kid, type, stepId) {
+  return !!rtDone(kid)[type + ':' + stepId];
+}
+
+function rtTick(kid, type, stepId) {
+  const d = rtDone(kid);
+  const key = type + ':' + stepId;
+  if (d[key]) delete d[key]; else d[key] = true;
+  kid.updatedAt = Date.now();
+  flushStore();
+}
+
+/* ---------- one routine, built ---------- */
+function rtBuild(kid, type) {
+  const months = rtMonths(kid);
+  if (months == null) return null;
+  const inc = Array.isArray(kid.routineInclude) ? kid.routineInclude : [];
+  const off = Array.isArray(kid.routineOff) ? kid.routineOff : [];
+  const look = RT_LOOK[type] || {};
+  const at = clock12(rtAnchor(kid, type));
+  const opts = { type: type, months: months, include: inc, exclude: off };
+  const typeDef = ROUTINE_TYPES.filter((t) => t.id === type)[0];
+  if (typeDef && typeDef.anchor === 'start') opts.startTime = at; else opts.endTime = at;
+  const out = buildRoutine(opts);
+  return (out && out.ok) ? out : null;
+}
+
+function rtCard(kid, type, open) {
+  const built = rtBuild(kid, type);
+  if (!built) return '';
+  const look = RT_LOOK[type] || {};
+  const typeDef = ROUTINE_TYPES.filter((t) => t.id === type)[0] || {};
+  const first = (kid.name || 'They').split(/\s+/)[0];
+  const doneN = built.steps.filter((st) => rtIsDone(kid, type, st.id)).length;
+  const all = built.steps.length && doneN === built.steps.length;
+
+  return `
+  <div class="rtcard${open ? ' open' : ''}">
+    <button class="rthead" data-rtopen="${open ? '' : esc(type)}">
+      <span class="rtic ${esc(look.tint || 'tint-sage')}">${icon(look.icon || 'moon', 17, 'var(--deep2)')}</span>
+      <span class="rtwho">
+        <span class="rtname">${esc(first)}'s ${esc((typeDef.label || type).toLowerCase())} routine</span>
+        <span class="rtmeta">${built.steps.length} steps &middot; about ${built.totalMinutes} min${
+  doneN ? ' &middot; ' + doneN + ' done' : ''}</span>
+      </span>
+      ${all ? `<span class="rtallset">${icon('check', 13, '#fff')}</span>`
+    : `<span class="rtchev${open ? ' up' : ''}">${icon('chevdown', 16, 'var(--faint)')}</span>`}
+    </button>
+
+    ${open ? `
+    <div class="rtsteps">
+      ${built.steps.map((st) => {
+    const on = rtIsDone(kid, type, st.id);
+    return `
+      <button class="rtstep${on ? ' on' : ''}" data-rttick="${esc(type)}" data-step="${esc(st.id)}">
+        <span class="rtbox">${on ? icon('check', 12, '#fff') : ''}</span>
+        <span class="rtstep-t">${esc(st.label)}</span>
+        <span class="rtstep-at">${esc(st.time)}</span>
+      </button>`;
+  }).join('')}
+    </div>
+    <div class="rtfoot">
+      <label class="rtat">
+        <span class="rtat-l">${esc(look.anchorLabel || 'At')}</span>
+        <input class="inp" type="time" value="${esc(rtAnchor(kid, type))}"
+          data-rtat="${esc(type)}">
+      </label>
+      ${built.note ? `<p class="tiny" style="margin-top:9px">${esc(built.note)}</p>` : ''}
+    </div>` : ''}
+  </div>`;
+}
+
+/* ---------- the screen ---------- */
+function screenRoutines(c) {
+  const tab = rtTab();
+  const kid = rtKid();
+  const open = store.rtOpen || '';
+  const kids = store.children.filter((k) => !isExampleChild(k));
+
+  if (!kids.length) {
+    return `
+    ${cornerLeaves()}
+    <div class="sc-head">
+      <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+      <h1 class="title sm">Routines</h1>
+      <p class="sub">${esc(RT_SUB)}</p>
+    </div>
+    <div class="sc">
+      <div class="card flat"><p class="bodytext" style="margin:0">${esc(RT_NO_KIDS)}</p></div>
+    </div>`;
+  }
+
+  const months = rtMonths(kid);
+  const types = months == null ? [] : getRoutineTypesForAge(months).map((t) => t.id);
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title sm">Routines</h1>
+    <p class="sub">${esc(RT_SUB)}</p>
+  </div>
+  <div class="sc">
+    <div class="segs" role="tablist">
+      ${RT_TABS.map((t) => `
+      <button class="seg" role="tab" data-rttab="${esc(t.id)}"
+        aria-pressed="${tab === t.id}">${esc(t.label)}</button>`).join('')}
+    </div>
+
+    ${/* Faces, the way her mockup picks a person. */''}
+    <div class="rtpeople">
+      ${kids.map((k) => `
+      <button class="rtperson${k.id === rtWho() ? ' on' : ''}" data-rtwho="${esc(k.id)}">
+        ${childFace(k, 46)}
+        <span class="rtperson-n">${esc((k.name || '?').split(/\s+/)[0])}</span>
+      </button>`).join('')}
+    </div>
+
+    ${!kid ? '' : months == null ? `
+    <div class="card flat"><p class="bodytext" style="margin:0">${esc(RT_NO_BIRTHDAY)}</p></div>`
+    : !types.length ? `
+    <div class="card flat"><p class="bodytext" style="margin:0">${esc(RT_NONE_YET)}</p></div>` : `
+
+    ${tab === 'daily' ? types.map((t) => rtCard(kid, t, open === t)).join('') : ''}
+
+    ${tab === 'weekly' ? `
+    <p class="tiny" style="margin-bottom:10px">${esc(RT_WEEKLY_NOTE)}</p>
+    ${types.map((t) => {
+    const typeDef = ROUTINE_TYPES.filter((x) => x.id === t)[0] || {};
+    const look = RT_LOOK[t] || {};
+    const on = rtDays(kid, t);
+    return `
+    <div class="card" style="margin-bottom:10px">
+      <div class="rthead" style="padding:0 0 10px;cursor:default">
+        <span class="rtic ${esc(look.tint || 'tint-sage')}">${icon(look.icon || 'moon', 16, 'var(--deep2)')}</span>
+        <span class="rtwho"><span class="rtname">${esc(typeDef.label || t)}</span></span>
+      </div>
+      <div class="rtdays">
+        ${CHORE_DAYS.map((d, i) => `
+        <button class="rtday${on.indexOf(i) !== -1 ? ' on' : ''}"
+          data-rtday="${esc(t)}" data-day="${i}"
+          aria-pressed="${on.indexOf(i) !== -1}">${esc(d.short || d.label.slice(0, 1))}</button>`).join('')}
+      </div>
+    </div>`;
+  }).join('')}` : ''}
+
+    ${tab === 'templates' ? `
+    <p class="tiny" style="margin-bottom:10px">${esc(RT_TEMPLATES_NOTE)}</p>
+    ${types.map((t) => {
+    const built = rtBuild(kid, t);
+    const typeDef = ROUTINE_TYPES.filter((x) => x.id === t)[0] || {};
+    if (!built) return '';
+    return `
+    <div class="card" style="margin-bottom:10px">
+      <p class="rtname" style="margin:0">${esc(built.template ? built.template.label : typeDef.label)}</p>
+      <p class="tiny" style="margin-top:3px">${esc(typeDef.description || '')}</p>
+      <div class="rtchips">
+        ${built.steps.map((st) => `<span class="rtchip">${esc(st.label)}
+          <span class="rtchip-m">${st.minutes}m</span></span>`).join('')}
+      </div>
+      ${built.optionalAvailable && built.optionalAvailable.length ? `
+      <p class="tiny" style="margin-top:9px">Also available: ${
+  esc(built.optionalAvailable.map((s) => s.label).join(', '))}</p>` : ''}
+    </div>`;
+  }).join('')}` : ''}
+    `}
+
+    <p class="disclaimer">${esc(RT_HONEST)}</p>
   </div>`;
 }
 
