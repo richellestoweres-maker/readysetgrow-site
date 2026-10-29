@@ -337,3 +337,9 @@ export function liftPrompt(kind, context) {
    out is that a parent at two in the morning gets nothing, which they
    notice very much. */
 export const LIFT_DAILY_LIMIT = 6;
+
+
+/* Shown on Home when there is genuinely nothing on today. Saying so
+   plainly beats four rows of zeroes. */
+export const GLANCE_EMPTY =
+  'Nothing on the calendar, nothing on the chart and nothing on a list. Enjoy it.';
