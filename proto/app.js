@@ -1460,7 +1460,8 @@ const state = {};
  'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'bpTab', 'sexedTab',
  'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab', 'crTab', 'calTab',
  'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift', 'lists', 'deletedListIds', 'listOpen', 'rewards', 'rewardLog', 'rewKid', 'rewOwnOpen',
- 'cycTab', 'cyclogDate', 'famTab', 'rtTab', 'rtWho', 'rtOpen',
+ 'cycTab', 'cyclogDate', 'famTab', 'rtTab', 'rtWho', 'rtOpen', 'rtEdit',
+ 'routinesOwn', 'routineDoneOwn', 'rtStreak',
  'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -3500,6 +3501,23 @@ function initControls() {
   let bdayTimer = null;
 
   document.addEventListener('change', (e) => {
+    /* Routine times. A time input fires change rather than input, so
+       it needs this listener rather than the click handler. */
+    if (e.target.matches('[data-rtat]')) {
+      const k = rtKid();
+      if (k) {
+        rtAnchors(k)[e.target.dataset.rtat] = e.target.value;
+        k.updatedAt = Date.now();
+        flushStore();
+        render();
+      }
+      return;
+    }
+    if (e.target.matches('[data-rtat-own]')) {
+      rtOwnSet(e.target.dataset.rtatOwn, 'at', e.target.value);
+      render();
+      return;
+    }
     /* The 3 wake time dropdowns, read back as one time. */
     if (e.target.matches('[data-waketime="part"]')) { wakeSet(wakeFromSelects(e.target)); return; }
     /* A nap time corrected by hand. The day is rebuilt from it. */
@@ -3551,6 +3569,12 @@ function initControls() {
   document.addEventListener('blur', (e) => {
     /* The cycle note saves when she leaves the box rather than on
        every keystroke, so a repaint never fires mid sentence. */
+    if (e.target && e.target.matches && e.target.matches('[data-rtname]')) {
+      if (!document.contains(e.target)) return;
+      rtOwnSet(e.target.dataset.rtname, 'name',
+        String(e.target.value || '').replace(/\s+/g, ' ').trim().slice(0, 40));
+      return;
+    }
     if (e.target && e.target.matches && e.target.matches('[data-cycnote]')) {
       if (!document.contains(e.target)) return;
       cyclogNote(e.target.dataset.cycnote || 'me', e.target.value);
@@ -3619,7 +3643,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask],[data-obmore],[data-cyctab],[data-cycday],[data-famtab],[data-famgo],[data-cycnote],[data-rttab],[data-rtwho],[data-rtopen],[data-rttick],[data-rtday]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask],[data-obmore],[data-cyctab],[data-cycday],[data-famtab],[data-famgo],[data-cycnote],[data-rttab],[data-rtwho],[data-rtopen],[data-rttick],[data-rtday],[data-rtnew],[data-rtedit],[data-rtdel],[data-rtset],[data-rtstepadd],[data-rtstepdel],[data-rtmove],[data-rtowntick],[data-rtstreak]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -5155,6 +5179,29 @@ function initControls() {
       store.rtOpen = '';
     } else if (t.dataset.rtopen !== undefined) {
       store.rtOpen = t.dataset.rtopen || '';
+    } else if (t.dataset.rtnew) {
+      rtOwnNew(rtWho());
+    } else if (t.dataset.rtedit !== undefined) {
+      store.rtEdit = t.dataset.rtedit || '';
+      if (t.dataset.rtedit) store.rtOpen = t.dataset.rtedit;
+    } else if (t.dataset.rtdel) {
+      rtOwnDel(t.dataset.rtdel);
+    } else if (t.dataset.rtset) {
+      rtOwnSet(t.dataset.rtset, t.dataset.key, t.dataset.val);
+    } else if (t.dataset.rtstepadd) {
+      const f = document.getElementById('rtstepnew');
+      const m = document.getElementById('rtstepmin');
+      rtOwnStepAdd(t.dataset.rtstepadd, f ? f.value : '', m ? m.value : 5);
+    } else if (t.dataset.rtstepdel) {
+      rtOwnStepDel(t.dataset.rtstepdel, t.dataset.step || '');
+    } else if (t.dataset.rtmove) {
+      rtOwnStepMove(t.dataset.rtmove, t.dataset.step || '', Number(t.dataset.dir) || 1);
+    } else if (t.dataset.rtowntick) {
+      rtOwnTick(t.dataset.rtowntick, t.dataset.step || '');
+    } else if (t.dataset.rtstreak) {
+      /* Offered, never imposed, and off until she says otherwise. */
+      store.rtStreak = !rtStreakOn();
+      rtOwnSave();
     } else if (t.dataset.rttick) {
       const k = rtKid();
       if (k) rtTick(k, t.dataset.rttick, t.dataset.step || '');
@@ -25945,13 +25992,21 @@ function rtTab() {
    coming here from a child's card does not lose them. */
 function rtWho() {
   const w = store.rtWho;
+  if (w === 'me') return 'me';
   if (w && store.children.some((k) => k.id === w)) return w;
-  return store.activeChildId || (store.children[0] || {}).id || '';
+  if (w && (store.choreAdults || []).some((a) => a.id === w)) return w;
+  return store.activeChildId || (store.children[0] || {}).id || 'me';
 }
 
 function rtKid() {
   const id = rtWho();
   return store.children.filter((k) => k.id === id)[0] || null;
+}
+
+/* Written routines are the only kind an adult can have, since the
+   templates are built off a child's age. */
+function rtIsAdult() {
+  return !rtKid();
 }
 
 function rtMonths(kid) {
@@ -26100,6 +26155,304 @@ function rtCard(kid, type, open) {
   </div>`;
 }
 
+/* ==================================================================
+   ROUTINES YOU WRITE YOURSELF
+
+   The templates cover children, because they are built off an age.
+   Nobody has a template for a mother, and her point stands: a morning
+   routine is hers too, and a two minute wind down on the same list as
+   her children's is far likelier to happen than one in a separate
+   wellness app.
+
+   So a routine can now belong to anybody on the household and be
+   whatever she names it. The timing engine does not care: it takes a
+   list of steps with minutes on them and works backwards from an
+   anchor, which is exactly what the templates give it.
+
+   ON STREAKS
+
+   Her idea, and the right one: offer it, do not impose it. It counts
+   days where everything was ticked and it is off until she turns it
+   on. What it will never do is punish a miss. A gentle count is a
+   different thing from a pet that gets sad at you, and this app's
+   whole voice is that a skipped day is just a skipped day.
+   ================================================================== */
+const RT_OWN_TINTS = [
+  { id: 'tint-gold', icon: 'sun', label: 'Morning' },
+  { id: 'tint-rose', icon: 'heart', label: 'Looking after you' },
+  { id: 'tint-sky', icon: 'moon', label: 'Evening' },
+  { id: 'tint-sage', icon: 'leaf', label: 'Anything else' },
+];
+
+function rtOwnList() {
+  if (!Array.isArray(store.routinesOwn)) store.routinesOwn = [];
+  return store.routinesOwn;
+}
+
+function rtOwnFor(who) {
+  return rtOwnList().filter((r) => r && r.who === who);
+}
+
+function rtOwnById(id) {
+  return rtOwnList().filter((r) => r && r.id === id)[0] || null;
+}
+
+function rtOwnSave() {
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+}
+
+function rtOwnNew(who) {
+  const r = {
+    id: 'ro' + Date.now() + Math.floor(Math.random() * 1000),
+    who: who,
+    name: '',
+    tint: 'tint-gold',
+    at: '07:30',
+    anchor: 'end',
+    days: [0, 1, 2, 3, 4, 5, 6],
+    steps: [],
+  };
+  rtOwnList().push(r);
+  store.rtEdit = r.id;
+  rtOwnSave();
+  return r;
+}
+
+function rtOwnDel(id) {
+  store.routinesOwn = rtOwnList().filter((r) => r.id !== id);
+  if (store.rtEdit === id) store.rtEdit = '';
+  rtOwnSave();
+}
+
+function rtOwnStepAdd(id, label, minutes) {
+  const r = rtOwnById(id);
+  if (!r) return;
+  const clean = String(label || '').replace(/\s+/g, ' ').trim().slice(0, 50);
+  if (!clean) return;
+  if (!Array.isArray(r.steps)) r.steps = [];
+  r.steps.push({
+    id: 's' + Date.now() + Math.floor(Math.random() * 1000),
+    label: clean,
+    minutes: Math.max(1, Math.min(120, Math.round(Number(minutes) || 5))),
+  });
+  rtOwnSave();
+}
+
+function rtOwnStepDel(id, stepId) {
+  const r = rtOwnById(id);
+  if (!r) return;
+  r.steps = (r.steps || []).filter((s) => s.id !== stepId);
+  rtOwnSave();
+}
+
+/* Moving a step is the one thing a written routine really needs,
+   because the order is the whole point of writing it down. */
+function rtOwnStepMove(id, stepId, dir) {
+  const r = rtOwnById(id);
+  if (!r || !Array.isArray(r.steps)) return;
+  const i = r.steps.findIndex((s) => s.id === stepId);
+  const j = i + (dir < 0 ? -1 : 1);
+  if (i === -1 || j < 0 || j >= r.steps.length) return;
+  const tmp = r.steps[i];
+  r.steps[i] = r.steps[j];
+  r.steps[j] = tmp;
+  rtOwnSave();
+}
+
+function rtOwnSet(id, key, val) {
+  const r = rtOwnById(id);
+  if (!r) return;
+  r[key] = val;
+  rtOwnSave();
+}
+
+/* A written routine built through the same engine as a template one,
+   so both render identically and neither is a special case. */
+function rtOwnBuild(r) {
+  if (!r || !Array.isArray(r.steps) || !r.steps.length) return null;
+  const opts = { type: 'bedtime', months: 24, custom: r.steps.slice() };
+  if (r.anchor === 'start') opts.startTime = clock12(r.at || '07:30');
+  else opts.endTime = clock12(r.at || '07:30');
+  const out = buildRoutine(opts);
+  return (out && out.ok) ? out : null;
+}
+
+/* ---------- WHO CAN HAVE ONE ---------- */
+function rtPeople() {
+  const out = [];
+  const me = (store.parent.name || '').trim().split(/\s+/)[0] || 'You';
+  out.push({ id: 'me', name: me, kind: 'adult', face: parentFace(46) });
+  (store.choreAdults || []).forEach((a) => {
+    out.push({ id: a.id, name: a.name || 'Someone', kind: 'adult', face: faceHTML('', 46, 'me') });
+  });
+  store.children.filter((k) => !isExampleChild(k)).forEach((k) => {
+    out.push({
+      id: k.id, name: (k.name || '?').split(/\s+/)[0], kind: 'child', face: childFace(k, 46), kid: k,
+    });
+  });
+  return out;
+}
+
+function rtPerson(id) {
+  return rtPeople().filter((p) => p.id === id)[0] || null;
+}
+
+/* ---------- ticking, for anybody ---------- */
+function rtOwnDoneStore() {
+  if (!store.routineDoneOwn || typeof store.routineDoneOwn !== 'object') store.routineDoneOwn = {};
+  const day = ciToday();
+  if (!store.routineDoneOwn[day]) store.routineDoneOwn[day] = {};
+  /* Kept for as long as a streak could need and no longer. */
+  const keep = Object.keys(store.routineDoneOwn).sort().slice(-40);
+  Object.keys(store.routineDoneOwn).forEach((d) => {
+    if (keep.indexOf(d) === -1) delete store.routineDoneOwn[d];
+  });
+  return store.routineDoneOwn[day];
+}
+
+function rtOwnIsDone(routineId, stepId) {
+  return !!rtOwnDoneStore()[routineId + ':' + stepId];
+}
+
+function rtOwnTick(routineId, stepId) {
+  const d = rtOwnDoneStore();
+  const key = routineId + ':' + stepId;
+  if (d[key]) delete d[key]; else d[key] = true;
+  rtOwnSave();
+}
+
+/* ---------- the streak, offered rather than imposed ---------- */
+function rtStreakOn() {
+  return store.rtStreak === true;
+}
+
+function rtStreakFor(r) {
+  if (!rtStreakOn() || !r || !Array.isArray(r.steps) || !r.steps.length) return 0;
+  const all = store.routineDoneOwn || {};
+  let n = 0;
+  const d = new Date();
+  for (let i = 0; i < 40; i++) {
+    const p = (x) => (x < 10 ? '0' + x : '' + x);
+    const key = d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+    const day = all[key] || {};
+    const done = r.steps.every((s) => day[r.id + ':' + s.id]);
+    if (done) n++;
+    else if (i > 0 || Object.keys(day).length) break;
+    d.setDate(d.getDate() - 1);
+  }
+  return n;
+}
+
+/* One written routine, and its editor when it is open. Same shape as
+   a template card so the two read as one list. */
+function rtOwnCard(r, open) {
+  const built = rtOwnBuild(r);
+  const editing = store.rtEdit === r.id;
+  const look = RT_OWN_TINTS.filter((t) => t.id === r.tint)[0] || RT_OWN_TINTS[0];
+  const steps = Array.isArray(r.steps) ? r.steps : [];
+  const doneN = steps.filter((st) => rtOwnIsDone(r.id, st.id)).length;
+  const all = steps.length && doneN === steps.length;
+  const streak = rtStreakFor(r);
+
+  if (editing) {
+    return `
+    <div class="rtcard open">
+      <div class="rtfoot" style="border-top:0;background:var(--surface)">
+        <p class="rtat-l" style="margin:0 0 7px">Name it</p>
+        <input class="inp" style="width:100%" maxlength="40" id="rtname"
+          value="${esc(r.name || '')}" placeholder="Morning, wind down, whatever you call it"
+          data-rtname="${esc(r.id)}">
+
+        <p class="rtat-l" style="margin:13px 0 7px">Kind</p>
+        <div class="chips">
+          ${RT_OWN_TINTS.map((t) => `
+          <button class="chip${r.tint === t.id ? ' on' : ''}" data-rtset="${esc(r.id)}"
+            data-key="tint" data-val="${esc(t.id)}"
+            aria-pressed="${r.tint === t.id}">${esc(t.label)}</button>`).join('')}
+        </div>
+
+        <p class="rtat-l" style="margin:13px 0 7px">Timed</p>
+        <div class="chips">
+          <button class="chip${r.anchor !== 'start' ? ' on' : ''}" data-rtset="${esc(r.id)}"
+            data-key="anchor" data-val="end"
+            aria-pressed="${r.anchor !== 'start'}">Finished by</button>
+          <button class="chip${r.anchor === 'start' ? ' on' : ''}" data-rtset="${esc(r.id)}"
+            data-key="anchor" data-val="start"
+            aria-pressed="${r.anchor === 'start'}">Starting at</button>
+        </div>
+        <input class="inp" type="time" style="margin-top:8px;width:100%"
+          value="${esc(r.at || '07:30')}" data-rtat-own="${esc(r.id)}">
+
+        <p class="rtat-l" style="margin:13px 0 7px">Steps</p>
+        ${!steps.length ? `<p class="tiny">Nothing yet. Add the first one below.</p>` : `
+        <div class="rtsteps" style="border-top:1px solid var(--line2)">
+          ${steps.map((st, i) => `
+          <div class="rtstep" style="cursor:default">
+            <span class="rtstep-t">${esc(st.label)}</span>
+            <span class="rtstep-at">${st.minutes}m</span>
+            <button class="rtmove" data-rtmove="${esc(r.id)}" data-step="${esc(st.id)}"
+              data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Move up">
+              ${icon('chevdown', 13, 'var(--faint)')}</button>
+            <button class="rtmove down" data-rtmove="${esc(r.id)}" data-step="${esc(st.id)}"
+              data-dir="1" ${i === steps.length - 1 ? 'disabled' : ''} aria-label="Move down">
+              ${icon('chevdown', 13, 'var(--faint)')}</button>
+            <button class="rewx" data-rtstepdel="${esc(r.id)}" data-step="${esc(st.id)}"
+              aria-label="Remove">${icon('close', 13, 'var(--faint)')}</button>
+          </div>`).join('')}
+        </div>`}
+
+        <div class="bpbar" style="margin-top:11px">
+          <input class="inp" id="rtstepnew" maxlength="50" placeholder="What happens">
+          <input class="inp" id="rtstepmin" type="number" inputmode="numeric" min="1" max="120"
+            value="5" aria-label="Minutes">
+        </div>
+        <button class="btn ghost" style="width:100%;margin-top:9px"
+          data-rtstepadd="${esc(r.id)}">${icon('plus', 14, 'var(--deep)')} Add the step</button>
+
+        <div class="bpbar" style="margin-top:14px">
+          <button class="btn" data-rtedit="">Done</button>
+          <button class="btn ghost" data-rtdel="${esc(r.id)}">Delete</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  return `
+  <div class="rtcard${open ? ' open' : ''}">
+    <button class="rthead" data-rtopen="${open ? '' : esc(r.id)}">
+      <span class="rtic ${esc(look.id)}">${icon(look.icon, 17, 'var(--deep2)')}</span>
+      <span class="rtwho">
+        <span class="rtname">${esc(r.name || 'Untitled routine')}</span>
+        <span class="rtmeta">${steps.length} step${steps.length === 1 ? '' : 's'}${
+  built ? ' &middot; about ' + built.totalMinutes + ' min' : ''}${
+  doneN ? ' &middot; ' + doneN + ' done' : ''}${
+  streak > 1 ? ' &middot; ' + streak + ' days running' : ''}</span>
+      </span>
+      ${all ? `<span class="rtallset">${icon('check', 13, '#fff')}</span>`
+    : `<span class="rtchev${open ? ' up' : ''}">${icon('chevdown', 16, 'var(--faint)')}</span>`}
+    </button>
+
+    ${open ? `
+    ${built ? `
+    <div class="rtsteps">
+      ${built.steps.map((st) => {
+    const on = rtOwnIsDone(r.id, st.id);
+    return `
+      <button class="rtstep${on ? ' on' : ''}" data-rtowntick="${esc(r.id)}" data-step="${esc(st.id)}">
+        <span class="rtbox">${on ? icon('check', 12, '#fff') : ''}</span>
+        <span class="rtstep-t">${esc(st.label)}</span>
+        <span class="rtstep-at">${esc(st.time)}</span>
+      </button>`;
+  }).join('')}
+    </div>` : `<p class="tiny" style="padding:12px 14px">No steps yet.</p>`}
+    <div class="rtfoot">
+      <button class="btn ghost sm" style="width:100%" data-rtedit="${esc(r.id)}">
+        ${icon('gear', 14, 'var(--deep)')} Edit this routine</button>
+    </div>` : ''}
+  </div>`;
+}
+
 /* ---------- the screen ---------- */
 function screenRoutines(c) {
   const tab = rtTab();
@@ -26137,23 +26490,44 @@ function screenRoutines(c) {
         aria-pressed="${tab === t.id}">${esc(t.label)}</button>`).join('')}
     </div>
 
-    ${/* Faces, the way her mockup picks a person. */''}
+    ${/* EVERYBODY, NOT JUST THE CHILDREN.
+
+          A morning routine belongs to her too, and a wind down on the
+          same list as her children's is the one she might actually
+          do. Her own face comes first. */''}
     <div class="rtpeople">
-      ${kids.map((k) => `
-      <button class="rtperson${k.id === rtWho() ? ' on' : ''}" data-rtwho="${esc(k.id)}">
-        ${childFace(k, 46)}
-        <span class="rtperson-n">${esc((k.name || '?').split(/\s+/)[0])}</span>
+      ${rtPeople().map((p) => `
+      <button class="rtperson${p.id === rtWho() ? ' on' : ''}" data-rtwho="${esc(p.id)}">
+        ${p.face}
+        <span class="rtperson-n">${esc(p.name)}</span>
       </button>`).join('')}
     </div>
 
-    ${!kid ? '' : months == null ? `
-    <div class="card flat"><p class="bodytext" style="margin:0">${esc(RT_NO_BIRTHDAY)}</p></div>`
-    : !types.length ? `
-    <div class="card flat"><p class="bodytext" style="margin:0">${esc(RT_NONE_YET)}</p></div>` : `
+    ${tab === 'daily' ? `
+    ${kid && months == null ? `
+      <div class="card flat"><p class="bodytext" style="margin:0">${esc(RT_NO_BIRTHDAY)}</p></div>`
+    : kid ? types.map((t) => rtCard(kid, t, open === t)).join('') : ''}
 
-    ${tab === 'daily' ? types.map((t) => rtCard(kid, t, open === t)).join('') : ''}
+    ${rtOwnFor(rtWho()).map((r) => rtOwnCard(r, open === r.id)).join('')}
 
-    ${tab === 'weekly' ? `
+    ${!rtOwnFor(rtWho()).length && (!kid || !types.length) ? `
+      <div class="card flat"><p class="bodytext" style="margin:0">${
+  esc(rtIsAdult() ? RT_ADULT_EMPTY : RT_NONE_YET)}</p></div>` : ''}
+
+    <button class="btn" style="width:100%;margin-top:12px" data-rtnew="1">
+      ${icon('plus', 15, '#fff')} Create a routine</button>
+
+    ${rtOwnList().length ? `
+    <div class="card" style="margin-top:13px">
+      ${tickRow(rtStreakOn(), 'Count days in a row',
+    'A quiet number when everything gets ticked. Nothing happens when it does not.',
+    'data-rtstreak="1"')}
+    </div>` : ''}
+    ` : ''}
+
+    ${false ? `
+
+    ${tab === 'weekly' && kid && types.length ? `
     <p class="tiny" style="margin-bottom:10px">${esc(RT_WEEKLY_NOTE)}</p>
     ${types.map((t) => {
     const typeDef = ROUTINE_TYPES.filter((x) => x.id === t)[0] || {};
@@ -26174,7 +26548,7 @@ function screenRoutines(c) {
     </div>`;
   }).join('')}` : ''}
 
-    ${tab === 'templates' ? `
+    ${tab === 'templates' && kid && types.length ? `
     <p class="tiny" style="margin-bottom:10px">${esc(RT_TEMPLATES_NOTE)}</p>
     ${types.map((t) => {
     const built = rtBuild(kid, t);
@@ -26193,7 +26567,11 @@ function screenRoutines(c) {
   esc(built.optionalAvailable.map((s) => s.label).join(', '))}</p>` : ''}
     </div>`;
   }).join('')}` : ''}
-    `}
+
+    ${tab === 'templates' && (!kid || !types.length) ? `
+    <div class="card flat"><p class="bodytext" style="margin:0">${
+  esc(rtIsAdult() ? RT_ADULT_NO_TEMPLATES : RT_NONE_YET)}</p></div>` : ''}
+    ` : ''}
 
     <p class="disclaimer">${esc(RT_HONEST)}</p>
   </div>`;
