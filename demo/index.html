@@ -2603,6 +2603,55 @@ body.calpage .mark-holder{margin-bottom:-20px}
 .pickgrid .pickcard:nth-child(5n+4) .pickcard-ic{background:#FAF3E4}
 .pickgrid .pickcard:nth-child(5n+5) .pickcard-ic{background:#F2EEF6}
 
+/* ------------------------------------------------------------------
+   THE CYCLE TRACKER
+
+   Her mockup logs a day as groups of tappable tiles, not a wall of
+   pills: a heading, a wrapped row of equal sized options, a divider.
+   The chosen one is filled rather than outlined, so you can see where
+   you are without reading every label.
+   ------------------------------------------------------------------ */
+.cydate{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  padding:6px 8px;margin-bottom:12px}
+.cydate-t{font-size:14px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.cystep{appearance:none;border:0;background:var(--leaf3);border-radius:10px;width:34px;height:34px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+.cystep.off{opacity:.3;cursor:default}
+
+.cygroup{padding:12px 0;border-bottom:1px solid var(--line2)}
+.cygroup:first-child{padding-top:2px}
+.cygroup:last-child{border-bottom:0}
+.cygroup-h{margin:0 0 9px;font-size:11px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--deep)}
+.cyrow{display:flex;flex-wrap:wrap;gap:7px}
+
+.cypick{display:inline-flex;align-items:center;gap:6px;appearance:none;cursor:pointer;font:inherit;
+  background:var(--surface2);border:1px solid var(--line);border-radius:12px;
+  padding:9px 12px;font-size:13px;font-weight:600;color:var(--body);line-height:1.2;
+  transition:background .13s,border-color .13s,color .13s}
+.cypick:hover{border-color:var(--leaf)}
+.cypick.on{background:var(--leaf2);border-color:var(--sage);color:var(--deep2)}
+.cypick-ic{display:flex;flex:none}
+
+.cyswatch{display:inline-flex;flex-direction:column;align-items:center;gap:5px;appearance:none;
+  border:0;background:none;padding:2px;cursor:pointer;font:inherit;width:58px}
+.cyswatch-d{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);display:block;
+  box-shadow:inset 0 0 0 0 var(--sage);transition:box-shadow .13s}
+.cyswatch.on .cyswatch-d{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--sage)}
+.cyswatch-t{font-size:10.5px;color:var(--muted);line-height:1.2;text-align:center}
+.cyswatch.on .cyswatch-t{color:var(--deep);font-weight:700}
+
+.cynote{width:100%;resize:vertical;min-height:62px;font-size:13.5px;line-height:1.5}
+
+.cybars{display:flex;flex-direction:column;gap:7px}
+.cybar{display:grid;grid-template-columns:minmax(84px,34%) 1fr 26px;align-items:center;gap:9px}
+.cybar-l{font-size:12.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cybar-track{height:8px;border-radius:999px;background:var(--leaf3);overflow:hidden}
+.cybar-fill{display:block;height:100%;border-radius:999px;background:var(--sage)}
+.cybar-n{font-size:12px;font-weight:700;color:var(--muted);text-align:right;
+  font-variant-numeric:tabular-nums}
+
 /* The greeting, the way a person says hello: one line, at the left. */
 .hgreet{display:flex;align-items:flex-start;gap:11px;padding:4px 2px 14px}
 .hgreet-ic{flex:none;margin-top:3px;display:flex}
@@ -2679,7 +2728,7 @@ body.calpage .mark-holder{margin-bottom:-20px}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-29 20:36';
+const BUILD_STAMP = '2026-10-29 20:46';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -42076,7 +42125,14 @@ const CYCLOG_SYMPTOMS = [
 ];
 
 function cyclogItem(kind, id) {
-  const src = kind === 'flow' ? CYCLOG_FLOW : kind === 'mood' ? CYCLOG_MOODS : CYCLOG_SYMPTOMS;
+  const src = kind === 'flow' ? CYCLOG_FLOW
+    : kind === 'mood' ? CYCLOG_MOODS
+      : kind === 'period' ? CYCLOG_PERIOD
+        : kind === 'dis' ? CYCLOG_DISCHARGE
+          : kind === 'color' ? CYCLOG_COLOR
+            : kind === 'odor' ? CYCLOG_ODOR
+              : kind === 'dsx' ? CYCLOG_DSX
+                : CYCLOG_SYMPTOMS;
   for (let i = 0; i < src.length; i++) if (src[i].id === id) return src[i];
   return null;
 }
@@ -42086,9 +42142,11 @@ function cyclogItem(kind, id) {
    leaves nothing behind. */
 function cyclogEmpty(entry) {
   if (!entry) return true;
-  if (entry.flow) return false;
+  if (entry.flow || entry.period || entry.dis || entry.color || entry.odor) return false;
+  if (entry.note && String(entry.note).trim()) return false;
   if (Array.isArray(entry.moods) && entry.moods.length) return false;
   if (Array.isArray(entry.sx) && entry.sx.length) return false;
+  if (Array.isArray(entry.dsx) && entry.dsx.length) return false;
   return true;
 }
 
@@ -42106,6 +42164,15 @@ function cyclogSummary(entry) {
   const s = names('sx', entry.sx);
   if (m.length) bits.push(m.join(', ').toLowerCase());
   if (s.length) bits.push(s.join(', ').toLowerCase());
+  const d = cyclogItem('dis', entry.dis);
+  const c = cyclogItem('color', entry.color);
+  const o = cyclogItem('odor', entry.odor);
+  const dpart = [d ? d.label.toLowerCase() : '', c ? c.label.toLowerCase() : '']
+    .filter(Boolean).join(', ');
+  if (dpart) bits.push(dpart + ' discharge');
+  if (o && o.id !== 'none') bits.push(o.label.toLowerCase() + ' odour');
+  const ds = names('dsx', entry.dsx);
+  if (ds.length) bits.push(ds.join(', ').toLowerCase());
   return bits.join('. ');
 }
 
@@ -42195,6 +42262,160 @@ const CYCLOG_SOURCES = [
     url: 'https://www.nhs.uk/conditions/heavy-periods/' },
 ];
 
+
+/* ==================================================================
+   DISCHARGE AND CERVICAL MUCUS
+
+   Her ask, and a gap the app was already embarrassed by: Willow's own
+   copy tells women cervical mucus is more informative than calendar
+   prediction, and there was nowhere to write it down.
+
+   THE RULE THIS WHOLE SECTION OBEYS
+
+   Nothing here is a diagnosis and nothing here is contraception.
+   Discharge overlaps so heavily between normal variation, thrush and
+   bacterial vaginosis that even a clinician swabs rather than guesses,
+   so every explanation below says what else causes the same thing and
+   sends her for the test. The evidence labels are the same four tiers
+   the rest of the health content uses.
+   ================================================================== */
+
+/* Period is a separate question from flow, the way her mockup has it.
+   "Did it come" and "how heavy" are two different answers, and the
+   old single list quietly conflated spotting with a light period. */
+const CYCLOG_PERIOD = [
+  { id: 'yes', label: 'Yes' },
+  { id: 'no', label: 'No' },
+  { id: 'spot', label: 'Spotting' },
+];
+
+const CYCLOG_DISCHARGE = [
+  { id: 'dry', label: 'Dry or none', ic: 'close' },
+  { id: 'sticky', label: 'Sticky', ic: 'drop' },
+  { id: 'creamy', label: 'Creamy', ic: 'drop' },
+  { id: 'watery', label: 'Watery', ic: 'drop' },
+  { id: 'eggwhite', label: 'Egg white', ic: 'leaf' },
+  { id: 'clumpy', label: 'Thick or clumpy', ic: 'circle' },
+  { id: 'other', label: 'Something else', ic: 'info' },
+];
+
+/* Swatches rather than words, because a colour is quicker to point at
+   than to name, and "cream" means different things to different
+   people. */
+const CYCLOG_COLOR = [
+  { id: 'clear', label: 'Clear', hex: 'transparent' },
+  { id: 'white', label: 'White', hex: '#FFFFFF' },
+  { id: 'cream', label: 'Cream', hex: '#F4EBD9' },
+  { id: 'yellow', label: 'Yellow', hex: '#F2DE9B' },
+  { id: 'green', label: 'Green', hex: '#C3D6AE' },
+  { id: 'grey', label: 'Grey', hex: '#D3D5D0' },
+  { id: 'brown', label: 'Brown', hex: '#C4A48A' },
+  { id: 'pink', label: 'Pink', hex: '#F0C3CE' },
+];
+
+const CYCLOG_ODOR = [
+  { id: 'none', label: 'None' },
+  { id: 'mild', label: 'Mild or usual' },
+  { id: 'fishy', label: 'Fishy' },
+  { id: 'ammonia', label: 'Ammonia-like' },
+  { id: 'strong', label: 'Unusual or strong' },
+];
+
+const CYCLOG_DSX = [
+  { id: 'itch', label: 'Itching' },
+  { id: 'burn', label: 'Burning' },
+  { id: 'irrit', label: 'Irritation' },
+  { id: 'pelvic', label: 'Pelvic discomfort' },
+  { id: 'wee', label: 'Pain passing urine' },
+  { id: 'sex', label: 'Pain during sex' },
+  { id: 'spotting', label: 'Spotting between periods' },
+];
+
+const CYCLOG_NOTES_PLACEHOLDER = 'Anything else worth remembering';
+const CYCLOG_NOTES_MAX = 400;
+
+/* ------------------------------------------------------------------
+   WHAT EACH ONE CAN MEAN, AND WHAT ELSE IT CAN MEAN
+   ------------------------------------------------------------------ */
+const CYCLOG_DISCHARGE_LEARN = [
+  { id: 'eggwhite', t: 'Clear and stretchy, like egg white', s: 'decent',
+    why: 'Usually the days around ovulation, when rising oestrogen thins the mucus so sperm can '
+      + 'travel through it. It does not confirm that you ovulated, and plenty of cycles produce it '
+      + 'without releasing an egg.' },
+  { id: 'creamy', t: 'White or creamy, no itch and no odour', s: 'solid',
+    why: 'The most common thing there is. It changes through the cycle and between cycles, and on '
+      + 'its own it is not a sign of anything.' },
+  { id: 'clumpy', t: 'Thick and clumpy, with itching or soreness', s: 'decent',
+    why: 'Can go with a yeast infection, but irritation from soap, a new product or a latex '
+      + 'sensitivity looks very similar, and so can BV. Self treating the wrong one is common and '
+      + 'it delays the right treatment, so this is worth a swab rather than a guess.' },
+  { id: 'fishy', t: 'Thin and greyish with a fishy odour', s: 'decent',
+    why: 'Often associated with bacterial vaginosis, especially when it is stronger after sex. It '
+      + 'is also the pattern most often mistaken for thrush. A test tells them apart; the symptoms '
+      + 'do not.' },
+  { id: 'ammonia', t: 'An ammonia smell', s: 'thin',
+    why: 'Usually urine rather than discharge, often just concentrated urine on a day you drank '
+      + 'less. Worth drinking more and seeing whether it settles before assuming infection.' },
+  { id: 'yellowgreen', t: 'Yellow or green, frothy, with soreness', s: 'decent',
+    why: 'Can go with trichomoniasis or another infection that needs testing and treating, and a '
+      + 'partner may need treating too. This is a clinic visit rather than a pharmacy one.' },
+  { id: 'brown', t: 'Brown or pink spotting', s: 'solid',
+    why: 'Usually old blood at the start or end of a period. Between periods, after sex, or if it '
+      + 'is new for you, it is worth mentioning rather than watching.' },
+];
+
+/* The things that stop being a diary entry and become a phone call. */
+const CYCLOG_DISCHARGE_RED = {
+  title: 'When to ring somebody rather than log it',
+  signs: [
+    'Severe pelvic or stomach pain',
+    'A fever with it',
+    'Any unusual discharge or bleeding in pregnancy',
+    'A new discharge after a procedure or a coil fitting',
+    'Pain that stops you doing the day',
+  ],
+  close: 'Any of these is a call today rather than a note for later.',
+};
+
+const CYCLOG_DISCHARGE_NOTE =
+  'This is a record to take to an appointment, not a test. Discharge overlaps so much between '
+  + 'normal, thrush and BV that clinicians swab rather than guess, and so should this.';
+
+const CYCLOG_FERTILE_NOTE =
+  'Mucus patterns and fertile windows are estimates. Neither is contraception.';
+
+/* ------------------------------------------------------------------
+   THE TEEN SHARING SWITCH
+
+   Her call: shareable, but only if the girl says so. Her cycle log
+   rides on her child record, which anybody the parent granted access
+   to can read, so without this a grandparent or a sitter sees it by
+   default. Off unless it is turned on, and the wording says whose
+   choice it is.
+   ------------------------------------------------------------------ */
+const CYCLOG_SHARE = {
+  title: 'Who else can see this',
+  off: 'Only this phone. Nobody you have shared her profile with can see her cycle.',
+  on: 'Shared with anybody who has access to her profile, the same as the rest of it.',
+  ask: 'Let the people who can see her profile see her cycle too',
+  note: 'Her choice, not a setting to turn on for her. Somebody who thinks a parent is reading '
+    + 'along stops writing things down, and the point of the record is that it is honest.',
+};
+
+function cyclogDischargeLearn(id) {
+  for (let i = 0; i < CYCLOG_DISCHARGE_LEARN.length; i++) {
+    if (CYCLOG_DISCHARGE_LEARN[i].id === id) return CYCLOG_DISCHARGE_LEARN[i];
+  }
+  return null;
+}
+
+/* The four tabs across the top of the screen, from her mockup. */
+const CYCLOG_TABS = [
+  { id: 'summary', label: 'Summary' },
+  { id: 'log', label: 'Log' },
+  { id: 'patterns', label: 'Patterns' },
+  { id: 'learn', label: 'Insights' },
+];
 
 /* ===== src/data/sexEd.js ===== */
 /**
@@ -63579,6 +63800,7 @@ const state = {};
  'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'bpTab', 'sexedTab',
  'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab', 'crTab', 'calTab',
  'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift', 'lists', 'deletedListIds', 'listOpen', 'rewards', 'rewardLog', 'rewKid', 'rewOwnOpen',
+ 'cycTab', 'cyclogDate',
  'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -65654,6 +65876,13 @@ function initControls() {
   /* Leaving the field is a definite finish, so render immediately rather than
      waiting out the timer. */
   document.addEventListener('blur', (e) => {
+    /* The cycle note saves when she leaves the box rather than on
+       every keystroke, so a repaint never fires mid sentence. */
+    if (e.target && e.target.matches && e.target.matches('[data-cycnote]')) {
+      if (!document.contains(e.target)) return;
+      cyclogNote(e.target.dataset.cycnote || 'me', e.target.value);
+      return;
+    }
     if (e.target && e.target.matches && e.target.matches('[data-childbday]')) {
       /* A repaint removes the field, which fires blur on a node that is
          no longer in the page. Rendering again from that is how a
@@ -65717,7 +65946,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask],[data-obmore]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask],[data-obmore],[data-cyctab],[data-cycday]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -67229,6 +67458,18 @@ function initControls() {
       if (t.dataset.sexed === 'sti') {
         store.sexedSti = store.sexedSti === t.dataset.id ? '' : t.dataset.id;
       }
+    } else if (t.dataset.cycnote) {
+      return;
+    } else if (t.dataset.cyctab) {
+      store.cycTab = t.dataset.cyctab;
+    } else if (t.dataset.cycday) {
+      /* A day at a time, and never past today. */
+      const step = Number(t.dataset.cycday) || 0;
+      const d = new Date(cyclogDate() + 'T00:00:00');
+      d.setDate(d.getDate() + step);
+      const p = (n) => (n < 10 ? '0' + n : '' + n);
+      const next = d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+      if (next <= ciToday()) store.cyclogDate = next;
     } else if (t.dataset.cyclog) {
       const how = t.dataset.cyclog;
       const who = t.dataset.who || 'me';
@@ -73435,22 +73676,63 @@ function cyclogDate() {
 /* Tapping a chip toggles it. Flow is single choice because a day has
    one flow, mood and symptoms are multiple because a day does not
    have one of either. */
-function cyclogToggle(who, kind, id) {
-  const date = cyclogDate();
-  const cur = cyclogDays(who)[date];
-  const e = {
-    flow: cur ? cur.flow : '',
+/* An entry grew from { flow, moods, sx } to carry the day's period
+   answer and the discharge fields. Everything already written stays
+   readable: a day logged before this has no period, discharge, colour,
+   odour, dsx or note, and every reader below treats missing as empty
+   rather than assuming. */
+function cyclogBlank(cur) {
+  return {
+    period: cur ? (cur.period || '') : '',
+    flow: cur ? (cur.flow || '') : '',
     moods: cur && Array.isArray(cur.moods) ? cur.moods.slice() : [],
     sx: cur && Array.isArray(cur.sx) ? cur.sx.slice() : [],
+    dis: cur ? (cur.dis || '') : '',
+    color: cur ? (cur.color || '') : '',
+    odor: cur ? (cur.odor || '') : '',
+    dsx: cur && Array.isArray(cur.dsx) ? cur.dsx.slice() : [],
+    note: cur ? (cur.note || '') : '',
   };
-  if (kind === 'flow') {
-    e.flow = e.flow === id ? '' : id;
+}
+
+const CYCLOG_ONE_OF = { period: 1, flow: 1, dis: 1, color: 1, odor: 1 };
+const CYCLOG_MANY = { mood: 'moods', sx: 'sx', dsx: 'dsx' };
+
+function cyclogToggle(who, kind, id) {
+  const date = cyclogDate();
+  const e = cyclogBlank(cyclogDays(who)[date]);
+  if (CYCLOG_ONE_OF[kind]) {
+    /* Tapping the chosen one again clears it, so a mis-tap does not
+       leave an answer standing that nobody meant. */
+    e[kind] = e[kind] === id ? '' : id;
   } else {
-    const arr = kind === 'mood' ? e.moods : e.sx;
+    const key = CYCLOG_MANY[kind];
+    if (!key) return;
+    const arr = e[key];
     const at = arr.indexOf(id);
     if (at === -1) arr.push(id); else arr.splice(at, 1);
   }
   cyclogWrite(who, date, e);
+}
+
+function cyclogNote(who, text) {
+  const date = cyclogDate();
+  const e = cyclogBlank(cyclogDays(who)[date]);
+  e.note = String(text || '').slice(0, CYCLOG_NOTES_MAX);
+  cyclogWrite(who, date, e);
+}
+
+/* Whether this child's cycle travels with her profile when it is
+   shared. Off until she says otherwise. */
+function cyclogShared(kid) {
+  return !!(kid && kid.cycleShare);
+}
+
+function cyclogShareSet(kid, on) {
+  if (!kid) return;
+  kid.cycleShare = !!on;
+  kid.updatedAt = Date.now();
+  flushStore();
 }
 
 function cyclogClearAll(who) {
@@ -81833,24 +82115,216 @@ function screenTxLog() {
   </div>`;
 }
 
+/* ==================================================================
+   CYCLE TRACKER, BUILT TO HER MOCKUP
+
+   Four segmented tabs instead of one long scroll. Summary is where
+   you are, Log is today, Patterns is the shape over time, Insights is
+   what any of it means.
+
+   The old screen put every question on one page and made her scroll
+   past the diary to reach the calendar. A tab strip costs one tap and
+   buys a screen you can take in at a glance, which is the whole
+   difference she has been pointing at.
+   ================================================================== */
+function cycTab() {
+  const t = store.cycTab;
+  return CYCLOG_TABS.some((x) => x.id === t) ? t : 'summary';
+}
+
+/* One tappable option. Used for every group on the Log tab so they
+   are the same object, the same size and the same hit area. */
+function cycPick(on, label, attrs, ic) {
+  return `
+  <button class="cypick${on ? ' on' : ''}" ${attrs} aria-pressed="${on ? 'true' : 'false'}">
+    ${ic ? `<span class="cypick-ic">${icon(ic, 15, on ? 'var(--deep2)' : 'var(--sage)')}</span>` : ''}
+    <span class="cypick-t">${esc(label)}</span>
+  </button>`;
+}
+
+function cycGroup(title, inner, note) {
+  return `
+  <div class="cygroup">
+    <p class="cygroup-h">${esc(title)}</p>
+    <div class="cyrow">${inner}</div>
+    ${note ? `<p class="tiny" style="margin-top:7px">${esc(note)}</p>` : ''}
+  </div>`;
+}
+
+/* The date stepper. A day at a time, and never into the future,
+   because a diary of tomorrow is not a diary. */
+function cycDateBar(who) {
+  const d = cyclogDate();
+  const today = ciToday();
+  return `
+  <div class="cydate">
+    <button class="cystep" data-cycday="-1" aria-label="The day before">
+      ${icon('back', 16, 'var(--deep)')}</button>
+    <span class="cydate-t">${esc(calDayLabel(d, today))}</span>
+    <button class="cystep${d >= today ? ' off' : ''}" data-cycday="1"
+      ${d >= today ? 'disabled' : ''} aria-label="The day after">
+      ${icon('chev', 16, 'var(--deep)')}</button>
+  </div>`;
+}
+
+/* ---------- THE LOG TAB ---------- */
+function cycLogTab(who, kid) {
+  const date = cyclogDate();
+  const e = cyclogDays(who)[date] || {};
+  const at = (k) => (v) => `data-cyclog="set" data-kind="${k}" data-id="${esc(v)}" data-who="${esc(who)}"`;
+
+  return `
+  ${cycDateBar(who)}
+
+  <div class="card">
+    ${cycGroup('Period', CYCLOG_PERIOD.map((o) =>
+    cycPick(e.period === o.id, o.label, at('period')(o.id))).join(''))}
+
+    ${e.period === 'no' ? '' : cycGroup('Flow', CYCLOG_FLOW.map((o) =>
+    cycPick(e.flow === o.id, o.label, at('flow')(o.id), 'drop')).join(''))}
+
+    ${cycGroup('Discharge', CYCLOG_DISCHARGE.map((o) =>
+    cycPick(e.dis === o.id, o.label, at('dis')(o.id), o.ic)).join(''))}
+
+    ${e.dis && e.dis !== 'dry' ? `
+    <div class="cygroup">
+      <p class="cygroup-h">Colour</p>
+      <div class="cyrow">
+        ${CYCLOG_COLOR.map((o) => `
+        <button class="cyswatch${e.color === o.id ? ' on' : ''}" ${at('color')(o.id)}
+          aria-pressed="${e.color === o.id}" aria-label="${esc(o.label)}">
+          <span class="cyswatch-d" style="background:${o.hex === 'transparent'
+    ? 'repeating-linear-gradient(45deg,#fff,#fff 3px,#EFEBE0 3px,#EFEBE0 6px)' : o.hex}"></span>
+          <span class="cyswatch-t">${esc(o.label)}</span>
+        </button>`).join('')}
+      </div>
+    </div>
+
+    ${cycGroup('Odour', CYCLOG_ODOR.map((o) =>
+    cycPick(e.odor === o.id, o.label, at('odor')(o.id))).join(''))}` : ''}
+
+    ${cycGroup('Anything sore or itchy', CYCLOG_DSX.map((o) =>
+    cycPick((e.dsx || []).indexOf(o.id) !== -1, o.label, at('dsx')(o.id))).join(''))}
+
+    ${cycGroup('Mood', CYCLOG_MOODS.map((o) =>
+    cycPick((e.moods || []).indexOf(o.id) !== -1, o.label, at('mood')(o.id))).join(''))}
+
+    ${cycGroup('Body', CYCLOG_SYMPTOMS.map((o) =>
+    cycPick((e.sx || []).indexOf(o.id) !== -1, o.label, at('sx')(o.id))).join(''))}
+
+    <div class="cygroup" style="border-bottom:0;padding-bottom:0">
+      <p class="cygroup-h">Notes</p>
+      <textarea id="cycnote" class="inp cynote" rows="2" maxlength="${CYCLOG_NOTES_MAX}"
+        placeholder="${esc(CYCLOG_NOTES_PLACEHOLDER)}"
+        data-cycnote="${esc(who)}">${esc(e.note || '')}</textarea>
+    </div>
+
+    <p class="tiny" style="margin-top:12px">${cyclogEmpty(e)
+    ? 'Nothing logged for this day yet. Tap anything above and it saves as you go.'
+    : esc(cyclogSummary(e))}</p>
+  </div>
+
+  ${/* The one thing on this screen that can matter within the hour. */''}
+  <div class="szcard blush" style="margin-top:13px">
+    <div class="szcard-h">
+      <span class="szcard-ic">${icon('info', 15, '#8A5F54')}</span>
+      <span class="szcard-t">${esc(CYCLOG_DISCHARGE_RED.title)}</span>
+    </div>
+    <ul class="dlist" style="margin-top:4px">
+      ${CYCLOG_DISCHARGE_RED.signs.map((x) => `<li>${esc(x)}</li>`).join('')}
+    </ul>
+    <p class="bodytext" style="margin-top:8px">${esc(CYCLOG_DISCHARGE_RED.close)}</p>
+  </div>
+
+  <p class="disclaimer">${esc(CYCLOG_DISCHARGE_NOTE)}</p>`;
+}
+
+/* ---------- THE PATTERNS TAB ---------- */
+function cycPatternsTab(who) {
+  const days = cyclogDays(who);
+  const counts = cyclogCounts(days);
+  const keys = Object.keys(days || {}).sort().reverse();
+  if (!counts.n) {
+    return `<div class="card flat"><p class="bodytext" style="margin:0">${
+      esc('Nothing logged yet. Log a few days and the patterns show up here.')}</p></div>`;
+  }
+  const row = (label, pairs) => (!pairs.length ? '' : `
+    <div class="cygroup">
+      <p class="cygroup-h">${esc(label)}</p>
+      <div class="cybars">
+        ${pairs.map((p) => `
+        <div class="cybar">
+          <span class="cybar-l">${esc(p.label)}</span>
+          <span class="cybar-track"><span class="cybar-fill"
+            style="width:${Math.round((p.n / counts.n) * 100)}%"></span></span>
+          <span class="cybar-n">${p.n}</span>
+        </div>`).join('')}
+      </div>
+    </div>`);
+  const top = (kind, src, obj) => Object.keys(obj || {})
+    .map((id) => ({ label: ((cyclogItem(kind, id) || {}).label || id), n: obj[id] }))
+    .sort((a, b) => b.n - a.n).slice(0, 6);
+
+  return `
+  <div class="card">
+    <p class="bodytext" style="margin:0 0 4px">${counts.n === 1 ? 'One day logged'
+    : counts.n + ' days logged'}, newest ${esc(calDayLabel(keys[0]))}.</p>
+    ${row('Flow', top('flow', CYCLOG_FLOW, counts.flow))}
+    ${row('Mood', top('mood', CYCLOG_MOODS, counts.mood))}
+    ${row('Body', top('sx', CYCLOG_SYMPTOMS, counts.sx))}
+  </div>
+  <p class="disclaimer">${esc(CYCLOG_HONEST)}</p>`;
+}
+
+/* ---------- THE INSIGHTS TAB ---------- */
+function cycLearnTab() {
+  return `
+  <div class="card leafy">
+    <p class="bodytext" style="margin:0">${esc(CYCLOG_DISCHARGE_NOTE)}</p>
+  </div>
+  <p class="sect" style="margin-top:16px">What each one can mean</p>
+  <div class="card">${CYCLOG_DISCHARGE_LEARN.map((r) => nshRow({
+    t: r.t, s: r.s, why: r.why,
+  })).join('')}</div>
+  <div class="szcard blush" style="margin-top:13px">
+    <div class="szcard-h">
+      <span class="szcard-ic">${icon('info', 15, '#8A5F54')}</span>
+      <span class="szcard-t">${esc(CYCLOG_DISCHARGE_RED.title)}</span>
+    </div>
+    <ul class="dlist" style="margin-top:4px">
+      ${CYCLOG_DISCHARGE_RED.signs.map((x) => `<li>${esc(x)}</li>`).join('')}
+    </ul>
+  </div>
+  <p class="disclaimer">${esc(CYCLOG_FERTILE_NOTE)}</p>`;
+}
+
 function screenMyCycle(c) {
   setTimeout(() => { try { reproWillowCheck(); } catch (e) {} }, 0);
   const info = cycleInfoNow();
   const q = info
     ? 'Looking at my cycle so far, is there anything worth noticing or mentioning to a doctor?'
     : 'How does tracking my cycle work, and what is worth logging?';
+  const tab = cycTab();
   return `
   ${cornerLeaves()}
   <div class="sc-head">
     <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
-    <p class="eyebrow" style="margin-top:6px">Just for you</p>
-    <h1 class="title sm">Your cycle</h1>
+    <h1 class="title sm">Cycle tracker</h1>
     <p class="sub">Your calendar, your history, and how each day felt.</p>
   </div>
   <div class="sc">
-    ${cycleWidget()}
+    <div class="segs" role="tablist">
+      ${CYCLOG_TABS.map((t) => `
+      <button class="seg" role="tab" data-cyctab="${esc(t.id)}"
+        aria-pressed="${tab === t.id}">${esc(t.label)}</button>`).join('')}
+    </div>
 
-    ${cyclogBlock('me', false)}
+    ${tab === 'log' ? cycLogTab('me', null) : ''}
+    ${tab === 'patterns' ? cycPatternsTab('me') : ''}
+    ${tab === 'learn' ? cycLearnTab() : ''}
+
+    ${tab !== 'summary' ? '' : `
+    ${cycleWidget()}
 
     <button class="pickcard" style="width:100%;margin-top:13px"
       data-go="screen" data-id="repro">
@@ -81874,7 +82348,7 @@ function screenMyCycle(c) {
         answer with your own cycle rather than the textbook one.</p>
       <button class="btn" style="width:100%;margin-top:12px" data-mycycle="ask" data-q="${esc(q)}">
         What is my cycle doing?</button>
-    </div>
+    </div>`}
   </div>`;
 }
 
