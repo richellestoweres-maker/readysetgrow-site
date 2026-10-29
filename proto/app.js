@@ -2559,35 +2559,71 @@ function emptyScreen(msg) {
 const BOTTOM_BAR = ['today', 'now', 'child', 'logs', 'me'];
 
 function tabList() {
-  /* HER ORDER, SEPTEMBER 2026, REVISED TWICE IN OCTOBER.
+  /* OCTOBER 2026: FIVE LABELLED TABS, FROM HER MOCKUPS.
 
-     Home sat in the middle, then she asked for it first, then she
-     asked for it back in the middle because the dark green disc is
-     the anchor of the bar and an anchor off to one side looks like a
-     mistake. She is right, and it is also the better thumb position:
-     dead centre is the one spot you can hit without looking.
+     The previous bar was Community, Outings, Home, Calendar, Profile,
+     unlabelled, with Home as a raised disc in the middle. It worked,
+     but it was a website's footer: you had to already know what the
+     pictures meant.
 
-     The other four keep the order she gave me, Community and Outings
-     to the left of it, Calendar and Profile to the right. */
+     These five are the shape every phone app uses, which is the point.
+     Home is where you are, Family is who you are doing it for, Planner
+     is the week, Discover is everything to read and everyone to talk
+     to, More is the drawer. Nothing was removed to get here; the old
+     four are screens now and TAB_ALIAS below keeps every existing link
+     pointing somewhere real. */
   return [
-    { id: 'community', label: 'Community', icon: 'people' },
-    /* LOGS NO LONGER HAS A TAB.
-
-       Her reasoning and it is right: she clicks "Everything logged for
-       Ada" and gets Ada's own log page, which is what she wants, while
-       the tab showed everybody's logs in one place behind a person
-       picker. One of those is a record of a child and the other is a
-       pile.
-
-       Nothing was removed. Entering a log was always done from a
-       profile, and reading them back now is too: each child has their
-       own page and so does she. It also gives a tab back on a bar she
-       had just told me was too crowded. */
-    { id: 'outings', label: 'Outings', icon: 'bag' },
-    { id: 'home', label: 'Home', icon: 'home', center: true },
-    { id: 'calendar', label: 'Calendar', icon: 'calendar' },
-    { id: 'profile', label: 'Profile', icon: 'user' },
+    { id: 'home', label: 'Home', icon: 'home' },
+    { id: 'family', label: 'Family', icon: 'people' },
+    { id: 'planner', label: 'Planner', icon: 'calendar' },
+    { id: 'discover', label: 'Discover', icon: 'book' },
+    { id: 'more', label: 'More', icon: 'gear' },
   ];
+}
+
+/* WHERE THE OLD TAB NAMES GO.
+
+   Community, Outings, Calendar and Profile were tabs and are now
+   screens inside the new five. Every data-tab in 33,000 lines of
+   markup, every saved store.tab from a previous visit, and every
+   deep link still names the old one, so they are translated here
+   rather than hunted down and rewritten. Nothing lost, nothing
+   stranded on a tab that no longer exists. */
+const TAB_ALIAS = {
+  community: { tab: 'discover', view: { type: 'screen', id: 'community' } },
+  outings: { tab: 'discover', view: { type: 'screen', id: 'outings' } },
+  calendar: { tab: 'planner', view: { type: 'screen', id: 'calendar' } },
+  profile: { tab: 'family', view: null },
+  settings: { tab: 'more', view: { type: 'screen', id: 'settings' } },
+  today: { tab: 'home', view: null },
+  now: { tab: 'home', view: null },
+  logs: { tab: 'family', view: null },
+};
+
+function tabIsReal(id) {
+  return tabList().some((t) => t.id === id);
+}
+
+/* Every route into a tab goes through here, so an old name lands on
+   the new tab AND on the screen it used to be. Asking for Community
+   gets you Discover with Community open, not Discover's front page
+   and a puzzled parent. */
+function goTab(id) {
+  const key = String(id || '');
+  if (tabIsReal(key)) { state.tab = key; state.view = null; return; }
+  const alias = TAB_ALIAS[key];
+  if (alias) { state.tab = alias.tab; state.view = alias.view; return; }
+  state.tab = 'home';
+  state.view = null;
+}
+
+/* A store written before the new bar holds an old tab name. Nothing
+   reads it until the first render, so it is translated on load. */
+function normalizeTab() {
+  const key = String(state.tab || '');
+  if (!key || tabIsReal(key)) return;
+  const alias = TAB_ALIAS[key];
+  state.tab = alias ? alias.tab : 'home';
 }
 
 let lastFocus = { id: null, start: null, end: null };
@@ -2948,6 +2984,10 @@ function render() {
   }
   else if (v && v.type === 'momnow') html = screenMomNowOne(v.id);
   else if (state.tab === 'welcome') html = screenWelcome(c);
+  else if (state.tab === 'planner') html = screenPlanner(c);
+  else if (state.tab === 'discover') html = screenDiscover(c);
+  else if (state.tab === 'more') html = screenMore(c);
+  else if (state.tab === 'family') html = screenProfileTab(c);
   else if (state.tab === 'settings') html = screenSettings();
   /* Profile shows whoever is selected. Her own face in the corner puts
      her here, a child's circle on Home puts them here. */
@@ -3172,15 +3212,16 @@ function render() {
        counts things that need HER, not everything that happened in the
        room, because a badge that never reaches zero is a badge people
        stop seeing. */
-    const badge = t.id === 'community' ? commBadge() : 0;
+    /* The badge moves to Discover with the community it belongs to. */
+    const badge = t.id === 'discover' ? commBadge() : 0;
     return `
     <button class="tab" role="tab" data-tab="${t.id}" aria-selected="${on}"
-      aria-label="${esc(t.label)}${badge ? ', ' + badge + ' waiting' : ''}" title="${esc(t.label)}">
+      aria-label="${esc(t.label)}${badge ? ', ' + badge + ' waiting' : ''}">
       <span class="tabic">
-        ${icon(t.icon, 22, on ? 'var(--deep)' : 'var(--muted)')}
+        ${icon(t.icon, 21, on ? 'var(--deep)' : 'var(--muted)')}
         ${badge ? `<span class="tabbadge">${badge > 9 ? '9+' : badge}</span>` : ''}
       </span>
-      <span class="sronly">${esc(t.label)}</span><span class="dot"></span>
+      <span class="tablabel">${esc(t.label)}</span>
     </button>`;
   }).join('');
 
@@ -4932,9 +4973,9 @@ function initControls() {
     } else if (t.dataset.tab) {
       /* The bottom tabs always start a profile from its top. */
       store.kidSection = null;
-      state.tab = t.dataset.tab; state.view = null; navClear();
+      goTab(t.dataset.tab); navClear();
     } else if (t.dataset.go === 'tab') {
-      state.tab = t.dataset.id; state.view = null; navClear();
+      goTab(t.dataset.id); navClear();
     } else if (t.dataset.go) {
       if (t.tagName === 'A') return; // source links open normally
       /* Remember the screen they were on when they went to report a
@@ -25082,6 +25123,157 @@ function facePicker(target, current) {
    Whoever is selected. Her face in the corner puts her here, a child's
    circle on Home puts them here.
    ----------------------------------------------------------------- */
+
+/* ==================================================================
+   THE THREE NEW TABS
+
+   Planner, Discover and More are hubs over screens that already
+   existed and were previously scattered across a tab bar, a menu and
+   the bottom of Home. Nothing new is built here and nothing is taken
+   away: each card opens the same screen it always did.
+
+   A hub is what makes a phone app feel like a phone app. A website
+   gives you one long page and a footer; an app gives you a place
+   whose job you can name, and the things it holds.
+   ================================================================== */
+
+/* One row in a hub. Deliberately the same object as the pickcards
+   used elsewhere, so a hub looks like the rest of the app rather
+   than like a menu bolted on top. */
+function hubCard(opt) {
+  const attrs = opt.view
+    ? `data-go="${esc(opt.view)}" data-id="${esc(opt.id)}"`
+    : `data-go="screen" data-id="${esc(opt.id)}"`;
+  return `
+  <button class="pickcard" ${attrs}>
+    <span class="pickcard-ic">${icon(opt.ic, 17, 'var(--deep)')}</span>
+    <span class="pickcard-t">${esc(opt.t)}</span>
+    <span class="pickcard-b">${esc(opt.b)}</span>
+    ${opt.tag ? `<span class="pickcard-tag">${esc(opt.tag)}</span>` : ''}
+    <span class="pickcard-go">${esc(opt.go || 'Open')} ${icon('chev', 12, 'var(--deep)')}</span>
+  </button>`;
+}
+
+function hubHead(title, sub) {
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head tight">
+    <h1 class="title sm">${esc(title)}</h1>
+    <p class="sub">${esc(sub)}</p>
+  </div>`;
+}
+
+/* ------------------------------------------------------------------
+   PLANNER
+   ------------------------------------------------------------------ */
+function screenPlanner(c) {
+  const today = ciToday();
+  const evs = (typeof calEventsOn === 'function') ? [] : [];
+  return `
+  ${hubHead('Planner', 'The week, the jobs and the lists, in one place.')}
+  <div class="sc">
+    <div class="pickgrid one">
+    ${hubCard({ id: 'calendar', ic: 'calendar', t: 'Calendar',
+    b: 'Day, week and month, colour coded for everybody.', go: 'Open' })}
+    </div>
+    <div class="pickgrid" style="margin-top:10px">
+      ${hubCard({ id: 'chores', ic: 'check', t: 'Chores and stars',
+    b: 'Who does what, and what it earns.' })}
+      ${hubCard({ id: 'lists', ic: 'note', t: 'Lists',
+    b: 'Shopping, packing, questions to ask.' })}
+    </div>
+    ${store.children && store.children.length ? `
+    <p class="sect" style="margin-top:18px">Routines</p>
+    <div class="card">
+      <p class="bodytext" style="margin:0">${esc(PLANNER_ROUTINE_NOTE)}</p>
+      <button class="btn ghost" style="width:100%;margin-top:11px" data-go="screen" data-id="sleep">
+        ${icon('moon', 14, 'var(--deep)')} Open today's rhythm</button>
+    </div>` : ''}
+    <p class="disclaimer">${esc(PLANNER_NOTE)}</p>
+  </div>`;
+}
+
+/* ------------------------------------------------------------------
+   DISCOVER
+
+   Everything to read, and everyone to talk to. Community lives here
+   because that is where her mockups put it, and Home carries a Quick
+   Access chip straight to it so it is still one tap from the front
+   door rather than two.
+   ------------------------------------------------------------------ */
+function screenDiscover(c) {
+  const badge = commBadge();
+  return `
+  ${hubHead('Discover', 'Everything to read, and everyone to ask.')}
+  <div class="sc">
+    <button class="pickcard" style="width:100%" data-go="screen" data-id="find">
+      <span class="pickcard-ic">${icon('search', 17, 'var(--deep)')}</span>
+      <span class="pickcard-t">${esc(FIND_TITLE)}</span>
+      <span class="pickcard-b">Search everything, or just ask her.</span>
+      <span class="pickcard-go">Ask ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>
+
+    <p class="sect" style="margin-top:18px">Community</p>
+    <div class="pickgrid one">
+    ${hubCard({ id: 'community', ic: 'people', t: 'Rooms and the noticeboard',
+    b: 'Other parents, in the same week as you.',
+    tag: badge ? (badge > 9 ? '9+ waiting' : badge + ' waiting') : '', go: 'Open' })}
+    </div>
+
+    <p class="sect" style="margin-top:18px">For the children</p>
+    <div class="pickgrid">
+      ${hubCard({ id: 'learning', ic: 'book', t: 'Learning', b: 'What they are working on now.' })}
+      ${hubCard({ id: 'understand', ic: 'bulb', t: 'Understanding them',
+    b: 'Why they are doing that.' })}
+      ${hubCard({ id: 'activities', ic: 'puzzle', t: 'Things to do', b: 'For the age they are.' })}
+      ${hubCard({ id: 'outings', ic: 'bag', t: 'Going out', b: 'What to take, and when.' })}
+    </div>
+
+    <p class="sect" style="margin-top:18px">For you</p>
+    <div class="pickgrid">
+      ${hubCard({ id: 'mycycle', ic: 'heart', t: "Women's health",
+    b: 'Your cycle, reproductive health, treatment.' })}
+      ${hubCard({ id: 'momnow', ic: 'leaf', t: 'How you are',
+    b: 'Recovery, sleep, the hard days.' })}
+      ${hubCard({ id: 'learnall', ic: 'chat', t: 'For you', b: 'Your own head, not theirs.' })}
+      ${hubCard({ id: 'support', ic: 'hand', t: 'Support', b: 'When it is more than a hard day.' })}
+    </div>
+
+    <p class="sect" style="margin-top:18px">Keeping them safe</p>
+    <div class="pickgrid">
+      ${hubCard({ id: 'safety', ic: 'shield', t: 'Safety', b: 'Home, car, water, choking.' })}
+      ${hubCard({ id: 'online', ic: 'eye', t: 'Online', b: 'Screens, and who is talking to them.' })}
+      ${hubCard({ id: 'vaccines', ic: 'pill', t: 'Vaccines', b: 'What is due, and what it does.' })}
+      ${hubCard({ id: 'wisdom', ic: 'star', t: 'What other parents said',
+    b: 'Passed along, not prescribed.' })}
+    </div>
+  </div>`;
+}
+
+/* ------------------------------------------------------------------
+   MORE
+   ------------------------------------------------------------------ */
+function screenMore(c) {
+  return `
+  ${hubHead('More', 'Your account, and how the app behaves.')}
+  <div class="sc">
+    <div class="pickgrid">
+      ${hubCard({ id: 'settings', ic: 'gear', t: 'Settings', b: 'Names, units, how it looks.' })}
+      ${hubCard({ id: 'notifications', ic: 'chat', t: 'Notifications',
+    b: 'What buzzes, and when it does not.' })}
+      ${hubCard({ id: 'sharing', ic: 'people', t: 'Sharing',
+    b: 'Who else can see a child.' })}
+      ${hubCard({ id: 'privacy', ic: 'shield', t: 'Privacy', b: 'What is kept, and where.' })}
+      ${hubCard({ id: 'install', ic: 'home', t: 'Add to your phone',
+    b: 'So it opens like an app.' })}
+      ${hubCard({ id: 'commrules', ic: 'note', t: 'Community rules',
+    b: 'What the rooms are for.' })}
+      ${hubCard({ id: 'feedback', ic: 'chat', t: 'Tell us something',
+    b: 'Broken, missing or wrong.' })}
+      ${hubCard({ id: 'about', ic: 'info', t: 'About', b: 'What this is, and who made it.' })}
+    </div>
+  </div>`;
+}
 
 function screenProfileTab(c) {
   const who = store.profileWho || 'me';

@@ -420,20 +420,37 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
    of a phone. They are a fixed size and centred now, so they sit as
    one group a thumb can travel across. Still 48 wide and 46 tall,
    which is above the 44 pixel minimum for something you tap. */
-.tabs{display:flex;justify-content:center;gap:15px;background:var(--surface);
-  border-top:1px solid var(--line2);padding:4px 6px 7px;flex:none;position:relative;z-index:2}
+/* THE BAR SITS ABOVE THE HOME INDICATOR, NOT UNDER IT.
+
+   Every env(safe-area-inset-*) in this stylesheet was inert until the
+   viewport meta gained viewport-fit=cover, so on an iPhone the bottom
+   row of the app was sitting beneath the swipe bar. The padding below
+   is the real fix; the meta is what makes it mean anything. */
+.tabs{display:flex;justify-content:center;gap:4px;background:var(--surface);
+  border-top:1px solid var(--line2);flex:none;position:relative;z-index:2;
+  padding:5px 4px 6px;
+  padding-bottom:calc(6px + env(safe-area-inset-bottom, 0px))}
 /* Icons only. The words are still in the markup for screen readers,
    they are just not drawn, which is what let 6 tabs fit across a
    phone when 6 labelled ones would not. */
-.tab{flex:none;width:50px;display:flex;flex-direction:column;align-items:center;gap:4px;
-  padding:9px 0 7px;color:var(--muted);min-height:46px;justify-content:center}
+/* FIVE LABELLED TABS, WHICH IS WHAT MAKES IT READ AS AN APP.
+
+   It was 5 unlabelled icons because 6 labelled ones would not fit.
+   There are 5 now and the words fit, and a bar you can read without
+   decoding pictograms is most of the difference between an app and a
+   website with a sticky footer. */
+.tab{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:7px 2px 5px;color:var(--muted);min-height:48px;justify-content:center}
+.tablabel{font-size:10px;font-weight:600;letter-spacing:.01em;line-height:1.1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tab[aria-selected="true"] .tablabel{font-weight:700}
 /* THE THIRD SETTING.
    flex:1 spread 5 icons over the whole width and she said they were
    too far apart. 44 wide with no gap bunched them into the middle and
    she said they were too close. This is the middle: 5 buttons of 50
    with 15 between them is about 310 across on a 390 wide phone, so
    the row reaches most of the way without touching either edge. */
-@media (max-width:360px){ .tabs{gap:10px} .tab{width:46px} }
+@media (max-width:340px){ .tablabel{font-size:9px} }
 .tab[aria-selected="true"]{color:var(--deep)}
 .tabic{position:relative;display:flex;align-items:center;justify-content:center}
 .tabbadge{position:absolute;top:-5px;right:-8px;min-width:16px;height:16px;padding:0 4px;
@@ -2242,6 +2259,8 @@ body.calpage .mark-holder{margin-bottom:-20px}
    instead of four scrolls apart.
    ------------------------------------------------------------------ */
 .pickgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+/* A grid holding one card still wants the full width. */
+.pickgrid.one{grid-template-columns:1fr;margin-top:0}
 .pickcard{position:relative;appearance:none;text-align:left;font:inherit;cursor:pointer;
   background:#fff;border:1px solid rgba(74,103,65,.14);border-radius:18px;
   padding:13px 12px 11px;display:flex;flex-direction:column;gap:6px}

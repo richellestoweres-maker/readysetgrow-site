@@ -544,7 +544,7 @@ desktop_head = head.replace(
     '<title>Ready Set Grow Prototype</title>',
     '<title>Ready Set Grow</title>\n'
     '<meta charset="utf-8">\n'
-    '<meta name="viewport" content="width=device-width,initial-scale=1">\n'
+    '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
     '<meta name="description" content="A parenting companion that answers what is happening '
     'with your child and what you can actually do about it, from pregnancy through eighteen, '
     'on one continuous profile.">\n'
