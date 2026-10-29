@@ -18141,9 +18141,26 @@ function whoIsOpen() {
   };
 }
 
+/* THE HEADER WAS A WEBSITE MASTHEAD ON EVERY SINGLE SCREEN.
+
+   The full wordmark, 140px of it, sat above the calendar, above the
+   forum, above a child's profile. On a desktop that is a masthead and
+   it is right. On a phone it is a third of the screen spent telling
+   somebody the name of the app they just opened, and it is the main
+   reason the thing read as a website.
+
+   IS_DESKTOP only asks whether the build carries the desktop chrome,
+   and the shipped site carries it, so phones were getting it too. It
+   now takes the width into account, and the phone gets what her
+   mockups show: the mark small and only on Home, nothing anywhere
+   else, and the screen's own title doing the work. */
 function topBar(markOnly) {
-  const mark = IS_DESKTOP ? `<div class="mark-holder">${wordmark(false)}</div>` : '';
-  if (markOnly) return updateBar() + `<div class="topbar mark-only">${mark}</div>`;
+  const wide = bgWideEnough();
+  const mark = (IS_DESKTOP && wide) ? `<div class="mark-holder">${wordmark(false)}</div>` : '';
+  if (markOnly) {
+    return updateBar() + `<div class="topbar mark-only">${
+      mark || `<div class="mark-mini">${wordmark(false)}</div>`}</div>`;
+  }
   const who = whoIsOpen();
   /* Every deep screen carries its own Back, so the chip would make two.
      The one place nothing goes back is a child's profile, reached by
@@ -18153,12 +18170,13 @@ function topBar(markOnly) {
   <div class="topbar">
     <div class="topbar-left">
       ${deep ? `<button class="backchip" data-back="offchild">${icon('back', 15, 'var(--deep)')} Back</button>`
-        : (state.tab === 'home' && !state.view)
-    ? `${/* On Home the search box now lives at the bottom, where she
-             asked for it, so the corner keeps only the quick version:
-             a magnifying glass and no word, for when she knows
-             exactly what she is after. */''}
-        <button class="findchip icon" data-go="screen" data-id="find"
+        : (state.tab === 'home' && !state.view && !wide)
+    ? `${/* Home carries the mark, small and to the left, the way her
+             mockups have it. Nowhere else does. */''}
+        <button class="markbtn" data-go="screen" data-id="about" aria-label="Ready Set Grow">
+          <span class="mark-mini">${wordmark(false)}</span></button>`
+    : (state.tab === 'home' && !state.view)
+    ? `<button class="findchip icon" data-go="screen" data-id="find"
           aria-label="Search, or ask Willow">${icon('search', 17, 'var(--deep)')}</button>`
     : `<button class="findchip" data-go="screen" data-id="find" aria-label="Ask Willow or find a page">${icon('search', 16, 'var(--deep)')}<span>Ask</span></button>`}
     </div>
@@ -23949,6 +23967,155 @@ function homeTiles(c, l) {
   return `<div class="htiles">${tiles.join('')}</div>`;
 }
 
+/* ==================================================================
+   TODAY AT A GLANCE
+
+   From her mockups, and it is the one thing Home was missing. Home
+   told her how she was doing and who her children were, then made her
+   go and look somewhere else to find out what was actually happening
+   today.
+
+   Four lines, each one a real count off the real data, each one a way
+   into the screen that holds it. A row only appears when it has
+   something to say, so this is never four zeros staring at somebody
+   on a quiet Tuesday.
+   ================================================================== */
+function glanceRow(opt) {
+  return `
+  <button class="glrow" data-go="${esc(opt.view || 'screen')}" data-id="${esc(opt.id)}">
+    <span class="glrow-ic" style="background:${opt.bg}">${icon(opt.ic, 16, opt.fg)}</span>
+    <span class="glrow-b">
+      <span class="glrow-t">${esc(opt.t)}</span>
+      <span class="glrow-s">${esc(opt.s)}</span>
+    </span>
+    ${icon('chev', 15, 'var(--faint)')}
+  </button>`;
+}
+
+function homeGlance(c) {
+  const today = ciToday();
+  const rows = [];
+
+  /* EVENTS. Everything on the house's calendar for today, with the
+     next one named, because "3 events" on its own is a number and
+     "next: Pediatrician at 10" is an answer. */
+  let evs = [];
+  try { evs = calOnDay(today, 'all') || []; } catch (e) { evs = []; }
+  if (evs.length) {
+    const timed = evs.filter((e) => e && e.time).sort((a, b) =>
+      String(a.time).localeCompare(String(b.time)));
+    const nextOne = timed[0] || evs[0];
+    rows.push(glanceRow({
+      id: 'calendar', ic: 'calendar', bg: '#FBEDE9', fg: '#A85A44',
+      t: evs.length === 1 ? '1 event' : evs.length + ' events',
+      s: nextOne ? ('Next: ' + (nextOne.title || 'Something')
+        + (nextOne.time ? ' at ' + calTimeLabel(nextOne.time) : '')) : 'On the calendar today',
+    }));
+  }
+
+  /* CHORES AND JOBS, counted as what is still outstanding rather than
+     as what exists, so a finished day shows nothing. */
+  let left = 0;
+  try {
+    const jobs = choreJobsOnDay(today) || [];
+    left = jobs.filter((j) => !choreIsDone(j.id, today)).length;
+  } catch (e) { left = 0; }
+  if (left) {
+    rows.push(glanceRow({
+      id: 'chores', ic: 'check', bg: '#EDF2F5', fg: '#3F5F74',
+      t: left === 1 ? '1 job left' : left + ' jobs left',
+      s: 'On the chart for today',
+    }));
+  }
+
+  /* LISTS. Unticked items across every list she keeps. */
+  let open = 0;
+  try {
+    (listsAll() || []).forEach((l) => {
+      (l.items || []).forEach((it) => { if (it && !it.done) open++; });
+    });
+  } catch (e) { open = 0; }
+  if (open) {
+    rows.push(glanceRow({
+      id: 'lists', ic: 'note', bg: '#F1F4EB', fg: 'var(--deep)',
+      t: open === 1 ? '1 thing on a list' : open + ' things on your lists',
+      s: 'Shopping, packing and the rest',
+    }));
+  }
+
+  /* HER CYCLE, only when it is telling her something. */
+  try {
+    const info = cycleInfoNow();
+    if (info && info.isLate && info.daysLate > 0) {
+      rows.push(glanceRow({
+        id: 'mycycle', ic: 'heart', bg: '#FBF1EC', fg: '#8A5F54',
+        t: info.daysLate === 1 ? 'Your period is a day late' : 'Your period is '
+          + info.daysLate + ' days late',
+        s: 'Counted from your last one',
+      }));
+    } else if (info && info.dayOfCycle) {
+      rows.push(glanceRow({
+        id: 'mycycle', ic: 'heart', bg: '#FBF1EC', fg: '#8A5F54',
+        t: 'Day ' + info.dayOfCycle + ' of your cycle',
+        s: info.inFertileWindow ? 'In your estimated fertile window' : 'Logged from your last period',
+      }));
+    }
+  } catch (e) { /* no cycle set up, which is fine */ }
+
+  if (!rows.length) {
+    return `
+    <div class="card flat" style="margin-top:12px">
+      <p class="eyebrow">${icon('sun', 11, 'var(--sage)')} Today at a glance</p>
+      <p class="tiny" style="margin-top:7px">${esc(GLANCE_EMPTY)}</p>
+    </div>`;
+  }
+
+  return `
+  <div style="margin-top:14px">
+    <div class="glhead">
+      <p class="sect" style="margin:0">Today at a glance</p>
+      <button class="glview" data-go="screen" data-id="calendar">View all
+        ${icon('chev', 12, 'var(--deep)')}</button>
+    </div>
+    <div class="glcard">${rows.slice(0, 4).join('')}</div>
+  </div>`;
+}
+
+/* The two things she does from Home more than anything else, side by
+   side, in the place her mockups put them. */
+function homeActions() {
+  return `
+  <div class="hactions">
+    <button class="btn" data-go="screen" data-id="now">
+      ${icon('plus', 15, '#fff')} Log something</button>
+    <button class="btn ghost" data-go="tab" data-id="planner">
+      ${icon('calendar', 15, 'var(--deep)')} Open Planner</button>
+  </div>`;
+}
+
+/* Quick Access. Community keeps a one tap route from the front door
+   even though it lives inside Discover now, which was the whole
+   condition for moving it there. */
+function homeQuick() {
+  const calm = homeCalm();
+  return `
+  <p class="sect" style="margin-top:18px">Quick access</p>
+  <div class="quickgrid">
+    <button class="qtile" data-go="tab" data-id="family">
+      <span class="qtile-ic">${icon('people', 17, 'var(--deep)')}</span>
+      <span class="qtile-t">Family</span></button>
+    <button class="qtile" data-go="tab" data-id="discover">
+      <span class="qtile-ic">${icon('book', 17, 'var(--deep)')}</span>
+      <span class="qtile-t">Discover</span></button>
+    <button class="qtile" data-go="screen" data-id="community">
+      <span class="qtile-ic">${icon('chat', 17, 'var(--deep)')}</span>
+      <span class="qtile-t">Community</span></button>
+    <button class="qtile${calm ? ' on' : ''}" data-homeview="${calm ? '' : 'calm'}">
+      <span class="qtile-ic">${icon('leaf', 17, calm ? '#fff' : 'var(--deep)')}</span>
+      <span class="qtile-t">Calm view</span></button>
+  </div>`;
+}
+
 function screenHome(c) {
   if (homeCalm()) return screenHomeCalm(c);
   const hour = new Date().getHours();
@@ -23963,12 +24130,21 @@ function screenHome(c) {
 
   return `
   ${cornerLeaves()}
-  <div class="sc-head">
-    <h1 class="title">${esc(greet)}${first ? ',' : ''}</h1>
-    ${first ? `<p class="hello">${esc(first)}</p>` : ''}
+  ${/* LEFT ALIGNED, ON ONE LINE, WITH THE ENCOURAGEMENT UNDER IT.
+
+        It was centred across two lines in a 38px serif, which is a
+        magazine cover. Her mockups greet you the way a person does,
+        on one line at the left, with the kind word beneath it and the
+        day's business starting immediately after. */''}
+  <div class="hgreet">
+    <span class="hgreet-ic">${icon(isMorning ? 'sun' : 'moon', 19,
+    isMorning ? '#C9A227' : 'var(--sage)')}</span>
+    <div class="grow">
+      <h1 class="hgreet-t">${esc(greet)}${first ? ', ' + first : ''}</h1>
+      ${affirmation ? `<p class="hgreet-s">${esc(affirmation)}</p>` : ''}
+    </div>
   </div>
   <div class="sc">
-    ${calmSwitchChip()}
     ${installBanner()}
     ${/* HER RUNNING ORDER, GIVEN SCREEN BY SCREEN.
 
@@ -23984,11 +24160,8 @@ function screenHome(c) {
 
           Home is her profile in everything but name, which is why
           the jobs widget on it is HERS and not the family's. */''}
-    <div class="card liftcard">
-      <p class="eyebrow">${icon('leaf', 11, 'var(--sage)')} Today</p>
-      <p class="liftline">${esc(affirmation)}</p>
-    </div>
-
+    ${/* The line for today moved up into the greeting, so this card
+          would have repeated it word for word. */''}
     <div class="kidrow home">
       ${parentCircle()}
       ${kids.map(kidCircle).join('')}
@@ -24000,6 +24173,10 @@ function screenHome(c) {
         <span class="kidcirc-age">a child</span>
       </button>
     </div>
+    ${homeGlance(c)}
+    ${homeActions()}
+    ${homeQuick()}
+
     ${/* WIDGETS, NOT A COLUMN OF ARTICLES.
 
           Her note, and it was the right one. Home was one full width
