@@ -2603,6 +2603,55 @@ body.calpage .mark-holder{margin-bottom:-20px}
 .pickgrid .pickcard:nth-child(5n+4) .pickcard-ic{background:#FAF3E4}
 .pickgrid .pickcard:nth-child(5n+5) .pickcard-ic{background:#F2EEF6}
 
+/* ------------------------------------------------------------------
+   THE CYCLE TRACKER
+
+   Her mockup logs a day as groups of tappable tiles, not a wall of
+   pills: a heading, a wrapped row of equal sized options, a divider.
+   The chosen one is filled rather than outlined, so you can see where
+   you are without reading every label.
+   ------------------------------------------------------------------ */
+.cydate{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  padding:6px 8px;margin-bottom:12px}
+.cydate-t{font-size:14px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.cystep{appearance:none;border:0;background:var(--leaf3);border-radius:10px;width:34px;height:34px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+.cystep.off{opacity:.3;cursor:default}
+
+.cygroup{padding:12px 0;border-bottom:1px solid var(--line2)}
+.cygroup:first-child{padding-top:2px}
+.cygroup:last-child{border-bottom:0}
+.cygroup-h{margin:0 0 9px;font-size:11px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--deep)}
+.cyrow{display:flex;flex-wrap:wrap;gap:7px}
+
+.cypick{display:inline-flex;align-items:center;gap:6px;appearance:none;cursor:pointer;font:inherit;
+  background:var(--surface2);border:1px solid var(--line);border-radius:12px;
+  padding:9px 12px;font-size:13px;font-weight:600;color:var(--body);line-height:1.2;
+  transition:background .13s,border-color .13s,color .13s}
+.cypick:hover{border-color:var(--leaf)}
+.cypick.on{background:var(--leaf2);border-color:var(--sage);color:var(--deep2)}
+.cypick-ic{display:flex;flex:none}
+
+.cyswatch{display:inline-flex;flex-direction:column;align-items:center;gap:5px;appearance:none;
+  border:0;background:none;padding:2px;cursor:pointer;font:inherit;width:58px}
+.cyswatch-d{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);display:block;
+  box-shadow:inset 0 0 0 0 var(--sage);transition:box-shadow .13s}
+.cyswatch.on .cyswatch-d{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--sage)}
+.cyswatch-t{font-size:10.5px;color:var(--muted);line-height:1.2;text-align:center}
+.cyswatch.on .cyswatch-t{color:var(--deep);font-weight:700}
+
+.cynote{width:100%;resize:vertical;min-height:62px;font-size:13.5px;line-height:1.5}
+
+.cybars{display:flex;flex-direction:column;gap:7px}
+.cybar{display:grid;grid-template-columns:minmax(84px,34%) 1fr 26px;align-items:center;gap:9px}
+.cybar-l{font-size:12.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cybar-track{height:8px;border-radius:999px;background:var(--leaf3);overflow:hidden}
+.cybar-fill{display:block;height:100%;border-radius:999px;background:var(--sage)}
+.cybar-n{font-size:12px;font-weight:700;color:var(--muted);text-align:right;
+  font-variant-numeric:tabular-nums}
+
 /* The greeting, the way a person says hello: one line, at the left. */
 .hgreet{display:flex;align-items:flex-start;gap:11px;padding:4px 2px 14px}
 .hgreet-ic{flex:none;margin-top:3px;display:flex}
