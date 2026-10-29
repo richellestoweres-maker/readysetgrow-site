@@ -4986,7 +4986,24 @@ function initControls() {
       if (k) { k.monthSeen = t.dataset.ym || ''; k.updatedAt = Date.now(); flushStore(); }
     } else if (t.dataset.kidsec !== undefined) {
       const k = activeChild();
-      store.kidSection = t.dataset.kidsec && k ? { kid: k.id, sec: t.dataset.kidsec } : null;
+      if (t.dataset.kidsec) {
+        store.kidSection = { kid: k ? k.id : '', sec: t.dataset.kidsec, from: 'profile' };
+      } else {
+        /* BACK GOES WHERE SHE CAME FROM, NOT ONE LEVEL UP THE TREE.
+
+           A quick action on the family list jumps two levels at once,
+           straight from the family into one part of a child. Closing
+           that part used to drop her on the child's profile, a screen
+           she had never seen, and Back again took her to Home. Now the
+           section remembers which door it was opened by. */
+        const from = store.kidSection && store.kidSection.from;
+        store.kidSection = null;
+        if (from === 'family') {
+          store.profileWho = '';
+          state.tab = 'family';
+          state.view = null;
+        }
+      }
       window.scrollTo(0, 0);
       const scr = document.getElementById('screen');
       if (scr) scr.scrollTop = 0;
@@ -5142,7 +5159,8 @@ function initControls() {
         store.profileWho = k.id;
         state.tab = 'family';
         state.view = null;
-        store.kidSection = t.dataset.sec ? { kid: k.id, sec: t.dataset.sec } : null;
+        store.kidSection = t.dataset.sec
+          ? { kid: k.id, sec: t.dataset.sec, from: 'family' } : null;
       }
     } else if (t.dataset.cycnote) {
       return;

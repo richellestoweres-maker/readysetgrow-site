@@ -2584,7 +2584,15 @@ body.calpage .mark-holder{margin-bottom:-20px}
   border-radius:999px;padding:3px;margin-bottom:14px;overflow-x:auto;
   scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .segs::-webkit-scrollbar{display:none}
-.seg{flex:1 1 auto;min-width:0;appearance:none;border:0;background:none;cursor:pointer;
+/* flex:1 1 auto with min-width:0 let a pill shrink narrower than its
+   own label, and white-space:nowrap then spilled the text out of the
+   box and across its neighbour. On a strip of five long labels, such
+   as the night light tabs, every word sat on top of the next one.
+
+   1 0 auto means they share the space when there is room and never
+   shrink past their text when there is not, and the container
+   scrolls sideways instead. */
+.seg{flex:1 0 auto;appearance:none;border:0;background:none;cursor:pointer;
   font:inherit;font-size:12.5px;font-weight:600;color:var(--body);padding:7px 13px;
   border-radius:999px;white-space:nowrap;line-height:1.3;
   transition:background .14s,color .14s}
@@ -2779,7 +2787,7 @@ body.calpage .mark-holder{margin-bottom:-20px}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-29 21:20';
+const BUILD_STAMP = '2026-10-29 21:32';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -67377,7 +67385,24 @@ function initControls() {
       if (k) { k.monthSeen = t.dataset.ym || ''; k.updatedAt = Date.now(); flushStore(); }
     } else if (t.dataset.kidsec !== undefined) {
       const k = activeChild();
-      store.kidSection = t.dataset.kidsec && k ? { kid: k.id, sec: t.dataset.kidsec } : null;
+      if (t.dataset.kidsec) {
+        store.kidSection = { kid: k ? k.id : '', sec: t.dataset.kidsec, from: 'profile' };
+      } else {
+        /* BACK GOES WHERE SHE CAME FROM, NOT ONE LEVEL UP THE TREE.
+
+           A quick action on the family list jumps two levels at once,
+           straight from the family into one part of a child. Closing
+           that part used to drop her on the child's profile, a screen
+           she had never seen, and Back again took her to Home. Now the
+           section remembers which door it was opened by. */
+        const from = store.kidSection && store.kidSection.from;
+        store.kidSection = null;
+        if (from === 'family') {
+          store.profileWho = '';
+          state.tab = 'family';
+          state.view = null;
+        }
+      }
       window.scrollTo(0, 0);
       const scr = document.getElementById('screen');
       if (scr) scr.scrollTop = 0;
@@ -67533,7 +67558,8 @@ function initControls() {
         store.profileWho = k.id;
         state.tab = 'family';
         state.view = null;
-        store.kidSection = t.dataset.sec ? { kid: k.id, sec: t.dataset.sec } : null;
+        store.kidSection = t.dataset.sec
+          ? { kid: k.id, sec: t.dataset.sec, from: 'family' } : null;
       }
     } else if (t.dataset.cycnote) {
       return;
