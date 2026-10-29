@@ -105,6 +105,12 @@ export const ONBOARD_WHO_SWAP =
 /* How many, asked plainly, because the alternative is a parent of 4
    adding them one at a time and wondering if it took. */
 export const ONBOARD_COUNTS = [1, 2, 3, 4, 5, 6];
+
+/* Shown until she taps a number, because nothing starts chosen. */
+export const ONBOARD_COUNT_ASK = 'Pick a number to carry on.';
+
+/* Offered on the last child's last slide. */
+export const ONBOARD_ONE_MORE = 'Add another child';
 export const ONBOARD_COUNT_MORE = 'More than 6';
 export const ONBOARD_COUNT_NONE = 'None yet';
 
