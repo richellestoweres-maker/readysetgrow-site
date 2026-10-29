@@ -356,3 +356,11 @@ export const RT_TEMPLATES_NOTE =
 export const RT_HONEST =
   'The times are worked backwards from when they need to be asleep or out the door, so moving that '
   + 'one time moves everything. Nothing here nags you, and a skipped day is just a skipped day.';
+
+export const RT_ADULT_EMPTY =
+  'Nothing written yet. A morning routine or a two minute wind down counts, and it sits on the '
+  + 'same list as everybody else’s rather than in a separate app.';
+
+export const RT_ADULT_NO_TEMPLATES =
+  'Templates are built off a child’s age, so there are none for a grown up. Write your own on '
+  + 'the Daily tab instead.';
