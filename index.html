@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-29 20:46">
+<meta name="rsg-build" content="2026-10-29 21:09">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -2575,6 +2575,49 @@ body.calpage .mark-holder{margin-bottom:-20px}
 .cybar-n{font-size:12px;font-weight:700;color:var(--muted);text-align:right;
   font-variant-numeric:tabular-nums}
 
+/* ------------------------------------------------------------------
+   MY FAMILY
+
+   One card per person: a big round face, their name, their age, and
+   four soft coloured ways in underneath. The colour is what gives the
+   screen life, and it is decoration only, so nothing is marked by
+   colour alone.
+   ------------------------------------------------------------------ */
+.famcard{background:var(--surface);border:1px solid var(--line);border-radius:20px;
+  margin-bottom:12px;overflow:hidden;box-shadow:0 3px 14px rgba(107,101,80,.07)}
+.famtop{display:flex;align-items:center;gap:13px;width:100%;appearance:none;border:0;
+  background:none;font:inherit;text-align:left;cursor:pointer;padding:14px 15px 13px}
+.famtop:hover{background:var(--surface2)}
+.famface{flex:none;display:flex}
+.famwho{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.famname{font-family:var(--serif);font-size:19px;font-weight:600;color:var(--ink);
+  line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.famage{font-size:12.5px;color:var(--muted);line-height:1.3}
+.famchev{flex:none;display:flex}
+
+.famq{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line2)}
+.famq-b{display:flex;flex-direction:column;align-items:center;gap:5px;appearance:none;border:0;
+  background:none;font:inherit;cursor:pointer;padding:11px 3px 12px;min-width:0;
+  border-right:1px solid var(--line2)}
+.famq-b:last-child{border-right:0}
+.famq-b:hover{background:var(--leaf3)}
+.famq-ic{width:32px;height:32px;border-radius:11px;display:flex;align-items:center;
+  justify-content:center;flex:none}
+/* Scoped names. "sky" already belongs to the night sky behind the
+   fireflies, and an unscoped one painted this tile a dark gradient. */
+.famq-ic.tint-gold{background:#FAF0D7}
+.famq-ic.tint-rose{background:#FBE9E7}
+.famq-ic.tint-sky{background:#E7EFF4}
+.famq-ic.tint-sage{background:#EAEFE2}
+.famq-t{font-size:10.5px;font-weight:600;color:var(--muted);line-height:1.2;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+
+.famadd{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;
+  appearance:none;font:inherit;cursor:pointer;margin-top:2px;
+  background:var(--leaf3);border:1px solid var(--leaf);border-radius:16px;
+  padding:14px;font-size:14px;font-weight:600;color:var(--deep)}
+.famadd:hover{background:var(--leaf2)}
+
 /* The greeting, the way a person says hello: one line, at the left. */
 .hgreet{display:flex;align-items:flex-start;gap:11px;padding:4px 2px 14px}
 .hgreet-ic{flex:none;margin-top:3px;display:flex}
@@ -2892,7 +2935,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-29 20:46';
+const BUILD_STAMP = '2026-10-29 21:09';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -53143,7 +53186,7 @@ const state = {};
     'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'bpTab', 'sexedTab',
     'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab', 'crTab', 'calTab',
     'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift', 'lists', 'deletedListIds', 'listOpen', 'rewards', 'rewardLog', 'rewKid', 'rewOwnOpen',
-    'cycTab', 'cyclogDate',
+    'cycTab', 'cyclogDate', 'famTab',
     'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
     Object.defineProperty(state, key, {
         enumerable: true,
@@ -53980,6 +54023,8 @@ function tabIsReal(id) {
 }
 function goTab(id) {
     const key = String(id || '');
+    if (key === 'family')
+        store.profileWho = '';
     if (tabIsReal(key)) {
         state.tab = key;
         state.view = null;
@@ -54396,8 +54441,9 @@ function render() {
         html = screenDiscover(c);
     else if (state.tab === 'more')
         html = screenMore(c);
-    else if (state.tab === 'family')
-        html = screenProfileTab(c);
+    else if (state.tab === 'family') {
+        html = store.profileWho ? screenProfileTab(c) : screenFamily(c);
+    }
     else if (state.tab === 'settings')
         html = screenSettings();
     else if (state.tab === 'profile')
@@ -54943,7 +54989,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask],[data-obmore],[data-cyctab],[data-cycday]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask],[data-obmore],[data-cyctab],[data-cycday],[data-famtab],[data-famgo],[data-cycnote]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -56927,6 +56973,20 @@ function initControls() {
         else if (t.dataset.sexed) {
             if (t.dataset.sexed === 'sti') {
                 store.sexedSti = store.sexedSti === t.dataset.id ? '' : t.dataset.id;
+            }
+        }
+        else if (t.dataset.famtab) {
+            store.famTab = t.dataset.famtab;
+        }
+        else if (t.dataset.famgo) {
+            const id = t.dataset.famgo;
+            const k = store.children.filter((x) => x.id === id)[0];
+            if (k) {
+                store.activeChildId = k.id;
+                store.profileWho = k.id;
+                state.tab = 'family';
+                state.view = null;
+                store.kidSection = t.dataset.sec ? { kid: k.id, sec: t.dataset.sec } : null;
             }
         }
         else if (t.dataset.cycnote) {
@@ -73561,6 +73621,120 @@ function screenMore(c) {
         b: 'Broken, missing or wrong.' })}
       ${hubCard({ id: 'about', ic: 'info', t: 'About', b: 'What this is, and who made it.' })}
     </div>
+  </div>`;
+}
+const FAM_TABS = [
+    { id: 'children', label: 'Children' },
+    { id: 'adults', label: 'Adults' },
+    { id: 'shared', label: 'Shared care' },
+];
+const FAM_QUICK = [
+    { sec: 'where', icon: 'star', label: 'Milestones', tint: 'tint-gold' },
+    { sec: 'health', icon: 'heart', label: 'Health', tint: 'tint-rose' },
+    { sec: 'care', icon: 'moon', label: 'Routines', tint: 'tint-sky' },
+    { sec: '', icon: 'chevdown', label: 'More', tint: 'tint-sage' },
+];
+function famTab() {
+    const t = store.famTab;
+    return FAM_TABS.some((x) => x.id === t) ? t : 'children';
+}
+function famQuickRow(kid) {
+    return `
+  <div class="famq">
+    ${FAM_QUICK.map((q) => `
+    <button class="famq-b" data-famgo="${esc(kid.id)}" data-sec="${esc(q.sec)}">
+      <span class="famq-ic ${esc(q.tint)}">${icon(q.icon, 15, 'var(--deep2)')}</span>
+      <span class="famq-t">${esc(q.label)}</span>
+    </button>`).join('')}
+  </div>`;
+}
+function famPersonCard(opt) {
+    return `
+  <div class="famcard">
+    <button class="famtop" ${opt.open}>
+      <span class="famface">${opt.face}</span>
+      <span class="famwho">
+        <span class="famname">${esc(opt.name)}</span>
+        <span class="famage">${esc(opt.age)}</span>
+      </span>
+      <span class="famchev">${icon('chev', 16, 'var(--faint)')}</span>
+    </button>
+    ${opt.quick || ''}
+  </div>`;
+}
+function screenFamily(c) {
+    const tab = famTab();
+    const mine = store.children.filter((k) => !k.sharedFrom);
+    const shared = store.children.filter((k) => !!k.sharedFrom);
+    const first = (store.parent.name || '').trim().split(/\s+/)[0] || 'You';
+    const children = !mine.length ? `
+    <div class="card flat">
+      <p class="bodytext" style="margin:0">Nobody added yet. Add a child and the whole app
+      reshapes around their age, from sleep windows to what to say at bedtime.</p>
+    </div>` : mine.map((k) => {
+        const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+        return famPersonCard({
+            face: childFace(k, 56),
+            name: (k.name || 'Unnamed'),
+            age: (sum && sum.label) ? sum.label : 'No birthday yet',
+            open: `data-child="${esc(k.id)}"`,
+            quick: famQuickRow(k),
+        });
+    }).join('');
+    const adults = famPersonCard({
+        face: parentFace(56),
+        name: first,
+        age: 'You',
+        open: 'data-me="1"',
+        quick: '',
+    }) + (store.choreAdults || []).map((a) => `
+    <div class="famcard">
+      <div class="famtop" style="cursor:default">
+        <span class="famface">${faceHTML('', 56, 'me')}</span>
+        <span class="famwho">
+          <span class="famname">${esc(a.name || 'Someone')}</span>
+          <span class="famage">On the chore chart</span>
+        </span>
+      </div>
+    </div>`).join('') + `
+    <button class="famadd" data-go="screen" data-id="chores">
+      ${icon('plus', 15, 'var(--deep)')} Add somebody to the chart</button>`;
+    const sharedBody = shared.length ? shared.map((k) => {
+        const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+        return famPersonCard({
+            face: childFace(k, 56),
+            name: (k.name || 'Unnamed'),
+            age: (sum && sum.label) ? sum.label : 'Shared with you',
+            open: `data-child="${esc(k.id)}"`,
+            quick: '',
+        });
+    }).join('') : '';
+    return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <h1 class="title sm">My family</h1>
+    <p class="sub">Everybody in one place, and a way into each of them.</p>
+  </div>
+  <div class="sc">
+    <div class="segs" role="tablist">
+      ${FAM_TABS.map((t) => `
+      <button class="seg" role="tab" data-famtab="${esc(t.id)}"
+        aria-pressed="${tab === t.id}">${esc(t.label)}</button>`).join('')}
+    </div>
+    ${tab === 'children' ? children + `
+    <button class="famadd" data-go="screen" data-id="addchild">
+      ${icon('plus', 15, 'var(--deep)')} Add a family member</button>` : ''}
+    ${tab === 'adults' ? adults : ''}
+    ${tab === 'shared' ? `
+    ${sharedBody}
+    <button class="pickcard" style="width:100%" data-go="screen" data-id="sharing">
+      <span class="pickcard-ic">${icon('people', 17, 'var(--deep)')}</span>
+      <span class="pickcard-t">Sharing and permissions</span>
+      <span class="pickcard-b">Who else can see a child, and taking it back.</span>
+    </button>
+    ${!shared.length ? `
+    <p class="tiny" style="margin-top:10px">Nothing shared with you yet. A code from another
+    parent brings their child in here.</p>` : ''}` : ''}
   </div>`;
 }
 function screenProfileTab(c) {
