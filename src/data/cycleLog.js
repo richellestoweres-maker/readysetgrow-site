@@ -67,7 +67,14 @@ export const CYCLOG_SYMPTOMS = [
 ];
 
 export function cyclogItem(kind, id) {
-  const src = kind === 'flow' ? CYCLOG_FLOW : kind === 'mood' ? CYCLOG_MOODS : CYCLOG_SYMPTOMS;
+  const src = kind === 'flow' ? CYCLOG_FLOW
+    : kind === 'mood' ? CYCLOG_MOODS
+      : kind === 'period' ? CYCLOG_PERIOD
+        : kind === 'dis' ? CYCLOG_DISCHARGE
+          : kind === 'color' ? CYCLOG_COLOR
+            : kind === 'odor' ? CYCLOG_ODOR
+              : kind === 'dsx' ? CYCLOG_DSX
+                : CYCLOG_SYMPTOMS;
   for (let i = 0; i < src.length; i++) if (src[i].id === id) return src[i];
   return null;
 }
@@ -77,9 +84,11 @@ export function cyclogItem(kind, id) {
    leaves nothing behind. */
 export function cyclogEmpty(entry) {
   if (!entry) return true;
-  if (entry.flow) return false;
+  if (entry.flow || entry.period || entry.dis || entry.color || entry.odor) return false;
+  if (entry.note && String(entry.note).trim()) return false;
   if (Array.isArray(entry.moods) && entry.moods.length) return false;
   if (Array.isArray(entry.sx) && entry.sx.length) return false;
+  if (Array.isArray(entry.dsx) && entry.dsx.length) return false;
   return true;
 }
 
@@ -97,6 +106,15 @@ export function cyclogSummary(entry) {
   const s = names('sx', entry.sx);
   if (m.length) bits.push(m.join(', ').toLowerCase());
   if (s.length) bits.push(s.join(', ').toLowerCase());
+  const d = cyclogItem('dis', entry.dis);
+  const c = cyclogItem('color', entry.color);
+  const o = cyclogItem('odor', entry.odor);
+  const dpart = [d ? d.label.toLowerCase() : '', c ? c.label.toLowerCase() : '']
+    .filter(Boolean).join(', ');
+  if (dpart) bits.push(dpart + ' discharge');
+  if (o && o.id !== 'none') bits.push(o.label.toLowerCase() + ' odour');
+  const ds = names('dsx', entry.dsx);
+  if (ds.length) bits.push(ds.join(', ').toLowerCase());
   return bits.join('. ');
 }
 
@@ -187,3 +205,157 @@ export const CYCLOG_SOURCES = [
 ];
 
 export default CYCLOG_FLOW;
+
+/* ==================================================================
+   DISCHARGE AND CERVICAL MUCUS
+
+   Her ask, and a gap the app was already embarrassed by: Willow's own
+   copy tells women cervical mucus is more informative than calendar
+   prediction, and there was nowhere to write it down.
+
+   THE RULE THIS WHOLE SECTION OBEYS
+
+   Nothing here is a diagnosis and nothing here is contraception.
+   Discharge overlaps so heavily between normal variation, thrush and
+   bacterial vaginosis that even a clinician swabs rather than guesses,
+   so every explanation below says what else causes the same thing and
+   sends her for the test. The evidence labels are the same four tiers
+   the rest of the health content uses.
+   ================================================================== */
+
+/* Period is a separate question from flow, the way her mockup has it.
+   "Did it come" and "how heavy" are two different answers, and the
+   old single list quietly conflated spotting with a light period. */
+export const CYCLOG_PERIOD = [
+  { id: 'yes', label: 'Yes' },
+  { id: 'no', label: 'No' },
+  { id: 'spot', label: 'Spotting' },
+];
+
+export const CYCLOG_DISCHARGE = [
+  { id: 'dry', label: 'Dry or none', ic: 'close' },
+  { id: 'sticky', label: 'Sticky', ic: 'drop' },
+  { id: 'creamy', label: 'Creamy', ic: 'drop' },
+  { id: 'watery', label: 'Watery', ic: 'drop' },
+  { id: 'eggwhite', label: 'Egg white', ic: 'leaf' },
+  { id: 'clumpy', label: 'Thick or clumpy', ic: 'circle' },
+  { id: 'other', label: 'Something else', ic: 'info' },
+];
+
+/* Swatches rather than words, because a colour is quicker to point at
+   than to name, and "cream" means different things to different
+   people. */
+export const CYCLOG_COLOR = [
+  { id: 'clear', label: 'Clear', hex: 'transparent' },
+  { id: 'white', label: 'White', hex: '#FFFFFF' },
+  { id: 'cream', label: 'Cream', hex: '#F4EBD9' },
+  { id: 'yellow', label: 'Yellow', hex: '#F2DE9B' },
+  { id: 'green', label: 'Green', hex: '#C3D6AE' },
+  { id: 'grey', label: 'Grey', hex: '#D3D5D0' },
+  { id: 'brown', label: 'Brown', hex: '#C4A48A' },
+  { id: 'pink', label: 'Pink', hex: '#F0C3CE' },
+];
+
+export const CYCLOG_ODOR = [
+  { id: 'none', label: 'None' },
+  { id: 'mild', label: 'Mild or usual' },
+  { id: 'fishy', label: 'Fishy' },
+  { id: 'ammonia', label: 'Ammonia-like' },
+  { id: 'strong', label: 'Unusual or strong' },
+];
+
+export const CYCLOG_DSX = [
+  { id: 'itch', label: 'Itching' },
+  { id: 'burn', label: 'Burning' },
+  { id: 'irrit', label: 'Irritation' },
+  { id: 'pelvic', label: 'Pelvic discomfort' },
+  { id: 'wee', label: 'Pain passing urine' },
+  { id: 'sex', label: 'Pain during sex' },
+  { id: 'spotting', label: 'Spotting between periods' },
+];
+
+export const CYCLOG_NOTES_PLACEHOLDER = 'Anything else worth remembering';
+export const CYCLOG_NOTES_MAX = 400;
+
+/* ------------------------------------------------------------------
+   WHAT EACH ONE CAN MEAN, AND WHAT ELSE IT CAN MEAN
+   ------------------------------------------------------------------ */
+export const CYCLOG_DISCHARGE_LEARN = [
+  { id: 'eggwhite', t: 'Clear and stretchy, like egg white', s: 'decent',
+    why: 'Usually the days around ovulation, when rising oestrogen thins the mucus so sperm can '
+      + 'travel through it. It does not confirm that you ovulated, and plenty of cycles produce it '
+      + 'without releasing an egg.' },
+  { id: 'creamy', t: 'White or creamy, no itch and no odour', s: 'solid',
+    why: 'The most common thing there is. It changes through the cycle and between cycles, and on '
+      + 'its own it is not a sign of anything.' },
+  { id: 'clumpy', t: 'Thick and clumpy, with itching or soreness', s: 'decent',
+    why: 'Can go with a yeast infection, but irritation from soap, a new product or a latex '
+      + 'sensitivity looks very similar, and so can BV. Self treating the wrong one is common and '
+      + 'it delays the right treatment, so this is worth a swab rather than a guess.' },
+  { id: 'fishy', t: 'Thin and greyish with a fishy odour', s: 'decent',
+    why: 'Often associated with bacterial vaginosis, especially when it is stronger after sex. It '
+      + 'is also the pattern most often mistaken for thrush. A test tells them apart; the symptoms '
+      + 'do not.' },
+  { id: 'ammonia', t: 'An ammonia smell', s: 'thin',
+    why: 'Usually urine rather than discharge, often just concentrated urine on a day you drank '
+      + 'less. Worth drinking more and seeing whether it settles before assuming infection.' },
+  { id: 'yellowgreen', t: 'Yellow or green, frothy, with soreness', s: 'decent',
+    why: 'Can go with trichomoniasis or another infection that needs testing and treating, and a '
+      + 'partner may need treating too. This is a clinic visit rather than a pharmacy one.' },
+  { id: 'brown', t: 'Brown or pink spotting', s: 'solid',
+    why: 'Usually old blood at the start or end of a period. Between periods, after sex, or if it '
+      + 'is new for you, it is worth mentioning rather than watching.' },
+];
+
+/* The things that stop being a diary entry and become a phone call. */
+export const CYCLOG_DISCHARGE_RED = {
+  title: 'When to ring somebody rather than log it',
+  signs: [
+    'Severe pelvic or stomach pain',
+    'A fever with it',
+    'Any unusual discharge or bleeding in pregnancy',
+    'A new discharge after a procedure or a coil fitting',
+    'Pain that stops you doing the day',
+  ],
+  close: 'Any of these is a call today rather than a note for later.',
+};
+
+export const CYCLOG_DISCHARGE_NOTE =
+  'This is a record to take to an appointment, not a test. Discharge overlaps so much between '
+  + 'normal, thrush and BV that clinicians swab rather than guess, and so should this.';
+
+export const CYCLOG_FERTILE_NOTE =
+  'Mucus patterns and fertile windows are estimates. Neither is contraception.';
+
+/* ------------------------------------------------------------------
+   THE TEEN SHARING SWITCH
+
+   Her call: shareable, but only if the girl says so. Her cycle log
+   rides on her child record, which anybody the parent granted access
+   to can read, so without this a grandparent or a sitter sees it by
+   default. Off unless it is turned on, and the wording says whose
+   choice it is.
+   ------------------------------------------------------------------ */
+export const CYCLOG_SHARE = {
+  title: 'Who else can see this',
+  off: 'Only this phone. Nobody you have shared her profile with can see her cycle.',
+  on: 'Shared with anybody who has access to her profile, the same as the rest of it.',
+  ask: 'Let the people who can see her profile see her cycle too',
+  note: 'Her choice, not a setting to turn on for her. Somebody who thinks a parent is reading '
+    + 'along stops writing things down, and the point of the record is that it is honest.',
+};
+
+export function cyclogDischargeLearn(id) {
+  for (let i = 0; i < CYCLOG_DISCHARGE_LEARN.length; i++) {
+    if (CYCLOG_DISCHARGE_LEARN[i].id === id) return CYCLOG_DISCHARGE_LEARN[i];
+  }
+  return null;
+}
+
+/* The four tabs across the top of the screen, from her mockup. */
+export const CYCLOG_TABS = [
+  { id: 'summary', label: 'Summary' },
+  { id: 'log', label: 'Log' },
+  { id: 'patterns', label: 'Patterns' },
+  { id: 'learn', label: 'Insights' },
+];
