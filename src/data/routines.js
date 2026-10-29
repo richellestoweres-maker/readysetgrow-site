@@ -326,3 +326,25 @@ export const PLANNER_ROUTINE_NOTE =
 export const PLANNER_NOTE =
   'Everything here is shared with whoever else is on the household, so two people are never '
   + 'looking at two different Thursdays.';
+
+/* ------------------------------------------------------------------
+   THE ROUTINES SCREEN
+   ------------------------------------------------------------------ */
+export const RT_SUB = 'Timed step by step, so nobody has to remember the order.';
+
+export const RT_NO_KIDS = 'Add a child and their routines appear here, built for the age they are.';
+
+export const RT_NO_BIRTHDAY =
+  'Add their birthday and the routines fill in. Every step is timed off their age.';
+
+export const RT_NONE_YET =
+  'Nothing for this age yet. Routines start making sense once there is a rhythm to hang them on.';
+
+export const RT_WEEKLY_NOTE = 'Which days each one runs. Weekends are usually not the same shape.';
+
+export const RT_TEMPLATES_NOTE =
+  'What each routine is made of at this age, and the optional steps you can add.';
+
+export const RT_HONEST =
+  'The times are worked backwards from when they need to be asleep or out the door, so moving that '
+  + 'one time moves everything. Nothing here nags you, and a skipped day is just a skipped day.';
