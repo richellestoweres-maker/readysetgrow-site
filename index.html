@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-29 22:05">
+<meta name="rsg-build" content="2026-10-29 22:18">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -2692,6 +2692,22 @@ body.calpage .mark-holder{margin-bottom:-20px}
 .rtmove[disabled]{opacity:.25;cursor:default}
 .rtmove[disabled]:hover{background:none}
 
+/* ------------------------------------------------------------------
+   THE CHORE CHART: WHOSE, AND WHEN
+   ------------------------------------------------------------------ */
+.chwhorow{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 12px;scrollbar-width:none}
+.chwhorow::-webkit-scrollbar{display:none}
+.chwho{display:inline-flex;align-items:center;gap:6px;flex:none;appearance:none;cursor:pointer;
+  font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:999px;
+  padding:7px 13px;font-size:12.5px;font-weight:600;color:var(--body);white-space:nowrap}
+.chwho:hover{border-color:var(--leaf)}
+.chwho.on{background:var(--deep);border-color:var(--deep);color:#fff}
+.chwho-c{font-size:11px;font-weight:700;opacity:.7;font-variant-numeric:tabular-nums}
+
+.chwhen{display:flex;align-items:center;gap:6px;margin:12px 0 5px;font-size:11px;font-weight:700;
+  letter-spacing:.07em;text-transform:uppercase;color:var(--deep)}
+.dsec .chwhen:first-child{margin-top:4px}
+
 /* The greeting, the way a person says hello: one line, at the left. */
 /* ON A SOFT GREEN PANEL, THE WAY HER MOCKUP HAS IT.
 
@@ -3022,7 +3038,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-29 22:05';
+const BUILD_STAMP = '2026-10-29 22:18';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -23510,8 +23526,15 @@ function choreDaysLine(days) {
         return CHORE_DAYS[d[0]].label + 's';
     return d.map((x) => CHORE_DAYS[x].short).join(', ');
 }
+let CHORE_EXTRA = [];
+function choreSetExtra(list) {
+    CHORE_EXTRA = Array.isArray(list) ? list.filter((c) => c && c.id && c.label) : [];
+}
+function choreAll() {
+    return CHORE_EXTRA.length ? CHORES.concat(CHORE_EXTRA) : CHORES;
+}
 function choreById(id) {
-    return CHORES.filter((c) => c.id === id)[0] || null;
+    return choreAll().filter((c) => c.id === id)[0] || null;
 }
 const CHORE_MIN_MONTHS = 24;
 const CHORE_MIN_NOTE = 'The chart starts at 2. Younger than that and a job with their name on it is really still yours.';
@@ -23522,7 +23545,7 @@ function choresForMonths(months) {
     const m = Number(months);
     if (!isFinite(m))
         return [];
-    return CHORES.filter((c) => !c.adult && m >= c.minMonths);
+    return choreAll().filter((c) => !c.adult && m >= c.minMonths);
 }
 function choreAgeFloor(months) {
     const m = Number(months);
@@ -23562,10 +23585,10 @@ function choresNewlyPossible(months, windowMonths = 6) {
     const m = Number(months);
     if (!isFinite(m))
         return [];
-    return CHORES.filter((c) => !c.adult && c.minMonths <= m && c.minMonths > m - windowMonths);
+    return choreAll().filter((c) => !c.adult && c.minMonths <= m && c.minMonths > m - windowMonths);
 }
 function adultChores() {
-    return CHORES.filter((c) => !!c.adult);
+    return choreAll().filter((c) => !!c.adult);
 }
 function choreAreaLabel(id) {
     const a = CHORE_AREAS.filter((x) => x.id === id)[0];
@@ -23580,6 +23603,18 @@ function choresByArea(list) {
     });
     return out;
 }
+const CHORE_WHEN = [
+    { id: 'morning', label: 'Morning', icon: 'sun' },
+    { id: 'afternoon', label: 'Afternoon', icon: 'home' },
+    { id: 'evening', label: 'Evening', icon: 'moon' },
+    { id: 'any', label: 'Any time', icon: 'clock' },
+];
+function choreWhenLabel(id) {
+    const w = CHORE_WHEN.filter((x) => x.id === id)[0];
+    return w ? w.label : 'Any time';
+}
+const CHORE_OWN_NOTE = 'Yours, on this household only. It behaves like any other job: give it an age if it is for a '
+    + 'child, and it shows up for anybody old enough.';
 const LEARN_INTRO = 'The same shape every day, in the same order. That is most of what a daycare is actually doing, '
     + 'and it is the part you can do at home.';
 const LEARN_BLOCK_KINDS = [
@@ -53287,6 +53322,7 @@ const state = {};
     'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift', 'lists', 'deletedListIds', 'listOpen', 'rewards', 'rewardLog', 'rewKid', 'rewOwnOpen',
     'cycTab', 'cyclogDate', 'famTab', 'rtTab', 'rtWho', 'rtOpen', 'rtEdit',
     'routinesOwn', 'routineDoneOwn', 'rtStreak',
+    'choresOwn', 'choreWho', 'choreOwnOpen', 'choreOpenWho', 'choreWhenPick',
     'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
     Object.defineProperty(state, key, {
         enumerable: true,
@@ -53317,6 +53353,10 @@ function flushStore() {
             memDayHidden: store.memDayHidden,
             installHidden: store.installHidden,
             choreJobs: store.choreJobs,
+            choresOwn: store.choresOwn,
+            routinesOwn: store.routinesOwn,
+            routineDoneOwn: store.routineDoneOwn,
+            rtStreak: store.rtStreak === true,
             fbQueue: store.fbQueue,
             choreDone: store.choreDone,
             choreAdults: store.choreAdults,
@@ -53429,6 +53469,11 @@ function loadStore() {
         store.memDayHidden = typeof saved.memDayHidden === 'string' ? saved.memDayHidden : '';
         store.installHidden = typeof saved.installHidden === 'string' ? saved.installHidden : '';
         store.choreJobs = Array.isArray(saved.choreJobs) ? saved.choreJobs : [];
+        store.choresOwn = Array.isArray(saved.choresOwn) ? saved.choresOwn : [];
+        store.routinesOwn = Array.isArray(saved.routinesOwn) ? saved.routinesOwn : [];
+        store.routineDoneOwn = (saved.routineDoneOwn && typeof saved.routineDoneOwn === 'object')
+            ? saved.routineDoneOwn : {};
+        store.rtStreak = saved.rtStreak === true;
         store.fbQueue = Array.isArray(saved.fbQueue) ? saved.fbQueue : [];
         store.choreDone = (saved.choreDone && typeof saved.choreDone === 'object') ? saved.choreDone : {};
         store.choreAdults = Array.isArray(saved.choreAdults) ? saved.choreAdults : [];
@@ -55112,7 +55157,7 @@ function initControls() {
         if (store.justPosted && e.target.closest('[data-tab],[data-go],[data-back],[data-me],[data-child],[data-post]')) {
             store.justPosted = false;
         }
-        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask],[data-obmore],[data-cyctab],[data-cycday],[data-famtab],[data-famgo],[data-cycnote],[data-rttab],[data-rtwho],[data-rtopen],[data-rttick],[data-rtday],[data-rtnew],[data-rtedit],[data-rtdel],[data-rtset],[data-rtstepadd],[data-rtstepdel],[data-rtmove],[data-rtowntick],[data-rtstreak]');
+        const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask],[data-obmore],[data-cyctab],[data-cycday],[data-famtab],[data-famgo],[data-cycnote],[data-rttab],[data-rtwho],[data-rtopen],[data-rttick],[data-rtday],[data-rtnew],[data-rtedit],[data-rtdel],[data-rtset],[data-rtstepadd],[data-rtstepdel],[data-rtmove],[data-rtowntick],[data-rtstreak],[data-chorewho],[data-choreown],[data-choreownadd],[data-choreowndel],[data-chorewhen],[data-chorewhenpick]');
         if (store.menuOpen && !e.target.closest('[data-menu]')) {
             const inMenu = !!e.target.closest('.cmenu');
             if (t || !inMenu) {
@@ -57118,6 +57163,32 @@ function initControls() {
         }
         else if (t.dataset.rtopen !== undefined) {
             store.rtOpen = t.dataset.rtopen || '';
+        }
+        else if (t.dataset.chorewho) {
+            store.choreWho = t.dataset.chorewho;
+        }
+        else if (t.dataset.choreownadd) {
+            const f = document.getElementById('chownlabel');
+            const a = document.getElementById('chownarea');
+            const m = document.getElementById('chownage');
+            const st = document.getElementById('chownstars');
+            const p = chorePerson(store.chorePick && store.chorePick.personId);
+            const row = choreOwnAdd(f ? f.value : '', a ? a.value : 'tidy', m ? m.value : 36, st ? st.value : 1, !!(p && p.kind === 'adult'));
+            if (row && f)
+                f.value = '';
+            store.choreOwnOpen = false;
+        }
+        else if (t.dataset.choreown) {
+            store.choreOwnOpen = t.dataset.choreown === 'open';
+        }
+        else if (t.dataset.choreowndel) {
+            choreOwnDel(t.dataset.choreowndel);
+        }
+        else if (t.dataset.chorewhenpick) {
+            store.choreWhenPick = t.dataset.chorewhenpick;
+        }
+        else if (t.dataset.chorewhen) {
+            choreJobSetWhen(t.dataset.chorewhen, t.dataset.val || 'any');
         }
         else if (t.dataset.rtnew) {
             rtOwnNew(rtWho());
@@ -72525,6 +72596,8 @@ function homeTile(opt) {
   </button>`;
 }
 function homeJobsWidget(whoId, title) {
+    if (whoId && whoId !== 'all')
+        store.choreOpenWho = whoId;
     const day = choreTodayIndex();
     const key = ciToday();
     const people = chorePeople()
@@ -76984,6 +77057,10 @@ function parentPayload() {
         bagOwn: store.bagOwn || [],
         bagHidden: store.bagHidden || [],
         choreJobs: store.choreJobs || [],
+        choresOwn: store.choresOwn || [],
+        routinesOwn: store.routinesOwn || [],
+        routineDoneOwn: store.routineDoneOwn || {},
+        rtStreak: store.rtStreak === true,
         choreDone: store.choreDone || {},
         choreAdults: store.choreAdults || [],
         choreStarsOn: store.choreStarsOn !== false,
@@ -79355,7 +79432,10 @@ function choreAdd(choreId, personId, days) {
         }
     }
     else {
-        store.choreJobs.push({ id: choreNewId(), choreId: choreId, personId: personId, days: want });
+        store.choreJobs.push({
+            id: choreNewId(), choreId: choreId, personId: personId, days: want,
+            when: store.choreWhenPick || 'any',
+        });
     }
     store.parentUpdatedAt = Date.now();
     saveStore();
@@ -79453,6 +79533,11 @@ function listJoin(arr) {
     return a.join(', ') + ' and ' + last;
 }
 function screenChores() {
+    if (store.choreOpenWho) {
+        store.choreWho = store.choreOpenWho;
+        store.choreOpenWho = '';
+    }
+    choreSyncOwn();
     const tab = store.choreTab === 'who' || store.choreTab === 'week' || store.choreTab === 'how'
         ? 'who' : (store.choreTab || 'today');
     const tabs = [
@@ -79473,6 +79558,85 @@ function screenChores() {
     ${store.chorePick ? chorePicker() : body}
   </div>`;
 }
+function choreOwnList() {
+    if (!Array.isArray(store.choresOwn))
+        store.choresOwn = [];
+    return store.choresOwn;
+}
+function choreSyncOwn() {
+    try {
+        choreSetExtra(choreOwnList());
+    }
+    catch (e) { }
+}
+function choreOwnAdd(label, area, months, stars, adult) {
+    const clean = String(label || '').replace(/\s+/g, ' ').trim().slice(0, 50);
+    if (!clean)
+        return null;
+    const row = {
+        id: 'own-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        label: clean,
+        area: area || 'tidy',
+        minMonths: adult ? 0 : Math.max(16, Math.min(216, Math.round(Number(months) || 36))),
+        minutes: 5,
+        stars: Math.max(1, Math.min(9, Math.round(Number(stars) || 1))),
+        own: true,
+    };
+    if (adult)
+        row.adult = true;
+    choreOwnList().push(row);
+    choreSyncOwn();
+    store.parentUpdatedAt = Date.now();
+    flushStore();
+    return row;
+}
+function choreOwnDel(id) {
+    store.choresOwn = choreOwnList().filter((c) => c.id !== id);
+    store.choreJobs = (store.choreJobs || []).filter((j) => j.choreId !== id);
+    choreSyncOwn();
+    store.parentUpdatedAt = Date.now();
+    flushStore();
+}
+function choreWho() {
+    const w = store.choreWho;
+    if (!w || w === 'all')
+        return 'all';
+    return chorePerson(w) ? w : 'all';
+}
+function choreJobWhen(j) {
+    const w = j && j.when;
+    return CHORE_WHEN.some((x) => x.id === w) ? w : 'any';
+}
+function choreJobSetWhen(jobId, when) {
+    const j = (store.choreJobs || []).filter((x) => x.id === jobId)[0];
+    if (!j)
+        return;
+    j.when = when;
+    store.parentUpdatedAt = Date.now();
+    flushStore();
+}
+function choreWhoRow() {
+    const day = choreTodayIndex();
+    const key = ciToday();
+    const people = chorePeople().filter((p) => choreJobsFor(p.id, day).length);
+    if (people.length < 2)
+        return '';
+    const cur = choreWho();
+    const chip = (id, name, n, done) => `
+    <button class="chwho${cur === id ? ' on' : ''}" data-chorewho="${esc(id)}">
+      <span class="chwho-n">${esc(name)}</span>
+      ${n ? `<span class="chwho-c">${done}/${n}</span>` : ''}
+    </button>`;
+    const allJobs = choreJobsOnDay(day);
+    return `
+  <div class="chwhorow">
+    ${chip('all', 'Everyone', allJobs.length, allJobs.filter((j) => choreIsDone(j.id, key)).length)}
+    ${people.map((p) => {
+        const jobs = choreJobsFor(p.id, day);
+        return chip(p.id, p.name, jobs.length, jobs.filter((j) => choreIsDone(j.id, key)).length);
+    }).join('')}
+  </div>`;
+}
 function choreTodayTab() {
     const day = choreTodayIndex();
     const key = ciToday();
@@ -79486,15 +79650,23 @@ function choreTodayTab() {
       <p class="bodytext">Nothing is on the chart for ${esc(CHORE_DAYS[day].label.toLowerCase())}. That is allowed.
       One clear day a week is a good idea rather than an oversight.</p>
     </div>` : ''}
-  ${people.map((p) => {
+  ${choreWhoRow()}
+  ${''}
+  ${(choreWho() === 'all' ? people : people.filter((p) => p.id === choreWho())).map((p) => {
         const jobs = choreJobsFor(p.id, day);
         if (!jobs.length)
             return '';
         const doneN = jobs.filter((j) => choreIsDone(j.id, key)).length;
+        const groups = CHORE_WHEN.map((w) => ({
+            w: w, jobs: jobs.filter((j) => choreJobWhen(j) === w.id),
+        })).filter((g) => g.jobs.length);
+        const split = groups.length > 1;
         return `
     <div class="dsec">
-      <h4>${esc(p.name)} ${esc(doneN + ' of ' + jobs.length)}${p.kind === 'child' ? esc(' ') : ''}</h4>
-      ${jobs.map((j) => choreTickRow(j, key)).join('')}
+      <h4>${esc(p.name)} ${esc(doneN + ' of ' + jobs.length)}</h4>
+      ${groups.map((g) => `
+        ${split ? `<p class="chwhen">${icon(g.w.icon, 12, 'var(--sage)')} ${esc(g.w.label)}</p>` : ''}
+        ${g.jobs.map((j) => choreTickRow(j, key)).join('')}`).join('')}
     </div>`;
     }).join('')}
   ${choreStarsOn() ? `
@@ -79702,6 +79874,39 @@ function chorePicker() {
         aria-pressed="${pat === pt.id}">${esc(pt.id === 'day'
         ? 'Just ' + CHORE_DAYS[day].label : pt.label)}</button>`).join('')}
   </div>
+  ${''}
+  <p class="sect" style="margin-top:4px">When</p>
+  <div class="fcscroll" style="padding-bottom:10px">
+    ${CHORE_WHEN.map((w) => `
+      <button class="chip${(store.choreWhenPick || 'any') === w.id ? ' on' : ''}"
+        data-chorewhenpick="${esc(w.id)}"
+        aria-pressed="${(store.choreWhenPick || 'any') === w.id}">${esc(w.label)}</button>`).join('')}
+  </div>
+  ${''}
+  ${store.choreOwnOpen ? `
+  <div class="card" style="margin-bottom:12px">
+    <p class="eyebrow">${icon('plus', 11, 'var(--sage)')} Write your own</p>
+    <input id="chownlabel" class="inp" style="margin-top:8px;width:100%" maxlength="50"
+      placeholder="What it is, in your words">
+    <div class="bpbar" style="margin-top:9px">
+      <select id="chownarea" class="inp">
+        ${CHORE_AREAS.map((a) => `<option value="${esc(a.id)}">${esc(a.label)}</option>`).join('')}
+      </select>
+      <input id="chownstars" class="inp" type="number" inputmode="numeric" min="1" max="9"
+        value="1" aria-label="Stars">
+    </div>
+    ${p.kind === 'child' ? `
+    <p class="tiny" style="margin-top:9px">Old enough from, in months</p>
+    <input id="chownage" class="inp" type="number" inputmode="numeric" min="16" max="216"
+      value="${esc(String(p.months != null ? p.months : 36))}" style="margin-top:5px;width:100%">` : ''}
+    <p class="tiny" style="margin-top:9px">${esc(CHORE_OWN_NOTE)}</p>
+    <div class="bpbar" style="margin-top:11px">
+      <button class="btn" data-choreownadd="1">Add it</button>
+      <button class="btn ghost" data-choreown="close">Cancel</button>
+    </div>
+  </div>` : `
+  <button class="btn ghost" style="width:100%;margin-bottom:12px" data-choreown="open">
+    ${icon('plus', 14, 'var(--deep)')} Write your own job</button>`}
   ${groups.map((g) => `
     <div class="dsec">
       <h4>${esc(g.area.label)}</h4>
@@ -81308,6 +81513,10 @@ window.addEventListener('resize', () => { try {
 }
 catch (e) { } });
 loadStore();
+try {
+    choreSyncOwn();
+}
+catch (e) { }
 commWireFilter();
 inviteTake();
 initControls();
