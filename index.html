@@ -1,8 +1,8 @@
 <title>Ready Set Grow</title>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-29 19:52">
+<meta name="rsg-build" content="2026-10-29 20:07">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -343,20 +343,37 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
    of a phone. They are a fixed size and centred now, so they sit as
    one group a thumb can travel across. Still 48 wide and 46 tall,
    which is above the 44 pixel minimum for something you tap. */
-.tabs{display:flex;justify-content:center;gap:15px;background:var(--surface);
-  border-top:1px solid var(--line2);padding:4px 6px 7px;flex:none;position:relative;z-index:2}
+/* THE BAR SITS ABOVE THE HOME INDICATOR, NOT UNDER IT.
+
+   Every env(safe-area-inset-*) in this stylesheet was inert until the
+   viewport meta gained viewport-fit=cover, so on an iPhone the bottom
+   row of the app was sitting beneath the swipe bar. The padding below
+   is the real fix; the meta is what makes it mean anything. */
+.tabs{display:flex;justify-content:center;gap:4px;background:var(--surface);
+  border-top:1px solid var(--line2);flex:none;position:relative;z-index:2;
+  padding:5px 4px 6px;
+  padding-bottom:calc(6px + env(safe-area-inset-bottom, 0px))}
 /* Icons only. The words are still in the markup for screen readers,
    they are just not drawn, which is what let 6 tabs fit across a
    phone when 6 labelled ones would not. */
-.tab{flex:none;width:50px;display:flex;flex-direction:column;align-items:center;gap:4px;
-  padding:9px 0 7px;color:var(--muted);min-height:46px;justify-content:center}
+/* FIVE LABELLED TABS, WHICH IS WHAT MAKES IT READ AS AN APP.
+
+   It was 5 unlabelled icons because 6 labelled ones would not fit.
+   There are 5 now and the words fit, and a bar you can read without
+   decoding pictograms is most of the difference between an app and a
+   website with a sticky footer. */
+.tab{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:7px 2px 5px;color:var(--muted);min-height:48px;justify-content:center}
+.tablabel{font-size:10px;font-weight:600;letter-spacing:.01em;line-height:1.1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tab[aria-selected="true"] .tablabel{font-weight:700}
 /* THE THIRD SETTING.
    flex:1 spread 5 icons over the whole width and she said they were
    too far apart. 44 wide with no gap bunched them into the middle and
    she said they were too close. This is the middle: 5 buttons of 50
    with 15 between them is about 310 across on a 390 wide phone, so
    the row reaches most of the way without touching either edge. */
-@media (max-width:360px){ .tabs{gap:10px} .tab{width:46px} }
+@media (max-width:340px){ .tablabel{font-size:9px} }
 .tab[aria-selected="true"]{color:var(--deep)}
 .tabic{position:relative;display:flex;align-items:center;justify-content:center}
 .tabbadge{position:absolute;top:-5px;right:-8px;min-width:16px;height:16px;padding:0 4px;
@@ -2165,6 +2182,8 @@ body.calpage .mark-holder{margin-bottom:-20px}
    instead of four scrolls apart.
    ------------------------------------------------------------------ */
 .pickgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+/* A grid holding one card still wants the full width. */
+.pickgrid.one{grid-template-columns:1fr;margin-top:0}
 .pickcard{position:relative;appearance:none;text-align:left;font:inherit;cursor:pointer;
   background:#fff;border:1px solid rgba(74,103,65,.14);border-radius:18px;
   padding:13px 12px 11px;display:flex;flex-direction:column;gap:6px}
@@ -2691,7 +2710,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-29 19:52';
+const BUILD_STAMP = '2026-10-29 20:07';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -12559,6 +12578,10 @@ function estimateMinutes(type, months, include = []) {
         .filter((s) => !s.optional || include.includes(s.id))
         .reduce((n, s) => n + s.minutes, 0);
 }
+const PLANNER_ROUTINE_NOTE = 'Bedtime is timed backwards from when they need to be asleep, so every step has a time on it '
+    + 'rather than a vague order. It lives inside Sleep for now.';
+const PLANNER_NOTE = 'Everything here is shared with whoever else is on the household, so two people are never '
+    + 'looking at two different Thursdays.';
 const MARGIN_LINES = [
     { id: 'possibilities', lines: ['Little people', 'big possibilities'] },
     { id: 'braver', lines: ['A kinder', 'brighter', 'braver', 'tomorrow'] },
@@ -53625,12 +53648,48 @@ function emptyScreen(msg) {
 const BOTTOM_BAR = ['today', 'now', 'child', 'logs', 'me'];
 function tabList() {
     return [
-        { id: 'community', label: 'Community', icon: 'people' },
-        { id: 'outings', label: 'Outings', icon: 'bag' },
-        { id: 'home', label: 'Home', icon: 'home', center: true },
-        { id: 'calendar', label: 'Calendar', icon: 'calendar' },
-        { id: 'profile', label: 'Profile', icon: 'user' },
+        { id: 'home', label: 'Home', icon: 'home' },
+        { id: 'family', label: 'Family', icon: 'people' },
+        { id: 'planner', label: 'Planner', icon: 'calendar' },
+        { id: 'discover', label: 'Discover', icon: 'book' },
+        { id: 'more', label: 'More', icon: 'gear' },
     ];
+}
+const TAB_ALIAS = {
+    community: { tab: 'discover', view: { type: 'screen', id: 'community' } },
+    outings: { tab: 'discover', view: { type: 'screen', id: 'outings' } },
+    calendar: { tab: 'planner', view: { type: 'screen', id: 'calendar' } },
+    profile: { tab: 'family', view: null },
+    settings: { tab: 'more', view: { type: 'screen', id: 'settings' } },
+    today: { tab: 'home', view: null },
+    now: { tab: 'home', view: null },
+    logs: { tab: 'family', view: null },
+};
+function tabIsReal(id) {
+    return tabList().some((t) => t.id === id);
+}
+function goTab(id) {
+    const key = String(id || '');
+    if (tabIsReal(key)) {
+        state.tab = key;
+        state.view = null;
+        return;
+    }
+    const alias = TAB_ALIAS[key];
+    if (alias) {
+        state.tab = alias.tab;
+        state.view = alias.view;
+        return;
+    }
+    state.tab = 'home';
+    state.view = null;
+}
+function normalizeTab() {
+    const key = String(state.tab || '');
+    if (!key || tabIsReal(key))
+        return;
+    const alias = TAB_ALIAS[key];
+    state.tab = alias ? alias.tab : 'home';
 }
 let lastFocus = { id: null, start: null, end: null };
 let lastScreenHTML = null;
@@ -54021,6 +54080,14 @@ function render() {
         html = screenMomNowOne(v.id);
     else if (state.tab === 'welcome')
         html = screenWelcome(c);
+    else if (state.tab === 'planner')
+        html = screenPlanner(c);
+    else if (state.tab === 'discover')
+        html = screenDiscover(c);
+    else if (state.tab === 'more')
+        html = screenMore(c);
+    else if (state.tab === 'family')
+        html = screenProfileTab(c);
     else if (state.tab === 'settings')
         html = screenSettings();
     else if (state.tab === 'profile')
@@ -54176,15 +54243,15 @@ function render() {
         <span class="sronly">${esc(t.label)}</span>
       </button>`;
         }
-        const badge = t.id === 'community' ? commBadge() : 0;
+        const badge = t.id === 'discover' ? commBadge() : 0;
         return `
     <button class="tab" role="tab" data-tab="${t.id}" aria-selected="${on}"
-      aria-label="${esc(t.label)}${badge ? ', ' + badge + ' waiting' : ''}" title="${esc(t.label)}">
+      aria-label="${esc(t.label)}${badge ? ', ' + badge + ' waiting' : ''}">
       <span class="tabic">
-        ${icon(t.icon, 22, on ? 'var(--deep)' : 'var(--muted)')}
+        ${icon(t.icon, 21, on ? 'var(--deep)' : 'var(--muted)')}
         ${badge ? `<span class="tabbadge">${badge > 9 ? '9+' : badge}</span>` : ''}
       </span>
-      <span class="sronly">${esc(t.label)}</span><span class="dot"></span>
+      <span class="tablabel">${esc(t.label)}</span>
     </button>`;
     }).join('');
     let cpText;
@@ -56380,13 +56447,11 @@ function initControls() {
         }
         else if (t.dataset.tab) {
             store.kidSection = null;
-            state.tab = t.dataset.tab;
-            state.view = null;
+            goTab(t.dataset.tab);
             navClear();
         }
         else if (t.dataset.go === 'tab') {
-            state.tab = t.dataset.id;
-            state.view = null;
+            goTab(t.dataset.id);
             navClear();
         }
         else if (t.dataset.go) {
@@ -72745,6 +72810,118 @@ function facePicker(target, current) {
         ${val ? `<button class="chip" data-avatar="" data-face="${esc(target)}">Remove</button>` : ''}
       </div>
       ${store.photoError ? `<p class="tiny" style="margin-top:7px;color:#A85A44">${esc(store.photoError)}</p>` : ''}
+    </div>
+  </div>`;
+}
+function hubCard(opt) {
+    const attrs = opt.view
+        ? `data-go="${esc(opt.view)}" data-id="${esc(opt.id)}"`
+        : `data-go="screen" data-id="${esc(opt.id)}"`;
+    return `
+  <button class="pickcard" ${attrs}>
+    <span class="pickcard-ic">${icon(opt.ic, 17, 'var(--deep)')}</span>
+    <span class="pickcard-t">${esc(opt.t)}</span>
+    <span class="pickcard-b">${esc(opt.b)}</span>
+    ${opt.tag ? `<span class="pickcard-tag">${esc(opt.tag)}</span>` : ''}
+    <span class="pickcard-go">${esc(opt.go || 'Open')} ${icon('chev', 12, 'var(--deep)')}</span>
+  </button>`;
+}
+function hubHead(title, sub) {
+    return `
+  ${cornerLeaves()}
+  <div class="sc-head tight">
+    <h1 class="title sm">${esc(title)}</h1>
+    <p class="sub">${esc(sub)}</p>
+  </div>`;
+}
+function screenPlanner(c) {
+    const today = ciToday();
+    const evs = (typeof calEventsOn === 'function') ? [] : [];
+    return `
+  ${hubHead('Planner', 'The week, the jobs and the lists, in one place.')}
+  <div class="sc">
+    <div class="pickgrid one">
+    ${hubCard({ id: 'calendar', ic: 'calendar', t: 'Calendar',
+        b: 'Day, week and month, colour coded for everybody.', go: 'Open' })}
+    </div>
+    <div class="pickgrid" style="margin-top:10px">
+      ${hubCard({ id: 'chores', ic: 'check', t: 'Chores and stars',
+        b: 'Who does what, and what it earns.' })}
+      ${hubCard({ id: 'lists', ic: 'note', t: 'Lists',
+        b: 'Shopping, packing, questions to ask.' })}
+    </div>
+    ${store.children && store.children.length ? `
+    <p class="sect" style="margin-top:18px">Routines</p>
+    <div class="card">
+      <p class="bodytext" style="margin:0">${esc(PLANNER_ROUTINE_NOTE)}</p>
+      <button class="btn ghost" style="width:100%;margin-top:11px" data-go="screen" data-id="sleep">
+        ${icon('moon', 14, 'var(--deep)')} Open today's rhythm</button>
+    </div>` : ''}
+    <p class="disclaimer">${esc(PLANNER_NOTE)}</p>
+  </div>`;
+}
+function screenDiscover(c) {
+    const badge = commBadge();
+    return `
+  ${hubHead('Discover', 'Everything to read, and everyone to ask.')}
+  <div class="sc">
+    <button class="pickcard" style="width:100%" data-go="screen" data-id="find">
+      <span class="pickcard-ic">${icon('search', 17, 'var(--deep)')}</span>
+      <span class="pickcard-t">${esc(FIND_TITLE)}</span>
+      <span class="pickcard-b">Search everything, or just ask her.</span>
+      <span class="pickcard-go">Ask ${icon('chev', 12, 'var(--deep)')}</span>
+    </button>
+    <p class="sect" style="margin-top:18px">Community</p>
+    <div class="pickgrid one">
+    ${hubCard({ id: 'community', ic: 'people', t: 'Rooms and the noticeboard',
+        b: 'Other parents, in the same week as you.',
+        tag: badge ? (badge > 9 ? '9+ waiting' : badge + ' waiting') : '', go: 'Open' })}
+    </div>
+    <p class="sect" style="margin-top:18px">For the children</p>
+    <div class="pickgrid">
+      ${hubCard({ id: 'learning', ic: 'book', t: 'Learning', b: 'What they are working on now.' })}
+      ${hubCard({ id: 'understand', ic: 'bulb', t: 'Understanding them',
+        b: 'Why they are doing that.' })}
+      ${hubCard({ id: 'activities', ic: 'puzzle', t: 'Things to do', b: 'For the age they are.' })}
+      ${hubCard({ id: 'outings', ic: 'bag', t: 'Going out', b: 'What to take, and when.' })}
+    </div>
+    <p class="sect" style="margin-top:18px">For you</p>
+    <div class="pickgrid">
+      ${hubCard({ id: 'mycycle', ic: 'heart', t: "Women's health",
+        b: 'Your cycle, reproductive health, treatment.' })}
+      ${hubCard({ id: 'momnow', ic: 'leaf', t: 'How you are',
+        b: 'Recovery, sleep, the hard days.' })}
+      ${hubCard({ id: 'learnall', ic: 'chat', t: 'For you', b: 'Your own head, not theirs.' })}
+      ${hubCard({ id: 'support', ic: 'hand', t: 'Support', b: 'When it is more than a hard day.' })}
+    </div>
+    <p class="sect" style="margin-top:18px">Keeping them safe</p>
+    <div class="pickgrid">
+      ${hubCard({ id: 'safety', ic: 'shield', t: 'Safety', b: 'Home, car, water, choking.' })}
+      ${hubCard({ id: 'online', ic: 'eye', t: 'Online', b: 'Screens, and who is talking to them.' })}
+      ${hubCard({ id: 'vaccines', ic: 'pill', t: 'Vaccines', b: 'What is due, and what it does.' })}
+      ${hubCard({ id: 'wisdom', ic: 'star', t: 'What other parents said',
+        b: 'Passed along, not prescribed.' })}
+    </div>
+  </div>`;
+}
+function screenMore(c) {
+    return `
+  ${hubHead('More', 'Your account, and how the app behaves.')}
+  <div class="sc">
+    <div class="pickgrid">
+      ${hubCard({ id: 'settings', ic: 'gear', t: 'Settings', b: 'Names, units, how it looks.' })}
+      ${hubCard({ id: 'notifications', ic: 'chat', t: 'Notifications',
+        b: 'What buzzes, and when it does not.' })}
+      ${hubCard({ id: 'sharing', ic: 'people', t: 'Sharing',
+        b: 'Who else can see a child.' })}
+      ${hubCard({ id: 'privacy', ic: 'shield', t: 'Privacy', b: 'What is kept, and where.' })}
+      ${hubCard({ id: 'install', ic: 'home', t: 'Add to your phone',
+        b: 'So it opens like an app.' })}
+      ${hubCard({ id: 'commrules', ic: 'note', t: 'Community rules',
+        b: 'What the rooms are for.' })}
+      ${hubCard({ id: 'feedback', ic: 'chat', t: 'Tell us something',
+        b: 'Broken, missing or wrong.' })}
+      ${hubCard({ id: 'about', ic: 'info', t: 'About', b: 'What this is, and who made it.' })}
     </div>
   </div>`;
 }
