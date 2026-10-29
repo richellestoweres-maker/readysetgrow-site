@@ -2527,7 +2527,7 @@ body.calpage .mark-holder{margin-bottom:-20px}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-25 16:16';
+const BUILD_STAMP = '2026-10-29 19:52';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -23188,6 +23188,12 @@ const ONBOARD_WHO_SWAP =
 /* How many, asked plainly, because the alternative is a parent of 4
    adding them one at a time and wondering if it took. */
 const ONBOARD_COUNTS = [1, 2, 3, 4, 5, 6];
+
+/* Shown until she taps a number, because nothing starts chosen. */
+const ONBOARD_COUNT_ASK = 'Pick a number to carry on.';
+
+/* Offered on the last child's last slide. */
+const ONBOARD_ONE_MORE = 'Add another child';
 const ONBOARD_COUNT_MORE = 'More than 6';
 const ONBOARD_COUNT_NONE = 'None yet';
 
@@ -64615,10 +64621,25 @@ function restoreFocus(id, start, end) {
    affirmation lines are seeded on the birthday, so this only actually
    changes when the active child does. */
 let lastBgSeed = null;
+/* THE AFFIRMATIONS BELONG IN THE MARGINS, AND A PHONE HAS NO MARGINS.
+
+   IS_DESKTOP only asks whether the build carries the desktop chrome,
+   and the shipped site carries it, so on an actual phone 43 floating
+   words were being painted underneath the app. They landed on the Back
+   button and across body copy. Width is the real question. */
+const DESKTOP_MIN_WIDTH = 900;
+
+function bgWideEnough() {
+  return (window.innerWidth || document.documentElement.clientWidth || 0) >= DESKTOP_MIN_WIDTH;
+}
+
 function paintBackground() {
-  if (!IS_DESKTOP) return;
   const layer = document.getElementById('bglayer');
   if (!layer) return;
+  if (!IS_DESKTOP || !bgWideEnough()) {
+    if (layer.innerHTML) { layer.innerHTML = ''; lastBgSeed = ''; }
+    return;
+  }
   const seed = String(state.birthday || '') + '|' + String(store.activeChildId || '');
   if (seed === lastBgSeed && layer.innerHTML) return;
   lastBgSeed = seed;
@@ -65486,7 +65507,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask],[data-obmore]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -65696,10 +65717,16 @@ function initControls() {
       store.parent.calledBy = store.parent.calledBy === t.dataset.obcalled ? '' : t.dataset.obcalled;
       store.parentUpdatedAt = Date.now();
       flushStore();
+    } else if (t.dataset.obmore) {
+      const ob = onboard();
+      ob.kidCount = Math.min(6, (Number(ob.kidCount) || 1) + 1);
+      ob.kidPicked = true;
+      flushStore();
     } else if (t.dataset.obcount !== undefined) {
       const ob = onboard();
       ob.kidCount = Number(t.dataset.obcount) || 0;
       ob.hasKids = ob.kidCount > 0;
+      ob.kidPicked = true;
       flushStore();
     } else if (t.dataset.obsex !== undefined) {
       const kid = obKidAt(Number(t.dataset.obkid));
@@ -88936,10 +88963,18 @@ function obWhoToggle(id) {
   if (opt.kind === 'flag') {
     const ob = onboard();
     ob.hasKids = !ob.hasKids;
-    /* Ticking it is a good enough answer to start from, so the count
-       slide is not staring at zero. */
-    if (ob.hasKids && !ob.kidCount) ob.kidCount = 1;
-    if (!ob.hasKids) ob.kidCount = 0;
+    /* IT USED TO START ON 1, AND THAT COST SOMEBODY THEIR OTHER TWO
+       CHILDREN.
+
+       A tester with three children reported that the app "only lets
+       you add one". It did not: the count slide offers 1 to 6 and the
+       flow walks every one of them. But 1 arrived already chosen, so a
+       slide that looks answered gets a Next rather than a read, and she
+       came out the far end with one child and no idea the others were
+       ever on offer. A default is not neutral on a question somebody is
+       about to skim. Nothing is chosen now, and Next waits. */
+    if (!ob.hasKids) { ob.kidCount = 0; ob.kidPicked = true; }
+    else if (!ob.kidPicked) ob.kidCount = 0;
   } else if (opt.kind === 'stage') {
     sitToggle('stages', id);
   } else {
@@ -89057,13 +89092,17 @@ function obSlide(step, kidIndex) {
 
   if (name === 'kids') {
     const n = Number(ob.kidCount) || 0;
+    const picked = !!ob.kidPicked;
     return `
     ${onboardSays(ONBOARD_LINES.kids)}
     <div class="chips" style="gap:7px;margin-top:12px">
-      <button class="chip" data-obcount="0" aria-pressed="${n === 0}">${esc(ONBOARD_COUNT_NONE)}</button>
+      <button class="chip" data-obcount="0" aria-pressed="${picked && n === 0}">${
+    esc(ONBOARD_COUNT_NONE)}</button>
       ${ONBOARD_COUNTS.map((c) => `
-        <button class="chip" data-obcount="${c}" aria-pressed="${n === c}">${c}</button>`).join('')}
+        <button class="chip" data-obcount="${c}" aria-pressed="${picked && n === c}">${c}</button>`).join('')}
     </div>
+    ${!picked ? `<p class="tiny" style="margin-top:10px;color:var(--deep);font-weight:600">${
+    esc(ONBOARD_COUNT_ASK)}</p>` : ''}
     <p class="tiny" style="margin-top:10px">${esc(ONBOARD_CHILD_SKIP)}</p>`;
   }
 
@@ -89125,7 +89164,16 @@ function obSlide(step, kidIndex) {
     </div>
     <button class="chip" style="margin-top:10px" data-obneedsall="${all ? '0' : '1'}">
       ${all ? 'Show the common ones' : 'See all ' + SUPPORT_LENSES.length}</button>
-    <p class="tiny" style="margin-top:10px">${esc(ONBOARD_NEEDS_NOTE)}</p>`;
+    <p class="tiny" style="margin-top:10px">${esc(ONBOARD_NEEDS_NOTE)}</p>
+    ${/* A WAY BACK IN FOR SOMEBODY WHO UNDERCOUNTED.
+
+          The count slide is early and it is easy to answer too fast.
+          Without this, realising at the end that you have another child
+          means starting the walkthrough again or hunting for Add in the
+          app, which is exactly what the tester ended up doing. */''}
+    ${kidIndex === (Number(ob.kidCount) || 1) - 1 && (Number(ob.kidCount) || 1) < 6 ? `
+    <button class="btn ghost" style="width:100%;margin-top:14px" data-obmore="1">
+      ${icon('plus', 14, 'var(--deep)')} ${esc(ONBOARD_ONE_MORE)}</button>` : ''}`;
   }
 
   return '';
@@ -89260,7 +89308,8 @@ function screenOnboard() {
   <div class="sc">
     ${body}
     ${next ? `
-    <button class="btn" data-ob="next" style="margin-top:16px;width:100%">
+    <button class="btn" data-ob="next" style="margin-top:16px;width:100%"
+      ${onboardStepName(step) === 'kids' && !ob.kidPicked ? 'disabled' : ''}>
       ${onboardStepName(step) === 'hello' ? 'Show me' : 'Next'} ${icon('chev', 15, '#fff')}
     </button>` : `
     <button class="btn" data-ob="done" style="margin-top:16px;width:100%">
@@ -95566,6 +95615,11 @@ function willowPanel() {
    every name in the file already exists by the time anything renders.
    Please leave this here.
    ----------------------------------------------------------------- */
+/* Crossing the width threshold has to repaint, or the words stay gone
+   after a rotate into landscape and stay painted after a rotate out.
+   Registered once, here, rather than anywhere that runs more than once. */
+window.addEventListener('resize', () => { try { paintBackground(); } catch (e) {} });
+
 loadStore();
 /* The community filter's rule list lives in communityRules.js and the
    filter lives in feed.js, which cannot reach it. Handed over once,
