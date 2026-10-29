@@ -153,13 +153,18 @@ body.locked #willow{display:none}
 /* ---------- THE READING COLUMN ---------- */
 /* Capped so body copy keeps a comfortable measure, with margin either
    side for the decorative layer to sit in. */
-.sc,.sc-head{max-width:700px;margin-inline:auto;width:100%;position:relative;z-index:1}
+/* The greeting is a sibling of these two, so it has to be held to
+   the same column. Without it, it spanned the whole desktop window
+   and sat flush against the left edge of the screen. */
+.sc,.sc-head,.hgreet{max-width:700px;margin-inline:auto;width:100%;position:relative;z-index:1}
 .sc{padding:0 26px 40px}
 .sc-head{padding:6px 26px 4px}
+.hgreet{padding:14px 26px;margin-top:4px}
 .mark-holder{max-width:700px;margin-inline:auto;padding:30px 26px 2px;position:relative;z-index:1}
 @media (max-width:560px){
   .sc{padding:0 18px 32px}
   .sc-head{padding:4px 18px 4px}
+  .hgreet{padding:12px 18px}
 }
 
 /* ---------- THE DECORATIVE LAYER ---------- */
