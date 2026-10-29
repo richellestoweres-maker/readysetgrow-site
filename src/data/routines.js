@@ -314,3 +314,15 @@ export function estimateMinutes(type, months, include = []) {
 
 export { parseClock, clockLabel };
 export default ROUTINE_TEMPLATES;
+
+
+/* Shown on the Planner hub. Routines are real and timed, they just do
+   not have a screen of their own yet, so the hub says where they are
+   rather than pretending they are missing. */
+export const PLANNER_ROUTINE_NOTE =
+  'Bedtime is timed backwards from when they need to be asleep, so every step has a time on it '
+  + 'rather than a vague order. It lives inside Sleep for now.';
+
+export const PLANNER_NOTE =
+  'Everything here is shared with whoever else is on the household, so two people are never '
+  + 'looking at two different Thursdays.';
