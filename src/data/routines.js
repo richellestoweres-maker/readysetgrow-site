@@ -35,11 +35,19 @@ export const ROUTINE_STANCE = {
   ],
 };
 
+/* IN THE ORDER A DAY ACTUALLY HAPPENS.
+
+   This list was written bedtime first, because bedtime was the only
+   one built at the time, and the routines screen renders in this
+   order. So a parent opened it and was told about bedtime, then
+   morning, then after school. Nothing depends on the positions, every
+   other reader looks a type up by id, so the fix is simply to put the
+   day in day order. */
 export const ROUTINE_TYPES = [
-  { id: 'bedtime', label: 'Bedtime', anchor: 'end', description: 'Works backward from bedtime.' },
   { id: 'morning', label: 'Morning', anchor: 'end', description: 'Works backward from when you need to be out the door.' },
   { id: 'nap', label: 'Before a nap', anchor: 'end', description: 'A short version of bedtime.' },
   { id: 'afterschool', label: 'After school', anchor: 'start', description: 'Runs forward from pickup.' },
+  { id: 'bedtime', label: 'Bedtime', anchor: 'end', description: 'Works backward from bedtime.' },
 ];
 
 /**
