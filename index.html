@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-29 21:09">
+<meta name="rsg-build" content="2026-10-29 21:20">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -2619,12 +2619,20 @@ body.calpage .mark-holder{margin-bottom:-20px}
 .famadd:hover{background:var(--leaf2)}
 
 /* The greeting, the way a person says hello: one line, at the left. */
-.hgreet{display:flex;align-items:flex-start;gap:11px;padding:4px 2px 14px}
-.hgreet-ic{flex:none;margin-top:3px;display:flex}
-.hgreet-t{margin:0;font-family:var(--serif);font-weight:600;font-size:25px;line-height:1.16;
+/* ON A SOFT GREEN PANEL, THE WAY HER MOCKUP HAS IT.
+
+   The first version was bare text on the page background, which on a
+   wide window read as a line of writing floating in the margin. It is
+   a card now: tinted, rounded, and inside the app's column. */
+.hgreet{display:flex;align-items:flex-start;gap:12px;padding:15px 16px;
+  background:linear-gradient(135deg,var(--leaf3),var(--leaf2));
+  border:1px solid rgba(124,144,104,.18);border-radius:20px;margin:2px 18px 14px}
+.hgreet-ic{flex:none;margin-top:2px;display:flex;width:34px;height:34px;border-radius:12px;
+  background:rgba(255,255,255,.65);align-items:center;justify-content:center}
+.hgreet-t{margin:0;font-family:var(--serif);font-weight:600;font-size:23px;line-height:1.18;
   color:var(--ink);letter-spacing:-.01em;text-wrap:balance}
-.hgreet-s{margin:6px 0 0;font-size:13.5px;line-height:1.5;color:var(--muted)}
-@media (max-width:340px){.hgreet-t{font-size:22px}}
+.hgreet-s{margin:6px 0 0;font-size:13.5px;line-height:1.5;color:var(--body)}
+@media (max-width:340px){.hgreet-t{font-size:20px}}
 
 /* The mark, phone sized, in the corner of Home and nowhere else. */
 .markbtn{appearance:none;border:0;background:none;padding:0;cursor:pointer;display:flex;
@@ -2791,13 +2799,18 @@ body.locked #willow{display:none}
 /* ---------- THE READING COLUMN ---------- */
 /* Capped so body copy keeps a comfortable measure, with margin either
    side for the decorative layer to sit in. */
-.sc,.sc-head{max-width:700px;margin-inline:auto;width:100%;position:relative;z-index:1}
+/* The greeting is a sibling of these two, so it has to be held to
+   the same column. Without it, it spanned the whole desktop window
+   and sat flush against the left edge of the screen. */
+.sc,.sc-head,.hgreet{max-width:700px;margin-inline:auto;width:100%;position:relative;z-index:1}
 .sc{padding:0 26px 40px}
 .sc-head{padding:6px 26px 4px}
+.hgreet{padding:14px 26px;margin-top:4px}
 .mark-holder{max-width:700px;margin-inline:auto;padding:30px 26px 2px;position:relative;z-index:1}
 @media (max-width:560px){
   .sc{padding:0 18px 32px}
   .sc-head{padding:4px 18px 4px}
+  .hgreet{padding:12px 18px}
 }
 
 /* ---------- THE DECORATIVE LAYER ---------- */
@@ -2935,7 +2948,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-29 21:09';
+const BUILD_STAMP = '2026-10-29 21:20';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
