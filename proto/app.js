@@ -1460,7 +1460,7 @@ const state = {};
  'learnTab', 'choreTab', 'growthTab', 'vaxTab', 'supportTab', 'onlineTab', 'growTab', 'conTab', 'expTab', 'ttcTab', 'indTab', 'birthTab', 'bpTab', 'sexedTab',
  'pottyTab', 'sfTab', 'nestTab', 'forTab', 'nlTab', 'crTab', 'calTab',
  'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift', 'lists', 'deletedListIds', 'listOpen', 'rewards', 'rewardLog', 'rewKid', 'rewOwnOpen',
- 'cycTab', 'cyclogDate',
+ 'cycTab', 'cyclogDate', 'famTab',
  'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -2611,6 +2611,13 @@ function tabIsReal(id) {
    and a puzzled parent. */
 function goTab(id) {
   const key = String(id || '');
+  /* FAMILY MEANS THE FAMILY, NOT WHOEVER WAS OPEN LAST.
+
+     profileWho defaults to 'me', so without this the Family tab always
+     drilled straight into her own profile and the list of everybody,
+     which is the point of the tab, was unreachable. Tapping a face
+     sets it again. */
+  if (key === 'family') store.profileWho = '';
   if (tabIsReal(key)) { state.tab = key; state.view = null; return; }
   const alias = TAB_ALIAS[key];
   if (alias) { state.tab = alias.tab; state.view = alias.view; return; }
@@ -2988,7 +2995,12 @@ function render() {
   else if (state.tab === 'planner') html = screenPlanner(c);
   else if (state.tab === 'discover') html = screenDiscover(c);
   else if (state.tab === 'more') html = screenMore(c);
-  else if (state.tab === 'family') html = screenProfileTab(c);
+  else if (state.tab === 'family') {
+    /* The list is the tab. Picking somebody sets profileWho, and
+       screenProfileTab then shows that person, so Back from a profile
+       lands on the family rather than on Home. */
+    html = store.profileWho ? screenProfileTab(c) : screenFamily(c);
+  }
   else if (state.tab === 'settings') html = screenSettings();
   /* Profile shows whoever is selected. Her own face in the corner puts
      her here, a child's circle on Home puts them here. */
@@ -3606,7 +3618,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask],[data-obmore],[data-cyctab],[data-cycday]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask],[data-obmore],[data-cyctab],[data-cycday],[data-famtab],[data-famgo],[data-cycnote]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -5117,6 +5129,20 @@ function initControls() {
     } else if (t.dataset.sexed) {
       if (t.dataset.sexed === 'sti') {
         store.sexedSti = store.sexedSti === t.dataset.id ? '' : t.dataset.id;
+      }
+    } else if (t.dataset.famtab) {
+      store.famTab = t.dataset.famtab;
+    } else if (t.dataset.famgo) {
+      /* A quick action opens that child AND the part of their profile
+         it names, so one tap gets where two used to. */
+      const id = t.dataset.famgo;
+      const k = store.children.filter((x) => x.id === id)[0];
+      if (k) {
+        store.activeChildId = k.id;
+        store.profileWho = k.id;
+        state.tab = 'family';
+        state.view = null;
+        store.kidSection = t.dataset.sec ? { kid: k.id, sec: t.dataset.sec } : null;
       }
     } else if (t.dataset.cycnote) {
       return;
@@ -25706,6 +25732,147 @@ function screenMore(c) {
     b: 'Broken, missing or wrong.' })}
       ${hubCard({ id: 'about', ic: 'info', t: 'About', b: 'What this is, and who made it.' })}
     </div>
+  </div>`;
+}
+
+/* ==================================================================
+   MY FAMILY, BUILT TO HER MOCKUP
+
+   Three segmented tabs and one card per person. A card is a big round
+   face, a name, an age, and a row of four quick ways in underneath,
+   each in its own soft colour.
+
+   The Family tab used to open on HER profile, so a screen called
+   Family showed one person and you had to already know the faces on
+   Home were the way to anybody else. This is the list that was
+   missing.
+   ================================================================== */
+const FAM_TABS = [
+  { id: 'children', label: 'Children' },
+  { id: 'adults', label: 'Adults' },
+  { id: 'shared', label: 'Shared care' },
+];
+
+/* The four quick actions under a child, in the order her mockup has
+   them, each landing on the part of their profile that holds it. */
+const FAM_QUICK = [
+  { sec: 'where', icon: 'star', label: 'Milestones', tint: 'tint-gold' },
+  { sec: 'health', icon: 'heart', label: 'Health', tint: 'tint-rose' },
+  { sec: 'care', icon: 'moon', label: 'Routines', tint: 'tint-sky' },
+  { sec: '', icon: 'chevdown', label: 'More', tint: 'tint-sage' },
+];
+
+function famTab() {
+  const t = store.famTab;
+  return FAM_TABS.some((x) => x.id === t) ? t : 'children';
+}
+
+function famQuickRow(kid) {
+  return `
+  <div class="famq">
+    ${FAM_QUICK.map((q) => `
+    <button class="famq-b" data-famgo="${esc(kid.id)}" data-sec="${esc(q.sec)}">
+      <span class="famq-ic ${esc(q.tint)}">${icon(q.icon, 15, 'var(--deep2)')}</span>
+      <span class="famq-t">${esc(q.label)}</span>
+    </button>`).join('')}
+  </div>`;
+}
+
+function famPersonCard(opt) {
+  return `
+  <div class="famcard">
+    <button class="famtop" ${opt.open}>
+      <span class="famface">${opt.face}</span>
+      <span class="famwho">
+        <span class="famname">${esc(opt.name)}</span>
+        <span class="famage">${esc(opt.age)}</span>
+      </span>
+      <span class="famchev">${icon('chev', 16, 'var(--faint)')}</span>
+    </button>
+    ${opt.quick || ''}
+  </div>`;
+}
+
+function screenFamily(c) {
+  const tab = famTab();
+  const mine = store.children.filter((k) => !k.sharedFrom);
+  const shared = store.children.filter((k) => !!k.sharedFrom);
+  const first = (store.parent.name || '').trim().split(/\s+/)[0] || 'You';
+
+  const children = !mine.length ? `
+    <div class="card flat">
+      <p class="bodytext" style="margin:0">Nobody added yet. Add a child and the whole app
+      reshapes around their age, from sleep windows to what to say at bedtime.</p>
+    </div>` : mine.map((k) => {
+    const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+    return famPersonCard({
+      face: childFace(k, 56),
+      name: (k.name || 'Unnamed'),
+      age: (sum && sum.label) ? sum.label : 'No birthday yet',
+      open: `data-child="${esc(k.id)}"`,
+      quick: famQuickRow(k),
+    });
+  }).join('');
+
+  const adults = famPersonCard({
+    face: parentFace(56),
+    name: first,
+    age: 'You',
+    open: 'data-me="1"',
+    quick: '',
+  }) + (store.choreAdults || []).map((a) => `
+    <div class="famcard">
+      <div class="famtop" style="cursor:default">
+        <span class="famface">${faceHTML('', 56, 'me')}</span>
+        <span class="famwho">
+          <span class="famname">${esc(a.name || 'Someone')}</span>
+          <span class="famage">On the chore chart</span>
+        </span>
+      </div>
+    </div>`).join('') + `
+    <button class="famadd" data-go="screen" data-id="chores">
+      ${icon('plus', 15, 'var(--deep)')} Add somebody to the chart</button>`;
+
+  const sharedBody = shared.length ? shared.map((k) => {
+    const sum = getAgeSummary({ name: k.name, birthday: k.birthday });
+    return famPersonCard({
+      face: childFace(k, 56),
+      name: (k.name || 'Unnamed'),
+      age: (sum && sum.label) ? sum.label : 'Shared with you',
+      open: `data-child="${esc(k.id)}"`,
+      quick: '',
+    });
+  }).join('') : '';
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <h1 class="title sm">My family</h1>
+    <p class="sub">Everybody in one place, and a way into each of them.</p>
+  </div>
+  <div class="sc">
+    <div class="segs" role="tablist">
+      ${FAM_TABS.map((t) => `
+      <button class="seg" role="tab" data-famtab="${esc(t.id)}"
+        aria-pressed="${tab === t.id}">${esc(t.label)}</button>`).join('')}
+    </div>
+
+    ${tab === 'children' ? children + `
+    <button class="famadd" data-go="screen" data-id="addchild">
+      ${icon('plus', 15, 'var(--deep)')} Add a family member</button>` : ''}
+
+    ${tab === 'adults' ? adults : ''}
+
+    ${tab === 'shared' ? `
+    ${sharedBody}
+    <button class="pickcard" style="width:100%" data-go="screen" data-id="sharing">
+      <span class="pickcard-ic">${icon('people', 17, 'var(--deep)')}</span>
+      <span class="pickcard-t">Sharing and permissions</span>
+      <span class="pickcard-b">Who else can see a child, and taking it back.</span>
+    </button>
+    ${!shared.length ? `
+    <p class="tiny" style="margin-top:10px">Nothing shared with you yet. A code from another
+    parent brings their child in here.</p>` : ''}` : ''}
   </div>`;
 }
 

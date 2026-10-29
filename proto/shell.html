@@ -2652,6 +2652,49 @@ body.calpage .mark-holder{margin-bottom:-20px}
 .cybar-n{font-size:12px;font-weight:700;color:var(--muted);text-align:right;
   font-variant-numeric:tabular-nums}
 
+/* ------------------------------------------------------------------
+   MY FAMILY
+
+   One card per person: a big round face, their name, their age, and
+   four soft coloured ways in underneath. The colour is what gives the
+   screen life, and it is decoration only, so nothing is marked by
+   colour alone.
+   ------------------------------------------------------------------ */
+.famcard{background:var(--surface);border:1px solid var(--line);border-radius:20px;
+  margin-bottom:12px;overflow:hidden;box-shadow:0 3px 14px rgba(107,101,80,.07)}
+.famtop{display:flex;align-items:center;gap:13px;width:100%;appearance:none;border:0;
+  background:none;font:inherit;text-align:left;cursor:pointer;padding:14px 15px 13px}
+.famtop:hover{background:var(--surface2)}
+.famface{flex:none;display:flex}
+.famwho{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.famname{font-family:var(--serif);font-size:19px;font-weight:600;color:var(--ink);
+  line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.famage{font-size:12.5px;color:var(--muted);line-height:1.3}
+.famchev{flex:none;display:flex}
+
+.famq{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line2)}
+.famq-b{display:flex;flex-direction:column;align-items:center;gap:5px;appearance:none;border:0;
+  background:none;font:inherit;cursor:pointer;padding:11px 3px 12px;min-width:0;
+  border-right:1px solid var(--line2)}
+.famq-b:last-child{border-right:0}
+.famq-b:hover{background:var(--leaf3)}
+.famq-ic{width:32px;height:32px;border-radius:11px;display:flex;align-items:center;
+  justify-content:center;flex:none}
+/* Scoped names. "sky" already belongs to the night sky behind the
+   fireflies, and an unscoped one painted this tile a dark gradient. */
+.famq-ic.tint-gold{background:#FAF0D7}
+.famq-ic.tint-rose{background:#FBE9E7}
+.famq-ic.tint-sky{background:#E7EFF4}
+.famq-ic.tint-sage{background:#EAEFE2}
+.famq-t{font-size:10.5px;font-weight:600;color:var(--muted);line-height:1.2;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+
+.famadd{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;
+  appearance:none;font:inherit;cursor:pointer;margin-top:2px;
+  background:var(--leaf3);border:1px solid var(--leaf);border-radius:16px;
+  padding:14px;font-size:14px;font-weight:600;color:var(--deep)}
+.famadd:hover{background:var(--leaf2)}
+
 /* The greeting, the way a person says hello: one line, at the left. */
 .hgreet{display:flex;align-items:flex-start;gap:11px;padding:4px 2px 14px}
 .hgreet-ic{flex:none;margin-top:3px;display:flex}
