@@ -6624,9 +6624,13 @@ function giveUpRestoring() {
    ================================================================= */
 
 /* A small tab strip shared by the pumping and postpartum screens. */
+/* A segmented control, the shape her mockups use everywhere. One
+   container, the chosen one filled, the rest plain. Same data-sub
+   contract as before, so every screen that calls this gets the new
+   look without being touched. */
 function subTabs(group, current, tabs) {
-  return `<div class="chips" style="margin-bottom:12px">${tabs.map((t) => `
-    <button class="chip" data-sub="${esc(group)}" data-val="${esc(t.id)}"
+  return `<div class="segs" role="tablist">${tabs.map((t) => `
+    <button class="seg" role="tab" data-sub="${esc(group)}" data-val="${esc(t.id)}"
       aria-pressed="${current === t.id}">${esc(t.label)}</button>`).join('')}</div>`;
 }
 
