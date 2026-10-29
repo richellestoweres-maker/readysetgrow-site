@@ -1,0 +1,79 @@
+rules_version = '2';
+
+/* ==================================================================
+   READY SET GROW: STORAGE RULES
+
+   firebase.json has pointed at this file since Storage was wired up,
+   and the file did not exist. Firebase validates its config before it
+   ships anything, so every `firebase deploy` was going to fail on it,
+   including the one that moves the functions to Node 22.
+
+   WHAT IS ACTUALLY IN HERE
+
+   One shape only. uploadFile() in proto/app.js writes to
+
+     users/{uid}/photos/...
+     users/{uid}/video/...
+     users/{uid}/audio/...
+
+   and nothing else in the app touches Storage. So the rules describe
+   exactly that and refuse everything else, rather than leaving a wide
+   path open for something that might be added later.
+
+   ON SHARED CHILDREN
+
+   A co-parent reads a shared child's memories through the download URL
+   saved on the record, and a Firebase download token grants access on
+   its own. That is why read stays owner-only here and sharing still
+   works. It also means revoking a share does NOT invalidate a photo
+   URL that person already has. Worth knowing, and worth fixing one day
+   by rotating tokens on revoke, but it is not something these rules
+   can do.
+   ================================================================== */
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    /* Only the three kinds the app actually uploads. A parent's own
+       photo library is not a file host. */
+    function allowedType() {
+      return request.resource.contentType.matches('image/.*')
+          || request.resource.contentType.matches('video/.*')
+          || request.resource.contentType.matches('audio/.*');
+    }
+
+    /* Photos are shrunk to 1600px before upload, so this is a ceiling
+       against something going wrong rather than a working limit. */
+    function sensibleSize() {
+      return request.resource.size < 300 * 1024 * 1024;
+    }
+
+    match /users/{uid}/photos/{fileName} {
+      allow read: if isOwner(uid);
+      allow write: if isOwner(uid) && allowedType() && sensibleSize();
+      allow delete: if isOwner(uid);
+    }
+
+    match /users/{uid}/video/{fileName} {
+      allow read: if isOwner(uid);
+      allow write: if isOwner(uid) && allowedType() && sensibleSize();
+      allow delete: if isOwner(uid);
+    }
+
+    match /users/{uid}/audio/{fileName} {
+      allow read: if isOwner(uid);
+      allow write: if isOwner(uid) && allowedType() && sensibleSize();
+      allow delete: if isOwner(uid);
+    }
+
+    /* Everything else, including any other path under a user's own
+       folder, is refused. Same stance as firestore.rules. */
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
