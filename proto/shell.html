@@ -2769,6 +2769,22 @@ body.calpage .mark-holder{margin-bottom:-20px}
 .rtmove[disabled]{opacity:.25;cursor:default}
 .rtmove[disabled]:hover{background:none}
 
+/* ------------------------------------------------------------------
+   THE CHORE CHART: WHOSE, AND WHEN
+   ------------------------------------------------------------------ */
+.chwhorow{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 12px;scrollbar-width:none}
+.chwhorow::-webkit-scrollbar{display:none}
+.chwho{display:inline-flex;align-items:center;gap:6px;flex:none;appearance:none;cursor:pointer;
+  font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:999px;
+  padding:7px 13px;font-size:12.5px;font-weight:600;color:var(--body);white-space:nowrap}
+.chwho:hover{border-color:var(--leaf)}
+.chwho.on{background:var(--deep);border-color:var(--deep);color:#fff}
+.chwho-c{font-size:11px;font-weight:700;opacity:.7;font-variant-numeric:tabular-nums}
+
+.chwhen{display:flex;align-items:center;gap:6px;margin:12px 0 5px;font-size:11px;font-weight:700;
+  letter-spacing:.07em;text-transform:uppercase;color:var(--deep)}
+.dsec .chwhen:first-child{margin-top:4px}
+
 /* The greeting, the way a person says hello: one line, at the left. */
 /* ON A SOFT GREEN PANEL, THE WAY HER MOCKUP HAS IT.
 

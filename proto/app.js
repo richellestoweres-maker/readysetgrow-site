@@ -1462,6 +1462,7 @@ const state = {};
  'events', 'deletedEventIds', 'calShift', 'calWho', 'calDay', 'calEdit', 'calOpen', 'calFeeds', 'calWeekShift', 'lists', 'deletedListIds', 'listOpen', 'rewards', 'rewardLog', 'rewKid', 'rewOwnOpen',
  'cycTab', 'cyclogDate', 'famTab', 'rtTab', 'rtWho', 'rtOpen', 'rtEdit',
  'routinesOwn', 'routineDoneOwn', 'rtStreak',
+ 'choresOwn', 'choreWho', 'choreOwnOpen', 'choreOpenWho', 'choreWhenPick',
  'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -1499,6 +1500,16 @@ function flushStore() {
       memDayHidden: store.memDayHidden,
       installHidden: store.installHidden,
       choreJobs: store.choreJobs,
+      /* WRITTEN BY THIS FAMILY, AND NOT IN ANY CATALOGUE.
+
+         This list is the only copy of a job or a routine she wrote
+         herself, so leaving it out of the write meant it survived
+         until the next reload and no further. Caught by the test that
+         reloads the page and looks for it. */
+      choresOwn: store.choresOwn,
+      routinesOwn: store.routinesOwn,
+      routineDoneOwn: store.routineDoneOwn,
+      rtStreak: store.rtStreak === true,
       /* Reports that could not go up yet. They wait on the device
          rather than being lost when the app is closed. */
       fbQueue: store.fbQueue,
@@ -1632,6 +1643,11 @@ function loadStore() {
     store.memDayHidden = typeof saved.memDayHidden === 'string' ? saved.memDayHidden : '';
     store.installHidden = typeof saved.installHidden === 'string' ? saved.installHidden : '';
     store.choreJobs = Array.isArray(saved.choreJobs) ? saved.choreJobs : [];
+    store.choresOwn = Array.isArray(saved.choresOwn) ? saved.choresOwn : [];
+    store.routinesOwn = Array.isArray(saved.routinesOwn) ? saved.routinesOwn : [];
+    store.routineDoneOwn = (saved.routineDoneOwn && typeof saved.routineDoneOwn === 'object')
+      ? saved.routineDoneOwn : {};
+    store.rtStreak = saved.rtStreak === true;
     store.fbQueue = Array.isArray(saved.fbQueue) ? saved.fbQueue : [];
     store.choreDone = (saved.choreDone && typeof saved.choreDone === 'object') ? saved.choreDone : {};
     store.choreAdults = Array.isArray(saved.choreAdults) ? saved.choreAdults : [];
@@ -3643,7 +3659,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask],[data-obmore],[data-cyctab],[data-cycday],[data-famtab],[data-famgo],[data-cycnote],[data-rttab],[data-rtwho],[data-rtopen],[data-rttick],[data-rtday],[data-rtnew],[data-rtedit],[data-rtdel],[data-rtset],[data-rtstepadd],[data-rtstepdel],[data-rtmove],[data-rtowntick],[data-rtstreak]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask],[data-obmore],[data-cyctab],[data-cycday],[data-famtab],[data-famgo],[data-cycnote],[data-rttab],[data-rtwho],[data-rtopen],[data-rttick],[data-rtday],[data-rtnew],[data-rtedit],[data-rtdel],[data-rtset],[data-rtstepadd],[data-rtstepdel],[data-rtmove],[data-rtowntick],[data-rtstreak],[data-chorewho],[data-choreown],[data-choreownadd],[data-choreowndel],[data-chorewhen],[data-chorewhenpick]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -5179,6 +5195,26 @@ function initControls() {
       store.rtOpen = '';
     } else if (t.dataset.rtopen !== undefined) {
       store.rtOpen = t.dataset.rtopen || '';
+    } else if (t.dataset.chorewho) {
+      store.choreWho = t.dataset.chorewho;
+    } else if (t.dataset.choreownadd) {
+      const f = document.getElementById('chownlabel');
+      const a = document.getElementById('chownarea');
+      const m = document.getElementById('chownage');
+      const st = document.getElementById('chownstars');
+      const p = chorePerson(store.chorePick && store.chorePick.personId);
+      const row = choreOwnAdd(f ? f.value : '', a ? a.value : 'tidy',
+        m ? m.value : 36, st ? st.value : 1, !!(p && p.kind === 'adult'));
+      if (row && f) f.value = '';
+      store.choreOwnOpen = false;
+    } else if (t.dataset.choreown) {
+      store.choreOwnOpen = t.dataset.choreown === 'open';
+    } else if (t.dataset.choreowndel) {
+      choreOwnDel(t.dataset.choreowndel);
+    } else if (t.dataset.chorewhenpick) {
+      store.choreWhenPick = t.dataset.chorewhenpick;
+    } else if (t.dataset.chorewhen) {
+      choreJobSetWhen(t.dataset.chorewhen, t.dataset.val || 'any');
     } else if (t.dataset.rtnew) {
       rtOwnNew(rtWho());
     } else if (t.dataset.rtedit !== undefined) {
@@ -24115,6 +24151,10 @@ function homeTile(opt) {
    out, both without leaving Home.
    ================================================================== */
 function homeJobsWidget(whoId, title) {
+  /* Opening the chart from one person's widget should land on that
+     person, not on everybody. This is the fix for the thing she
+     found: the widget was right and the screen it opened was not. */
+  if (whoId && whoId !== 'all') store.choreOpenWho = whoId;
   const day = choreTodayIndex();
   const key = ciToday();
   const people = chorePeople()
@@ -29798,6 +29838,12 @@ function parentPayload() {
        is still being told the bins need doing. The ticks travel too,
        for exactly that reason. */
     choreJobs: store.choreJobs || [],
+    /* Jobs this family wrote themselves travel with the chart, or one
+       parent's phone shows a row the other's cannot name. */
+    choresOwn: store.choresOwn || [],
+    routinesOwn: store.routinesOwn || [],
+    routineDoneOwn: store.routineDoneOwn || {},
+    rtStreak: store.rtStreak === true,
     choreDone: store.choreDone || {},
     choreAdults: store.choreAdults || [],
     choreStarsOn: store.choreStarsOn !== false,
@@ -32658,7 +32704,13 @@ function choreAdd(choreId, personId, days) {
       found.days = merged.sort((a, b) => a - b);
     }
   } else {
-    store.choreJobs.push({ id: choreNewId(), choreId: choreId, personId: personId, days: want });
+    store.choreJobs.push({
+      id: choreNewId(), choreId: choreId, personId: personId, days: want,
+      /* The time of day chosen above the list rides along, so a run of
+         morning jobs is added as morning jobs rather than one at a
+         time afterwards. */
+      when: store.choreWhenPick || 'any',
+    });
   }
   store.parentUpdatedAt = Date.now();
   saveStore();
@@ -32763,6 +32815,13 @@ function listJoin(arr) {
 
 /* ---------------- THE BOARD ---------------- */
 function screenChores() {
+  /* Arriving from one person's widget opens on that person. Consumed
+     rather than remembered, so the filter is hers to change after. */
+  if (store.choreOpenWho) {
+    store.choreWho = store.choreOpenWho;
+    store.choreOpenWho = '';
+  }
+  choreSyncOwn();
   /* TWO TABS, NOT FOUR.
 
      Today, The week, Who does what and How to start were four screens
@@ -32802,6 +32861,110 @@ function screenChores() {
   </div>`;
 }
 
+/* ==================================================================
+   JOBS: WHOSE, WHEN, AND YOUR OWN
+
+   Three things she found, all on one screen.
+
+   1. The chart showed everybody. She tapped Hartlee's jobs widget and
+      landed on a list of her own, Stetson's and Hartlee's together.
+      The widget was right; the screen it opened was not filtered at
+      all.
+   2. The picker was already age-correct and she had never seen it
+      working, because she only ever landed on the unfiltered list.
+   3. The catalogue cannot know a particular house, so she can write
+      her own now.
+   ================================================================== */
+
+/* ---------- her own jobs ---------- */
+function choreOwnList() {
+  if (!Array.isArray(store.choresOwn)) store.choresOwn = [];
+  return store.choresOwn;
+}
+
+/* The data module stays pure, so the app hands it her list rather
+   than the module reaching into storage. Called before anything
+   reads the catalogue. */
+function choreSyncOwn() {
+  try { choreSetExtra(choreOwnList()); } catch (e) { /* older build */ }
+}
+
+function choreOwnAdd(label, area, months, stars, adult) {
+  const clean = String(label || '').replace(/\s+/g, ' ').trim().slice(0, 50);
+  if (!clean) return null;
+  const row = {
+    id: 'own-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+    label: clean,
+    area: area || 'tidy',
+    minMonths: adult ? 0 : Math.max(16, Math.min(216, Math.round(Number(months) || 36))),
+    minutes: 5,
+    stars: Math.max(1, Math.min(9, Math.round(Number(stars) || 1))),
+    own: true,
+  };
+  if (adult) row.adult = true;
+  choreOwnList().push(row);
+  choreSyncOwn();
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+  return row;
+}
+
+function choreOwnDel(id) {
+  store.choresOwn = choreOwnList().filter((c) => c.id !== id);
+  /* Any job on the chart pointing at it goes too, or the chart keeps
+     a row that can no longer name itself. */
+  store.choreJobs = (store.choreJobs || []).filter((j) => j.choreId !== id);
+  choreSyncOwn();
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+}
+
+/* ---------- who the chart is showing ---------- */
+function choreWho() {
+  const w = store.choreWho;
+  if (!w || w === 'all') return 'all';
+  return chorePerson(w) ? w : 'all';
+}
+
+/* ---------- when in the day ---------- */
+function choreJobWhen(j) {
+  const w = j && j.when;
+  return CHORE_WHEN.some((x) => x.id === w) ? w : 'any';
+}
+
+function choreJobSetWhen(jobId, when) {
+  const j = (store.choreJobs || []).filter((x) => x.id === jobId)[0];
+  if (!j) return;
+  j.when = when;
+  store.parentUpdatedAt = Date.now();
+  flushStore();
+}
+
+/* The people row at the top of the chart, same shape as the calendar's
+   so the two screens feel like one app. */
+function choreWhoRow() {
+  const day = choreTodayIndex();
+  const key = ciToday();
+  const people = chorePeople().filter((p) => choreJobsFor(p.id, day).length);
+  if (people.length < 2) return '';
+  const cur = choreWho();
+  const chip = (id, name, n, done) => `
+    <button class="chwho${cur === id ? ' on' : ''}" data-chorewho="${esc(id)}">
+      <span class="chwho-n">${esc(name)}</span>
+      ${n ? `<span class="chwho-c">${done}/${n}</span>` : ''}
+    </button>`;
+  const allJobs = choreJobsOnDay(day);
+  return `
+  <div class="chwhorow">
+    ${chip('all', 'Everyone', allJobs.length,
+    allJobs.filter((j) => choreIsDone(j.id, key)).length)}
+    ${people.map((p) => {
+    const jobs = choreJobsFor(p.id, day);
+    return chip(p.id, p.name, jobs.length, jobs.filter((j) => choreIsDone(j.id, key)).length);
+  }).join('')}
+  </div>`;
+}
+
 function choreTodayTab() {
   const day = choreTodayIndex();
   const key = ciToday();
@@ -32816,14 +32979,28 @@ function choreTodayTab() {
       <p class="bodytext">Nothing is on the chart for ${esc(CHORE_DAYS[day].label.toLowerCase())}. That is allowed.
       One clear day a week is a good idea rather than an oversight.</p>
     </div>` : ''}
-  ${people.map((p) => {
+  ${choreWhoRow()}
+
+  ${/* FILTERED, AND GROUPED BY WHEN.
+
+        It listed every person every time, which is how tapping one
+        child's jobs showed the whole household. And eight jobs in one
+        list is eight things at once rather than three before school
+        and five after. */''}
+  ${(choreWho() === 'all' ? people : people.filter((p) => p.id === choreWho())).map((p) => {
     const jobs = choreJobsFor(p.id, day);
     if (!jobs.length) return '';
     const doneN = jobs.filter((j) => choreIsDone(j.id, key)).length;
+    const groups = CHORE_WHEN.map((w) => ({
+      w: w, jobs: jobs.filter((j) => choreJobWhen(j) === w.id),
+    })).filter((g) => g.jobs.length);
+    const split = groups.length > 1;
     return `
     <div class="dsec">
-      <h4>${esc(p.name)} ${esc(doneN + ' of ' + jobs.length)}${p.kind === 'child' ? esc(' ') : ''}</h4>
-      ${jobs.map((j) => choreTickRow(j, key)).join('')}
+      <h4>${esc(p.name)} ${esc(doneN + ' of ' + jobs.length)}</h4>
+      ${groups.map((g) => `
+        ${split ? `<p class="chwhen">${icon(g.w.icon, 12, 'var(--sage)')} ${esc(g.w.label)}</p>` : ''}
+        ${g.jobs.map((j) => choreTickRow(j, key)).join('')}`).join('')}
     </div>`;
   }).join('')}
   ${choreStarsOn() ? `
@@ -33093,6 +33270,42 @@ function chorePicker() {
         aria-pressed="${pat === pt.id}">${esc(pt.id === 'day'
     ? 'Just ' + CHORE_DAYS[day].label : pt.label)}</button>`).join('')}
   </div>
+
+  ${/* WHEN IN THE DAY, chosen once and carried by everything added
+        below it, the same way the pattern is. */''}
+  <p class="sect" style="margin-top:4px">When</p>
+  <div class="fcscroll" style="padding-bottom:10px">
+    ${CHORE_WHEN.map((w) => `
+      <button class="chip${(store.choreWhenPick || 'any') === w.id ? ' on' : ''}"
+        data-chorewhenpick="${esc(w.id)}"
+        aria-pressed="${(store.choreWhenPick || 'any') === w.id}">${esc(w.label)}</button>`).join('')}
+  </div>
+
+  ${/* HER OWN, BECAUSE A CATALOGUE CANNOT KNOW A HOUSE. */''}
+  ${store.choreOwnOpen ? `
+  <div class="card" style="margin-bottom:12px">
+    <p class="eyebrow">${icon('plus', 11, 'var(--sage)')} Write your own</p>
+    <input id="chownlabel" class="inp" style="margin-top:8px;width:100%" maxlength="50"
+      placeholder="What it is, in your words">
+    <div class="bpbar" style="margin-top:9px">
+      <select id="chownarea" class="inp">
+        ${CHORE_AREAS.map((a) => `<option value="${esc(a.id)}">${esc(a.label)}</option>`).join('')}
+      </select>
+      <input id="chownstars" class="inp" type="number" inputmode="numeric" min="1" max="9"
+        value="1" aria-label="Stars">
+    </div>
+    ${p.kind === 'child' ? `
+    <p class="tiny" style="margin-top:9px">Old enough from, in months</p>
+    <input id="chownage" class="inp" type="number" inputmode="numeric" min="16" max="216"
+      value="${esc(String(p.months != null ? p.months : 36))}" style="margin-top:5px;width:100%">` : ''}
+    <p class="tiny" style="margin-top:9px">${esc(CHORE_OWN_NOTE)}</p>
+    <div class="bpbar" style="margin-top:11px">
+      <button class="btn" data-choreownadd="1">Add it</button>
+      <button class="btn ghost" data-choreown="close">Cancel</button>
+    </div>
+  </div>` : `
+  <button class="btn ghost" style="width:100%;margin-bottom:12px" data-choreown="open">
+    ${icon('plus', 14, 'var(--deep)')} Write your own job</button>`}
 
   ${groups.map((g) => `
     <div class="dsec">
@@ -35165,6 +35378,8 @@ function willowPanel() {
 window.addEventListener('resize', () => { try { paintBackground(); } catch (e) {} });
 
 loadStore();
+/* Her own jobs join the catalogue before any screen reads it. */
+try { choreSyncOwn(); } catch (e) { /* nothing written yet */ }
 /* The community filter's rule list lives in communityRules.js and the
    filter lives in feed.js, which cannot reach it. Handed over once,
    here, before anything can post. */
