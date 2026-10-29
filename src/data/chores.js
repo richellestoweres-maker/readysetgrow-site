@@ -381,8 +381,28 @@ export function choreDaysLine(days) {
   return d.map((x) => CHORE_DAYS[x].short).join(', ');
 }
 
+/* ------------------------------------------------------------------
+   JOBS A FAMILY WRITES THEMSELVES
+
+   The catalogue is long and it still cannot know a particular house.
+   Her words: "sometimes there are things that are not even on here
+   that you would want to be able to add."
+
+   This module stays pure, so the app registers her own list here
+   rather than this file reaching into storage. Everything that reads
+   the catalogue reads both. */
+let CHORE_EXTRA = [];
+
+export function choreSetExtra(list) {
+  CHORE_EXTRA = Array.isArray(list) ? list.filter((c) => c && c.id && c.label) : [];
+}
+
+export function choreAll() {
+  return CHORE_EXTRA.length ? CHORES.concat(CHORE_EXTRA) : CHORES;
+}
+
 export function choreById(id) {
-  return CHORES.filter((c) => c.id === id)[0] || null;
+  return choreAll().filter((c) => c.id === id)[0] || null;
 }
 
 /* ------------------------------------------------------------------
@@ -420,7 +440,7 @@ export function choreOldEnough(months) {
 export function choresForMonths(months) {
   const m = Number(months);
   if (!isFinite(m)) return [];
-  return CHORES.filter((c) => !c.adult && m >= c.minMonths);
+  return choreAll().filter((c) => !c.adult && m >= c.minMonths);
 }
 
 /* ------------------------------------------------------------------
@@ -505,11 +525,11 @@ export function choreAgeLine(months, name) {
 export function choresNewlyPossible(months, windowMonths = 6) {
   const m = Number(months);
   if (!isFinite(m)) return [];
-  return CHORES.filter((c) => !c.adult && c.minMonths <= m && c.minMonths > m - windowMonths);
+  return choreAll().filter((c) => !c.adult && c.minMonths <= m && c.minMonths > m - windowMonths);
 }
 
 export function adultChores() {
-  return CHORES.filter((c) => !!c.adult);
+  return choreAll().filter((c) => !!c.adult);
 }
 
 export function choreAreaLabel(id) {
@@ -530,3 +550,29 @@ export function choresByArea(list) {
 }
 
 export default CHORES;
+
+
+/* ------------------------------------------------------------------
+   WHEN IN THE DAY
+
+   Her note: some jobs are morning jobs and the chart said nothing
+   about it, so a list of eight was eight things to do at once rather
+   than three before school and five after. Lives on the JOB rather
+   than the chore, because the same job is a morning one in one house
+   and an after school one in another.
+   ------------------------------------------------------------------ */
+export const CHORE_WHEN = [
+  { id: 'morning', label: 'Morning', icon: 'sun' },
+  { id: 'afternoon', label: 'Afternoon', icon: 'home' },
+  { id: 'evening', label: 'Evening', icon: 'moon' },
+  { id: 'any', label: 'Any time', icon: 'clock' },
+];
+
+export function choreWhenLabel(id) {
+  const w = CHORE_WHEN.filter((x) => x.id === id)[0];
+  return w ? w.label : 'Any time';
+}
+
+export const CHORE_OWN_NOTE =
+  'Yours, on this household only. It behaves like any other job: give it an age if it is for a '
+  + 'child, and it shows up for anybody old enough.';
