@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="A parenting companion that answers what is happening with your child and what you can actually do about it, from pregnancy through eighteen, on one continuous profile.">
-<meta name="rsg-build" content="2026-10-29 21:20">
+<meta name="rsg-build" content="2026-10-29 21:32">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#F7F5EF" media="(prefers-color-scheme:light)">
 <meta name="theme-color" content="#16180F" media="(prefers-color-scheme:dark)">
@@ -2507,7 +2507,15 @@ body.calpage .mark-holder{margin-bottom:-20px}
   border-radius:999px;padding:3px;margin-bottom:14px;overflow-x:auto;
   scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .segs::-webkit-scrollbar{display:none}
-.seg{flex:1 1 auto;min-width:0;appearance:none;border:0;background:none;cursor:pointer;
+/* flex:1 1 auto with min-width:0 let a pill shrink narrower than its
+   own label, and white-space:nowrap then spilled the text out of the
+   box and across its neighbour. On a strip of five long labels, such
+   as the night light tabs, every word sat on top of the next one.
+
+   1 0 auto means they share the space when there is room and never
+   shrink past their text when there is not, and the container
+   scrolls sideways instead. */
+.seg{flex:1 0 auto;appearance:none;border:0;background:none;cursor:pointer;
   font:inherit;font-size:12.5px;font-weight:600;color:var(--body);padding:7px 13px;
   border-radius:999px;white-space:nowrap;line-height:1.3;
   transition:background .14s,color .14s}
@@ -2948,7 +2956,7 @@ body.locked .tabs,body.locked .corner-right{display:none!important}
 <script>
 "use strict";
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-29 21:20';
+const BUILD_STAMP = '2026-10-29 21:32';
 const palette = {
     cream: '#F7F5EF',
     creamDeep: '#EFEBE1',
@@ -56814,7 +56822,18 @@ function initControls() {
         }
         else if (t.dataset.kidsec !== undefined) {
             const k = activeChild();
-            store.kidSection = t.dataset.kidsec && k ? { kid: k.id, sec: t.dataset.kidsec } : null;
+            if (t.dataset.kidsec) {
+                store.kidSection = { kid: k ? k.id : '', sec: t.dataset.kidsec, from: 'profile' };
+            }
+            else {
+                const from = store.kidSection && store.kidSection.from;
+                store.kidSection = null;
+                if (from === 'family') {
+                    store.profileWho = '';
+                    state.tab = 'family';
+                    state.view = null;
+                }
+            }
             window.scrollTo(0, 0);
             const scr = document.getElementById('screen');
             if (scr)
@@ -56999,7 +57018,8 @@ function initControls() {
                 store.profileWho = k.id;
                 state.tab = 'family';
                 state.view = null;
-                store.kidSection = t.dataset.sec ? { kid: k.id, sec: t.dataset.sec } : null;
+                store.kidSection = t.dataset.sec
+                    ? { kid: k.id, sec: t.dataset.sec, from: 'family' } : null;
             }
         }
         else if (t.dataset.cycnote) {
