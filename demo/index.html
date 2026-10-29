@@ -226,14 +226,43 @@ button.cal-d[data-logday]{border:0;font-family:inherit;cursor:pointer;font-size:
 /* ---------- IN-APP TYPE ---------- */
 .statusbar{display:flex;justify-content:space-between;padding:13px 22px 2px;font-size:11.5px;font-weight:600;color:var(--ink);opacity:.75}
 .sc{position:relative;z-index:1;padding:0 18px}
-.sc-head{padding:12px 18px 4px;position:relative;z-index:1;text-align:center}
+/* ------------------------------------------------------------------
+   THE SCREEN HEADER, REBUILT FROM HER MOCKUPS
+
+   Every mockup screen opens the same way: a small back chevron hard
+   left, a compact centred title, a line of subtitle under it, and a
+   botanical sprig in the top right. The app had a 33px serif headline
+   and no back affordance at all, which is a magazine, not an app.
+
+   Doing it in CSS rather than in markup means all 84 screens change
+   at once and none of them had to be rewritten. */
+.sc-head{padding:4px 44px 12px;position:relative;z-index:1;text-align:center;min-height:46px}
+.sc-head::after{
+  content:'';position:absolute;right:2px;top:0;width:44px;height:44px;
+  pointer-events:none;opacity:.5;background-repeat:no-repeat;background-size:contain;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%237C9068' stroke-width='1.3' stroke-linecap='round'%3E%3Cpath d='M52 6c-12 2-20 9-24 18'/%3E%3Cpath d='M50 14c-6-1-11 1-14 5 4 3 10 3 14-5z' fill='%23DCE4D2' stroke='none'/%3E%3Cpath d='M44 26c-6-2-11 0-14 5 5 2 11 1 14-5z' fill='%23EAEFE2' stroke='none'/%3E%3Cpath d='M53 22c-5 2-8 6-9 11 5 0 9-4 9-11z' fill='%23DCE4D2' stroke='none'/%3E%3C/g%3E%3C/svg%3E")}
+
+/* The back chevron sits in the gutter the padding above reserves, so
+   the title stays optically centred whether or not there is one. */
+.sc-head .back{position:absolute;left:-6px;top:0;min-height:40px;width:40px;padding:0;
+  justify-content:center;gap:0;font-size:0}
+.sc-head .back svg{width:19px;height:19px}
+
+.sc-head .title{font-size:20px;line-height:1.25;letter-spacing:-.005em}
+.sc-head .title.sm{font-size:19px}
+.sc-head .sub{margin-top:4px;font-size:12.5px;max-width:280px}
+.sc-head .eyebrow{margin-bottom:2px}
 .eyebrow{font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin:0 0 5px}
 .title{font-family:var(--serif);font-size:33px;font-weight:600;color:var(--ink);margin:0;letter-spacing:-.015em;line-height:1.14;text-wrap:balance}
 .title.sm{font-size:25px}
 .sub{margin:7px auto 0;font-size:13.5px;color:var(--muted);line-height:1.5;max-width:296px}
 .script{font-family:var(--script);font-size:17px;color:var(--taupe);line-height:1.25}
 .h3{font-family:var(--serif);font-size:18px;font-weight:600;color:var(--ink);margin:0 0 3px}
-.sect{font-family:var(--serif);font-size:17px;font-weight:600;color:var(--ink);margin:20px 0 9px;padding:0 2px}
+/* Her mockups label a section with a compact bold line, not a serif
+   subheading. The serif is for screen titles; inside a screen it was
+   competing with the card titles underneath it. */
+.sect{font-family:var(--sans);font-size:14.5px;font-weight:700;color:var(--ink);
+  margin:20px 0 9px;padding:0 2px;letter-spacing:-.005em}
 
 /* ---------- CARDS ---------- */
 .card{background:var(--surface);border-radius:20px;padding:15px 16px;margin-bottom:11px;box-shadow:0 3px 12px rgba(107,101,80,.07)}
@@ -2261,22 +2290,30 @@ body.calpage .mark-holder{margin-bottom:-20px}
 .pickgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 /* A grid holding one card still wants the full width. */
 .pickgrid.one{grid-template-columns:1fr;margin-top:0}
-.pickcard{position:relative;appearance:none;text-align:left;font:inherit;cursor:pointer;
+.pickcard{padding-right:30px;position:relative;appearance:none;text-align:left;font:inherit;cursor:pointer;
   background:#fff;border:1px solid rgba(74,103,65,.14);border-radius:18px;
   padding:13px 12px 11px;display:flex;flex-direction:column;gap:6px}
 .pickcard.urgent{background:#FCF2EE;border-color:#E6BFB3}
-.pickcard-ic{width:34px;height:34px;border-radius:50%;background:var(--leaf3);flex:none;
+.pickcard-ic{width:38px;height:38px;border-radius:12px;background:var(--leaf3);flex:none;
   display:flex;align-items:center;justify-content:center}
 .pickcard.urgent .pickcard-ic{background:rgba(255,255,255,.75)}
-.pickcard-t{font-size:15px;font-weight:700;color:var(--ink);line-height:1.2}
+.pickcard-t{font-size:14.5px;font-weight:700;color:var(--ink);line-height:1.25}
 .pickcard.urgent .pickcard-t{color:#8A4433}
-.pickcard-b{font-size:11.5px;line-height:1.45;color:var(--muted);flex:1}
+.pickcard-b{font-size:12px;line-height:1.45;color:var(--muted);flex:1}
 .pickcard-tag{align-self:flex-start;font-size:10px;font-weight:700;letter-spacing:.04em;
   text-transform:uppercase;color:#A85A44;background:rgba(255,255,255,.8);
   border-radius:999px;padding:3px 8px}
-.pickcard-go{display:flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;
-  color:var(--deep);padding-top:8px;border-top:1px solid var(--line2)}
-.pickcard.urgent .pickcard-go{color:#8A4433;border-top-color:rgba(168,90,68,.2)}
+/* THE "OPEN" STRIP IS GONE.
+
+   Every tile carried a bordered footer saying Open, which is a web
+   page's "read more". Her mockups put a chevron at the top right of a
+   tappable tile and let the whole tile be the target, which is both
+   quieter and the thing a thumb actually hits. */
+.pickcard-go{display:none}
+.pickcard::after{content:'';position:absolute;top:17px;right:13px;width:7px;height:7px;
+  border-right:1.8px solid var(--faint);border-bottom:1.8px solid var(--faint);
+  transform:rotate(-45deg);opacity:.8}
+.pickcard:hover::after{border-color:var(--deep)}
 .pickcard:focus-visible{outline:2px solid var(--deep);outline-offset:2px}
 @media (max-width:360px){.pickgrid{grid-template-columns:1fr}}
 
@@ -2524,11 +2561,47 @@ body.calpage .mark-holder{margin-bottom:-20px}
   font:inherit;min-width:0}
 .qtile:hover{border-color:var(--leaf)}
 .qtile.on{background:var(--sage);border-color:var(--sage)}
-.qtile-ic{display:flex;align-items:center;justify-content:center}
+.qtile-ic{display:flex;align-items:center;justify-content:center;width:34px;height:34px;
+  border-radius:11px;background:var(--leaf3)}
+.quickgrid .qtile:nth-child(1) .qtile-ic{background:#FBEDE9}
+.quickgrid .qtile:nth-child(2) .qtile-ic{background:#EDF2F5}
+.quickgrid .qtile:nth-child(3) .qtile-ic{background:#FAF3E4}
+.quickgrid .qtile:nth-child(4) .qtile-ic{background:#F1F4EB}
+.qtile.on .qtile-ic{background:rgba(255,255,255,.22)}
 .qtile-t{font-size:10.5px;font-weight:600;color:var(--body);line-height:1.2;text-align:center;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
 .qtile.on .qtile-t{color:#fff}
 @media (max-width:340px){.qtile-t{font-size:9.5px}}
+
+/* ------------------------------------------------------------------
+   SEGMENTED TABS
+
+   On her mockups the sub tabs are a segmented control: one soft
+   container, the chosen one filled dark green, the rest plain text.
+   They were outlined chips of equal weight, which makes you read all
+   four to find out where you are. */
+.segs{display:flex;gap:3px;background:var(--leaf3);border:1px solid var(--line2);
+  border-radius:999px;padding:3px;margin-bottom:14px;overflow-x:auto;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.segs::-webkit-scrollbar{display:none}
+.seg{flex:1 1 auto;min-width:0;appearance:none;border:0;background:none;cursor:pointer;
+  font:inherit;font-size:12.5px;font-weight:600;color:var(--body);padding:7px 13px;
+  border-radius:999px;white-space:nowrap;line-height:1.3;
+  transition:background .14s,color .14s}
+.seg:hover{color:var(--deep)}
+.seg[aria-pressed="true"]{background:var(--deep);color:#fff;font-weight:700}
+
+/* ------------------------------------------------------------------
+   PASTEL ICON TILES
+
+   Rounded squares, not circles, and a different soft colour per item
+   the way her mockups do it. The colour is decoration, never the only
+   way something is marked, so nothing depends on seeing it. */
+.pickgrid .pickcard:nth-child(5n+1) .pickcard-ic{background:#FBEDE9}
+.pickgrid .pickcard:nth-child(5n+2) .pickcard-ic{background:#EDF2F5}
+.pickgrid .pickcard:nth-child(5n+3) .pickcard-ic{background:#F1F4EB}
+.pickgrid .pickcard:nth-child(5n+4) .pickcard-ic{background:#FAF3E4}
+.pickgrid .pickcard:nth-child(5n+5) .pickcard-ic{background:#F2EEF6}
 
 /* The greeting, the way a person says hello: one line, at the left. */
 .hgreet{display:flex;align-items:flex-start;gap:11px;padding:4px 2px 14px}
@@ -2606,7 +2679,7 @@ body.calpage .mark-holder{margin-bottom:-20px}
 
 <script>
 const Platform = { select: (o) => o.default !== undefined ? o.default : o.ios };
-const BUILD_STAMP = '2026-10-29 20:22';
+const BUILD_STAMP = '2026-10-29 20:36';
 
 /* ===== src/theme/theme.js ===== */
 /**
@@ -68670,9 +68743,13 @@ function giveUpRestoring() {
    ================================================================= */
 
 /* A small tab strip shared by the pumping and postpartum screens. */
+/* A segmented control, the shape her mockups use everywhere. One
+   container, the chosen one filled, the rest plain. Same data-sub
+   contract as before, so every screen that calls this gets the new
+   look without being touched. */
 function subTabs(group, current, tabs) {
-  return `<div class="chips" style="margin-bottom:12px">${tabs.map((t) => `
-    <button class="chip" data-sub="${esc(group)}" data-val="${esc(t.id)}"
+  return `<div class="segs" role="tablist">${tabs.map((t) => `
+    <button class="seg" role="tab" data-sub="${esc(group)}" data-val="${esc(t.id)}"
       aria-pressed="${current === t.id}">${esc(t.label)}</button>`).join('')}</div>`;
 }
 
