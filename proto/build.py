@@ -114,6 +114,7 @@ order = [
     ('cycle',               SRC/'data/cycle.js'),
     ('repro',               SRC/'data/repro.js'),
     ('treatment',           SRC/'data/treatment.js'),
+    ('safetyHub',           SRC/'data/safetyHub.js'),
     ('cycleLog',            SRC/'data/cycleLog.js'),
     ('sexEd',               SRC/'data/sexEd.js'),
     ('willowShort',         SRC/'data/willowShort.js'),

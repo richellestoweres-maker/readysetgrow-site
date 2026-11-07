@@ -2690,6 +2690,133 @@ body.calpage .mark-holder{margin-bottom:-20px}
   justify-content:center;flex:none}
 /* Scoped names. "sky" already belongs to the night sky behind the
    fireflies, and an unscoped one painted this tile a dark gradient. */
+
+/* ==================================================================
+   THE SAFETY HUB
+
+   One tint set shared by the hub tiles, the quick tool tiles and the
+   icon squares on the list rows, so a topic is the same colour
+   wherever it appears. The four that existed for the family quick
+   actions are kept and eight more join them.
+   ================================================================== */
+.tint-gold{background:#FAF0D7}
+.tint-rose{background:#FBE9E7}
+.tint-sky{background:#E5EEF6}
+.tint-sage{background:#EAEFE2}
+.tint-aqua{background:#DFEFEE}
+.tint-amber{background:#FBEBDA}
+.tint-indigo{background:#E6E9F6}
+.tint-violet{background:#EFE8F5}
+.tint-coral{background:#FAE3E0}
+.tint-plum{background:#F3E6EE}
+.tint-moss{background:#E4EEE0}
+.tint-clay{background:#F3E9E1}
+
+/* THE HUB GRID. Three across on a phone, which is what her mockup
+   shows, and the tile is square-ish so twelve of them read as one
+   board rather than a list. */
+.shgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:4px 0 2px}
+.shtile{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  gap:7px;padding:13px 7px 12px;background:var(--card,#fff);border:1px solid var(--line2);
+  border-radius:16px;cursor:pointer;text-align:center;min-height:96px;
+  transition:transform .12s ease,box-shadow .12s ease}
+.shtile:active{transform:scale(.97)}
+.shtile:hover{box-shadow:0 2px 10px rgba(44,49,38,.07)}
+.shtile-ic{display:flex;align-items:center;justify-content:center;width:40px;height:40px;
+  border-radius:13px;flex:0 0 auto}
+.shtile-t{font-size:11.5px;font-weight:650;color:var(--ink);line-height:1.25;
+  letter-spacing:.005em}
+
+/* The search box above it. */
+.shsearch{display:flex;align-items:center;gap:8px;padding:10px 13px;margin-bottom:12px;
+  background:var(--card,#fff);border:1px solid var(--line2);border-radius:14px}
+.shsearch-i{flex:1;min-width:0;border:0;background:none;outline:none;font:inherit;
+  font-size:14px;color:var(--ink)}
+.shsearch-i::placeholder{color:var(--muted)}
+.shsearch-x{border:0;background:none;padding:2px;cursor:pointer;display:flex}
+
+/* The one thing the hub says unprompted: a seat with a date on it. */
+.shbanner{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  padding:11px 13px;margin-bottom:12px;border-radius:14px;cursor:pointer;
+  background:#F4F0E4;border:1px solid #E3DCC8}
+.shbanner.bad{background:#FBEAE6;border-color:#F0D2CB}
+.shbanner-ic{display:flex;flex:0 0 auto}
+.shbanner-t{display:block;font-size:13.5px;font-weight:650;color:var(--ink);line-height:1.3}
+.shbanner-b{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+
+/* The numbers you ring. Big enough to hit while shaking. */
+.shnums{display:grid;grid-template-columns:1fr;gap:9px;margin-bottom:14px}
+.shnum{display:block;padding:13px 15px;border-radius:15px;text-decoration:none;
+  background:var(--leaf3,#F1F4EB);border:1px solid var(--line2)}
+.shnum.urgent{background:#FBEAE6;border-color:#F0D2CB}
+.shnum-n{display:block;font-family:var(--serif, 'Playfair Display', serif);
+  font-size:22px;font-weight:700;color:var(--deep);letter-spacing:.01em;
+  font-variant-numeric:tabular-nums}
+.shnum.urgent .shnum-n{color:#8C3B2E}
+.shnum-b{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+
+.poisoncard{display:block;padding:15px 16px;margin-bottom:14px;border-radius:16px;
+  text-decoration:none;background:#FBEAE6;border:1px solid #F0D2CB}
+.poisoncard-k{display:block;font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
+  font-weight:700;color:#8C3B2E}
+.poisoncard-n{display:block;margin-top:5px;font-family:var(--serif, 'Playfair Display', serif);
+  font-size:25px;font-weight:700;color:#8C3B2E;font-variant-numeric:tabular-nums}
+.poisoncard-b{display:block;margin-top:4px;font-size:12px;color:var(--body,#5A6052)}
+
+/* ASK WILLOW, the card her mockups put at the foot of a topic. */
+.wask{display:flex;align-items:center;gap:11px;width:100%;text-align:left;margin-top:14px;
+  padding:13px 14px;border-radius:16px;cursor:pointer;
+  background:var(--leaf3,#F1F4EB);border:1px solid var(--line2)}
+.wask-ic{display:flex;align-items:center;justify-content:center;width:34px;height:34px;
+  border-radius:11px;background:var(--leaf2,#EAEFE2);flex:0 0 auto}
+.wask-t{display:block;font-size:13.5px;font-weight:650;color:var(--deep);line-height:1.3}
+.wask-b{display:block;font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.4}
+.wask-go{display:flex;flex:0 0 auto}
+
+/* A CAR SEAT THIS FAMILY OWNS. */
+.seatcard{padding:14px 15px;margin-bottom:10px;border-radius:17px;overflow:hidden;
+  background:var(--card,#fff);border:1px solid var(--line2)}
+.seatcard.warn{border-color:#E3DCC8;background:#FBF8F0}
+.seatcard.bad{border-color:#F0D2CB;background:#FDF4F2}
+/* THE NAME, THE KIND AND THE EDIT BUTTON ON ONE LINE.
+
+   A flex item will not shrink below its own content unless it is told
+   it may, so a long seat name pushed Edit off the card and out past
+   the right hand edge. min-width:0 is the whole fix. */
+/* THE NAME, THE KIND AND EDIT ON ONE LINE.
+
+   Flex fought this twice. The base .btn carries width:100%, so Edit
+   ate the row and squeezed the name down to one letter per line. A
+   grid with a named middle column cannot be argued with: the icon and
+   the button take exactly what they need and the name takes the rest. */
+.seatcard-h{display:grid;grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;gap:10px;margin-bottom:11px}
+.seatcard-ic{display:flex;align-items:center;justify-content:center;width:36px;height:36px;
+  border-radius:12px;background:#E5EEF6;flex:0 0 auto}
+.seatcard-t{display:block;font-size:15px;font-weight:650;color:var(--ink);line-height:1.3;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seatcard-s{display:block;font-size:11.5px;color:var(--muted);margin-top:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seatrow{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+  padding:7px 0;border-top:1px solid var(--line2)}
+.seatrow-k{font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;
+  color:var(--muted);flex:0 0 auto}
+.seatrow-v{font-size:13px;color:var(--ink);text-align:right;font-weight:600;min-width:0}
+.seatrow-sub{display:block;font-size:11px;font-weight:500;color:var(--muted);margin-top:1px}
+.seatrow-v.seat-expired{color:#8C3B2E}
+.seatrow-v.seat-soon{color:#8A6A2F}
+.seatrow-v.seat-ok{color:var(--deep)}
+.seatrow-v.seat-unknown{color:var(--muted);font-weight:500}
+.seatgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seatnow{display:inline-block;margin-left:7px;padding:2px 8px;border-radius:999px;
+  background:var(--leaf2,#EAEFE2);color:var(--deep);font-size:10.5px;font-weight:700;
+  letter-spacing:.03em;vertical-align:middle;text-transform:none}
+.btn.xs{width:auto;min-height:0;padding:6px 13px;font-size:11.5px;border-radius:9px;
+  flex:0 0 auto;box-shadow:none}
+
+@media (max-width:360px){
+  .shgrid{grid-template-columns:repeat(2,1fr)}
+}
 .famq-ic.tint-gold{background:#FAF0D7}
 .famq-ic.tint-rose{background:#FBE9E7}
 .famq-ic.tint-sky{background:#E7EFF4}

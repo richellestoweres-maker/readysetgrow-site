@@ -40,6 +40,7 @@ const ICON = {
   gear:'<circle cx="12" cy="12" r="3.1"/><path d="M19.1 14.6a1.6 1.6 0 0 0 .3 1.8l.1.1a1.9 1.9 0 1 1-2.7 2.7l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5v.2a1.9 1.9 0 1 1-3.8 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a1.9 1.9 0 1 1-2.7-2.7l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1h-.2a1.9 1.9 0 1 1 0-3.8h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a1.9 1.9 0 1 1 2.7-2.7l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5v-.2a1.9 1.9 0 1 1 3.8 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a1.9 1.9 0 1 1 2.7 2.7l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1h.2a1.9 1.9 0 1 1 0 3.8h-.1a1.6 1.6 0 0 0-1.5 1Z"/>',
   camera:'<path d="M3.5 8.5h3l1.6-2.4h6.8L16.5 8.5h4a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5h-17A1.5 1.5 0 0 1 2 18v-8a1.5 1.5 0 0 1 1.5-1.5Z"/><circle cx="12" cy="13.6" r="3.4"/>',
   close:'<path d="M6 6l12 12M18 6L6 18"/>',
+  car:'<path d="M3.4 16.2v-3.1l1.9-4.3A2 2 0 0 1 7.1 7.6h9.8a2 2 0 0 1 1.8 1.2l1.9 4.3v3.1"/><path d="M3.4 13.1h17.2"/><circle cx="7.3" cy="16.4" r="1.6"/><circle cx="16.7" cy="16.4" r="1.6"/><path d="M4.6 18v1.3"/><path d="M19.4 18v1.3"/>',
   flower:'<circle cx="12" cy="10" r="2.1"/><path d="M12 7.9c0-2 .8-3.6 2-3.6s1.4 2 .4 3.3M12 7.9c0-2-.8-3.6-2-3.6s-1.4 2-.4 3.3M14.1 10c2 0 3.6.8 3.6 2s-2 1.4-3.3.4M9.9 10c-2 0-3.6.8-3.6 2s2 1.4 3.3.4M12 12.1V20M12 16c1.6 0 3-1 3.4-2"/>',
 };
 
@@ -1065,6 +1066,11 @@ function newChildRecord(name, birthday) {
        always stored in kilograms and centimeters whatever the parent
        reads. See src/data/growth.js. */
     growth: [],
+    /* The car seats this child actually sits in, each with the make,
+       the model, the date it was made and the date it runs out. On
+       their own record, so it syncs with everything else about them
+       and needs nothing added to any key list. See safetyHub.js. */
+    seats: [],
     /* Logs belong to the child rather than to the app, which is what
        structurally stops one child's feeds turning up under a sibling. */
     logs: [],
@@ -1463,6 +1469,12 @@ const state = {};
  'cycTab', 'cyclogDate', 'famTab', 'rtTab', 'rtWho', 'rtOpen', 'rtEdit',
  'routinesOwn', 'routineDoneOwn', 'rtStreak',
  'choresOwn', 'choreWho', 'choreOwnOpen', 'choreOpenWho', 'choreWhenPick',
+ /* THE SAFETY HUB. seatTab, homeTab, medTab, heatTab, prepTab,
+    sitterTab and lostTab are all data-sub keys, and the build gate
+    refuses to finish if one of them is missing from this list. See
+    src/data/safetyHub.js. */
+ 'seatTab', 'seatEdit', 'seatGuessYears', 'safetyQuery',
+ 'homeTab', 'medTab', 'heatTab', 'prepTab', 'sitterTab', 'lostTab',
  'logDraft', 'draftChildName', 'draftChildBday', 'draftExpecting'].forEach((key) => {
   Object.defineProperty(state, key, {
     enumerable: true,
@@ -1500,6 +1512,14 @@ function flushStore() {
       memDayHidden: store.memDayHidden,
       installHidden: store.installHidden,
       choreJobs: store.choreJobs,
+      /* WHOSE LOGS THE SCREEN IS SHOWING.
+
+         Left out of this list, so it reset to 'me' on every reload.
+         Her own log list carries a Medication tile of its own, so a
+         dose saved under a child the day before came back looking
+         like it had been lost, when it was sitting on the child the
+         whole time and the screen was showing somebody else. */
+      logWho: store.logWho,
       /* WRITTEN BY THIS FAMILY, AND NOT IN ANY CATALOGUE.
 
          This list is the only copy of a job or a routine she wrote
@@ -1643,6 +1663,10 @@ function loadStore() {
     store.memDayHidden = typeof saved.memDayHidden === 'string' ? saved.memDayHidden : '';
     store.installHidden = typeof saved.installHidden === 'string' ? saved.installHidden : '';
     store.choreJobs = Array.isArray(saved.choreJobs) ? saved.choreJobs : [];
+    /* Writing it in flushStore is only half the job: this function
+       restores key by key, so a key missing HERE comes back empty even
+       though it was saved. See the note beside logWho in flushStore. */
+    store.logWho = typeof saved.logWho === 'string' ? saved.logWho : '';
     store.choresOwn = Array.isArray(saved.choresOwn) ? saved.choresOwn : [];
     store.routinesOwn = Array.isArray(saved.routinesOwn) ? saved.routinesOwn : [];
     store.routineDoneOwn = (saved.routineDoneOwn && typeof saved.routineDoneOwn === 'object')
@@ -2878,7 +2902,8 @@ function render() {
   /* Screens that only make sense inside one child. Reaching one with no
      child open sends you to the picker rather than to an empty screen. */
   const CHILD_SCOPED = ['milestones', 'activities', 'topics', 'understand', 'feeding',
-    'safety', 'plan', 'sleep', 'development', 'checkins', 'potty', 'sleepfound', 'bumplabor'];
+    'safety', 'plan', 'sleep', 'development', 'checkins', 'potty', 'sleepfound', 'bumplabor',
+    'carseat'];
   if (v && v.type === 'screen' && CHILD_SCOPED.indexOf(v.id) !== -1 && !activeChild()) {
     v = null; state.view = null; state.tab = 'home';
   }
@@ -2902,6 +2927,15 @@ function render() {
   else if (v && v.type === 'screen' && v.id === 'topics') html = screenTopics(c);
   else if (v && v.type === 'screen' && v.id === 'feeding') html = screenFeeding(c);
   else if (v && v.type === 'screen' && v.id === 'safety') html = screenSafety(c);
+  else if (v && v.type === 'screen' && v.id === 'safetyhub') html = screenSafetyHub(c);
+  else if (v && v.type === 'screen' && v.id === 'carseat') html = screenCarSeat(c);
+  else if (v && v.type === 'screen' && v.id === 'cpst') html = screenCpst(c);
+  else if (v && v.type === 'screen' && v.id === 'homesafe') html = screenHomeSafe(c);
+  else if (v && v.type === 'screen' && v.id === 'medsafe') html = screenMedSafe(c);
+  else if (v && v.type === 'screen' && v.id === 'heatsafe') html = screenHeatSafe(c);
+  else if (v && v.type === 'screen' && v.id === 'prepared') html = screenPrepared(c);
+  else if (v && v.type === 'screen' && v.id === 'sittersafe') html = screenSitterSafe(c);
+  else if (v && v.type === 'screen' && v.id === 'lostchild') html = screenLostChild(c);
   else if (v && v.type === 'screen' && v.id === 'signs') html = screenSigns(c);
   else if (v && v.type === 'screen' && v.id === 'sharing') html = screenSharing(c);
   else if (v && v.type === 'screen' && v.id === 'diaperplan') html = screenDiapers(c);
@@ -3515,6 +3549,7 @@ function initControls() {
 
   /* Date inputs fire change, not input, so they get their own listener. */
   let bdayTimer = null;
+let safetyQTimer = null;
 
   document.addEventListener('change', (e) => {
     /* Routine times. A time input fires change rather than input, so
@@ -3567,6 +3602,10 @@ function initControls() {
       // under the person typing. Wait until they stop.
       if (bdayTimer) clearTimeout(bdayTimer);
       bdayTimer = setTimeout(render, 600);
+    } else if (e.target.matches && e.target.matches('[data-safetyq]')) {
+      store.safetyQuery = e.target.value || '';
+      if (safetyQTimer) clearTimeout(safetyQTimer);
+      safetyQTimer = setTimeout(render, 220);
     } else if (e.target.matches && e.target.matches('[data-calfield]')) {
       /* A time input reports through change as well as input depending
          on whether it was typed or picked from the wheel. Both land
@@ -3659,7 +3698,7 @@ function initControls() {
     }
     /* Work out what was clicked first, because the menu closing must
        never eat the tap that was meant to do something. */
-    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask],[data-obmore],[data-cyctab],[data-cycday],[data-famtab],[data-famgo],[data-cycnote],[data-rttab],[data-rtwho],[data-rtopen],[data-rttick],[data-rtday],[data-rtnew],[data-rtedit],[data-rtdel],[data-rtset],[data-rtstepadd],[data-rtstepdel],[data-rtmove],[data-rtowntick],[data-rtstreak],[data-chorewho],[data-choreown],[data-choreownadd],[data-choreowndel],[data-chorewhen],[data-chorewhenpick]');
+    const t = e.target.closest('[data-months],[data-lens],[data-lensopt],[data-tab],[data-go],[data-back],[data-ms],[data-filter],[data-naps],[data-routine],[data-sub],[data-bag],[data-out],[data-outclear],[data-outtrip],[data-share],[data-daycare],[data-ask],[data-child],[data-allprofiles],[data-addchild],[data-removechild],[data-profilebtn],[data-auth],[data-update],[data-willow],[data-combinechild],[data-notdupe],[data-logset],[data-logmulti],[data-logsave],[data-dellog],[data-export],[data-bday],[data-me],[data-face],[data-avatar],[data-edit],[data-msave],[data-ci],[data-photopick],[data-crop],[data-sit],[data-sitpath],[data-calledby],[data-refersto],[data-menugo],[data-arrival],[data-post],[data-menu],[data-cal],[data-pwdo],[data-cycle],[data-period],[data-period-del],[data-delmomlog],[data-momexport],[data-momci],[data-logwho],[data-logday],[data-logcal],[data-memopen],[data-memclose],[data-memkind],[data-mempick],[data-memsave],[data-memdel],[data-memvis],[data-memvisdraft],[data-memdrop],[data-memall],[data-memhide],[data-ob],[data-nudge],[data-feed],[data-fly],[data-plan],[data-install],[data-loss],[data-losskind],[data-lossask],[data-chore],[data-chorepat],[data-choreevery],[data-choreolder],[data-choreon],[data-learnband],[data-growth],[data-growthm],[data-vax],[data-push],[data-feedtag],[data-wpost],[data-signstage],[data-bodycare],[data-exit],[data-onlinestage],[data-growstage],[data-pub],[data-childperiod],[data-constage],[data-safety],[data-exp],[data-ttc],[data-ind],[data-birth],[data-cyclog],[data-sexed],[data-homeview],[data-mycycle],[data-short],[data-readfull],[data-find],[data-woffer],[data-kidsec],[data-cipop],[data-month],[data-early],[data-waketime],[data-fb],[data-nap],[data-tip],[data-rmode],[data-rstep],[data-fc],[data-agenew],[data-hs],[data-learnall],[data-daykind],[data-forgo],[data-hardtalk],[data-obwho],[data-obcalled],[data-obcount],[data-obsex],[data-obneed],[data-obneedsall],[data-commdismiss],[data-commappeal],[data-roomask],[data-caladd],[data-calopen],[data-calcancel],[data-calkind],[data-calwho],[data-calremind],[data-calrepeat],[data-caldaypick],[data-calclear],[data-calsave],[data-caldelete],[data-calfilter],[data-calshift],[data-calday],[data-calgo],[data-calsub],[data-ics],[data-calmeal],[data-mealpick],[data-mealsave],[data-mealclear],[data-mealcancel],[data-calfeed],[data-calsetcolor],[data-calweek],[data-callen],[data-calstep],[data-listnew],[data-listcancel],[data-listwho],[data-listmake],[data-liststart],[data-listopen],[data-listclose],[data-listpush],[data-listdelitem],[data-listtick],[data-listclear],[data-listaskdel],[data-listnodel],[data-listdel],[data-caljump],[data-caladdfor],[data-calgoday],[data-rewon],[data-rewoff],[data-rewkid],[data-rewadd],[data-rewspend],[data-rewown],[data-rewownsave],[data-rewdel],[data-bagadd],[data-bagaddsave],[data-bagdel],[data-bagback],[data-bagremoved],[data-bp],[data-bppick],[data-bpflex],[data-forum],[data-repro],[data-reprodetail],[data-reproask],[data-txstart],[data-txclose],[data-txform],[data-txmile],[data-txmedpick],[data-txdel],[data-txsave],[data-txask],[data-obmore],[data-cyctab],[data-cycday],[data-famtab],[data-famgo],[data-cycnote],[data-rttab],[data-rtwho],[data-rtopen],[data-rttick],[data-rtday],[data-rtnew],[data-rtedit],[data-rtdel],[data-rtset],[data-rtstepadd],[data-rtstepdel],[data-rtmove],[data-rtowntick],[data-rtstreak],[data-chorewho],[data-choreown],[data-choreownadd],[data-choreowndel],[data-chorewhen],[data-chorewhenpick],[data-safetygo],[data-safetyclear],[data-seatjump],[data-seatnew],[data-seatedit],[data-seatdel],[data-seatset],[data-seatsaveform],[data-seatguess],[data-sittersheet]');
     if (store.menuOpen && !e.target.closest('[data-menu]')) {
       /* Anything that actually goes somewhere closes the menu on the
          way through, including the rows inside the menu itself. Dead
@@ -5215,6 +5254,36 @@ function initControls() {
       store.choreWhenPick = t.dataset.chorewhenpick;
     } else if (t.dataset.chorewhen) {
       choreJobSetWhen(t.dataset.chorewhen, t.dataset.val || 'any');
+    } else if (t.dataset.safetygo) {
+      /* A hub tile that lands on a particular tab of a screen that
+         holds several topics, so Choking and First Aid can be two
+         tiles over one screen rather than two copies of it. */
+      state[t.dataset.tabkey] = t.dataset.tabval;
+      state.view = { type: 'screen', id: t.dataset.safetygo };
+    } else if (t.dataset.safetyclear) {
+      store.safetyQuery = '';
+    } else if (t.dataset.seatjump) {
+      /* selectChild clears the view on purpose, so the destination is
+         set after it rather than before. */
+      selectChild(t.dataset.seatjump);
+      store.seatTab = 'seat';
+      state.view = { type: 'screen', id: 'carseat' };
+    } else if (t.dataset.seatnew) {
+      seatNew(activeChild());
+    } else if (t.dataset.seatedit) {
+      store.seatEdit = t.dataset.seatedit;
+      store.seatGuessYears = 0;
+    } else if (t.dataset.seatdel) {
+      seatDel(activeChild(), t.dataset.seatdel);
+    } else if (t.dataset.seatset) {
+      seatSet(activeChild(), t.dataset.seatset, t.dataset.key, t.dataset.val);
+    } else if (t.dataset.seatguess) {
+      const y = Number(t.dataset.seatguess) || 0;
+      store.seatGuessYears = store.seatGuessYears === y ? 0 : y;
+    } else if (t.dataset.seatsaveform) {
+      seatSaveForm(activeChild(), t.dataset.seatsaveform);
+    } else if (t.dataset.sittersheet) {
+      sitterSheetToList();
     } else if (t.dataset.rtnew) {
       rtOwnNew(rtWho());
     } else if (t.dataset.rtedit !== undefined) {
@@ -18673,13 +18742,11 @@ function cycleCalendar(info, monthOffset, editing, loggedList, periodAttr) {
     const isToday = k === today;
     const isStart = !!starts[k];
     const cls = `cal-d ${mark}${isToday ? ' today' : ''}${isStart ? ' logged' : ''}`;
-    if (editing) {
-      cells.push(`<button class="${cls}" ${pAttr}="${esc(k)}"
-        aria-label="${esc(cycleDateLabelWithYear(k))}${isStart ? ', logged, tap to remove' : ', tap to log a period start'}"
-        aria-pressed="${isStart ? 'true' : 'false'}">${d}</button>`);
-    } else {
-      cells.push(`<span class="${cls}">${d}</span>`);
-    }
+    /* ALWAYS TAPPABLE. A day is a toggle, so a mis-tap undoes itself
+       with a second tap, and there is nothing for a mode to protect. */
+    cells.push(`<button class="${cls}" ${pAttr}="${esc(k)}"
+      aria-label="${esc(cycleDateLabelWithYear(k))}${isStart ? ', logged, tap to remove' : ', tap to log a period start'}"
+      aria-pressed="${isStart ? 'true' : 'false'}">${d}</button>`);
   }
 
   return `
@@ -18700,8 +18767,8 @@ function cycleCalendar(info, monthOffset, editing, loggedList, periodAttr) {
       <span><i class="k-ovul"></i> Ovulation</span>`}
       <span><i class="k-logged"></i> ${periodAttr ? 'Logged' : 'You logged it'}</span>
     </div>
-    ${editing ? `<p class="tiny" style="margin-top:7px;text-align:center">
-      Tap the day a period started. Tap it again to take it off.</p>` : ''}
+    <p class="tiny" style="margin-top:7px;text-align:center">
+      Tap the day a period started. Tap it again to take it off.</p>
   </div>`;
 }
 
@@ -20189,10 +20256,10 @@ function cycleWidget() {
         Tap the day your last period started and this fills itself in. Log each one as it comes and
         the app works out your own average rather than assuming 28 days.
       </p>
-      ${editing ? cycleCalendar(
-        { lastPeriod: ciToday(), cycleLength: CYCLE_AVERAGE_LENGTH }, store.calMonth || 0, true) : ''}
-      <button class="btn${editing ? ' ghost' : ''}" style="width:100%;margin-top:11px" data-cycle="${editing ? 'done' : 'edit'}">
-        ${editing ? 'Done' : 'Log a period'}
+      ${cycleCalendar(
+        { lastPeriod: ciToday(), cycleLength: CYCLE_AVERAGE_LENGTH }, store.calMonth || 0, true)}
+      <button class="btn ghost" style="width:100%;margin-top:11px" data-cycle="today">
+        It started today
       </button>
     </div>`;
   }
@@ -20228,11 +20295,9 @@ function cycleWidget() {
     ${cycleCalendar(info, store.calMonth || 0, editing)}
 
     <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
-      <button class="chip${editing ? ' on' : ''}" data-cycle="${editing ? 'done' : 'edit'}"
-        ${editing ? 'style="background:var(--leaf2);border-color:var(--leaf);color:var(--deep)"' : ''}>
-        ${icon(editing ? 'check' : 'calendar', 12, 'var(--deep)')} ${editing ? 'Done logging' : 'Log a period'}
+      <button class="chip" data-cycle="today">
+        ${icon('calendar', 12, 'var(--deep)')} It started today
       </button>
-      <button class="chip" data-cycle="today">Started today</button>
       ${rows.length ? `<button class="chip" data-cycle="history">
         ${store.cycleHistory ? 'Hide' : 'All ' + rows.length + ' logged'}
       </button>` : ''}
@@ -25818,7 +25883,9 @@ function screenDiscover(c) {
 
     <p class="sect" style="margin-top:18px">Keeping them safe</p>
     <div class="pickgrid">
-      ${hubCard({ id: 'safety', ic: 'shield', t: 'Safety', b: 'Home, car, water, choking.' })}
+      ${hubCard({ id: 'safetyhub', ic: 'shield', t: 'Safety Hub',
+    b: 'The car, the house, the water, and what to do if something happens.' })}
+      ${hubCard({ id: 'carseat', ic: 'car', t: 'Car seats', b: 'Stages, expiry dates and recalls.' })}
       ${hubCard({ id: 'online', ic: 'eye', t: 'Online', b: 'Screens, and who is talking to them.' })}
       ${hubCard({ id: 'vaccines', ic: 'pill', t: 'Vaccines', b: 'What is due, and what it does.' })}
       ${hubCard({ id: 'wisdom', ic: 'star', t: 'What other parents said',
@@ -25848,6 +25915,1046 @@ function screenMore(c) {
       ${hubCard({ id: 'feedback', ic: 'chat', t: 'Tell us something',
     b: 'Broken, missing or wrong.' })}
       ${hubCard({ id: 'about', ic: 'info', t: 'About', b: 'What this is, and who made it.' })}
+    </div>
+  </div>`;
+}
+
+
+/* ==================================================================
+   THE SAFETY HUB
+
+   One front door onto safety content that already existed in four
+   different modules, plus the two things that did not: a car seat this
+   family actually owns, and the house.
+
+   WHY THIS IS AN INDEX AND NOT A REWRITE
+
+   CPR, choking and home alone are already a good screen. Water safety
+   and choking prevention are already sourced care topics. Behaviour and
+   sensory support is already the deepest thing in the app. Rebuilding
+   any of that here would have given this family two copies of the same
+   guidance, drifting apart, with no way to tell which one was current.
+   So four of the six rows below are signposts, and the app is smaller
+   for it rather than larger. See src/data/safetyHub.js.
+   ================================================================== */
+function screenSafetyHub(c) {
+  const kid = activeChild();
+  const q = store.safetyQuery || '';
+  const found = q ? safetySearch(q) : null;
+  const tiles = found && found.length ? found : SAFETY_TILES;
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">Safety Hub</h1>
+    <p class="sub">Practical tools, checked guidance, and the numbers you do not want to be searching for.</p>
+  </div>
+  <div class="sc">
+    <div class="shsearch">
+      ${icon('search', 15, 'var(--sage)')}
+      <input class="shsearch-i" id="safetyq" value="${esc(q)}"
+        data-safetyq="1" placeholder="Search safety topics" maxlength="40"
+        autocomplete="off" autocorrect="off" spellcheck="false">
+      ${q ? `<button class="shsearch-x" data-safetyclear="1" aria-label="Clear">${icon('close', 13, 'var(--muted)')}</button>` : ''}
+    </div>
+
+    ${q && found && !found.length ? `
+    <p class="tiny" style="margin:4px 0 10px">Nothing matched that. Everything is below.</p>` : ''}
+
+    ${seatHubBanner()}
+
+    <div class="shgrid">
+      ${tiles.map((t) => `
+      <button class="shtile" ${safetyTileAttrs(t, kid)}>
+        <span class="shtile-ic ${esc(t.tint)}">${icon(t.ic, 19, 'var(--deep2)')}</span>
+        <span class="shtile-t">${esc(t.label)}</span>
+      </button>`).join('')}
+    </div>
+
+    <div class="dsec">
+      <h4>What is behind these</h4>
+      ${tiles.map((t) => `
+      <button class="lrow" ${safetyTileAttrs(t, kid)} style="align-items:flex-start">
+        <span class="licon ${esc(t.tint)}">${icon(t.ic, 17, 'var(--deep2)')}</span>
+        <span class="grow">
+          <span style="display:block;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3">${esc(t.label)}</span>
+          <span class="tiny" style="display:block;margin-top:2px">${esc(t.blurb)}</span>
+        </span>
+        <span class="chev">${icon('chev', 16, 'var(--faint)')}</span>
+      </button>`).join('')}
+    </div>
+
+    <p class="disclaimer">${esc(SAFETY_HUB_NOTE)}</p>
+  </div>`;
+}
+
+/* One tile, one destination. A child scoped screen with nobody open
+   goes to the picker rather than bouncing off the guard in render and
+   landing the person back on Home, which reads as a broken button. */
+function safetyTileAttrs(t, kid) {
+  const needsKid = t.kind === 'topic' || t.to === 'safety' || t.to === 'understand'
+    || t.to === 'carseat' || t.to === 'online';
+  if (needsKid && !kid) return 'data-go="screen" data-id="allprofiles"';
+  if (t.kind === 'topic') return `data-go="topic" data-id="${esc(t.to)}"`;
+  if (t.kind === 'sub') return `data-safetygo="${esc(t.to)}" data-tabkey="${esc(t.tab)}" data-tabval="${esc(t.val)}"`;
+  return `data-go="screen" data-id="${esc(t.to)}"`;
+}
+
+/* The hub only says something unprompted when there is something to
+   say, and a seat that has run out is the one thing on here with a
+   date attached to it. */
+function seatHubBanner() {
+  const flagged = seatAllFlagged();
+  if (!flagged.length) return '';
+  const bad = flagged.filter((f) => f.state.level === 'expired');
+  const one = bad[0] || flagged[0];
+  const who = (one.kid.name || 'A child').split(/\s+/)[0];
+  const name = one.seat.label || [one.seat.make, one.seat.model].filter(Boolean).join(' ') || 'their car seat';
+  return `
+  <button class="shbanner${bad.length ? ' bad' : ''}" data-seatjump="${esc(one.kid.id)}">
+    <span class="shbanner-ic">${icon(bad.length ? 'info' : 'clock', 15, bad.length ? '#8C3B2E' : 'var(--deep2)')}</span>
+    <span class="grow">
+      <span class="shbanner-t">${esc(bad.length
+    ? who + '’s ' + name + ' has expired'
+    : who + '’s ' + name + ' expires soon')}</span>
+      <span class="shbanner-b">${esc(one.state.words)}. Tap to see it.</span>
+    </span>
+    ${icon('chev', 14, 'var(--deep2)')}
+  </button>`;
+}
+
+/* ==================================================================
+   CAR SEATS
+
+   THE PART THAT IS NEW. The guidance was already in careTopics as a
+   sourced entry, and it was fine, and it could not answer the question
+   a parent actually has at the car door: has THIS seat expired, and is
+   he still meant to be in it.
+
+   A seat lives on the child's own record, which means it syncs with
+   everything else about them and needs nothing added to any key list.
+   See the note in newChildRecord.
+   ================================================================== */
+const SEAT_TABS = [
+  { id: 'seat', label: 'Their seat' },
+  { id: 'stages', label: 'Stages' },
+  { id: 'rules', label: 'Rules' },
+  { id: 'travel', label: 'Travel' },
+];
+
+function seatTab() {
+  const t = store.seatTab;
+  return SEAT_TABS.some((x) => x.id === t) ? t : 'seat';
+}
+
+/* A date somebody will read years from now, so it carries the year.
+   dayOf() is the app's usual one and deliberately drops it, which is
+   right for a feed and wrong for an expiry date. */
+function seatDate(iso) {
+  const d = new Date(String(iso || '') + 'T00:00:00');
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function seatList(kid) {
+  return Array.isArray((kid || {}).seats) ? kid.seats : [];
+}
+
+function seatById(kid, id) {
+  return seatList(kid).filter((s) => s.id === id)[0] || null;
+}
+
+/* Every seat in the family that needs saying something about, so the
+   hub can carry the badge without the car seat screen being open. */
+function seatAllFlagged() {
+  const today = ciToday();
+  const out = [];
+  (store.children || []).forEach((k) => {
+    if (isExampleChild(k)) return;
+    seatList(k).forEach((s) => {
+      const st = seatExpiryState(s.expires, today);
+      if (st.level === 'expired' || st.level === 'soon') out.push({ kid: k, seat: s, state: st });
+    });
+  });
+  out.sort((a, b) => (a.state.level === 'expired' ? -1 : 1));
+  return out;
+}
+
+function seatSave() {
+  const k = activeChild();
+  if (k) k.updatedAt = Date.now();
+  flushStore();
+}
+
+function seatNew(kid) {
+  if (!kid) return null;
+  if (!Array.isArray(kid.seats)) kid.seats = [];
+  const seat = {
+    id: 's' + Date.now() + Math.floor(Math.random() * 1000),
+    label: '', kind: '', make: '', model: '',
+    made: '', expires: '', stage: '', where: '', note: '',
+  };
+  kid.seats.push(seat);
+  store.seatEdit = seat.id;
+  seatSave();
+  return seat;
+}
+
+function seatDel(kid, id) {
+  if (!kid || !Array.isArray(kid.seats)) return;
+  kid.seats = kid.seats.filter((s) => s.id !== id);
+  if (store.seatEdit === id) store.seatEdit = '';
+  seatSave();
+}
+
+function seatSet(kid, id, key, val) {
+  const s = seatById(kid, id);
+  if (!s) return;
+  s[key] = val;
+  /* Changing the kind can leave a stage the new shell cannot do, which
+     would then render a stage card the seat does not support. Clear it
+     rather than carry a contradiction. */
+  if (key === 'kind') {
+    const kd = seatKind(val);
+    if (!kd || kd.stages.indexOf(s.stage) === -1) s.stage = kd ? kd.stages[0] : '';
+  }
+  seatSave();
+}
+
+/* Reads the whole form at once, on the way out, which is what keeps a
+   date input from re-rendering under the person typing into it. */
+function seatSaveForm(kid, id) {
+  const s = seatById(kid, id);
+  if (!s) return;
+  const g = (el) => {
+    const n = document.getElementById(el);
+    return n ? String(n.value || '').trim() : '';
+  };
+  s.label = g('seatlabel');
+  s.make = g('seatmake');
+  s.model = g('seatmodel');
+  s.made = g('seatmade');
+  s.where = g('seatwhere');
+  const typed = g('seatexp');
+  if (typed) s.expires = typed;
+  else if (store.seatGuessYears) {
+    /* She could not find the printed date, so she told us the useful
+       life instead and we did the arithmetic. Marked as an estimate,
+       because it is one. */
+    const guess = seatExpiryGuess(s.made, store.seatGuessYears);
+    if (guess) { s.expires = guess; s.estimated = true; }
+  }
+  if (typed) s.estimated = false;
+  store.seatGuessYears = 0;
+  store.seatEdit = '';
+  seatSave();
+}
+
+/* The two numbers a parent needs in order to read their own seat's
+   limits, taken from the growth they have already entered rather than
+   asked for twice. */
+function seatSizeLine(kid) {
+  const es = growthEntries(kid);
+  const us = growthUs();
+  const w = es.filter((e) => e.kg !== undefined).slice(-1)[0];
+  const h = es.filter((e) => e.cm !== undefined).slice(-1)[0];
+  if (!w && !h) return '';
+  const bits = [];
+  if (w) bits.push(showWeight(w.kg, us));
+  if (h) bits.push(showLength(h.cm, us));
+  const when = (w && h) ? (w.date > h.date ? w.date : h.date) : ((w || h).date);
+  return bits.join(', ') + ' as of ' + seatDate(when);
+}
+
+function seatCard(kid, s) {
+  const st = seatExpiryState(s.expires, ciToday());
+  const kd = seatKind(s.kind);
+  const stg = seatStage(s.stage);
+  const name = s.label || [s.make, s.model].filter(Boolean).join(' ')
+    || (kd ? kd.label : 'This seat');
+  return `
+  <div class="seatcard${st.level === 'expired' ? ' bad' : (st.level === 'soon' ? ' warn' : '')}">
+    <div class="seatcard-h">
+      <span class="seatcard-ic">${icon('car', 17, 'var(--deep2)')}</span>
+      <span class="grow">
+        <span class="seatcard-t">${esc(name)}</span>
+        ${kd ? `<span class="seatcard-s">${esc(kd.label)}${stg ? ', ' + esc(stg.short.toLowerCase()) : ''}</span>` : ''}
+      </span>
+      <button class="btn ghost xs" data-seatedit="${esc(s.id)}">Edit</button>
+    </div>
+
+    <div class="seatrow">
+      <span class="seatrow-k">Expires</span>
+      <span class="seatrow-v seat-${esc(st.level)}">${esc(st.words)}
+        ${s.expires ? `<span class="seatrow-sub">${esc(seatDate(s.expires))}${
+    s.estimated ? ', estimated' : ''}</span>` : ''}</span>
+    </div>
+    ${s.made ? `
+    <div class="seatrow">
+      <span class="seatrow-k">Made</span>
+      <span class="seatrow-v">${esc(seatDate(s.made))}</span>
+    </div>` : ''}
+    ${s.where ? `
+    <div class="seatrow">
+      <span class="seatrow-k">Where</span>
+      <span class="seatrow-v">${esc(s.where)}</span>
+    </div>` : ''}
+
+    ${st.level === 'expired' ? `
+    <div class="callout warn" style="margin-top:10px">
+      <p style="margin:0">${esc(SEAT_EXPIRY.close)}</p>
+    </div>` : ''}
+    ${!s.expires ? `
+    <p class="tiny" style="margin-top:9px">${esc(SEAT_EXPIRY.findIt)}</p>` : ''}
+  </div>`;
+}
+
+function seatForm(kid, s) {
+  const kd = seatKind(s.kind);
+  return `
+  <div class="card" style="margin-bottom:10px">
+    <p class="eyebrow">${icon('car', 11, 'var(--sage)')} ${esc(s.made || s.make ? 'Edit this seat' : 'Add a seat')}</p>
+
+    <p class="sect" style="margin-top:12px">What kind of seat</p>
+    <div class="cyrow">
+      ${SEAT_KINDS.map((k) => cycPick(s.kind === k.id, k.label,
+    `data-seatset="${esc(s.id)}" data-key="kind" data-val="${esc(k.id)}"`)).join('')}
+    </div>
+    ${kd ? `<p class="tiny" style="margin-top:7px">${esc(kd.note)}</p>` : ''}
+
+    ${kd && kd.stages.length > 1 ? `
+    <p class="sect">How it is being used right now</p>
+    <div class="cyrow">
+      ${kd.stages.map((id) => {
+    const stg = seatStage(id);
+    return stg ? cycPick(s.stage === id, stg.short,
+      `data-seatset="${esc(s.id)}" data-key="stage" data-val="${esc(id)}"`) : '';
+  }).join('')}
+    </div>` : ''}
+
+    <p class="sect">What it is called</p>
+    <input class="field" id="seatlabel" value="${esc(s.label || '')}"
+      placeholder="Stetson's seat, or the one in the truck" maxlength="48">
+
+    <div class="seatgrid">
+      <div>
+        <p class="sect">Make</p>
+        <input class="field" id="seatmake" value="${esc(s.make || '')}" placeholder="Graco" maxlength="32">
+      </div>
+      <div>
+        <p class="sect">Model</p>
+        <input class="field" id="seatmodel" value="${esc(s.model || '')}" placeholder="Extend2Fit" maxlength="40">
+      </div>
+    </div>
+
+    <div class="seatgrid">
+      <div>
+        <p class="sect">Date it was made</p>
+        <input class="field" id="seatmade" type="date" value="${esc(s.made || '')}" max="${esc(ciToday())}">
+      </div>
+      <div>
+        <p class="sect">Date it expires</p>
+        <input class="field" id="seatexp" type="date" value="${esc(s.expires || '')}">
+      </div>
+    </div>
+    <p class="tiny" style="margin-top:7px">${esc(SEAT_FIELD_NOTE)}</p>
+
+    <p class="sect">If only the manufacture date is on it</p>
+    <p class="tiny" style="margin:0 0 7px">Tell us the useful life from the manual and we will work the date out.</p>
+    <div class="cyrow">
+      ${SEAT_LIFE_YEARS.map((y) => cycPick(store.seatGuessYears === y, y + ' years',
+    `data-seatguess="${y}"`)).join('')}
+    </div>
+
+    <p class="sect">Which car, and which seat</p>
+    <input class="field" id="seatwhere" value="${esc(s.where || '')}"
+      placeholder="Truck, passenger side rear" maxlength="48">
+
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn" style="flex:1" data-seatsaveform="${esc(s.id)}">Save</button>
+      <button class="btn ghost" data-seatdel="${esc(s.id)}">Delete</button>
+    </div>
+  </div>`;
+}
+
+function screenCarSeat(c) {
+  const kid = activeChild();
+  if (!kid) return emptyScreen('Open a child first and this will be their seat.');
+  const tab = seatTab();
+  const months = c.months;
+  const seats = seatList(kid);
+  const editing = store.seatEdit ? seatById(kid, store.seatEdit) : null;
+  const first = (kid.name || 'They').split(/\s+/)[0];
+  const open = seatStagesFor(months);
+  const size = seatSizeLine(kid);
+
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">Car seat and travel</h1>
+    <p class="sub">${esc(first)}’s seat, which stage they are in, and the rules that keep changing.</p>
+  </div>
+  <div class="sc">
+    ${subTabs('seatTab', tab, SEAT_TABS)}
+
+    ${tab !== 'seat' ? '' : `
+      ${seats.length ? seats.map((s) => (editing && editing.id === s.id)
+    ? seatForm(kid, s) : seatCard(kid, s)).join('') : `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(SEAT_EMPTY)}</p>
+      </div>`}
+
+      ${editing ? '' : `
+      <button class="btn ghost" style="width:100%;margin-top:10px" data-seatnew="1">
+        ${icon('plus', 14, 'var(--deep)')} Add a seat
+      </button>`}
+
+      <p class="sect" style="margin-top:18px">Quick tools</p>
+      <div class="shgrid">
+        ${seatTool('chart', 'tint-sky', 'Seat Stage Guide', 'data-sub="seatTab" data-val="stages"')}
+        ${seatTool('check', 'tint-sage', 'Fit Checklist', 'data-sub="seatTab" data-val="stages"')}
+        ${seatTool('shield', 'tint-rose', 'Rules and Recalls', 'data-sub="seatTab" data-val="rules"')}
+        ${seatTool('search', 'tint-amber', 'Find a Technician', 'data-go="screen" data-id="cpst"')}
+        ${seatTool('bag', 'tint-indigo', 'Travel Tips', 'data-sub="seatTab" data-val="travel"')}
+        ${seatTool('bulb', 'tint-violet', 'Behaviour Support', 'data-go="screen" data-id="understand"')}
+      </div>
+
+      ${askWillowCard('Ask Willow about car seats',
+    'Which stage should ' + first + ' be in, and how do I know the harness is tight enough?')}
+
+      <div class="dsec">
+        <h4>Where ${esc(first)} is now</h4>
+        ${size ? `
+        <div class="seatrow">
+          <span class="seatrow-k">Last measured</span>
+          <span class="seatrow-v">${esc(size)}</span>
+        </div>
+        <p class="tiny" style="margin-top:8px">Compare that against the limits printed on the seat. Height or weight, whichever they reach first, is the one that ends the stage.</p>` : `
+        <p class="tiny" style="margin:0">No height or weight saved yet. Add one on their growth screen and this will compare it against the seat limits for you.</p>`}
+        <div class="callout" style="margin-top:10px">
+          <p style="margin:0">${open.length > 1
+      ? 'At ' + esc(childAgeLabel(kid)) + ', ' + esc(first) + ' could be in ' + esc(open.map((s) => s.short.toLowerCase()).join(' or ')) + '. The seat decides, not the age, and the longer stage is the safer one.'
+      : 'At ' + esc(childAgeLabel(kid)) + ', ' + esc(first) + ' is in the ' + esc(open[0].short.toLowerCase()) + ' stage.'}</p>
+        </div>
+        <button class="btn ghost sm" style="width:100%;margin-top:10px" data-sub="seatTab" data-val="stages">
+          Read the stage in full
+        </button>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(SEAT_HELP.title)}</h4>
+        <p class="bodytext" style="margin-top:0">${esc(SEAT_HELP.body)}</p>
+        <p class="bodytext" style="margin-top:9px">${esc(SEAT_HELP.close)}</p>
+        ${sourceRow({ org: 'NHTSA', label: SEAT_HELP.link.label, url: SEAT_HELP.link.url })}
+      </div>
+
+      <p class="tiny" style="margin-top:14px">${esc(SEAT_WHY_RECORD)}</p>`}
+
+    ${tab !== 'stages' ? '' : `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">Every stage lasts until they reach the limits printed on their own seat, which is almost always longer than it feels. Each move to the next one is a step down in protection, not a milestone.</p>
+      </div>
+
+      ${SEAT_STAGES.map((s) => {
+    const isNow = open.some((o) => o.id === s.id);
+    return `
+      <div class="dsec">
+        <h4>${esc(s.label)}${isNow ? ' <span class="seatnow">' + esc(first) + ' is here</span>' : ''}</h4>
+        <p class="bodytext" style="margin-top:0;font-size:15px;line-height:1.55">${esc(s.headline)}</p>
+        <p class="bodytext" style="margin-top:9px">${esc(s.why)}</p>
+        <div class="callout" style="margin-top:10px">
+          <p style="margin:0"><strong style="color:var(--deep)">How long:</strong> ${esc(s.until)}</p>
+        </div>
+        <p class="sect">Check these every time</p>
+        ${list(s.checks)}
+        <div class="card flat" style="margin-top:10px">
+          <p style="margin:0;font-size:13px;color:var(--muted);text-decoration:line-through">${esc(s.myth.myth)}</p>
+          <p class="bodytext" style="margin-top:6px">${esc(s.myth.truth)}</p>
+        </div>
+      </div>`;
+  }).join('')}
+
+      <div class="dsec">
+        <h4>${esc(SEAT_COATS.title)}</h4>
+        <p class="bodytext" style="margin-top:0">${esc(SEAT_COATS.body)}</p>
+        ${list(SEAT_COATS.instead)}
+        <div class="callout" style="margin-top:10px">
+          <p style="margin:0">${esc(SEAT_COATS.aftermarket)}</p>
+        </div>
+      </div>`}
+
+    ${tab !== 'rules' ? '' : `
+      <div class="card leafy">
+        <p class="eyebrow">${icon('info', 11, 'var(--sage)')} ${esc(SEAT_NEW_RULE.title)}</p>
+        <p class="bodytext" style="margin-top:6px;font-size:15px;line-height:1.55">${esc(SEAT_NEW_RULE.headline)}</p>
+        ${SEAT_NEW_RULE.body.map((p) => `<p class="bodytext" style="margin:10px 0 0">${esc(p)}</p>`).join('')}
+        <p class="sect">${esc(SEAT_NEW_RULE.stillFine)}</p>
+        ${list(SEAT_NEW_RULE.conditions)}
+        <p class="bodytext" style="margin-top:10px">${esc(SEAT_NEW_RULE.close)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(SEAT_EXPIRY.title)}</h4>
+        ${SEAT_EXPIRY.body.map((p) => `<p class="bodytext" style="margin:0 0 9px">${esc(p)}</p>`).join('')}
+        <div class="callout">
+          <p style="margin:0"><strong style="color:var(--deep)">Where to look:</strong> ${esc(SEAT_EXPIRY.findIt)}</p>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(SEAT_RECALL.title)}</h4>
+        <p class="bodytext" style="margin-top:0">${esc(SEAT_RECALL.body)}</p>
+        ${steps(SEAT_RECALL.steps)}
+        ${sourceRow({ org: 'NHTSA', label: SEAT_RECALL.link.label, url: SEAT_RECALL.link.url })}
+        <div class="callout" style="margin-top:10px">
+          <p style="margin:0"><strong style="color:var(--deep)">Second hand:</strong> ${esc(SEAT_RECALL.secondhand)}</p>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(SEAT_CRASH.title)}</h4>
+        <p class="bodytext" style="margin-top:0;font-size:15px;line-height:1.55">${esc(SEAT_CRASH.headline)}</p>
+        <p class="sect">${esc(SEAT_CRASH.minorIntro)}</p>
+        ${list(SEAT_CRASH.minor)}
+        <div class="callout" style="margin-top:10px">
+          <p style="margin:0">${esc(SEAT_CRASH.override)}</p>
+        </div>
+        <p class="bodytext" style="margin-top:10px">${esc(SEAT_CRASH.insurance)}</p>
+        <p class="bodytext" style="margin-top:9px">${esc(SEAT_CRASH.dispose)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(SEAT_HEAT.title)}</h4>
+        <p class="bodytext" style="margin-top:0;font-size:15px;line-height:1.55">${esc(SEAT_HEAT.body)}</p>
+        ${list(SEAT_HEAT.facts)}
+        <p class="sect">The habits that catch it</p>
+        ${list(SEAT_HEAT.habits)}
+        <div class="callout warn" style="margin-top:10px">
+          <p style="margin:0">${esc(SEAT_HEAT.ifYouSee)}</p>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>${esc(SEAT_LAW.title)}</h4>
+        <p class="bodytext" style="margin-top:0">${esc(SEAT_LAW.body)}</p>
+        <p class="bodytext" style="margin-top:9px">${esc(SEAT_LAW.close)}</p>
+      </div>
+
+      <div class="dsec">
+        <h4>Where this comes from</h4>
+        ${SAFETY_SOURCES.map((s) => sourceRow(s)).join('')}
+      </div>
+      <p class="disclaimer">${esc(SAFETY_DISCLAIMER)}</p>`}
+
+    ${tab !== 'travel' ? '' : `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(SEAT_TRAVEL.title)}</p>
+      </div>
+      ${SEAT_TRAVEL.rows.map((r) => `
+      <div class="dsec">
+        <h4>${esc(r.q)}</h4>
+        <p class="bodytext" style="margin-top:0">${esc(r.a)}</p>
+      </div>`).join('')}
+      <div class="dsec">
+        <h4>Where this comes from</h4>
+        ${sourceRow({ org: 'FAA', label: 'Child safety seat tips, including the aircraft certification label and CARES', url: 'https://www.faa.gov/travelers/fly_children/child_safety_seat_tips' })}
+      </div>`}
+  </div>`;
+}
+
+/* ==================================================================
+   AROUND THE HOUSE
+
+   Poison Control first, because the one time somebody opens this
+   screen in a hurry, that is the only thing on it they need.
+   ================================================================== */
+const HOME_TABS = [
+  { id: 'poison', label: 'Poison' },
+  { id: 'hazards', label: 'The house' },
+  { id: 'alarms', label: 'Alarms' },
+];
+
+function homeSafeTab() {
+  const t = store.homeTab;
+  return HOME_TABS.some((x) => x.id === t) ? t : 'poison';
+}
+
+function screenHomeSafe(c) {
+  const tab = homeSafeTab();
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">Around the house</h1>
+    <p class="sub">The number to ring, the things that actually hurt children, and the night the power goes out.</p>
+  </div>
+  <div class="sc">
+    <a class="poisoncard" href="tel:18002221222">
+      <span class="poisoncard-k">${esc(POISON.title)}</span>
+      <span class="poisoncard-n">${esc(POISON.number)}</span>
+      <span class="poisoncard-b">${esc(POISON.blurb)}</span>
+    </a>
+
+    ${subTabs('homeTab', tab, HOME_TABS)}
+
+    ${tab !== 'poison' ? '' : `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(POISON.body)}</p>
+      </div>
+      <div class="dsec">
+        <h4>While you are ringing</h4>
+        ${list(POISON.rules)}
+        <div class="callout warn" style="margin-top:10px">
+          <p style="margin:0">${esc(POISON.call911)}</p>
+        </div>
+      </div>
+      <div class="dsec">
+        <h4>Where this comes from</h4>
+        ${sourceRow({ org: 'Poison Control', label: 'US Poison Control, 1-800-222-1222, 24 hours', url: 'https://www.poison.org/' })}
+      </div>`}
+
+    ${tab !== 'hazards' ? '' : `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(HOME_HAZARDS.intro)}</p>
+      </div>
+      ${HOME_HAZARDS.rows.map((r) => `
+      <div class="dsec">
+        <h4>${esc(r.h)}</h4>
+        <p class="bodytext" style="margin-top:0">${esc(r.d)}</p>
+      </div>`).join('')}
+      <div class="callout" style="margin-top:12px">
+        <p style="margin:0">${esc(HOME_HAZARDS.close)}</p>
+      </div>`}
+
+    ${tab !== 'alarms' ? '' : `
+      <div class="dsec">
+        <h4>${esc(HOME_DETECTORS.title)}</h4>
+        ${list(HOME_DETECTORS.rows)}
+      </div>`}
+
+  </div>`;
+}
+
+/* One quick tool tile, the shape her mockup uses for the 2x3 grid. */
+function seatTool(ic, tint, label, attrs) {
+  return `
+  <button class="shtile" ${attrs}>
+    <span class="shtile-ic ${esc(tint)}">${icon(ic, 18, 'var(--deep2)')}</span>
+    <span class="shtile-t">${esc(label)}</span>
+  </button>`;
+}
+
+/* Her mockups put an Ask Willow card at the foot of several safety
+   screens. She already exists and already answers, so this is the
+   existing offer mechanism with a question written for the screen
+   rather than a second chat box that would have to be wired up. */
+function askWillowCard(title, q) {
+  return `
+  <button class="wask" data-woffer="yes" data-q="${esc(q)}">
+    <span class="wask-ic">${icon('leaf', 16, 'var(--deep2)')}</span>
+    <span class="grow">
+      <span class="wask-t">${esc(title)}</span>
+      <span class="wask-b">${esc(q)}</span>
+    </span>
+    <span class="wask-go">${icon('chev', 14, 'var(--deep2)')}</span>
+  </button>`;
+}
+
+/* Her mockup has a checklist here. There is already a Lists feature
+   with ticking, sharing and a calendar hook, so this writes one rather
+   than inventing a second kind of list that only this screen knows
+   about. */
+function sitterSheetToList() {
+  if (!Array.isArray(store.lists)) store.lists = [];
+  const name = 'Babysitter sheet';
+  const already = store.lists.filter((l) => l.name === name)[0];
+  if (already) {
+    store.listOpen = already.id;
+  } else {
+    const made = listNew(name, CAL_WHO_HOUSE_ID, SITTER_SHEET.rows);
+    store.lists = store.lists.concat([made]);
+    store.listOpen = made.id;
+    listsSave();
+  }
+  state.tab = 'planner';
+  state.view = { type: 'screen', id: 'lists' };
+}
+
+/* ==================================================================
+   MEDICATION SAFETY
+
+   See the header in src/data/safetyHub.js for why there is no dosing
+   table on this screen and why that is deliberate.
+   ================================================================== */
+const MED_TABS = [
+  { id: 'how', label: 'Giving it' },
+  { id: 'store', label: 'Storing it' },
+  { id: 'wrong', label: 'Mistakes' },
+];
+
+function medTab() {
+  const t = store.medTab;
+  return MED_TABS.some((x) => x.id === t) ? t : 'how';
+}
+
+function screenMedSafe(c) {
+  const tab = medTab();
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">Medication safety</h1>
+    <p class="sub">How to read the bottle, where it lives, and who to ring.</p>
+  </div>
+  <div class="sc">
+    ${subTabs('medTab', tab, MED_TABS)}
+
+    ${tab !== 'how' ? '' : `
+      <div class="card leafy">
+        <p class="eyebrow">${icon('info', 11, 'var(--sage)')} Read this first</p>
+        <p class="bodytext" style="margin-top:6px;font-size:15px;line-height:1.55">${esc(MED_STANCE.headline)}</p>
+        ${MED_STANCE.body.map((x) => `<p class="bodytext" style="margin:10px 0 0">${esc(x)}</p>`).join('')}
+        <div class="callout" style="margin-top:12px">
+          <p style="margin:0">${esc(MED_STANCE.close)}</p>
+        </div>
+      </div>
+      ${MED_RULES.map((r) => `
+      <div class="dsec">
+        <h4>${esc(r.h)}</h4>
+        <p class="bodytext" style="margin-top:0">${esc(r.d)}</p>
+      </div>`).join('')}
+      ${askWillowCard('Ask Willow',
+    'What should I check on the bottle before giving my child medicine?')}`}
+
+    ${tab !== 'store' ? '' : `
+      <div class="dsec">
+        <h4>${esc(MED_STORAGE.title)}</h4>
+        ${list(MED_STORAGE.rows)}
+      </div>`}
+
+    ${tab !== 'wrong' ? '' : `
+      <a class="poisoncard" href="tel:18002221222">
+        <span class="poisoncard-k">${esc(POISON.title)}</span>
+        <span class="poisoncard-n">${esc(POISON.number)}</span>
+        <span class="poisoncard-b">${esc(POISON.blurb)}</span>
+      </a>
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(MED_WRONG.headline)}</p>
+      </div>
+      <div class="dsec">
+        <h4>${esc(MED_WRONG.title)}</h4>
+        ${list(MED_WRONG.rows)}
+      </div>`}
+
+    <div class="dsec">
+      <h4>Where this comes from</h4>
+      ${sourceRow({ org: 'AAP', label: 'Medication safety tips, including measuring, storage and the cough and cold age limits', url: 'https://www.healthychildren.org/English/safety-prevention/at-home/medication-safety/Pages/Medication-Safety-Tips.aspx' })}
+      ${sourceRow({ org: 'Poison Control', label: 'US Poison Control, 1-800-222-1222, 24 hours', url: 'https://www.poison.org/' })}
+    </div>
+  </div>`;
+}
+
+/* ==================================================================
+   HEAT, COLD AND WEATHER
+   ================================================================== */
+const HEAT_TABS = [
+  { id: 'car', label: 'Hot cars' },
+  { id: 'sun', label: 'Sun' },
+  { id: 'cold', label: 'Cold' },
+  { id: 'storm', label: 'Storms' },
+];
+
+function heatTab() {
+  const t = store.heatTab;
+  return HEAT_TABS.some((x) => x.id === t) ? t : 'car';
+}
+
+function screenHeatSafe(c) {
+  const tab = heatTab();
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">Heat and weather</h1>
+    <p class="sub">${esc(HEAT_TABS_INTRO)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('heatTab', tab, HEAT_TABS)}
+
+    ${tab !== 'car' ? '' : `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(SEAT_HEAT.title)}</p>
+        <p class="bodytext" style="margin-top:10px">${esc(SEAT_HEAT.body)}</p>
+      </div>
+      <div class="dsec">
+        <h4>What people get wrong about it</h4>
+        ${list(SEAT_HEAT.facts)}
+      </div>
+      <div class="dsec">
+        <h4>The habits that catch it</h4>
+        ${list(SEAT_HEAT.habits)}
+        <div class="callout warn" style="margin-top:10px">
+          <p style="margin:0">${esc(SEAT_HEAT.ifYouSee)}</p>
+        </div>
+      </div>
+      ${sourceRow({ org: 'NHTSA', label: 'Child heatstroke prevention', url: 'https://www.nhtsa.gov/campaign/heatstroke' })}`}
+
+    ${tab !== 'sun' ? '' : `
+      <div class="dsec">
+        <h4>${esc(HEAT_SUN.title)}</h4>
+        ${list(HEAT_SUN.rows)}
+      </div>
+      <div class="dsec">
+        <h4>${esc(HEAT_HOT.title)}</h4>
+        ${list(HEAT_HOT.rows)}
+      </div>`}
+
+    ${tab !== 'cold' ? '' : `
+      <div class="dsec">
+        <h4>${esc(HEAT_COLD.title)}</h4>
+        ${list(HEAT_COLD.rows)}
+      </div>`}
+
+    ${tab !== 'storm' ? '' : `
+      <div class="dsec">
+        <h4>${esc(HEAT_STORM.title)}</h4>
+        ${list(HEAT_STORM.rows)}
+        <button class="btn ghost sm" style="width:100%;margin-top:10px"
+          data-go="screen" data-id="prepared">Open emergency planning</button>
+      </div>`}
+  </div>`;
+}
+
+/* ==================================================================
+   EMERGENCY PLANNING
+   ================================================================== */
+const PREP_TABS = [
+  { id: 'kit', label: 'The kit' },
+  { id: 'plan', label: 'The plan' },
+  { id: 'kids', label: 'Children' },
+];
+
+function prepTab() {
+  const t = store.prepTab;
+  return PREP_TABS.some((x) => x.id === t) ? t : 'kit';
+}
+
+function screenPrepared(c) {
+  const tab = prepTab();
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">Emergency planning</h1>
+    <p class="sub">${esc(PREPARED.intro)}</p>
+  </div>
+  <div class="sc">
+    <div class="shnums">
+      <a class="shnum urgent" href="tel:911">
+        <span class="shnum-n">911</span>
+        <span class="shnum-b">Fire, police, ambulance</span>
+      </a>
+      <a class="shnum" href="tel:18002221222">
+        <span class="shnum-n">1-800-222-1222</span>
+        <span class="shnum-b">Poison Control, 24 hours</span>
+      </a>
+    </div>
+
+    ${subTabs('prepTab', tab, PREP_TABS)}
+
+    ${tab !== 'kit' ? '' : `
+      <div class="dsec">
+        <h4>What goes in the box</h4>
+        ${list(PREPARED.kit)}
+      </div>`}
+
+    ${tab !== 'plan' ? '' : `
+      <div class="dsec">
+        <h4>The plan, which matters more than the box</h4>
+        ${list(PREPARED.plan)}
+      </div>
+      <div class="dsec">
+        <h4>${esc(HOME_DETECTORS.title)}</h4>
+        ${list(HOME_DETECTORS.rows)}
+      </div>`}
+
+    ${tab !== 'kids' ? '' : `
+      <div class="dsec">
+        <h4>Doing it with children in the room</h4>
+        ${list(PREPARED.withChildren)}
+      </div>
+      ${askWillowCard('Ask Willow',
+    'How do I explain a storm or an evacuation to a small child without frightening them?')}`}
+  </div>`;
+}
+
+/* ==================================================================
+   BABYSITTERS
+   ================================================================== */
+const SITTER_TABS = [
+  { id: 'sheet', label: 'The sheet' },
+  { id: 'ask', label: 'Ask them' },
+  { id: 'run', label: 'Before' },
+  { id: 'teen', label: 'Teens' },
+];
+
+function sitterTab() {
+  const t = store.sitterTab;
+  return SITTER_TABS.some((x) => x.id === t) ? t : 'sheet';
+}
+
+function screenSitterSafe(c) {
+  const tab = sitterTab();
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">Leaving them with somebody</h1>
+    <p class="sub">${esc(SITTER_INTRO)}</p>
+  </div>
+  <div class="sc">
+    ${subTabs('sitterTab', tab, SITTER_TABS)}
+
+    ${tab !== 'sheet' ? '' : `
+      <div class="dsec">
+        <h4>${esc(SITTER_SHEET.title)}</h4>
+        ${list(SITTER_SHEET.rows)}
+        <button class="btn ghost sm" style="width:100%;margin-top:10px"
+          data-sittersheet="1">Make this a list I can tick off</button>
+      </div>`}
+
+    ${tab !== 'ask' ? '' : `
+      <div class="dsec">
+        <h4>${esc(SITTER_ASK.title)}</h4>
+        ${list(SITTER_ASK.rows)}
+        <div class="callout" style="margin-top:10px">
+          <p style="margin:0">${esc(SITTER_ASK.tone)}</p>
+        </div>
+      </div>`}
+
+    ${tab !== 'run' ? '' : `
+      <div class="dsec">
+        <h4>${esc(SITTER_RUN.title)}</h4>
+        ${list(SITTER_RUN.rows)}
+      </div>`}
+
+    ${tab !== 'teen' ? '' : `
+      <div class="dsec">
+        <h4>${esc(SITTER_OLDER.title)}</h4>
+        ${list(SITTER_OLDER.rows)}
+      </div>`}
+  </div>`;
+}
+
+/* ==================================================================
+   LOST CHILD
+
+   The first tab is the one somebody opens with shaking hands, so it is
+   five numbered steps and nothing else above them.
+   ================================================================== */
+const LOST_TABS = [
+  { id: 'now', label: 'Right now' },
+  { id: 'teach', label: 'Teach them' },
+  { id: 'before', label: 'Before' },
+  { id: 'wander', label: 'Bolting' },
+];
+
+function lostTab() {
+  const t = store.lostTab;
+  return LOST_TABS.some((x) => x.id === t) ? t : 'now';
+}
+
+function screenLostChild(c) {
+  const tab = lostTab();
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">If you cannot find them</h1>
+    <p class="sub">The first two minutes, and everything worth doing before you ever need them.</p>
+  </div>
+  <div class="sc">
+    ${subTabs('lostTab', tab, LOST_TABS)}
+
+    ${tab !== 'now' ? '' : `
+      <a class="shnum urgent" href="tel:911" style="margin-bottom:12px">
+        <span class="shnum-n">911</span>
+        <span class="shnum-b">There is no waiting period for a missing child</span>
+      </a>
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(LOST_NOW.headline)}</p>
+      </div>
+      <div class="dsec">
+        <h4>${esc(LOST_NOW.title)}</h4>
+        ${steps(LOST_NOW.steps)}
+      </div>
+      <div class="callout" style="margin-top:4px">
+        <p style="margin:0">${esc(LOST_NOW.photo)}</p>
+      </div>`}
+
+    ${tab !== 'teach' ? '' : `
+      <div class="dsec">
+        <h4>${esc(LOST_TEACH.title)}</h4>
+        ${list(LOST_TEACH.rows)}
+      </div>`}
+
+    ${tab !== 'before' ? '' : `
+      <div class="dsec">
+        <h4>${esc(LOST_PREVENT.title)}</h4>
+        ${list(LOST_PREVENT.rows)}
+      </div>`}
+
+    ${tab !== 'wander' ? '' : `
+      <div class="card leafy">
+        <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(LOST_WANDER.title)}</p>
+        <p class="bodytext" style="margin-top:10px">${esc(LOST_WANDER.body)}</p>
+      </div>
+      <div class="dsec">
+        <h4>What actually helps</h4>
+        ${list(LOST_WANDER.rows)}
+        <div class="callout" style="margin-top:10px">
+          <p style="margin:0">${esc(LOST_WANDER.close)}</p>
+        </div>
+      </div>
+      ${sourceRow({ org: 'CDC', label: 'Autism wandering and elopement is an emergency, including the search water first instruction', url: 'https://www.cdc.gov/priorities/autism/autism-wandering-and-elopement-is-an-emergency.html' })}`}
+  </div>`;
+}
+
+/* ==================================================================
+   FINDING A CERTIFIED TECHNICIAN
+
+   Her mockup draws a map with pins, distances and star ratings. There
+   is no directory behind this app that could fill any of that in, and
+   a made up technician two miles away is the single worst thing this
+   screen could contain. So it sends people to the two real national
+   finders, and spends its space on what to expect when they get there,
+   which is the part nobody tells you.
+   ================================================================== */
+function screenCpst(c) {
+  return `
+  ${cornerLeaves()}
+  <div class="sc-head">
+    <button class="back" data-back="1">${icon('back', 15, 'var(--deep)')} Back</button>
+    <h1 class="title">Find a certified technician</h1>
+    <p class="sub">${esc(CPST.title)}</p>
+  </div>
+  <div class="sc">
+    <div class="card leafy">
+      <p class="bodytext" style="font-size:15px;line-height:1.55">${esc(CPST.body)}</p>
+    </div>
+
+    <p class="sect" style="margin-top:16px">Search near you</p>
+    ${CPST.links.map((l) => sourceRow({ org: l.label.indexOf('NHTSA') === 0 ? 'NHTSA' : 'Safe Kids', label: l.label, url: l.url })).join('')}
+    <p class="tiny" style="margin-top:8px">Both are national lists kept by the people who run the certification, so they are current in a way we could not keep a copy of.</p>
+
+    <div class="dsec">
+      <h4>What to expect, and what to take</h4>
+      ${list(CPST.expect)}
+    </div>
+
+    <div class="callout" style="margin-top:4px">
+      <p style="margin:0">${esc(CPST.cost)}</p>
     </div>
   </div>`;
 }
@@ -26973,6 +28080,12 @@ function screenChild(c) {
 
     safety: () => `
       ${sectHead('safety', months, 'If something happens')}
+      ${ageRow('safety', months, kid, 'car', 'Car seat and travel',
+        'Which stage they are in, when their seat expires, and flying with one.',
+        'data-go="screen" data-id="carseat"')}
+      ${ageRow('safety', months, kid, 'shield', 'Safety Hub',
+        'The car, the house, the water, medicines and the plan.',
+        'data-go="screen" data-id="safetyhub"')}
       ${ageRow('safety', months, kid, 'heart', 'CPR, choking and staying safe',
         esc('For ' + getCprForAge(months).label.toLowerCase()) + ', plus what to do when you are at the end of it',
         'data-go="screen" data-id="safety"')}
@@ -28922,7 +30035,12 @@ function screenOnboard() {
 function logWho() {
   const w = store.logWho || store.profileWho || 'me';
   if (w === 'me') return 'me';
-  return store.children.some((k) => k.id === w) ? w : 'me';
+  /* A child who has since been removed falls back to whoever is open
+     rather than silently to the parent, which is how a child's logs
+     screen ended up showing the parent's. */
+  if (store.children.some((k) => k.id === w)) return w;
+  const open = store.activeChildId;
+  return (open && store.children.some((k) => k.id === open)) ? open : 'me';
 }
 
 function logsOf(who) {
@@ -29811,6 +30929,7 @@ function normalizeChild(k) {
     dayKind: k.dayKind && typeof k.dayKind === 'object' ? k.dayKind : null,
     routineOff: Array.isArray(k.routineOff) ? k.routineOff : [],
     logs: Array.isArray(k.logs) ? k.logs : [],
+    seats: Array.isArray(k.seats) ? k.seats : [],
     bishop: Array.isArray(k.bishop) ? k.bishop : [],
     birthPrefs: k.birthPrefs && typeof k.birthPrefs === 'object' ? k.birthPrefs : {},
     birthPlan: k.birthPlan && typeof k.birthPlan === 'object' ? k.birthPlan : {},
